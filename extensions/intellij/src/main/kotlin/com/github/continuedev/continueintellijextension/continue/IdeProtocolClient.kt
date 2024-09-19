@@ -1,26 +1,28 @@
 package com.github.continuedev.continueintellijextension.`continue`
 
-import com.github.continuedev.continueintellijextension.*
 import com.github.continuedev.continueintellijextension.auth.AuthListener
 import com.github.continuedev.continueintellijextension.auth.ContinueAuthService
-import com.github.continuedev.continueintellijextension.constants.*
+import com.github.continuedev.continueintellijextension.constants.getConfigJsPath
+import com.github.continuedev.continueintellijextension.constants.getConfigJsonPath
+import com.github.continuedev.continueintellijextension.constants.getContinueGlobalPath
 import com.github.continuedev.continueintellijextension.services.ContinueExtensionSettings
 import com.github.continuedev.continueintellijextension.services.ContinuePluginService
+import com.github.continuedev.continueintellijextension.services.TerminalActivityTrackingService
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
-import com.intellij.codeInsight.daemon.impl.DaemonProgressIndicator
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
+import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.execution.util.ExecUtil
+import com.intellij.ide.plugins.PluginManager
 import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.ReadAction
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.components.service
@@ -31,8 +33,7 @@ import com.intellij.openapi.extensions.PluginId
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.fileEditor.TextEditor
-import com.intellij.openapi.progress.DumbProgressIndicator
-import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.fileEditor.impl.FileEditorManagerImpl
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.MessageType
@@ -42,14 +43,19 @@ import com.intellij.openapi.vfs.*
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.psi.PsiDocumentManager
+import com.intellij.terminal.TerminalUtils
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.awt.RelativePoint
-import kotlinx.coroutines.*
+import com.intellij.util.concurrency.annotations.RequiresEdt
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.io.*
 import java.net.NetworkInterface
 import java.nio.charset.Charset
+import java.nio.file.Paths
 import java.util.*
 
 
@@ -195,6 +201,7 @@ class IdeProtocolClient (
     private val project: Project
 ): DumbAware {
     val diffManager = DiffManager(project)
+    private val ripgrep: String
 
     init {
         initIdeProtocol()
@@ -203,6 +210,20 @@ class IdeProtocolClient (
         VirtualFileManager.getInstance().addAsyncFileListener(AsyncFileSaveListener(this), object : Disposable {
             override fun dispose() {}
         })
+
+        val myPluginId = "com.github.continuedev.continueintellijextension"
+        val pluginDescriptor = PluginManager.getPlugin(PluginId.getId(myPluginId)) ?: throw Exception("Plugin not found")
+
+        val pluginPath = pluginDescriptor.pluginPath
+        val osName = System.getProperty("os.name").toLowerCase()
+        val os = when {
+            osName.contains("mac") || osName.contains("darwin") -> "darwin"
+            osName.contains("win") -> "win32"
+            osName.contains("nix") || osName.contains("nux") || osName.contains("aix") -> "linux"
+            else -> "linux"
+        }
+
+        ripgrep = Paths.get(pluginPath.toString(), "ripgrep", "bin", "rg" + (if (os == "win32") ".exe" else "")).toString()
     }
 
     private fun send(messageType: String, data: Any?, messageId: String? = null) {
@@ -357,9 +378,7 @@ class IdeProtocolClient (
                     }
 
                     "getTerminalContents" -> {
-                        respond(
-                            mapOf("contents" to "Terminal cannot be accessed in JetBrains IDE")
-                        )
+                        respond(terminalContents())
                     }
 
                     "visibleFiles" -> {
@@ -461,8 +480,9 @@ class IdeProtocolClient (
                     }
                     "getBranch" -> {
                         // Get the current branch name
+                        val dir = (data as Map<String, Any>)["dir"] as String
                         val builder = ProcessBuilder("git", "rev-parse", "--abbrev-ref", "HEAD")
-                        builder.directory(File(workspacePath ?: "."))
+                        builder.directory(File(dir))
                         val process = builder.start()
 
                         val reader = BufferedReader(InputStreamReader(process.inputStream))
@@ -473,15 +493,21 @@ class IdeProtocolClient (
                     }
                     "getRepoName" -> {
                         // Get the current repository name
+                        val dir = (data as Map<String, Any>)["dir"] as String
                         val builder = ProcessBuilder("git", "config", "--get", "remote.origin.url")
-                        builder.directory(File(workspacePath ?: "."))
-                        val process = builder.start()
+                        builder.directory(File(dir))
+                        var output = "NONE"
+                        try {
+                            val process = builder.start()
 
-                        val reader = BufferedReader(InputStreamReader(process.inputStream))
-                        val output = reader.readLine()
-                        process.waitFor()
+                            val reader = BufferedReader(InputStreamReader(process.inputStream))
+                            output = reader.readLine()
+                            process.waitFor()
+                        } catch (error: Exception) {
+                            println("Git not found: " + error)
+                        }
 
-                        respond(output ?: "NONE")
+                        respond(output)
                     }
 
                     // NEW //
@@ -587,12 +613,13 @@ class IdeProtocolClient (
                     "listFolders" -> {
                         val workspacePath = workspacePath ?: return@launch
                         val workspaceDir = File(workspacePath)
-                        val folders = workspaceDir.listFiles { file -> file.isDirectory }?.map { file -> file.name } ?: emptyList()
+                        val folders = workspaceDir.listFiles { file -> file.isDirectory }?.map { file -> file.absolutePath } ?: emptyList()
                         respond(folders)
                     }
 
                     "getSearchResults" -> {
-                        respond("")
+                        val query = (data as Map<String, Any>)["query"] as String
+                        respond(search(query))
                     }
 
                     // Other
@@ -605,8 +632,10 @@ class IdeProtocolClient (
                         respond(currentFile)
                     }
                     "getPinnedFiles" -> {
-                        val openFiles = visibleFiles()
-                        respond(openFiles)
+                        ApplicationManager.getApplication().invokeLater {
+                            val pinnedFiles = pinnedFiles()
+                            respond(pinnedFiles)
+                        }
                     }
                     "insertAtCursor" -> {
                         val msg = data as Map<String, String>;
@@ -632,7 +661,7 @@ class IdeProtocolClient (
 
                         if (ghAuthToken == null) {
                             // Open a dialog so user can enter their GitHub token
-                            continuePluginService.sendToWebview("openOnboarding", null, uuid())
+                            continuePluginService.sendToWebview("openOnboardingCard", null, uuid())
                             respond(null)
                         } else {
                             respond(ghAuthToken)
@@ -715,30 +744,6 @@ class IdeProtocolClient (
 
     fun uniqueId(): String {
         return getMachineUniqueID()
-    }
-
-    fun onTextSelected(
-        selectedText: String,
-        filepath: String,
-        startLine: Int,
-        startCharacter: Int,
-        endLine: Int,
-        endCharacter: Int
-    ) = coroutineScope.launch {
-//        val jsonMessage = textSelectionStrategy.handleTextSelection(
-//            selectedText,
-//            filepath,
-//            startLine,
-//            startCharacter,
-//            endLine,
-//            endCharacter
-//        )
-//        sendMessage("highlightedCodePush", jsonMessage)
-//        dispatchEventToWebview(
-//            "highlightedCode",
-//            jsonMessage,
-//            continuePluginService.continuePluginWindow.webView
-//        )
     }
 
     fun readFile(filepath: String): String {
@@ -872,10 +877,15 @@ class IdeProtocolClient (
     }
 
     private fun workspaceDirectories(): Array<String> {
+        val dirs = this.continuePluginService.workspacePaths
+        if (dirs?.isNotEmpty() == true) {
+            return dirs
+        }
+
         if (this.workspacePath != null) {
             return arrayOf(this.workspacePath)
         }
-        return arrayOf<String>();
+        return arrayOf()
     }
 
     private fun listDirectoryContents(directory: String?): List<String> {
@@ -964,6 +974,14 @@ class IdeProtocolClient (
         return fileEditorManager.openFiles.toList().map { it.path }
     }
 
+    @RequiresEdt
+    private fun pinnedFiles(): List<String> {
+        val fileEditorManager = FileEditorManager.getInstance(project) as? FileEditorManagerImpl ?: return listOf()
+        val openFiles = fileEditorManager.openFiles.map { it.path }.toList()
+        val pinnedFiles = fileEditorManager.windows.flatMap { window -> window.files.filter { window.isFilePinned(it) } }.map { it.path }.toSet()
+        return openFiles.intersect(pinnedFiles).toList()
+    }
+
     private fun currentFile(): String? {
         val fileEditorManager = FileEditorManager.getInstance(project)
         val editor = fileEditorManager.selectedTextEditor
@@ -1012,6 +1030,31 @@ class IdeProtocolClient (
 
 //            markupModel.addRangeHighlighter(startIdx, endIdx, 0, textAttributes, HighlighterTargetArea.EXACT_RANGE)
         }
+    }
+
+    private fun terminalContents(): String {
+        val contents = project.service<TerminalActivityTrackingService>().latest()?.run {
+            TerminalUtils.getTextInTerminal(terminalPanel)
+        } ?: ""
+
+        var lines = contents.split("\n").dropLastWhile { it.isEmpty() }
+        val lastLine = lines.lastOrNull()?.trim()
+        if (lastLine != null) {
+            lines = lines.dropLast(1)
+            var i = lines.size - 1
+            while (i >= 0 && !lines[i].trim().startsWith(lastLine)) {
+                i--
+            }
+            return lines.subList(maxOf(i, 0), lines.size).joinToString("\n")
+        }
+
+        return contents
+    }
+
+    private fun search(query: String): String {
+        val command = GeneralCommandLine(ripgrep, "-i", "-C", "2", "--", query, ".")
+        command.setWorkDirectory(project.basePath)
+        return ExecUtil.execAndGetOutput(command).stdout ?: ""
     }
 }
 

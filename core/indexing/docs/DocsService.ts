@@ -1,8 +1,8 @@
 import { open, type Database } from "sqlite";
 import sqlite3 from "sqlite3";
 import lancedb, { Connection } from "vectordb";
-import { ConfigHandler } from "../../config/ConfigHandler.js";
-import DocsContextProvider from "../../context/providers/DocsContextProvider.js";
+import { ConfigHandler } from "../../config/ConfigHandler";
+import DocsContextProvider from "../../context/providers/DocsContextProvider";
 import {
   Chunk,
   ContinueConfig,
@@ -10,27 +10,28 @@ import {
   IDE,
   IndexingProgressUpdate,
   SiteIndexingConfig,
-} from "../../index.js";
-import { FromCoreProtocol, ToCoreProtocol } from "../../protocol/index.js";
-import { GlobalContext } from "../../util/GlobalContext.js";
-import { IMessenger } from "../../util/messenger.js";
+} from "../..";
+import { FromCoreProtocol, ToCoreProtocol } from "../../protocol";
+import { GlobalContext } from "../../util/GlobalContext";
+import { IMessenger } from "../../util/messenger";
 import {
   editConfigJson,
   getDocsSqlitePath,
   getLanceDbPath,
-} from "../../util/paths.js";
-import { Telemetry } from "../../util/posthog.js";
-import TransformersJsEmbeddingsProvider from "../embeddings/TransformersJsEmbeddingsProvider.js";
-import { Article, chunkArticle, pageToArticle } from "./article.js";
-import { crawlPage } from "./crawl.js";
-import { runLanceMigrations, runSqliteMigrations } from "./migrations.js";
+} from "../../util/paths";
+import { Telemetry } from "../../util/posthog";
+import TransformersJsEmbeddingsProvider from "../embeddings/TransformersJsEmbeddingsProvider";
+import { Article, chunkArticle, pageToArticle } from "./article";
+import DocsCrawler from "./DocsCrawler";
+import { runLanceMigrations, runSqliteMigrations } from "./migrations";
 import {
   downloadFromS3,
   getS3Filename,
   S3Buckets,
   SiteIndexingResults,
-} from "./preIndexed.js";
-import preIndexedDocs from "./preIndexedDocs.js";
+} from "./preIndexed";
+import preIndexedDocs from "./preIndexedDocs";
+import { addContextProvider } from "../../config/util";
 
 // Purposefully lowercase because lancedb converts
 export interface LanceDbDocsRow {
@@ -75,16 +76,14 @@ export default class DocsService {
   private config!: ContinueConfig;
   private sqliteDb?: Database;
 
-  // If we are instantiating a new DocsService from `getContextItems()`,
-  // we have access to the direct config object.
-  // When instantiating the DocsService from core, we have access
-  // to a ConfigHandler instance.
+  private docsCrawler!: DocsCrawler;
+
   constructor(
-    configOrHandler: ConfigHandler,
+    configHandler: ConfigHandler,
     private readonly ide: IDE,
     private readonly messenger?: IMessenger<ToCoreProtocol, FromCoreProtocol>,
   ) {
-    this.isInitialized = this.init(configOrHandler);
+    this.isInitialized = this.init(configHandler);
   }
 
   static getSingleton() {
@@ -92,11 +91,11 @@ export default class DocsService {
   }
 
   static createSingleton(
-    configOrHandler: ConfigHandler,
+    configHandler: ConfigHandler,
     ide: IDE,
     messenger?: IMessenger<ToCoreProtocol, FromCoreProtocol>,
   ) {
-    const docsService = new DocsService(configOrHandler, ide, messenger);
+    const docsService = new DocsService(configHandler, ide, messenger);
     DocsService.instance = docsService;
     return docsService;
   }
@@ -112,8 +111,8 @@ export default class DocsService {
   }
 
   /*
-   * Currently, we generate and host embeddings for pre-indexed docs using transformers.js.
-   * However, we don't ship transformers.js with the JetBrains extension.
+   * Currently, we generate and host embeddings for pre-indexed docs using transformers.
+   * However, we don't ship transformers with the JetBrains extension.
    * So, we only include pre-indexed docs in the submenu for non-JetBrains IDEs.
    */
   async canUsePreindexedDocs() {
@@ -141,12 +140,34 @@ export default class DocsService {
     return !!title;
   }
 
+  async showAddDocsContextProviderToast() {
+    const actionMsg = "Add 'docs' context provider";
+    const res = await this.ide.showToast(
+      "info",
+      "Starting docs indexing",
+      actionMsg,
+    );
+
+    if (res === actionMsg) {
+      addContextProvider({
+        name: DocsContextProvider.description.title,
+        params: {},
+      });
+
+      this.ide.showToast("info", "Successfuly added docs context provider");
+    }
+
+    return res === actionMsg;
+  }
+
   async indexAllDocs(reIndex: boolean = false) {
     if (!this.hasDocsContextProvider()) {
-      this.ide.infoPopup(
-        "No 'docs' provider configured under 'contextProviders' in config.json",
-      );
-      return;
+      const didAddDocsContextProvider =
+        await this.showAddDocsContextProviderToast();
+
+      if (!didAddDocsContextProvider) {
+        return;
+      }
     }
 
     const docs = await this.list();
@@ -156,7 +177,7 @@ export default class DocsService {
       while (!(await generator.next()).done) {}
     }
 
-    this.ide.infoPopup("Docs indexing completed");
+    this.ide.showToast("info", "Docs indexing completed");
   }
 
   async list() {
@@ -203,10 +224,7 @@ export default class DocsService {
     let maxKnownPages = 1;
 
     // Crawl pages and retrieve info as articles
-    for await (const page of crawlPage(
-      new URL(startUrl),
-      siteIndexingConfig.maxDepth,
-    )) {
+    for await (const page of this.docsCrawler.crawl(new URL(startUrl))) {
       processedPages++;
 
       const article = pageToArticle(page);
@@ -279,6 +297,8 @@ export default class DocsService {
         status: "failed",
       };
 
+      this.docsIndexingQueue.delete(startUrl);
+
       return;
     }
 
@@ -291,8 +311,8 @@ export default class DocsService {
       status: "indexing",
     };
 
-    // Clear old index if re-indexing.
-    if (reIndex) {
+    // Delete indexed docs if re-indexing
+    if (reIndex && (await this.has(startUrl.toString()))) {
       console.log("Deleting old embeddings");
       await this.delete(startUrl);
     }
@@ -384,19 +404,9 @@ export default class DocsService {
     return favicon;
   }
 
-  /**
-   * A ConfigHandler is passed to the DocsService in `core` when
-   * we don't yet have access to the config object. This handler
-   * is used to set up a single instance of the DocsService that
-   * subscribes to config updates, e.g. to trigger re-indexing
-   * on a new embeddings provider.
-   */
   private async init(configHandler: ConfigHandler) {
-    if (configHandler instanceof ConfigHandler) {
-      this.config = await configHandler.loadConfig();
-    } else {
-      this.config = configHandler;
-    }
+    this.config = await configHandler.loadConfig();
+    this.docsCrawler = new DocsCrawler(this.ide, this.config);
 
     const embeddingsProvider = await this.getEmbeddingsProvider();
 
@@ -474,9 +484,11 @@ export default class DocsService {
         driver: sqlite3.Database,
       });
 
+      await db.exec("PRAGMA busy_timeout = 3000;");
+
       await runSqliteMigrations(db);
 
-      db.exec(`CREATE TABLE IF NOT EXISTS ${DocsService.sqlitebTableName} (
+      await db.exec(`CREATE TABLE IF NOT EXISTS ${DocsService.sqlitebTableName} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             title STRING NOT NULL,
             startUrl STRING NOT NULL UNIQUE,
@@ -521,8 +533,9 @@ export default class DocsService {
   private async getLanceTableNameFromEmbeddingsProvider(
     isPreIndexedDoc: boolean,
   ) {
-    const embeddingsProvider =
-      await this.getEmbeddingsProvider(isPreIndexedDoc);
+    const embeddingsProvider = await this.getEmbeddingsProvider(
+      isPreIndexedDoc,
+    );
     const embeddingsProviderId = this.removeInvalidLanceTableNameChars(
       embeddingsProvider.id,
     );
@@ -722,12 +735,14 @@ export default class DocsService {
       await this.isJetBrainsAndPreIndexedDocsProvider();
 
     if (isJetBrainsAndPreIndexedDocsProvider) {
-      this.ide.errorPopup(
-        "The 'transformers.js' embeddings provider currently cannot be used to index " +
-          "documentation in JetBrains. To enable documentation indexing, you can use " +
-          "any of the other providers described in the docs: " +
-          "https://trypear.ai/walkthroughs/codebase-embeddings#embeddings-providers",
-      );
+      // A bit noisy for teams users whom have no choice if their admin is the one who didn't setup an embeddingsProvider
+      // this.ide.showToast(
+      //   "error",
+      //   "The 'transformers.js' embeddings provider currently cannot be used to index " +
+      //     "documentation in JetBrains. To enable documentation indexing, you can use " +
+      //     "any of the other providers described in the docs: " +
+      //     "https://docs.continue.dev/walkthroughs/codebase-embeddings#embeddings-providers",
+      // );
 
       this.globalContext.update(
         "curEmbeddingsProviderId",

@@ -17,7 +17,6 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   Button,
@@ -32,9 +31,13 @@ import TimelineItem from "../components/gui/TimelineItem";
 import ContinueInputBox from "../components/mainInput/ContinueInputBox";
 import { defaultInputModifiers } from "../components/mainInput/inputModifiers";
 import { TutorialCard } from "../components/mainInput/TutorialCard";
+import OnboardingCard, {
+  useOnboardingCard,
+} from "../components/OnboardingCard";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import useChatHandler from "../hooks/useChatHandler";
 import useHistory from "../hooks/useHistory";
+import { useTutorialCard } from "../hooks/useTutorialCard";
 import { useWebviewListener } from "../hooks/useWebviewListener";
 import { defaultModelSelector } from "../redux/selectors/modelSelectors";
 import {
@@ -58,17 +61,16 @@ import {
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 
-const TopGuiDiv = styled.div`
-  overflow-y: scroll;
-
-  scrollbar-width: none; /* Firefox */
-
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
+const TopGuiDiv = styled.div<{
+  showScrollbar?: boolean;
+}>`
+  overflow-y: auto;
   height: 100%;
+  scrollbar-width: ${(props) => (props.showScrollbar ? "thin" : "none")};
+
+  &::-webkit-scrollbar {
+    display: ${(props) => (props.showScrollbar ? "block" : "none")};
+  }
 `;
 
 const StopButton = styled.div`
@@ -89,7 +91,6 @@ const StopButton = styled.div`
 `;
 
 const StepsDiv = styled.div`
-  padding-bottom: 8px;
   position: relative;
   background-color: transparent;
 
@@ -97,22 +98,9 @@ const StepsDiv = styled.div`
     position: relative;
   }
 
-  // Gray, vertical line on the left ("thread")
-  // &::before {
-  //   content: "";
-  //   position: absolute;
-  //   height: calc(100% - 12px);
-  //   border-left: 2px solid ${lightGray};
-  //   left: 28px;
-  //   z-index: 0;
-  //   bottom: 12px;
-  // }
-
   .thread-message {
-    margin: 16px 8px 0 8px;
-  }
-  .thread-message:not(:first-child) {
-    border-top: 1px solid ${lightGray}22;
+    margin: 8px 4px 0 4px;
+    padding-bottom: 8px;
   }
 `;
 
@@ -136,39 +124,7 @@ const NewSessionButton = styled.div`
   cursor: pointer;
 `;
 
-const ThreadHead = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 18px 6px 0 6px;
-`;
-
-const THREAD_AVATAR_SIZE = 15;
-
-const ThreadAvatar = styled.div`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: rgba(248, 248, 248, 0.75);
-  color: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(136, 136, 136, 0.3);
-`;
-
-const ThreadUserTitle = styled.div`
-  text-transform: capitalize;
-  font-weight: 500;
-  margin-bottom: 2px;
-`;
-
-const ThreadUserName = styled.div`
-  font-size: ${getFontSize() - 3}px;
-  color: ${lightGray};
-`;
-
-function fallbackRender({ error, resetErrorBoundary }) {
+function fallbackRender({ error, resetErrorBoundary }: any) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
 
   return (
@@ -190,13 +146,16 @@ function fallbackRender({ error, resetErrorBoundary }) {
 function GUI() {
   const posthog = usePostHog();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
+
+  const onboardingCard = useOnboardingCard();
+  const { showTutorialCard, closeTutorialCard } = useTutorialCard();
 
   const sessionState = useSelector((state: RootState) => state.state);
 
   const defaultModel = useSelector(defaultModelSelector);
 
+  const ttsActive = useSelector((state: RootState) => state.state.ttsActive);
   const active = useSelector((state: RootState) => state.state.active);
 
   const [stepsOpen, setStepsOpen] = useState<(boolean | undefined)[]>([]);
@@ -207,16 +166,6 @@ function GUI() {
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
 
   const state = useSelector((state: RootState) => state.state);
-
-  const [showTutorialCard, setShowTutorialCard] = useState<boolean>(
-    getLocalStorage("showTutorialCard"),
-  );
-
-  const onCloseTutorialCard = () => {
-    posthog.capture("closedTutorialCard");
-    setLocalStorage("showTutorialCard", false);
-    setShowTutorialCard(false);
-  };
 
   const handleScroll = () => {
     // Temporary fix to account for additional height when code blocks are added
@@ -285,8 +234,12 @@ function GUI() {
           setLocalStorage("ftc", u + 1);
 
           if (u >= FREE_TRIAL_LIMIT_REQUESTS) {
-            navigate("/onboarding");
+            onboardingCard.open("Best");
             posthog?.capture("ftc_reached");
+            ideMessenger.ide.showToast(
+              "info",
+              "You've reached the free trial limit. Please configure a model to continue.",
+            );
             return;
           }
         } else {
@@ -412,8 +365,12 @@ function GUI() {
 
   return (
     <>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-        <div className="mx-2">
+      <TopGuiDiv
+        ref={topGuiDivRef}
+        onScroll={handleScroll}
+        showScrollbar={state.config.ui?.showChatScrollbar || false}
+      >
+        <div className="max-w-3xl m-auto">
           <StepsDiv>
             {state.history.map((item, index: number) => {
               return (
@@ -508,10 +465,7 @@ function GUI() {
                             onDelete={() => {
                               dispatch(deleteMessage(index));
                             }}
-                            modelTitle={
-                              item.promptLogs?.[0]?.completionOptions?.model ??
-                              ""
-                            }
+                            modelTitle={item.promptLogs?.[0]?.modelTitle ?? ""}
                           />
                         </TimelineItem>
                       </div>
@@ -552,7 +506,9 @@ function GUI() {
                 <div className="mt-2">
                   <NewSessionButton
                     onClick={async () => {
-                      loadLastSession();
+                      loadLastSession().catch((e) =>
+                        console.error(`Failed to load last session: ${e}`),
+                      );
                     }}
                     className="mr-auto flex items-center gap-2"
                   >
@@ -562,9 +518,15 @@ function GUI() {
                 </div>
               ) : null}
 
-              {!!showTutorialCard && (
+              {onboardingCard.show && (
+                <div className="mt-10 mx-2">
+                  <OnboardingCard activeTab={onboardingCard.activeTab} />
+                </div>
+              )}
+
+              {showTutorialCard !== false && !onboardingCard.open && (
                 <div className="flex justify-center w-full">
-                  <TutorialCard onClose={onCloseTutorialCard} />
+                  <TutorialCard onClose={closeTutorialCard} />
                 </div>
               )}
             </>
@@ -577,6 +539,16 @@ function GUI() {
           trackVisibility={active}
         />
       </TopGuiDiv>
+      {ttsActive && (
+        <StopButton
+          className="mt-2 mb-4"
+          onClick={() => {
+            ideMessenger.post("tts/kill", undefined);
+          }}
+        >
+          ■ Stop TTS
+        </StopButton>
+      )}
       {active && (
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"

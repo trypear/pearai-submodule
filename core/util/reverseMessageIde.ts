@@ -33,8 +33,8 @@ export class ReverseMessageIde {
   }
 
   private initializeListeners() {
-    this.on("getGitHubAuthToken", () => {
-      return this.ide.getGitHubAuthToken();
+    this.on("getGitHubAuthToken", (data) => {
+      return this.ide.getGitHubAuthToken(data);
     });
 
     this.on("getPearAuth", (data) => {
@@ -53,12 +53,8 @@ export class ReverseMessageIde {
       return this.ide.listDir(data.dir);
     });
 
-    this.on("infoPopup", (data) => {
-      return this.ide.infoPopup(data.message);
-    });
-
-    this.on("errorPopup", (data) => {
-      return this.ide.errorPopup(data.message);
+    this.on("showToast", (data) => {
+      return this.ide.showToast(...data);
     });
 
     this.on("getRepoName", (data) => {
@@ -126,6 +122,11 @@ export class ReverseMessageIde {
 
     this.on("listFolders", () => {
       return this.ide.listFolders();
+    });
+
+    this.on("getControlPlaneSessionInfo", async (msg) => {
+      // Not supported in testing
+      return undefined;
     });
 
     this.on("getContinueDir", () => {

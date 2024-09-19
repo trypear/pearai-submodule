@@ -1,8 +1,8 @@
-import { ControlPlaneSessionInfo } from "../control-plane/client.js";
 import type {
   ContinueRcJson,
   DiffLine,
   FileType,
+  IDE,
   IdeInfo,
   IdeSettings,
   IndexTag,
@@ -12,7 +12,12 @@ import type {
   RangeInFile,
   Thread,
   PearAuth,
-} from "../index.js";
+} from "../";
+import { ControlPlaneSessionInfo } from "../control-plane/client";
+
+export interface GetGhTokenArgs {
+  force?: boolean;
+}
 
 export type ToIdeFromWebviewOrCoreProtocol = {
   // Methods from IDE type
@@ -68,15 +73,17 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   getBranch: [{ dir: string }, string];
   getRepoName: [{ dir: string }, string | undefined];
 
-  errorPopup: [{ message: string }, void];
-  infoPopup: [{ message: string }, void];
+  showToast: [
+    Parameters<IDE["showToast"]>,
+    Awaited<ReturnType<IDE["showToast"]>>,
+  ];
   getGitRootPath: [{ dir: string }, string | undefined];
   listDir: [{ dir: string }, [string, FileType][]];
   getLastModified: [{ files: string[] }, { [path: string]: number }];
 
   gotoDefinition: [{ location: Location }, RangeInFile[]];
 
-  getGitHubAuthToken: [undefined, string | undefined];
+  getGitHubAuthToken: [GetGhTokenArgs, string | undefined];
   getControlPlaneSessionInfo: [
     { silent: boolean },
     ControlPlaneSessionInfo | undefined,

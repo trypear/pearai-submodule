@@ -34,6 +34,7 @@ class FileTreeContextProvider extends BaseContextProvider {
     description: "Attach a representation of the file directory structure",
     type: "normal",
     renderInlineAs: "",
+    dependsOnIndexing: true,
   };
 
   async getContextItems(

@@ -171,6 +171,8 @@
             "anthropic",
             "cohere",
             "bedrock",
+            "bedrockimport",
+            "sagemaker",
             "together",
             "ollama",
             "huggingface-tgi",
@@ -189,32 +191,40 @@
             "azure",
             "msty",
             "watsonx",
-            "pearai_server"
+            "openrouter",
+            "sambanova",
+            "nvidia",
+            "vllm"
           ],
           "markdownEnumDescriptions": [
-            "### OpenAI\nUse gpt-4, gpt-3.5-turbo, or any other OpenAI model. See [here](https://openai.com/product#made-for-developers) to obtain an API key.\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/openai)",
-            "### Free Trial\nNew users can try out PearAI for free using a proxy server that securely makes calls to OpenAI using our API key. If you are ready to use your own API key or have used all 250 free uses, you can enter your API key in config.json where it says `apiKey=\"\"` or select another model provider.\n> [Reference](https://trypear.ai/reference/Model%20Providers/freetrial)",
-            "### Anthropic\nTo get started with Anthropic models, you first need to sign up for the open beta [here](https://claude.ai/login) to obtain an API key.\n> [Reference](https://trypear.ai/reference/Model%20Providers/anthropicllm)",
-            "### Cohere\nTo use Cohere, visit the [Cohere dashboard](https://dashboard.cohere.com/api-keys) to create an API key.\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/cohere)",
-            "### Bedrock\nTo get started with Bedrock you need to sign up on AWS [here](https://aws.amazon.com/bedrock/claude/)",
-            "### Together\nTogether is a hosted service that provides extremely fast streaming of open-source language models. To get started with Together:\n1. Obtain an API key from [here](https://together.ai)\n2. Paste below\n3. Select a model preset\n> [Reference](https://trypear.ai/reference/Model%20Providers/togetherllm)",
-            "### Ollama\nTo get started with Ollama, follow these steps:\n1. Download from [ollama.ai](https://ollama.ai/) and open the application\n2. Open a terminal and run `ollama run <MODEL_NAME>`. Example model names are `codellama:7b-instruct` or `llama2:7b-text`. You can find the full list [here](https://ollama.ai/library).\n3. Make sure that the model name used in step 2 is the same as the one in config.json (e.g. `model=\"codellama:7b-instruct\"`)\n4. Once the model has finished downloading, you can start asking questions through Continue.\n> [Reference](https://trypear.ai/reference/Model%20Providers/ollama)",
-            "### Huggingface TGI\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/huggingfacetgi)",
-            "### Huggingface Inference API\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/huggingfaceinferenceapi)",
-            "### Llama.cpp\nllama.cpp comes with a [built-in server](https://github.com/ggerganov/llama.cpp/tree/master/examples/server#llamacppexampleserver) that can be run from source. To do this:\n\n1. Clone the repository with `git clone https://github.com/ggerganov/llama.cpp`.\n2. `cd llama.cpp`\n3. Run `make` to build the server.\n4. Download the model you'd like to use and place it in the `llama.cpp/models` directory (the best place to find models is [The Bloke on HuggingFace](https://huggingface.co/TheBloke))\n5. Run the llama.cpp server with the command below (replacing with the model you downloaded):\n\n```shell\n.\\server.exe -c 4096 --host 0.0.0.0 -t 16 --mlock -m models/codellama-7b-instruct.Q8_0.gguf\n```\n\nAfter it's up and running, you can start using PearAI.\n> [Reference](https://trypear.ai/reference/Model%20Providers/llamacpp)",
-            "### Replicate\nReplicate is a hosted service that makes it easy to run ML models. To get started with Replicate:\n1. Obtain an API key from [here](https://replicate.com)\n2. Paste below\n3. Select a model preset\n> [Reference](https://trypear.ai/reference/Model%20Providers/replicatellm)",
-            "### Gemini API\nTo get started with Google Makersuite, obtain your API key from [here](https://makersuite.google.com) and paste it below.\n> [Reference](https://trypear.ai/reference/Model%20Providers/geminiapi)",
-            "### LMStudio\nLMStudio provides a professional and well-designed GUI for exploring, configuring, and serving LLMs. It is available on both Mac and Windows. To get started:\n1. Download from [lmstudio.ai](https://lmstudio.ai/) and open the application\n2. Search for and download the desired model from the home screen of LMStudio.\n3. In the left-bar, click the '<->' icon to open the Local Inference Server and press 'Start Server'.\n4. Once your model is loaded and the server has started, you can begin using PearAI.\n> [Reference](https://trypear.ai/reference/Model%20Providers/lmstudio)",
-            "### Llamafile\nTo get started with llamafiles, find and download a binary on their [GitHub repo](https://github.com/Mozilla-Ocho/llamafile#binary-instructions). Then run it with the following command:\n\n```shell\nchmod +x ./llamafile\n./llamafile\n```\n> [Reference](https://trypear.ai/reference/Model%20Providers/llamafile)",
+            "### OpenAI\nUse gpt-4, gpt-3.5-turbo, or any other OpenAI model. See [here](https://openai.com/product#made-for-developers) to obtain an API key.\n\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/openai)",
+            "### Free Trial\nNew users can try out Continue for free using a proxy server that securely makes calls to OpenAI using our API key. If you are ready to use your own API key or have used all 250 free uses, you can enter your API key in config.json where it says `apiKey=\"\"` or select another model provider.\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/freetrial)",
+            "### Anthropic\nTo get started with Anthropic models, you first need to sign up for the open beta [here](https://claude.ai/login) to obtain an API key.\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/anthropicllm)",
+            "### Cohere\nTo use Cohere, visit the [Cohere dashboard](https://dashboard.cohere.com/api-keys) to create an API key.\n\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/cohere)",
+            "### Bedrock\nTo get started with Bedrock you need to sign up on AWS [here](https://aws.amazon.com/bedrock)",
+            "### Bedrock Imported Models\nTo get started with Bedrock you need to sign up on AWS [here](https://aws.amazon.com/bedrock)",
+            "### Sagemaker\nSagemaker is AWS' machine learning platform.",
+            "### Together\nTogether is a hosted service that provides extremely fast streaming of open-source language models. To get started with Together:\n1. Obtain an API key from [here](https://together.ai)\n2. Paste below\n3. Select a model preset\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/togetherllm)",
+            "### Ollama\nTo get started with Ollama, follow these steps:\n1. Download from [ollama.ai](https://ollama.ai/) and open the application\n2. Open a terminal and run `ollama run <MODEL_NAME>`. Example model names are `codellama:7b-instruct` or `llama2:7b-text`. You can find the full list [here](https://ollama.ai/library).\n3. Make sure that the model name used in step 2 is the same as the one in config.json (e.g. `model=\"codellama:7b-instruct\"`)\n4. Once the model has finished downloading, you can start asking questions through Continue.\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/ollama)",
+            "### Huggingface TGI\n\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/huggingfacetgi)",
+            "### Huggingface Inference API\n\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/huggingfaceinferenceapi)",
+            "### Llama.cpp\nllama.cpp comes with a [built-in server](https://github.com/ggerganov/llama.cpp/tree/master/examples/server#llamacppexampleserver) that can be run from source. To do this:\n\n1. Clone the repository with `git clone https://github.com/ggerganov/llama.cpp`.\n2. `cd llama.cpp`\n3. Run `make` to build the server.\n4. Download the model you'd like to use and place it in the `llama.cpp/models` directory (the best place to find models is [The Bloke on HuggingFace](https://huggingface.co/TheBloke))\n5. Run the llama.cpp server with the command below (replacing with the model you downloaded):\n\n```shell\n.\\server.exe -c 4096 --host 0.0.0.0 -t 16 --mlock -m models/codellama-7b-instruct.Q8_0.gguf\n```\n\nAfter it's up and running, you can start using Continue.\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/llamacpp)",
+            "### Replicate\nReplicate is a hosted service that makes it easy to run ML models. To get started with Replicate:\n1. Obtain an API key from [here](https://replicate.com)\n2. Paste below\n3. Select a model preset\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/replicatellm)",
+            "### Gemini API\nTo get started with Google Makersuite, obtain your API key from [here](https://makersuite.google.com) and paste it below.\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/geminiapi)",
+            "### LMStudio\nLMStudio provides a professional and well-designed GUI for exploring, configuring, and serving LLMs. It is available on both Mac and Windows. To get started:\n1. Download from [lmstudio.ai](https://lmstudio.ai/) and open the application\n2. Search for and download the desired model from the home screen of LMStudio.\n3. In the left-bar, click the '<->' icon to open the Local Inference Server and press 'Start Server'.\n4. Once your model is loaded and the server has started, you can begin using Continue.\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/lmstudio)",
+            "### Llamafile\nTo get started with llamafiles, find and download a binary on their [GitHub repo](https://github.com/Mozilla-Ocho/llamafile#binary-instructions). Then run it with the following command:\n\n```shell\nchmod +x ./llamafile\n./llamafile\n```\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/llamafile)",
             "### Mistral API\n\nTo get access to the Mistral API, obtain your API key from the [Mistral platform](https://docs.mistral.ai/)",
-            "### DeepInfra\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/deepinfra)",
+            "### DeepInfra\n\n> [Reference](https://docs.continue.dev/reference/Model%20Providers/deepinfra)",
             "### Groq\nGroq provides extremely fast inference of open-source language models. To get started, obtain an API key from [their console](https://console.groq.com/keys).",
             "### Fireworks\nFireworks is a fast inference engine for open-source language models. To get started, obtain an API key from [their console](https://fireworks.ai/api-keys).",
             "### Cloudflare Workers AI\n\n[Reference](https://developers.cloudflare.com/workers-ai/)",
             "### Deepseek\n Deepseek's API provides the best pricing for their state-of-the-art Deepseek Coder models. To get started, obtain an API key from [their console](https://platform.deepseek.com/api_keys)",
-            "### Azure OpenAI\n Azure OpenAI lets you securely run OpenAI's models on Azure. To get started, follow the steps [here](https://trypear.ai/reference/Model%20Providers/azure)",
-            "### Msty\nMsty is the simplest way to get started with online or local LLMs on all desktop platforms - Windows, Mac, and Linux. No fussing around, one-click and you are up and running. To get started, follow these steps:\n1. Download from [Msty.app](https://msty.app/), open the application, and click 'Setup Local AI'.\n2. Go to the Local AI Module page and download a model of your choice.\n3. Once the model has finished downloading, you can start asking questions through Continue.\n> [Reference](https://pearai.dev/docs/reference/Model%20Providers/Msty)",
-            "### WatsonX\nWatsonx, developed by IBM, offers a variety of pre-trained AI foundation models that can be used for natural language processing (NLP), computer vision, and speech recognition tasks."
+            "### Azure OpenAI\n Azure OpenAI lets you securely run OpenAI's models on Azure. To get started, follow the steps [here](https://docs.continue.dev/reference/Model%20Providers/azure)",
+            "### Msty\nMsty is the simplest way to get started with online or local LLMs on all desktop platforms - Windows, Mac, and Linux. No fussing around, one-click and you are up and running. To get started, follow these steps:\n1. Download from [Msty.app](https://msty.app/), open the application, and click 'Setup Local AI'.\n2. Go to the Local AI Module page and download a model of your choice.\n3. Once the model has finished downloading, you can start asking questions through Continue.\n> [Reference](https://continue.dev/docs/reference/Model%20Providers/Msty)",
+            "### IBM watsonx\nwatsonx, developed by IBM, offers a variety of pre-trained AI foundation models that can be used for natural language processing (NLP), computer vision, and speech recognition tasks.",
+            "### OpenRouter\nOpenRouter offers a single API to access almost any language model. To get started, obtain an API key from [their console](https://openrouter.ai/settings/keys).",
+            "### NVIDIA NIMs\nNVIDIA offers a single API to access almost any language model. To find out more, visit the [LLM APIs Documentation](https://docs.api.nvidia.com/nim/reference/llm-apis).\nFor information specific to getting a key, please check out the [docs here](https://docs.nvidia.com/nim/large-language-models/latest/getting-started.html#option-1-from-api-catalog)",
+            "### vLLM\nvLLM is a highly performant way of hosting LLMs for a team. To get started, follow their [quickstart](https://docs.vllm.ai/en/latest/getting_started/quickstart.html) to set up your server."
           ],
           "type": "string"
         },
@@ -233,10 +243,30 @@
           "description": "The base URL of the LLM API.",
           "type": "string"
         },
+        "region": {
+          "title": "Region",
+          "description": "The region where the model is hosted",
+          "type": "string"
+        },
+        "profile": {
+          "title": "Profile",
+          "description": "The AWS security profile to use",
+          "type": "string"
+        },
+        "modelArn": {
+          "title": "Profile",
+          "description": "The AWS arn for the imported model",
+          "type": "string"
+        },
         "contextLength": {
           "title": "Context Length",
           "description": "The maximum context length of the LLM in tokens, as counted by countTokens.",
           "default": 2048,
+          "type": "integer"
+        },
+        "maxStopWords": {
+          "title": "Max Stop Words",
+          "description": "The maximum number of stop words that the API will accept. You can set this if you are receiving an error about the number of stop words, but otherwise should leave it undefined.",
           "type": "integer"
         },
         "template": {
@@ -264,7 +294,7 @@
         },
         "promptTemplates": {
           "title": "Prompt Templates",
-          "markdownDescription": "A mapping of prompt template name ('edit' is currently the only one used in Continue) to a string giving the prompt template. See [here](https://trypear.ai/model-setup/configuration#customizing-the-edit-prompt) for an example.",
+          "markdownDescription": "A mapping of prompt template name ('edit' is currently the only one used in Continue) to a string giving the prompt template. See [here](https://docs.continue.dev/model-setup/configuration#customizing-the-edit-prompt) for an example.",
           "type": "object",
           "additionalProperties": {
             "type": "string"
@@ -369,7 +399,8 @@
                   "huggingface-inference-api",
                   "replicate",
                   "together",
-                  "cloudflare"
+                  "cloudflare",
+                  "sambanova"
                 ]
               }
             },
@@ -377,6 +408,19 @@
           },
           "then": {
             "required": ["apiKey"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "provider": {
+                "enum": ["bedrockimport"]
+              }
+            },
+            "required": ["provider"]
+          },
+          "then": {
+            "required": ["modelArn"]
           }
         },
         {
@@ -657,6 +701,9 @@
           },
           "then": {
             "properties": {
+              "cacheSystemMessage": {
+                "type": "boolean"
+              },
               "model": {
                 "anyOf": [
                   {
@@ -727,6 +774,23 @@
           "if": {
             "properties": {
               "provider": {
+                "enum": ["sagemaker"]
+              }
+            },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "model": {
+                "markdownDescription": "SageMaker endpoint name"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "provider": {
                 "enum": ["gemini"]
               }
             },
@@ -734,6 +798,9 @@
           },
           "then": {
             "properties": {
+              "cacheSystemMessage": {
+                "type": "boolean"
+              },
               "model": {
                 "enum": [
                   "chat-bison-001",
@@ -952,6 +1019,9 @@
           },
           "then": {
             "properties": {
+              "cacheSystemMessage": {
+                "type": "boolean"
+              },
               "model": {
                 "enum": ["deepseek-chat", "deepseek-coder"]
               }
@@ -1206,22 +1276,22 @@
               "watsonxApiKey": {
                 "type": "string"
               },
-              "watsonxZenApiKeyBase64": {
-                "type": "string"
-              },
-              "watsonxUsername": {
-                "type": "string"
-              },
-              "watsonxPassword": {
+              "watsonxApiVersion": {
                 "type": "string"
               },
               "watsonxProjectId": {
                 "type": "string"
               },
+              "watsonxStopToken": {
+                "type": "string"
+              },
+              "watsonxFullUrl": {
+                "type": "string"
+              },
               "model": {
                 "enum": [
                   "ibm/granite-13b-chat-v2",
-                  "ibm/granite-13b-instruct-v2",
+                  "ibm/granite-20b-code-instruct",
                   "mistralai/mistral-large",
                   "meta-llama/llama-3-8b-instruct",
                   "meta-llama/llama-3-70b-instruct"
@@ -1229,6 +1299,31 @@
               }
             },
             "required": ["watsonxUrl", "watsonxProjectId"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "provider": {
+                "enum": ["sambanova"]
+              }
+            },
+            "required": ["provider"]
+          },
+          "then": {
+            "properties": {
+              "model": {
+                "anyOf": [
+                  {
+                    "enum": ["llama3.1-8b", "llama3.1-70b", "llama3.1-405b"]
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "markdownDescription": "Select a pre-defined option."
+              }
+            }
           }
         }
       ]
@@ -1277,8 +1372,7 @@
                 "comment",
                 "http",
                 "commit",
-                "review",
-                "component"
+                "review"
               ],
               "type": "string",
               "markdownEnumDescriptions": [
@@ -1290,8 +1384,7 @@
                 "Add comments to the highlighted code",
                 "Write a custom slash command at your own HTTP endpoint. Set 'url' in the params object for the endpoint you have setup.",
                 "Generate a commit message for the current changes",
-                "Review code and give feedback",
-                "Generate a React component using v0"
+                "Review code and give feedback"
               ]
             },
             {
@@ -1352,7 +1445,7 @@
                 "properties": {
                   "recap": {
                     "type": "boolean",
-                    "markdownDescription": "If recap is set to `true`, PearAI will generate a summary of the changes after making the edit."
+                    "markdownDescription": "If recap is set to `true`, Continue will generate a summary of the changes after making the edit."
                   },
                   "tokenLimit": {
                     "type": "integer",
@@ -1427,7 +1520,7 @@
                 "folder",
                 "issue",
                 "docs",
-                "directory",
+                "tree",
                 "highlights",
                 "outline",
                 "postgres",
@@ -1435,7 +1528,8 @@
                 "currentFile",
                 "url",
                 "database",
-                "os"
+                "os",
+                "repo-map"
               ],
               "markdownEnumDescriptions": [
                 "Reference the contents of the current changes as given by `git diff`",
@@ -1450,7 +1544,7 @@
                 "Include important files from a folder in the prompt, as determined by similarity search",
                 "Reference GitHub issues from a repository",
                 "Retrieve important pages from a documentation website, as determined by similarity search",
-                "Display a directory structure of the current workspace",
+                "Display a file tree of the current workspace",
                 "Include important highlighted sections from your code",
                 "Include a repo map showing important code objects",
                 "References Postgres table schema and sample rows",
@@ -1458,7 +1552,8 @@
                 "Reference the contents of the currently active file",
                 "Reference the contents of a page at a URL",
                 "Reference table schemas",
-                "Operating system and CPU Information"
+                "Operating system and CPU Information",
+                "Map of files in the repository with important code highlights"
               ],
               "type": "string"
             },
@@ -1474,46 +1569,6 @@
         }
       },
       "allOf": [
-        {
-          "if": {
-            "properties": {
-              "name": {
-                "enum": ["docs"]
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "params": {
-                "properties": {
-                  "sites": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "title": {
-                          "type": "string"
-                        },
-                        "startUrl": {
-                          "type": "string"
-                        },
-                        "rootUrl": {
-                          "type": "string"
-                        },
-                        "maxDepth": {
-                          "type": "integer"
-                        }
-                      },
-                      "required": ["title", "startUrl"]
-                    }
-                  }
-                },
-                "required": ["sites"]
-              }
-            },
-            "required": ["params"]
-          }
-        },
         {
           "if": {
             "properties": {
@@ -1917,13 +1972,13 @@
         },
         "allowAnonymousTelemetry": {
           "title": "Allow Anonymous Telemetry",
-          "markdownDescription": "If this field is set to True, we will collect anonymous telemetry as described in the documentation page on telemetry. If set to `false`, we will not collect any data. Learn more in [the docs](https://trypear.ai/telemetry).",
+          "markdownDescription": "If this field is set to True, we will collect anonymous telemetry as described in the documentation page on telemetry. If set to `false`, we will not collect any data. Learn more in [the docs](https://docs.continue.dev/telemetry).",
           "default": true,
           "type": "boolean"
         },
         "models": {
           "title": "Models",
-          "markdownDescription": "Learn about setting up models in [the documentation](https://trypear.ai/model-setup/overview).",
+          "markdownDescription": "Learn about setting up models in [the documentation](https://docs.continue.dev/model-setup/overview).",
           "default": [
             {
               "title": "GPT-4 (trial)",
@@ -1971,7 +2026,7 @@
         },
         "slashCommands": {
           "title": "Slash Commands",
-          "markdownDescription": "An array of slash commands that let you take custom actions from the sidebar. Learn more in the [documentation](https://trypear.ai/customization/slash-commands).",
+          "markdownDescription": "An array of slash commands that let you take custom actions from the sidebar. Learn more in the [documentation](https://docs.continue.dev/customization/slash-commands).",
           "default": [],
           "type": "array",
           "items": {
@@ -1980,7 +2035,7 @@
         },
         "customCommands": {
           "title": "Custom Commands",
-          "markdownDescription": "An array of custom commands that allow you to reuse prompts. Each has name, description, and prompt properties. When you enter /<name> in the text input, it will act as a shortcut to the prompt. Learn more in the [documentation](https://trypear.ai/customization/slash-commands#custom-commands-use-natural-language).",
+          "markdownDescription": "An array of custom commands that allow you to reuse prompts. Each has name, description, and prompt properties. When you enter /<name> in the text input, it will act as a shortcut to the prompt. Learn more in the [documentation](https://docs.continue.dev/customization/slash-commands#custom-commands-use-natural-language).",
           "default": [
             {
               "name": "test",
@@ -1995,7 +2050,7 @@
         },
         "contextProviders": {
           "title": "Context Providers",
-          "markdownDescription": "A list of ContextProvider objects that can be used to provide context to the LLM by typing '@'. Read more about ContextProviders in [the documentation](https://trypear.ai/customization/context-providers).",
+          "markdownDescription": "A list of ContextProvider objects that can be used to provide context to the LLM by typing '@'. Read more about ContextProviders in [the documentation](https://docs.continue.dev/customization/context-providers).",
           "default": [],
           "type": "array",
           "items": {
@@ -2009,19 +2064,19 @@
         },
         "disableIndexing": {
           "title": "Disable Indexing",
-          "markdownDescription": "If set to `true`, PearAI will not index the codebase. This is mainly used for debugging purposes.",
+          "markdownDescription": "If set to `true`, Continue will not index the codebase. This is mainly used for debugging purposes.",
           "default": false,
           "type": "boolean"
         },
         "disableSessionTitles": {
           "title": "Disable Session Titles",
-          "markdownDescription": "If set to `true`, PearAI will not make extra requests to the LLM to generate a summary title of each session.",
+          "markdownDescription": "If set to `true`, Continue will not make extra requests to the LLM to generate a summary title of each session.",
           "default": false,
           "type": "boolean"
         },
         "embeddingsProvider": {
           "title": "Embeddings Provider",
-          "markdownDescription": "The method that will be used to generate codebase embeddings. The default is transformers.js, which will run locally in the browser. Learn about the other options [here](https://trypear.ai/features/codebase-embeddings#embeddings-providers).",
+          "markdownDescription": "The method that will be used to generate codebase embeddings. The default is transformers.js, which will run locally in the browser. Learn about the other options [here](https://docs.continue.dev/features/codebase-embeddings#embeddings-providers).",
           "type": "object",
           "properties": {
             "provider": {
@@ -2032,7 +2087,10 @@
                 "openai",
                 "cohere",
                 "free-trial",
-                "gemini"
+                "gemini",
+                "voyage",
+                "nvidia",
+                "bedrock"
               ]
             },
             "model": {
@@ -2055,6 +2113,16 @@
               "type": "integer",
               "minimum": 128,
               "exclusiveMaximum": 2147483647
+            },
+            "region": {
+              "title": "Region",
+              "description": "The region where the model is hosted",
+              "type": "string"
+            },
+            "profile": {
+              "title": "Profile",
+              "description": "The AWS security profile to use",
+              "type": "string"
             }
           },
           "required": ["provider"],
@@ -2063,20 +2131,7 @@
               "if": {
                 "properties": {
                   "provider": {
-                    "enum": ["cohere"]
-                  }
-                },
-                "required": ["provider"]
-              },
-              "then": {
-                "required": ["apiKey"]
-              }
-            },
-            {
-              "if": {
-                "properties": {
-                  "provider": {
-                    "enum": ["gemini"]
+                    "enum": ["cohere", "voyage", "nvidia", "gemini"]
                   }
                 },
                 "required": ["provider"]
@@ -2238,7 +2293,7 @@
         },
         "tabAutocompleteModel": {
           "title": "Tab Autocomplete Model",
-          "markdownDescription": "The model used for tab autocompletion. If undefined, PearAI will default to using starcoder2:3b on a local Ollama instance.\n\n*IMPORTANT*:\n\nIf you use a custom model, ensure that it is one trained for fill-in-the-middle completions. An instruct model is typically not well-suited to autocomplete and you may receive unsatisfactory completions.",
+          "markdownDescription": "The model used for tab autocompletion. If undefined, Continue will default to using starcoder2:3b on a local Ollama instance.\n\n*IMPORTANT*:\n\nIf you use a custom model, ensure that it is one trained for fill-in-the-middle completions. An instruct model is typically not well-suited to autocomplete and you may receive unsatisfactory completions.",
           "default": {
             "title": "Tab Autocomplete Model",
             "provider": "ollama",
@@ -2259,7 +2314,7 @@
         "tabAutocompleteOptions": {
           "title": "TabAutocompleteOptions",
           "type": "object",
-          "markdownDescription": "These options let you customize your tab-autocomplete experience. Read about all options in [the docs](https://trypear.ai/docs/tab-autocomplete).",
+          "markdownDescription": "These options let you customize your tab-autocomplete experience. Read about all options in [the docs](https://docs.continue.dev/features/tab-autocomplete#configuration-options).",
           "properties": {
             "disable": {
               "type": "boolean",
@@ -2296,7 +2351,7 @@
             },
             "multilineCompletions": {
               "enum": ["always", "never", "auto"],
-              "description": "If set to true, PearAI will only complete a single line at a time."
+              "description": "If set to true, Continue will only complete a single line at a time."
             },
             "useCache": {
               "type": "boolean",
@@ -2304,11 +2359,11 @@
             },
             "onlyMyCode": {
               "type": "boolean",
-              "description": "If set to true, PearAI will not include any snippets from go to definition unless they are within your repository"
+              "description": "If set to true, Continue will not include any snippets from go to definition unless they are within your repository"
             },
             "useOtherFiles": {
               "type": "boolean",
-              "description": "Defaults to true. If set to false, PearAI will not attempt to include snippets from other files."
+              "description": "Defaults to true. If set to false, Continue will not attempt to include snippets from other files."
             },
             "disableInFiles": {
               "description": "A list of files / glob patterns in which to disable tab autocomplete. For example, *.csv if you'd like to disable autocomplete in .csv files.",
@@ -2335,6 +2390,12 @@
               "type": "boolean",
               "description": "If set to true, we will display the model output as raw markdown.",
               "default": false
+            },
+            "showChatScrollbar": {
+              "title": "Show Chat Scrollbar",
+              "markdownDescription": "If set to `true`, a scrollbar will be displayed in the chat window to navigate through messages.",
+              "default": false,
+              "type": "boolean"
             }
           }
         },
@@ -2396,16 +2457,42 @@
             "defaultContext": {
               "type": "array",
               "items": {
-                "enum": ["activeFile"]
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/ContextProviderWithParams"
+                  },
+                  {
+                    "properties": {
+                      "query": {
+                        "type": "string",
+                        "description": "Required for certain context providers, like 'url' in order to specify the input, or which of the dropdown items to select."
+                      }
+                    }
+                  }
+                ]
               }
             },
             "modelRoles": {
               "type": "object",
               "properties": {
                 "inlineEdit": {
+                  "description": "The 'title' property of the model you wish to use for inline edits",
+                  "type": "string"
+                },
+                "applyCodeBlock": {
+                  "description": "The 'title' property of the model you wish to use for applying code blocks",
+                  "type": "string"
+                },
+                "repoMapFileSelection": {
+                  "description": "The 'title' property of the model you wish to use for repo map file selections",
                   "type": "string"
                 }
               }
+            },
+            "readResponseTTS": {
+              "type": "boolean",
+              "default": true,
+              "description": "Automatically read LLM chat responses aloud using system TTS models"
             },
             "promptPath": {
               "type": "string"

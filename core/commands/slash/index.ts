@@ -8,6 +8,8 @@ import HttpSlashCommand from "./http.js";
 import ReviewMessageCommand from "./review.js";
 import ShareSlashCommand from "./share.js";
 import StackOverflowSlashCommand from "./stackOverflow.js";
+import OnboardSlashCommand from "./onboard";
+
 
 export default [
   DraftIssueCommand,
@@ -20,4 +22,5 @@ export default [
   CommitMessageCommand,
   ReviewMessageCommand,
 	ComponentMessageCommand,
+  OnboardSlashCommand,
 ];

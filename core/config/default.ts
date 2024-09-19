@@ -4,9 +4,28 @@ import {
   SerializedContinueConfig,
   SlashCommandDescription,
   CustomCommand,
-} from "../index.js";
+} from "../";
+
+export const DEFAULT_CHAT_MODEL_CONFIG: ModelDescription = {
+  model: "claude-3-5-sonnet-20240620",
+  provider: "anthropic",
+  apiKey: "",
+  title: "Claude 3.5 Sonnet",
+};
+
+export const DEFAULT_AUTOCOMPLETE_MODEL_CONFIG: ModelDescription = {
+  title: "Codestral",
+  provider: "mistral",
+  model: "codestral-latest",
+  apiKey: "",
+};
 
 export const FREE_TRIAL_MODELS: ModelDescription[] = [
+  {
+    title: "Claude 3 Sonnet (Free Trial)",
+    provider: "free-trial",
+    model: "claude-3-sonnet-20240229",
+  },
   {
     title: "GPT-4o (Free Trial)",
     provider: "free-trial",
@@ -25,11 +44,6 @@ export const FREE_TRIAL_MODELS: ModelDescription[] = [
     title: "Codestral (Free Trial)",
     provider: "free-trial",
     model: "codestral",
-  },
-  {
-    title: "Claude 3 Sonnet (Free Trial)",
-    provider: "free-trial",
-    model: "claude-3-sonnet-20240229",
   },
 ];
 
@@ -97,6 +111,7 @@ export const defaultSlashCommandsJetBrains = [
 ];
 
 export const defaultConfig: SerializedContinueConfig = {
+<<<<<<< HEAD
   models: [
     {
       model: "pearai_model",
@@ -126,6 +141,10 @@ export const defaultConfig: SerializedContinueConfig = {
       isDefault: true,
     },
   ],
+=======
+  models: [DEFAULT_CHAT_MODEL_CONFIG],
+  tabAutocompleteModel: DEFAULT_AUTOCOMPLETE_MODEL_CONFIG,
+>>>>>>> 7ceb05beb (Added squahs)
   customCommands: [
     {
       name: "test",
@@ -134,12 +153,15 @@ export const defaultConfig: SerializedContinueConfig = {
       description: "Write unit tests for highlighted code",
     },
   ],
+<<<<<<< HEAD
   // WIP: Add autocomplete by default
   // tabAutocompleteModel: {
   //   title: "PearAI Autocomplete",
   //   provider: "pearai_server",
   //   model: "pearai_autocomplete",
   // },
+=======
+>>>>>>> 7ceb05beb (Added squahs)
   contextProviders: defaultContextProvidersVsCode,
   slashCommands: defaultSlashCommandsVscode,
 };
@@ -156,7 +178,7 @@ export const defaultCustomCommands: CustomCommand[] = [
     name: "sensei",
     description:
       "Promotes learning by guiding rather than providing direct answers (good for students/beginners).",
-    prompt: `You are a senior software engineer acting as a mentor for a junior developer or student. 
+    prompt: `You are a senior software engineer acting as a mentor for a junior developer or student.
 
     This is the user's prompt:
 
@@ -175,7 +197,8 @@ Ensure your feedback is clear, constructive, and aimed at enhancing the user's u
 ];
 
 export const defaultConfigJetBrains: SerializedContinueConfig = {
-  models: FREE_TRIAL_MODELS,
+  models: [DEFAULT_CHAT_MODEL_CONFIG],
+  tabAutocompleteModel: DEFAULT_AUTOCOMPLETE_MODEL_CONFIG,
   customCommands: [
     {
       name: "test",
@@ -184,11 +207,6 @@ export const defaultConfigJetBrains: SerializedContinueConfig = {
       description: "Write unit tests for highlighted code",
     },
   ],
-  tabAutocompleteModel: {
-    title: "Starcoder2 3b",
-    provider: "ollama",
-    model: "starcoder2:3b",
-  },
   contextProviders: defaultContextProvidersJetBrains,
   slashCommands: defaultSlashCommandsJetBrains,
 };

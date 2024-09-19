@@ -54,7 +54,6 @@
     "onView:continueGUIView"
   ],
   "main": "./out/extension.js",
-  "browser": "./out/extension.js",
   "contributes": {
     "languages": [
       {
@@ -203,7 +202,7 @@
       {
         "command": "pearai.selectFilesAsContext",
         "category": "PearAI",
-        "title": "PearAI: Select Files as Context",
+        "title": "Select Files as Context",
         "group": "PearAI"
       },
       {
@@ -595,7 +594,7 @@
     "axios": "^1.2.5",
     "core": "file:../../core",
     "cors": "^2.8.5",
-    "dbinfoz": "^0.1.4",
+    "dbinfoz": "^0.11.0",
     "downshift": "^7.6.0",
     "esbuild": "^0.17.19",
     "express": "^4.18.2",

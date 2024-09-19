@@ -1,5 +1,3 @@
-import Handlebars from "handlebars";
-import { v4 as uuidv4 } from "uuid";
 import {
   BaseCompletionOptions,
   IdeSettings,
@@ -8,10 +6,12 @@ import {
   ModelDescription,
 } from "../../index.js";
 import { DEFAULT_MAX_TOKENS } from "../constants.js";
+import { renderTemplatedString } from "../../promptFiles/renderTemplatedString.js";
 import { BaseLLM } from "../index.js";
 import Anthropic from "./Anthropic.js";
 import Azure from "./Azure.js";
 import Bedrock from "./Bedrock.js";
+import BedrockImport from "./BedrockImport.js";
 import Cloudflare from "./Cloudflare.js";
 import Cohere from "./Cohere.js";
 import DeepInfra from "./DeepInfra.js";
@@ -23,19 +23,27 @@ import Gemini from "./Gemini.js";
 import Groq from "./Groq.js";
 import HuggingFaceInferenceAPI from "./HuggingFaceInferenceAPI.js";
 import HuggingFaceTGI from "./HuggingFaceTGI.js";
+import Kindo from "./Kindo.js";
 import LMStudio from "./LMStudio.js";
 import LlamaCpp from "./LlamaCpp.js";
 import Llamafile from "./Llamafile.js";
 import Mistral from "./Mistral.js";
+import Mock from "./Mock.js";
 import Msty from "./Msty.js";
+import Nvidia from "./Nvidia.js";
 import Ollama from "./Ollama.js";
 import OpenAI from "./OpenAI.js";
+import OpenRouter from "./OpenRouter.js";
 import Replicate from "./Replicate.js";
+import SageMaker from "./SageMaker.js";
+import SambaNova from "./SambaNova.js";
 import TextGenWebUI from "./TextGenWebUI.js";
 import Together from "./Together.js";
+import Vllm from "./Vllm.js";
 import WatsonX from "./WatsonX.js";
 import ContinueProxy from "./stubs/ContinueProxy.js";
 import PearAIServer from "./PearAIServer.js";
+
 
 function convertToLetter(num: number): string {
   let result = "";
@@ -68,40 +76,6 @@ const getHandlebarsVars = (
   return [value, keysToFilepath];
 };
 
-export async function renderTemplatedString(
-  template: string,
-  readFile: (filepath: string) => Promise<string>,
-  inputData: any,
-  helpers?: [string, Handlebars.HelperDelegate][],
-): Promise<string> {
-  const promises: { [key: string]: Promise<string> } = {};
-  if (helpers) {
-    for (const [name, helper] of helpers) {
-      Handlebars.registerHelper(name, (...args) => {
-        const id = uuidv4();
-        promises[id] = helper(...args);
-        return `__${id}__`;
-      });
-    }
-  }
-
-  const [newTemplate, vars] = getHandlebarsVars(template);
-  const data: any = { ...inputData };
-  for (const key in vars) {
-    const fileContents = await readFile(vars[key]);
-    data[key] = fileContents || (inputData[vars[key]] ?? vars[key]);
-  }
-  const templateFn = Handlebars.compile(newTemplate);
-  let final = templateFn(data);
-
-  await Promise.all(Object.values(promises));
-  for (const id in promises) {
-    final = final.replace(`__${id}__`, await promises[id]);
-  }
-
-  return final;
-}
-
 const LLMs = [
   Anthropic,
   Cohere,
@@ -114,11 +88,14 @@ const LLMs = [
   Together,
   HuggingFaceTGI,
   HuggingFaceInferenceAPI,
+  Kindo,
   LlamaCpp,
   OpenAI,
   LMStudio,
   Mistral,
   Bedrock,
+  BedrockImport,
+  SageMaker,
   DeepInfra,
   Flowise,
   Groq,
@@ -130,6 +107,11 @@ const LLMs = [
   Azure,
   WatsonX,
   PearAIServer,
+  OpenRouter,
+  Nvidia,
+  Vllm,
+  SambaNova,
+  Mock,
 ];
 
 export async function llmFromDescription(

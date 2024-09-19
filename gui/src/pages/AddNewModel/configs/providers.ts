@@ -19,11 +19,6 @@ export interface InputDescriptor {
   required?: boolean;
   description?: string;
   [key: string]: any;
-  // the following are used only for WatsonX provider
-  // these attributes are used to determine whether the input is used in Api Authentication or Credentials section
-  isWatsonxAuthenticatedByApiKey?: boolean;
-  isWatsonxAuthenticatedByCredentials?: boolean;
-  isWatsonxAttribute?: boolean;
 }
 
 export interface ProviderInfo {
@@ -189,7 +184,7 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
     ],
   },
   mistral: {
-    title: "Mistral API",
+    title: "Mistral",
     provider: "mistral",
     description:
       "The Mistral API provides seamless access to their models, including Codestral, Mistral 8x22B, Mistral Large, and more.",
@@ -226,7 +221,7 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
     description:
       "One of the fastest ways to get started with local models on Mac, Linux, or Windows",
     longDescription:
-      'To get started with Ollama, follow these steps:\n1. Download from [ollama.ai](https://ollama.ai/) and open the application\n2. Open a terminal and run `ollama run <MODEL_NAME>`. Example model names are `codellama:7b-instruct` or `llama2:7b-text`. You can find the full list [here](https://ollama.ai/library).\n3. Make sure that the model name used in step 2 is the same as the one in config.json (e.g. `model="codellama:7b-instruct"`)\n4. Once the model has finished downloading, you can start asking questions through Continue.',
+      'To get started with Ollama, follow these steps:\n1. Download from [ollama.ai](https://ollama.ai/download) and open the application\n2. Open a terminal and run `ollama run <MODEL_NAME>`. Example model names are `codellama:7b-instruct` or `llama2:7b-text`. You can find the full list [here](https://ollama.ai/library).\n3. Make sure that the model name used in step 2 is the same as the one in config.json (e.g. `model="codellama:7b-instruct"`)\n4. Once the model has finished downloading, you can start asking questions through Continue.',
     icon: "ollama.png",
     tags: [ModelProviderTags.Local, ModelProviderTags.OpenSource],
     packages: [
@@ -243,7 +238,7 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
       ...completionParamsInputsConfigs,
       { ...apiBaseInput, defaultValue: "http://localhost:11434" },
     ],
-    downloadUrl: "https://ollama.ai/",
+    downloadUrl: "https://ollama.ai/download",
   },
   cohere: {
     title: "Cohere",
@@ -298,7 +293,6 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
           title: "Groq",
         },
       },
-      ,
     ],
     apiKeyUrl: "https://console.groq.com/keys",
   },
@@ -326,7 +320,7 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
   together: {
     title: "TogetherAI",
     provider: "together",
-    refPage: "togetherllm",
+    refPage: "together",
     description:
       "Use the TogetherAI API for extremely fast streaming of open-source models",
     icon: "together.png",
@@ -501,73 +495,74 @@ After it's up and running, you can start using PearAI.`,
     ],
   },
   watsonx: {
-    title: "WatsonX",
+    title: "IBM watsonx",
     provider: "watsonx",
     refPage: "watsonX",
     description:
       "Explore foundation models from IBM and other third-parties depending on your use case.",
-    longDescription: `Watsonx, developed by IBM, offers a variety of pre-trained AI foundation models that can be used for natural language processing (NLP), computer vision, and speech recognition tasks.`,
+    longDescription: `**watsonx**, developed by IBM, offers a variety of pre-trained AI foundation models that can be used for natural language processing (NLP), computer vision, and speech recognition tasks.
+
+To get started, [register](https://dataplatform.cloud.ibm.com/registration/stepone?context=wx) on watsonx SaaS, create your first project and setup an [API key](https://www.ibm.com/docs/en/mas-cd/continuous-delivery?topic=cli-creating-your-cloud-api-key).`,
     collectInputFor: [
       {
         inputType: "text",
         key: "watsonxUrl",
-        label: "WatsonX URL",
-        placeholder: "http://<region>.dataplatform.cloud.ibm.com",
+        label: "watsonx URL",
+        placeholder: "e.g. http://us-south.dataplatform.cloud.ibm.com",
         required: true,
-        isWatsonxAuthenticatedByApiKey: true,
-        isWatsonxAuthenticatedByCredentials: true,
-      },
-      {
-        inputType: "text",
-        key: "watsonxApiKey",
-        label: "WatsonX API Key",
-        placeholder: "Enter your API key",
-        required: true,
-        isWatsonxAuthenticatedByApiKey: true,
       },
       {
         inputType: "text",
         key: "watsonxProjectId",
-        label: "WatsonX Project Id",
-        placeholder: "Enter your project Id",
+        label: "watsonx Project ID",
+        placeholder: "Enter your project ID",
         required: true,
-        isWatsonxAuthenticatedByApiKey: true,
-        isWatsonxAuthenticatedByCredentials: true,
       },
       {
         inputType: "text",
-        key: "watsonxUsername",
-        label: "WatsonX Username",
-        placeholder: "Enter your Username",
+        key: "watsonxCreds",
+        label: "watsonx API key",
+        placeholder: "Enter your API key (SaaS) or ZenApiKey (Software)",
         required: true,
-        isWatsonxAuthenticatedByCredentials: true,
       },
       {
         inputType: "text",
-        key: "watsonxPassword",
-        label: "WatsonX Password",
-        placeholder: "Enter your password",
-        required: true,
-        isWatsonxAuthenticatedByCredentials: true,
+        key: "watsonxApiVersion",
+        label: "watsonx API version",
+        placeholder: "Enter the API Version",
+        defaultValue: "2023-05-29",
       },
       {
         inputType: "text",
-        key: "title",
-        label: "Model name",
-        placeholder: "Granite 13B Chat v2",
-        isWatsonxAttribute: true,
+        key: "watsonxFullUrl",
+        label: "Full watsonx URL",
+        placeholder: "http://us-south.dataplatform.cloud.ibm.com/m1/v1/text/generation_stream?version=2023-05-29",
+        required: false
       },
+      // {
+      //   inputType: "text",
+      //   key: "title",
+      //   label: "Model name",
+      //   placeholder: "Granite 13B Chat v2",
+      //   isWatsonxAttribute: true,
+      // },
+      // {
+      //   inputType: "text",
+      //   key: "model",
+      //   label: "Model Id",
+      //   placeholder: "ibm/granite-13b-chat-v2",
+      //   isWatsonxAttribute: true,
+      // },
       {
         inputType: "text",
-        key: "model",
-        label: "Model Id",
-        placeholder: "ibm/granite-13b-chat-v2",
-        isWatsonxAttribute: true,
+        key: "watsonxStopToken",
+        label: "Stop Token",
+        placeholder: "<|im_end|>",
       },
 
       ...completionParamsInputsConfigs,
     ],
-    icon: "WatsonX.png",
+    icon: "watsonx.png",
     tags: [ModelProviderTags.RequiresApiKey],
     packages: [
       models.graniteCode,

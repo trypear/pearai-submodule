@@ -1,6 +1,7 @@
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { IndexingProgressUpdate } from "core";
 import { useContext, useEffect, useState, useRef } from "react";
+import { EllipsisHorizontalCircleIcon } from "@heroicons/react/24/outline";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -13,11 +14,11 @@ import {
 } from ".";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { useWebviewListener } from "../hooks/useWebviewListener";
-import { shouldBeginOnboarding } from "../pages/onboarding/utils";
 import { defaultModelSelector } from "../redux/selectors/modelSelectors";
 import {
   setBottomMessage,
   setBottomMessageCloseTimeout,
+  setOnboardingCard,
   setShowDialog,
 } from "../redux/slices/uiStateSlice";
 import { RootState } from "../redux/store";
@@ -26,10 +27,10 @@ import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 import TextDialog from "./dialogs";
 import HeaderButtonWithText from "./HeaderButtonWithText";
-import IndexingProgressBar from "./loaders/IndexingProgressBar";
 import ProgressBar from "./loaders/ProgressBar";
 import PostHogPageView from "./PosthogPageView";
 import ProfileSwitcher from "./ProfileSwitcher";
+<<<<<<< HEAD
 import ShortcutContainer from "./ShortcutContainer";
 
 // check mac or window
@@ -39,6 +40,11 @@ const isWindows = platform.includes("win");
 
 // #region Styled Components
 const HEADER_HEIGHT = "1.55rem";
+=======
+import { isNewUserOnboarding } from "./OnboardingCard/utils";
+import { useOnboardingCard } from "./OnboardingCard";
+
+>>>>>>> 7ceb05beb (Added squahs)
 const FOOTER_HEIGHT = "1.8em";
 
 const BottomMessageDiv = styled.div<{ displayOnBottom: boolean }>`
@@ -112,6 +118,7 @@ const ProfileDropdownPortalDiv = styled.div`
   font-size: ${getFontSize() - 2};
 `;
 
+<<<<<<< HEAD
 // #endregion
 
 const HIDE_FOOTER_ON_PAGES = [
@@ -122,11 +129,14 @@ const HIDE_FOOTER_ON_PAGES = [
 
 const SHOW_SHORTCUTS_ON_PAGES = ["/"];
 
+=======
+>>>>>>> 7ceb05beb (Added squahs)
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
   const ideMessenger = useContext(IdeMessengerContext);
+  const onboardingCard = useOnboardingCard();
 
   const dialogMessage = useSelector(
     (state: RootState) => state.uiState.dialogMessage,
@@ -136,7 +146,6 @@ const Layout = () => {
   );
 
   const defaultModel = useSelector(defaultModelSelector);
-  // #region Selectors
 
   const bottomMessage = useSelector(
     (state: RootState) => state.uiState.bottomMessage,
@@ -146,8 +155,6 @@ const Layout = () => {
   );
 
   const timeline = useSelector((state: RootState) => state.state.history);
-
-  // #endregion
 
   useEffect(() => {
     const handleKeyDown = (event: any) => {
@@ -194,26 +201,6 @@ const Layout = () => {
     [location, navigate],
   );
 
-  useWebviewListener("indexProgress", async (data) => {
-    setIndexingState(data);
-  });
-
-  useWebviewListener(
-    "addApiKey",
-    async () => {
-      navigate("/apiKeyOnboarding");
-    },
-    [navigate],
-  );
-
-  useWebviewListener(
-    "openOnboarding",
-    async () => {
-      navigate("/onboarding");
-    },
-    [navigate],
-  );
-
   useWebviewListener(
     "incrementFtc",
     async () => {
@@ -228,30 +215,29 @@ const Layout = () => {
   );
 
   useWebviewListener(
-    "setupLocalModel",
+    "openOnboardingCard",
     async () => {
-      ideMessenger.post("completeOnboarding", {
-        mode: "localAfterFreeTrial",
-      });
-      navigate("/localOnboarding");
+      onboardingCard.open("Best");
     },
-    [navigate],
+    [],
+  );
+
+  useWebviewListener(
+    "setupLocalConfig",
+    async () => {
+      onboardingCard.open("Local");
+    },
+    [],
   );
 
   useEffect(() => {
     if (
-      shouldBeginOnboarding() &&
+      isNewUserOnboarding() &&
       (location.pathname === "/" || location.pathname === "/index.html")
     ) {
-      navigate("/onboarding");
+      onboardingCard.open("Quickstart");
     }
   }, [location]);
-
-  const [indexingState, setIndexingState] = useState<IndexingProgressUpdate>({
-    desc: "Loading indexing config",
-    progress: 0.0,
-    status: "loading",
-  });
 
   return (
     <div>
@@ -287,35 +273,31 @@ const Layout = () => {
           <Outlet />
           <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
           <ProfileDropdownPortalDiv id="profile-select-top-div"></ProfileDropdownPortalDiv>
-          {HIDE_FOOTER_ON_PAGES.includes(location.pathname) || (
-            <Footer>
-              <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
-                {indexingState.status !== "indexing" && // Would take up too much space together with indexing progress
-                  defaultModel?.provider === "free-trial" && (
-                    <ProgressBar
-                      completed={parseInt(localStorage.getItem("ftc") || "0")}
-                      total={FREE_TRIAL_LIMIT_REQUESTS}
-                    />
-                  )}
-                <IndexingProgressBar indexingState={indexingState} />
-              </div>
+          <Footer>
+            <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
+              {defaultModel?.provider === "free-trial" && (
+                <ProgressBar
+                  completed={parseInt(localStorage.getItem("ftc") || "0")}
+                  total={FREE_TRIAL_LIMIT_REQUESTS}
+                />
+              )}
+            </div>
 
-              <ProfileSwitcher />
-              <HeaderButtonWithText
-                tooltipPlacement="top-end"
-                text="Help"
-                onClick={() => {
-                  if (location.pathname === "/help") {
-                    navigate("/");
-                  } else {
-                    navigate("/help");
-                  }
-                }}
-              >
-                <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
-              </HeaderButtonWithText>
-            </Footer>
-          )}
+            <ProfileSwitcher />
+            <HeaderButtonWithText
+              tooltipPlacement="top-end"
+              text="More"
+              onClick={() => {
+                if (location.pathname === "/help") {
+                  navigate("/");
+                } else {
+                  navigate("/help");
+                }
+              }}
+            >
+              <EllipsisHorizontalCircleIcon width="1.4em" height="1.4em" />
+            </HeaderButtonWithText>
+          </Footer>
         </GridDiv>
 
         <BottomMessageDiv

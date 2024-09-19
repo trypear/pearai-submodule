@@ -6,6 +6,24 @@
   "compounds": [],
   "configurations": [
     {
+      "name": "Launch extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/extensions/vscode",
+      "args": [
+        // Pass a directory to manually test in
+        "${workspaceFolder}/manual-testing-sandbox",
+        "${workspaceFolder}/manual-testing-sandbox/test.js",
+        "--extensionDevelopmentPath=${workspaceFolder}/extensions/vscode"
+      ],
+      "pauseForSourceMap": false,
+      "outFiles": ["${workspaceFolder}/extensions/vscode/out/extension.js"],
+      "preLaunchTask": "vscode-extension:build",
+      "env": {
+        // "CONTROL_PLANE_ENV": "local"
+      }
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Core Binary",
@@ -75,7 +93,7 @@
     },
     // Has to be run after starting the server (separately or using the compound configuration)
     {
-      "name": "Tests (VSCode)",
+      "name": "Run tests",
       "type": "extensionHost",
       "request": "launch",
       "cwd": "${workspaceFolder}/extensions/vscode",

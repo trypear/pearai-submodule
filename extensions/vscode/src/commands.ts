@@ -3,18 +3,20 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import * as vscode from "vscode";
-
 import { ContextMenuConfig, IDE } from "core";
 import { CompletionProvider } from "core/autocomplete/completionProvider";
 import { ConfigHandler } from "core/config/ConfigHandler";
 import { ContinueServerClient } from "core/continueServer/stubs/client";
 import { Core } from "core/core";
+import { walkDirAsync } from "core/indexing/walkDir";
 import { GlobalContext } from "core/util/GlobalContext";
 import { getConfigJsonPath, getDevDataFilePath } from "core/util/paths";
 import { Telemetry } from "core/util/posthog";
 import readLastLines from "read-last-lines";
 import {
   StatusBarStatus,
+  getAutocompleteStatusBarDescription,
+  getAutocompleteStatusBarTitle,
   getStatusBarStatus,
   getStatusBarStatusFromQuickPickItemLabel,
   quickPickStatusText,
@@ -25,6 +27,7 @@ import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
 import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
+import { uriFromFilePath } from "./util/vscode";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
 
@@ -329,8 +332,6 @@ const commandsMap: (
         // Handle closing the GUI only if we are focused on the input
         if (fullScreenTab) {
           fullScreenPanel?.dispose();
-        } else {
-          vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
         }
       } else {
         // Handle opening the GUI otherwise
@@ -489,11 +490,6 @@ const commandsMap: (
       //Full screen not open - open it
       captureCommandTelemetry("openFullScreen");
 
-      // Close the sidebar.webviews
-      // vscode.commands.executeCommand("workbench.action.closeSidebar");
-      vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
-      // vscode.commands.executeCommand("workbench.action.toggleZenMode");
-
       //create the full screen panel
       let panel = vscode.window.createWebviewPanel(
         "pearai.continueGUIView",
@@ -527,14 +523,32 @@ const commandsMap: (
     "pearai.openConfigJson": () => {
       ide.openFile(getConfigJsonPath());
     },
-    "pearai.selectFilesAsContext": (
+    "pearai.selectFilesAsContext": async (
       firstUri: vscode.Uri,
       uris: vscode.Uri[],
     ) => {
+      if (uris === undefined) {
+        throw new Error("No files were selected");
+      }
+
       vscode.commands.executeCommand("pearai.continueGUIView.focus");
 
       for (const uri of uris) {
-        addEntireFileToContext(uri, false, sidebar.webviewProtocol);
+        // If it's a folder, add the entire folder contents recursively by using walkDir (to ignore ignored files)
+        const isDirectory = await vscode.workspace.fs
+          .stat(uri)
+          ?.then((stat) => stat.type === vscode.FileType.Directory);
+        if (isDirectory) {
+          for await (const filepath of walkDirAsync(uri.fsPath, ide)) {
+            addEntireFileToContext(
+              uriFromFilePath(filepath),
+              false,
+              sidebar.webviewProtocol,
+            );
+          }
+        } else {
+          addEntireFileToContext(uri, false, sidebar.webviewProtocol);
+        }
       }
     },
     "pearai.logAutocompleteOutcome": (
@@ -586,15 +600,13 @@ const commandsMap: (
       const quickPick = vscode.window.createQuickPick();
       const autocompleteModels =
         (await configHandler.loadConfig())?.tabAutocompleteModels ?? [];
-      const autocompleteModelTitles = autocompleteModels
-        .map((model) => model.title)
-        .filter((t) => t !== undefined) as string[];
+
       let selected = new GlobalContext().get("selectedTabAutocompleteModel");
       if (
         !selected ||
-        !autocompleteModelTitles.some((title) => title === selected)
+        !autocompleteModels.some((model) => model.title === selected)
       ) {
-        selected = autocompleteModelTitles[0];
+        selected = autocompleteModels[0].title;
       }
 
       // Toggle between Disabled, Paused, and Enabled
@@ -610,8 +622,8 @@ const commandsMap: (
           currentStatus === StatusBarStatus.Paused
             ? StatusBarStatus.Enabled
             : currentStatus === StatusBarStatus.Disabled
-              ? StatusBarStatus.Paused
-              : StatusBarStatus.Disabled;
+            ? StatusBarStatus.Paused
+            : StatusBarStatus.Disabled;
       } else {
         // Toggle between Disabled and Enabled
         targetStatus =
@@ -633,9 +645,9 @@ const commandsMap: (
           kind: vscode.QuickPickItemKind.Separator,
           label: "Switch model",
         },
-        ...autocompleteModelTitles.map((title) => ({
-          label: title === selected ? `$(check) ${title}` : title,
-          description: title === selected ? "Currently selected" : undefined,
+        ...autocompleteModels.map((model) => ({
+          label: getAutocompleteStatusBarTitle(selected, model),
+          description: getAutocompleteStatusBarDescription(selected, model),
         })),
       ];
       quickPick.onDidAccept(() => {
@@ -654,7 +666,9 @@ const commandsMap: (
           selectedOption === "$(gear) Configure autocomplete options"
         ) {
           ide.openFile(getConfigJsonPath());
-        } else if (autocompleteModelTitles.includes(selectedOption)) {
+        } else if (
+          autocompleteModels.some((model) => model.title === selectedOption)
+        ) {
           new GlobalContext().update(
             "selectedTabAutocompleteModel",
             selectedOption,

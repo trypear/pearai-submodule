@@ -42,9 +42,11 @@ const PROVIDER_HANDLES_TEMPLATING: ModelProvider[] = [
   "msty",
   "anthropic",
   "bedrock",
+  "sagemaker",
   "continue-proxy",
   "mistral",
-  "pearai_server"
+  "pearai_server",
+  "sambanova",
 ];
 
 const PROVIDER_SUPPORTS_IMAGES: ModelProvider[] = [
@@ -55,6 +57,7 @@ const PROVIDER_SUPPORTS_IMAGES: ModelProvider[] = [
   "msty",
   "anthropic",
   "bedrock",
+  "sagemaker",
   "continue-proxy",
   "pearai_server",
 ];
@@ -81,7 +84,7 @@ function modelSupportsImages(
   title: string | undefined,
   capabilities: ModelCapability | undefined
 ): boolean {
-  if (capabilities?.uploadImage !== undefined) return capabilities.uploadImage
+  if (capabilities?.uploadImage !== undefined) {return capabilities.uploadImage;}
   if (!PROVIDER_SUPPORTS_IMAGES.includes(provider)) {
     return false;
   }
@@ -100,6 +103,7 @@ function modelSupportsImages(
 const PARALLEL_PROVIDERS: ModelProvider[] = [
   "anthropic",
   "bedrock",
+  "sagemaker",
   "deepinfra",
   "gemini",
   "huggingface-inference-api",
@@ -108,6 +112,7 @@ const PARALLEL_PROVIDERS: ModelProvider[] = [
   "free-trial",
   "replicate",
   "together",
+  "sambanova",
 ];
 
 function llmCanGenerateInParallel(

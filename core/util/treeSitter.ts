@@ -35,7 +35,7 @@ export const supportedLanguages: { [key: string]: string } = {
   mts: "typescript",
   cts: "typescript",
   tsx: "tsx",
-  vue: "vue",
+  // vue: "vue",  // tree-sitter-vue parser is broken
   // The .wasm file being used is faulty, and yaml is split line-by-line anyway for the most part
   // yaml: "yaml",
   // yml: "yaml",
@@ -84,11 +84,15 @@ export async function getParserForFile(filepath: string) {
     const parser = new Parser();
 
     const language = await getLanguageForFile(filepath);
+    if (!language) {
+      return undefined;
+    }
+
     parser.setLanguage(language);
 
     return parser;
   } catch (e) {
-    console.error("Unable to load language for file", filepath, e);
+    console.debug("Unable to load language for file", filepath, e);
     return undefined;
   }
 }
@@ -116,7 +120,7 @@ export async function getLanguageForFile(
     }
     return language;
   } catch (e) {
-    console.error("Unable to load language for file", filepath, e);
+    console.debug("Unable to load language for file", filepath, e);
     return undefined;
   }
 }

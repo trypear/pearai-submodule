@@ -4,6 +4,7 @@ import {
   ContextProviderExtras,
 } from "../../index.js";
 import TransformersJsEmbeddingsProvider from "../../indexing/embeddings/TransformersJsEmbeddingsProvider.js";
+import { resolveRelativePathInWorkspace } from "../../util/ideUtils.js";
 import { getRelativePath } from "../../util/index.js";
 import { RetrievalPipelineOptions } from "./pipelines/BaseRetrievalPipeline.js";
 import NoRerankerRetrievalPipeline from "./pipelines/NoRerankerRetrievalPipeline.js";
@@ -66,15 +67,24 @@ export async function retrieveContextItemsFromEmbeddings(
     ? RerankerRetrievalPipeline
     : NoRerankerRetrievalPipeline;
 
+  if (filterDirectory) {
+    // Handle relative paths
+    filterDirectory = await resolveRelativePathInWorkspace(
+      filterDirectory,
+      extras.ide,
+    );
+  }
+
   const pipelineOptions: RetrievalPipelineOptions = {
     nFinal,
     nRetrieve,
     tags,
-    embeddingsProvider: extras.embeddingsProvider,
-    reranker: extras.reranker,
+    pathSep: await extras.ide.pathSep(),
     filterDirectory,
     ide: extras.ide,
     input: extras.fullInput,
+    llm: extras.llm,
+    config: extras.config,
   };
 
   const pipeline = new pipelineType(pipelineOptions);

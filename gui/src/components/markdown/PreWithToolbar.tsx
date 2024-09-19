@@ -26,10 +26,7 @@ function childrenToText(children: any): string {
     : childToText(children);
 }
 
-function PreWithToolbar(props: {
-  children: any;
-  language: string | undefined;
-}) {
+function PreWithToolbar(props: { children: any; language: string | null }) {
   const uiConfig = useUIConfig();
   const toolbarBottom = uiConfig?.codeBlockToolbarPosition == "bottom";
 

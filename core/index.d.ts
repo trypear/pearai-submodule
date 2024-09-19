@@ -1,3 +1,5 @@
+import { GetGhTokenArgs } from "./protocol/ide";
+
 declare global {
   interface Window {
     ide?: "vscode";
@@ -25,6 +27,7 @@ export interface ChunkWithoutID {
   content: string;
   startLine: number;
   endLine: number;
+  signature?: string;
   otherMetadata?: { [key: string]: any };
 }
 
@@ -37,7 +40,9 @@ export interface Chunk extends ChunkWithoutID {
 export interface IndexingProgressUpdate {
   progress: number;
   desc: string;
+  shouldClearIndexes?: boolean;
   status: "loading" | "indexing" | "done" | "failed" | "paused" | "disabled";
+  debugInfo?: string;
 }
 
 export type PromptTemplate =
@@ -56,6 +61,7 @@ export interface ILLM extends LLMOptions {
   title?: string;
   systemMessage?: string;
   contextLength: number;
+  maxStopWords?: number;
   completionOptions: CompletionOptions;
   requestOptions?: RequestOptions;
   promptTemplates?: Record<string, PromptTemplate>;
@@ -118,11 +124,12 @@ export interface ILLM extends LLMOptions {
 export type ContextProviderType = "normal" | "query" | "submenu";
 
 export interface ContextProviderDescription {
-  title: string;
+  title: ContextProviderName;
   displayTitle: string;
   description: string;
   renderInlineAs?: string;
   type: ContextProviderType;
+  dependsOnIndexing?: boolean;
 }
 
 export type FetchFunction = (url: string | URL, init?: any) => Promise<any>;
@@ -290,6 +297,7 @@ export interface InputModifiers {
 }
 
 export interface PromptLog {
+  modelTitle: string;
   completionOptions: CompletionOptions;
   prompt: string;
   completion: string;
@@ -312,6 +320,9 @@ export interface LLMFullCompletionOptions extends BaseCompletionOptions {
 
   model?: string;
 }
+
+export type ToastType = "info" | "error" | "warning";
+
 export interface LLMOptions {
   model: string;
 
@@ -319,6 +330,7 @@ export interface LLMOptions {
   uniqueId?: string;
   systemMessage?: string;
   contextLength?: number;
+  maxStopWords?: number;
   completionOptions?: CompletionOptions;
   requestOptions?: RequestOptions;
   template?: TemplateType;
@@ -342,18 +354,26 @@ export interface LLMOptions {
   apiVersion?: string;
   apiType?: string;
 
-  // GCP Options
+  // AWS options
+  profile?: string;
+  modelArn?: string;
+
+  // AWS and GCP Options
   region?: string;
+
+  // GCP Options
   projectId?: string;
   capabilities?: ModelCapability;
 
-  // WatsonX options
+  // IBM watsonx options
   watsonxUrl?: string;
-  watsonxApiKey?: string;
-  watsonxZenApiKeyBase64?: string; // Required if using watsonx software with ZenApiKey auth
-  watsonxUsername?: string;
-  watsonxPassword?: string;
+  watsonxCreds?: string;
   watsonxProjectId?: string;
+  watsonxStopToken?: string;
+  watsonxApiVersion?: string;
+  watsonxFullUrl?: string;
+
+  cacheSystemMessage?: boolean;
 }
 type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
   T,
@@ -489,13 +509,15 @@ export interface IDE {
   getBranch(dir: string): Promise<string>;
   getTags(artifactId: string): Promise<IndexTag[]>;
   getRepoName(dir: string): Promise<string | undefined>;
-  errorPopup(message: string): Promise<void>;
-  infoPopup(message: string): Promise<void>;
-
+  showToast(
+    type: ToastType,
+    message: string,
+    ...otherParams: any[]
+  ): Promise<any>;
   getGitRootPath(dir: string): Promise<string | undefined>;
   listDir(dir: string): Promise<[string, FileType][]>;
   getLastModified(files: string[]): Promise<{ [path: string]: number }>;
-  getGitHubAuthToken(): Promise<string | undefined>;
+  getGitHubAuthToken(args: GetGhTokenArgs): Promise<string | undefined>;
 
   // LSP
   gotoDefinition(location: Location): Promise<RangeInFile[]>;
@@ -561,7 +583,15 @@ type ContextProviderName =
   | "docs"
   | "gitlab-mr"
   | "os"
-  | "currentFile";
+  | "currentFile"
+  | "outline"
+  | "continue-proxy"
+  | "highlights"
+  | "file"
+  | "issue"
+  | "repo-map"
+  | "url"
+  | string;
 
 type TemplateType =
   | "llama2"
@@ -590,6 +620,7 @@ type ModelProvider =
   | "ollama"
   | "huggingface-tgi"
   | "huggingface-inference-api"
+  | "kindo"
   | "llama.cpp"
   | "replicate"
   | "text-gen-webui"
@@ -598,6 +629,8 @@ type ModelProvider =
   | "gemini"
   | "mistral"
   | "bedrock"
+  | "bedrockimport"
+  | "sagemaker"
   | "deepinfra"
   | "flowise"
   | "groq"
@@ -611,7 +644,12 @@ type ModelProvider =
   | "msty"
   | "watsonx"
   | "pearai_server"
-  | "other";
+  | "other"
+  | "openrouter"
+  | "sambanova"
+  | "nvidia"
+  | "vllm"
+  | "mock";
 
 export type ModelName =
   | "AUTODETECT"
@@ -635,6 +673,10 @@ export type ModelName =
   | "mistral-large-latest"
   | "mistral-7b"
   | "mistral-8x7b"
+  | "mistral-tiny"
+  | "mistral-small"
+  | "mistral-medium"
+  | "mistral-embed"
   // Llama 2
   | "llama2-7b"
   | "llama2-13b"
@@ -673,10 +715,6 @@ export type ModelName =
   | "gemini-1.5-pro"
   | "gemini-1.5-flash-latest"
   | "gemini-1.5-flash"
-  // Mistral
-  | "mistral-tiny"
-  | "mistral-small"
-  | "mistral-medium"
   // Tab autocomplete
   | "deepseek-1b"
   | "starcoder-1b"
@@ -751,6 +789,7 @@ export interface ModelDescription {
   apiKey?: string;
   apiBase?: string;
   contextLength?: number;
+  maxStopWords?: number;
   template?: TemplateType;
   completionOptions?: BaseCompletionOptions;
   systemMessage?: string;
@@ -761,6 +800,7 @@ export interface ModelDescription {
 }
 
 export type EmbeddingsProviderName =
+  | "bedrock"
   | "huggingface-tei"
   | "transformers.js"
   | "ollama"
@@ -769,7 +809,10 @@ export type EmbeddingsProviderName =
   | "free-trial"
   | "gemini"
   | "continue-proxy"
-  | "deepinfra";
+  | "deepinfra"
+  | "nvidia"
+  | "voyage"
+  | "mistral";
 
 export interface EmbedOptions {
   apiBase?: string;
@@ -780,6 +823,12 @@ export interface EmbedOptions {
   apiVersion?: string;
   requestOptions?: RequestOptions;
   maxChunkSize?: number;
+  maxBatchSize?: number;
+  // AWS options
+  profile?: string;
+
+  // AWS and GCP Options
+  region?: string;
 }
 
 export interface EmbeddingsProviderDescription extends EmbedOptions {
@@ -838,6 +887,7 @@ export interface ContinueUIConfig {
   codeBlockToolbarPosition?: "top" | "bottom";
   fontSize?: number;
   displayRawMarkdown?: boolean;
+  showChatScrollbar?: boolean;
 }
 
 interface ContextMenuConfig {
@@ -851,6 +901,7 @@ interface ContextMenuConfig {
 interface ModelRoles {
   inlineEdit?: string;
   applyCodeBlock?: string;
+  repoMapFileSelection?: string;
 }
 
 /**
@@ -878,10 +929,14 @@ interface QuickActionConfig {
   sendToChat: boolean;
 }
 
+export type DefaultContextProvider = ContextProviderWithParams & {
+  query?: string;
+};
+
 interface ExperimentalConfig {
   contextMenuPrompts?: ContextMenuConfig;
   modelRoles?: ModelRoles;
-  defaultContext?: "activeFile"[];
+  defaultContext?: DefaultContextProvider[];
   promptPath?: string;
 
   /**
@@ -889,6 +944,18 @@ interface ExperimentalConfig {
    * function and class declarations.
    */
   quickActions?: QuickActionConfig[];
+
+  /**
+   * Automatically read LLM chat responses aloud using system TTS models
+   */
+  readResponseTTS?: boolean;
+
+  /**
+   * If set to true, we will attempt to pull down and install an instance of Chromium
+   * that is compatible with the current version of Puppeteer.
+   * This is needed to crawl a large number of documentation sites that are dynamically rendered.
+   */
+  useChromiumForDocsCrawling?: boolean;
 }
 
 interface AnalyticsConfig {

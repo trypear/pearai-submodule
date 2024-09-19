@@ -39,6 +39,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setInactive: [undefined, void];
+  setTTSActive: [boolean, void];
   submitMessage: [{ message: any }, void]; // any -> JSONContent from TipTap
   updateSubmenuItems: [
     { provider: string; submenuItems: ContextSubmenuItem[] },
@@ -66,7 +67,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setColors: [{ [key: string]: string }, void];
   "jetbrains/editorInsetRefresh": [undefined, void];
   addApiKey: [undefined, void];
-  setupLocalModel: [undefined, void];
+  setupLocalConfig: [undefined, void];
   incrementFtc: [undefined, void];
-  openOnboarding: [undefined, void];
+  openOnboardingCard: [undefined, void];
 };

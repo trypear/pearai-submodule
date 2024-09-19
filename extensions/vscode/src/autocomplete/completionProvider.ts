@@ -8,6 +8,8 @@ import { ConfigHandler } from "core/config/ConfigHandler";
 import { v4 as uuidv4 } from "uuid";
 import * as vscode from "vscode";
 import type { TabAutocompleteModel } from "../util/loadAutocompleteModel";
+import { showFreeTrialLoginMessage } from "../util/messages";
+import { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { getDefinitionsFromLsp } from "./lsp";
 import { RecentlyEditedTracker } from "./recentlyEdited";
 import {
@@ -39,7 +41,7 @@ export class ContinueCompletionProvider
           ),
         );
       } else if (val === "Download Ollama") {
-        vscode.env.openExternal(vscode.Uri.parse("https://ollama.ai"));
+        vscode.env.openExternal(vscode.Uri.parse("https://ollama.ai/download"));
       }
     });
   }
@@ -51,6 +53,7 @@ export class ContinueCompletionProvider
     private readonly configHandler: ConfigHandler,
     private readonly ide: IDE,
     private readonly tabAutocompleteModel: TabAutocompleteModel,
+    private readonly webviewProtocol: VsCodeWebviewProtocol,
   ) {
     this.completionProvider = new CompletionProvider(
       this.configHandler,

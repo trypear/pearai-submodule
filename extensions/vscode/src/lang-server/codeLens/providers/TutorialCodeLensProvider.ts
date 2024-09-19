@@ -56,7 +56,7 @@ const actions: TutorialCodeLensItems[] = [
         title: "Run the file",
         command: "pearai.sendToTerminal",
         arguments: [
-          `python ${path.join(
+          `python "${path.join(
             getExtensionUri().fsPath,
             "pearai_tutorial.py",
           )}\n`,

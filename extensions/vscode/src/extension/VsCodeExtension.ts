@@ -15,10 +15,8 @@ import {
 } from "../autocomplete/statusBar";
 import { registerAllCommands } from "../commands";
 import { ContinueGUIWebviewViewProvider } from "../ContinueGUIWebviewViewProvider";
-import { registerDebugTracker } from "../debug/debug";
 import { DiffManager } from "../diff/horizontal";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
-import { VsCodeIde } from "../ideProtocol";
 import { registerAllCodeLensProviders } from "../lang-server/codeLens";
 import { QuickEdit } from "../quickEdit/QuickEditQuickPick";
 import { setupRemoteConfigSync } from "../stubs/activation";
@@ -28,6 +26,7 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { Battery } from "../util/battery";
 import { TabAutocompleteModel } from "../util/loadAutocompleteModel";
+import { VsCodeIde } from "../VsCodeIde";
 import type { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { VsCodeMessenger } from "./VsCodeMessenger";
 
@@ -202,6 +201,7 @@ export class VsCodeExtension {
           this.configHandler,
           this.ide,
           this.tabAutocompleteModel,
+          this.sidebar.webviewProtocol,
         ),
       ),
     );
@@ -234,7 +234,8 @@ export class VsCodeExtension {
       this.core,
     );
 
-    registerDebugTracker(this.sidebar.webviewProtocol, this.ide);
+    // Disabled due to performance issues
+    // registerDebugTracker(this.sidebar.webviewProtocol, this.ide);
 
     // Listen for file saving - use global file watcher so that changes
     // from outside the window are also caught
@@ -272,6 +273,7 @@ export class VsCodeExtension {
           "showConfigUpdateToast",
           true,
         );
+
         if (showToast) {
           vscode.window
             .showInformationMessage("Config updated", "Don't show again")
@@ -299,9 +301,6 @@ export class VsCodeExtension {
         const indexer = await this.core.codebaseIndexerPromise;
         indexer.refreshFile(filepath);
       }
-
-      // Reindex the workspaces
-      this.core.invoke("index/forceReIndex", undefined);
     });
 
     // When GitHub sign-in status changes, reload config
@@ -336,7 +335,7 @@ export class VsCodeExtension {
                   currentBranch !== this.PREVIOUS_BRANCH_FOR_WORKSPACE_DIR[dir]
                 ) {
                   // Trigger refresh of index only in this directory
-                  this.core.invoke("index/forceReIndex", dir);
+                  this.core.invoke("index/forceReIndex", { dir });
                 }
               }
 
