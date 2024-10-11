@@ -29,6 +29,8 @@ import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
+import * as cp from 'child_process';
+
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
 
@@ -162,6 +164,44 @@ async function addEntireFileToContext(
   });
 }
 
+function executeInteractiveCommandInvisibly(command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const child = cp.spawn(command, [], { shell: true, stdio: ['pipe', 'pipe', 'pipe'] });
+    let output = '';
+
+    child.stdout.on('data', (data) => {
+      output += data.toString();
+      // Automatically respond 'Y' to any prompt
+      child.stdin.write('Y\n');
+    });
+
+    child.stderr.on('data', (data) => {
+      output += data.toString();
+      // Automatically respond 'Y' to any prompt, even on stderr
+      child.stdin.write('Y\n');
+    });
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve(output);
+      } else {
+        reject(`Command exited with code ${code}`);
+      }
+    });
+
+    child.on('error', (error) => {
+      reject(`Error: ${error.message}`);
+    });
+  });
+}
+
+function updateChatBox(text: string, webviewProtocol: VsCodeWebviewProtocol | undefined) {
+  // Update the chat box UI with the new text
+  webviewProtocol?.request("userInput", {
+    input: `Received from invisible terminal: ${text}`,
+  });
+}
+
 // Copy everything over from extension.ts
 const commandsMap: (
   ide: IDE,
@@ -226,6 +266,14 @@ const commandsMap: (
   }
 
   return {
+    "pearai.sendHiToInvisibleTerminal": async () => {
+      try {
+        const output = await executeInteractiveCommandInvisibly("echo hi");
+        updateChatBox(output, sidebar.webviewProtocol);
+      } catch (error) {
+        vscode.window.showErrorMessage(`Error: ${error}`);
+      }
+    },
     "pearai.openPearAiWelcome": async () => {
       vscode.commands.executeCommand(
         "markdown.showPreview",
@@ -769,7 +817,7 @@ const commandsMap: (
         vscode.window.showWarningMessage("WSL is for Windows only.");
         return;
       }
-      
+
       const wslExtension = vscode.extensions.getExtension('ms-vscode-remote.remote-wsl');
 
       if (!wslExtension) {
@@ -796,7 +844,7 @@ const commandsMap: (
         );
         PEAR_COMMIT_ID = productJson.commit;
         VSC_COMMIT_ID = productJson.VSCodeCommit;
-        // testing commit ids - its for VSC version 1.89 most probably. 
+        // testing commit ids - its for VSC version 1.89 most probably.
         // VSC_COMMIT_ID = "4849ca9bdf9666755eb463db297b69e5385090e3";
         // PEAR_COMMIT_ID="58996b5e761a7fe74bdfb4ac468e4b91d4d27294";
         vscode.window.showInformationMessage(`VSC commit: ${VSC_COMMIT_ID}`);

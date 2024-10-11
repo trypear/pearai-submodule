@@ -128,6 +128,12 @@
     },
     "commands": [
       {
+        "command": "pearai.sendHiToInvisibleTerminal",
+        "category": "PearAI",
+        "title": "Send 'hi' to Invisible Terminal",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.acceptDiff",
         "category": "PearAI",
         "title": "Accept Diff",
