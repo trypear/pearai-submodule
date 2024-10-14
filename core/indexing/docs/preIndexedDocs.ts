@@ -66,6 +66,13 @@ const preIndexedDocs: Record<
     rootUrl: "https://axios-http.com/docs",
     faviconUrl: "https://axios-http.com/favicon.ico",
   },
+  "https://threejs.org/docs/index.html": {
+    title: "ThreeJS",
+    startUrl:
+      "https://threejs.org/docs/index.html#manual/en/introduction/Creating-a-scene",
+    rootUrl: "https://threejs.org/docs/",
+    faviconUrl: "https://threejs.org/favicon.ico",
+  },
   "https://redwoodjs.com/docs/introduction": {
     title: "Redwood JS",
     startUrl: "https://redwoodjs.com/docs/introduction",
