@@ -189,6 +189,7 @@
             "azure",
             "msty",
             "watsonx",
+            "openrouter",
             "pearai_server"
           ],
           "markdownEnumDescriptions": [
@@ -214,7 +215,8 @@
             "### Deepseek\n Deepseek's API provides the best pricing for their state-of-the-art Deepseek Coder models. To get started, obtain an API key from [their console](https://platform.deepseek.com/api_keys)",
             "### Azure OpenAI\n Azure OpenAI lets you securely run OpenAI's models on Azure. To get started, follow the steps [here](https://trypear.ai/reference/Model%20Providers/azure)",
             "### Msty\nMsty is the simplest way to get started with online or local LLMs on all desktop platforms - Windows, Mac, and Linux. No fussing around, one-click and you are up and running. To get started, follow these steps:\n1. Download from [Msty.app](https://msty.app/), open the application, and click 'Setup Local AI'.\n2. Go to the Local AI Module page and download a model of your choice.\n3. Once the model has finished downloading, you can start asking questions through Continue.\n> [Reference](https://pearai.dev/docs/reference/Model%20Providers/Msty)",
-            "### WatsonX\nWatsonx, developed by IBM, offers a variety of pre-trained AI foundation models that can be used for natural language processing (NLP), computer vision, and speech recognition tasks."
+            "### WatsonX\nWatsonx, developed by IBM, offers a variety of pre-trained AI foundation models that can be used for natural language processing (NLP), computer vision, and speech recognition tasks.",
+            "### OpenRouter\nOpenRouter: A unified interface for LLMs. Find the best models & prices for your prompts. [Reference](https://openrouter.ai/models)",
           ],
           "type": "string"
         },
@@ -225,7 +227,7 @@
         },
         "apiKey": {
           "title": "Api Key",
-          "description": "OpenAI, Anthropic, Cohere, Together, or other API key",
+          "description": "OpenAI, Anthropic, Cohere, Together, OpenRouter or other API key",
           "type": "string"
         },
         "apiBase": {
@@ -369,7 +371,8 @@
                   "huggingface-inference-api",
                   "replicate",
                   "together",
-                  "cloudflare"
+                  "cloudflare",
+                  "openrouter"
                 ]
               }
             },
