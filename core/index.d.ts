@@ -611,6 +611,7 @@ type ModelProvider =
   | "msty"
   | "watsonx"
   | "pearai_server"
+  | "openrouter"
   | "other";
 
 export type ModelName =
