@@ -86,10 +86,12 @@ function TableRow({
   session,
   date,
   onDelete,
+  isSelected,
 }: {
   session: SessionInfo;
   date: Date;
   onDelete: (sessionId: string) => void;
+  isSelected: boolean;
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -123,6 +125,7 @@ function TableRow({
     <td
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      style={isSelected ? { backgroundColor: vscBadgeBackground } : {}}
     >
       <div className="flex justify-between items-center w-full">
         <TdDiv
@@ -219,7 +222,7 @@ function History() {
   const [headerHeight, setHeaderHeight] = useState(0);
 
   const dispatch = useDispatch();
-  const { getHistory } = useHistory(dispatch);
+  const { getHistory, loadSession, saveSession } = useHistory(dispatch);
 
   const [minisearch, setMinisearch] = useState<
     MiniSearch<{ title: string; sessionId: string }>
@@ -230,6 +233,32 @@ function History() {
     }),
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((prev) =>
+        Math.min(prev + 1, filteredAndSortedSessions.length - 1),
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((prev) => Math.max(prev - 1, 0));
+    } else if (e.key === "Enter" && selectedIndex !== -1) {
+      e.preventDefault();
+      const selectedSession = filteredAndSortedSessions[selectedIndex];
+      saveSession();
+      loadSession(selectedSession.sessionId);
+      navigate("/");
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedIndex, filteredAndSortedSessions]);
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -287,7 +316,12 @@ function History() {
   const earlier = new Date(0);
 
   return (
-    <div className="overflow-y-scroll" style={{ fontSize: getFontSize() }}>
+    <div
+      className="overflow-y-scroll"
+      style={{ fontSize: getFontSize() }}
+      tabIndex={0}
+      onFocus={() => setSelectedIndex(0)}
+    >
       <div
         ref={stickyHistoryHeaderRef}
         className="sticky top-0"
@@ -362,11 +396,19 @@ function History() {
                       </SectionHeader>
                     )}
 
-                  <Tr key={index}>
+                  <Tr
+                    key={index}
+                    style={
+                      index === selectedIndex
+                        ? { backgroundColor: vscBadgeBackground }
+                        : {}
+                    }
+                  >
                     <TableRow
                       session={session}
                       date={date}
                       onDelete={() => deleteSessionInUI(session.sessionId)}
+                      isSelected={index === selectedIndex}
                     ></TableRow>
                   </Tr>
                 </Fragment>
