@@ -41,7 +41,7 @@ import {
 import CompletionOptionsForModels from "./templates/options.js";
 import { stripImages } from "./images.js";
 import { SERVER_URL } from "../util/parameters";
-
+import { getHeaders } from "../pearaiServer/stubs/headers";
 
 export abstract class BaseLLM implements ILLM {
   static providerName: ModelProvider;
@@ -527,18 +527,24 @@ ${prompt}`;
     options: LLMFullCompletionOptions = {},
   ): AsyncGenerator<ChatMessage, PromptLog> {
 
-
     const { completionOptions, log, raw } =
       this._parseCompletionOptions(options);
 
     const messages = this._compileChatMessages(completionOptions, _messages);
 
-    await this.fetch(`${SERVER_URL}/telemetry?model=${encodeURIComponent(completionOptions.model || '')}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+
+    // Todo: Privacy Policy . We only send this anonymous data to our servers to help us improve the product and check for upstream security issues.
+    if (Telemetry.allow) {
+      const baseHeaders = await getHeaders();
+      await this.fetch(`${SERVER_URL}/telemetry`, {
+        method: "GET",
+        headers: {
+          ...baseHeaders,
+          "Content-Type": "application/json",
+          model: completionOptions.model || '',
+        },
+      });
+    }
 
     const prompt = this.templateMessages
       ? this.templateMessages(messages)
