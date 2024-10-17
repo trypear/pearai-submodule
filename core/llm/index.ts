@@ -40,6 +40,9 @@ import {
 } from "./countTokens.js";
 import CompletionOptionsForModels from "./templates/options.js";
 import { stripImages } from "./images.js";
+import { SERVER_URL } from "../util/parameters";
+import { anonymousTelemetryLog } from "../pearaiServer/util.js";
+
 
 export abstract class BaseLLM implements ILLM {
   static providerName: ModelProvider;
@@ -524,10 +527,16 @@ ${prompt}`;
     _messages: ChatMessage[],
     options: LLMFullCompletionOptions = {},
   ): AsyncGenerator<ChatMessage, PromptLog> {
+
     const { completionOptions, log, raw } =
       this._parseCompletionOptions(options);
 
     const messages = this._compileChatMessages(completionOptions, _messages);
+
+    // Privacy Policy: https://trypear.ai/privacy - We only send this anonymous data to our servers to help us improve the product and check for upstream security issues.
+    if (Telemetry.allow) {
+      await anonymousTelemetryLog("streamChat", completionOptions);
+    }
 
     const prompt = this.templateMessages
       ? this.templateMessages(messages)
