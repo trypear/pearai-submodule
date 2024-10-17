@@ -40,6 +40,8 @@ import {
 } from "./countTokens.js";
 import CompletionOptionsForModels from "./templates/options.js";
 import { stripImages } from "./images.js";
+import { SERVER_URL } from "../util/parameters";
+
 
 export abstract class BaseLLM implements ILLM {
   static providerName: ModelProvider;
@@ -524,10 +526,19 @@ ${prompt}`;
     _messages: ChatMessage[],
     options: LLMFullCompletionOptions = {},
   ): AsyncGenerator<ChatMessage, PromptLog> {
+
+
     const { completionOptions, log, raw } =
       this._parseCompletionOptions(options);
 
     const messages = this._compileChatMessages(completionOptions, _messages);
+
+    await this.fetch(`${SERVER_URL}/telemetry?model=${encodeURIComponent(completionOptions.model || '')}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
     const prompt = this.templateMessages
       ? this.templateMessages(messages)
@@ -540,6 +551,8 @@ ${prompt}`;
         this.llmRequestHook(completionOptions.model, prompt);
       }
     }
+
+
 
     let completion = "";
 
