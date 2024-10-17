@@ -545,6 +545,14 @@ function GUI() {
               >
                 New Session ({getMetaKeyLabel()} {isJetBrains() ? "J" : "L"})
               </NewSessionButton>{" "}
+              <NewSessionButton
+                onClick={() => {
+                  ideMessenger.post("aidermode", undefined);
+                }}
+                className="mr-auto"
+              >
+                aider mode
+              </NewSessionButton>{" "}
             </div>
           ) : (
             <>

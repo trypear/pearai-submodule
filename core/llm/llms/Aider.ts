@@ -51,7 +51,8 @@ class Aider extends BaseLLM {
       options.setCredentials || (async () => {}),
     );
     console.log("Aider constructor called");
-    this.startAiderChat(this.model, this.apiKey);
+    this.startAiderChat("claude-3-5-sonnet-20240620", this.apiKey);
+    // this.startAiderChat(this.model, this.apiKey);
   }
 
   public setPearAIAccessToken(value: string | undefined): void {
@@ -90,14 +91,20 @@ class Aider extends BaseLLM {
     }
   }
 
+  private async _getHeaders() {
+    await this.credentials.checkAndUpdateCredentials();
+    return {
+      "Content-Type": "application/json",
+      ...(await getHeaders()),
+    };
+  }
+
   private captureAiderOutput(data: Buffer): void {
     const output = data.toString();
-    console.log("Raw Aider output:", JSON.stringify(output));
+    console.log("Raw Aider output:", output);
 
     // Remove ANSI escape codes
-    let cleanOutput = output.replace(/\x1B\[[0-9;]*[JKmsu]/g, '');
-    // cleanOutput = output.replace('\n', '\n\n');
-    console.log("Cleaned Aider output:", JSON.stringify(output));
+    const cleanOutput = output.replace(/\x1B\[[0-9;]*[JKmsu]/g, '');
 
     // Preserve line breaks
     this.aiderOutput += cleanOutput;
@@ -116,8 +123,6 @@ class Aider extends BaseLLM {
       }
 
       let command: string[];
-
-      console.log("Model:", model);
 
       switch (model) {
         case "claude-3-5-sonnet-20240620":
@@ -329,9 +334,8 @@ class Aider extends BaseLLM {
     let lastProcessedIndex = 0;
     let responseComplete = false;
 
-    // const END_MARKER =
-    //   /Tokens:\s*([\d\.kM]+)\s*sent,\s*([\d\.kM]+)\s*received\.\s*Cost:\s*\$?([\d\.]+)\s*message,\s*\$?([\d\.]+)\s*session\./;
-    const END_MARKER = '\n> ';
+    const END_MARKER = IS_WINDOWS ? '\r\n> ' : '\n> ';
+
 
     const escapeDollarSigns = (text: string | undefined) => {
       if (!text) return "Aider response over";
@@ -340,7 +344,6 @@ class Aider extends BaseLLM {
 
     while (!responseComplete) {
       await new Promise((resolve) => setTimeout(resolve, 100));
-
       const newOutput = this.aiderOutput.slice(lastProcessedIndex);
       if (newOutput) {
         // newOutput = escapeDollarSigns(newOutput);
