@@ -550,8 +550,6 @@ ${prompt}`;
       }
     }
 
-
-
     let completion = "";
 
     try {
