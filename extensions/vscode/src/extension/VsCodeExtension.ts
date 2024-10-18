@@ -41,6 +41,7 @@ export class VsCodeExtension {
   private ide: VsCodeIde;
   private tabAutocompleteModel: TabAutocompleteModel;
   private sidebar: ContinueGUIWebviewViewProvider;
+  private sidebar2: ContinueGUIWebviewViewProvider;
   private windowId: string;
   private diffManager: DiffManager;
   private verticalDiffManager: VerticalPerLineDiffManager;
@@ -83,10 +84,31 @@ export class VsCodeExtension {
       this.extensionContext,
     );
 
+    this.sidebar2 = new ContinueGUIWebviewViewProvider(
+      configHandlerPromise,
+      this.windowId,
+      this.extensionContext,
+    );
+
+    // COMMENTING OUT SIDEBAR WILL MAKE OVERLAY WORK,
+    // COMMENTING OUT OVERLAY WILL MAKE SIDEBAR WORK.
+    // KEEPING BOTH WILL MAKE BOTH APPEAR ON UI. BUT ONLY SIDEBAR WILL HAVE FUNCTIONALITY.
+
     // Sidebar
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         "pearai.continueGUIView",
+        this.sidebar2,
+        {
+          webviewOptions: { retainContextWhenHidden: true },
+        },
+      ),
+    );
+
+    // Register PearAI overlay
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        "pearai.overlayWebview3",
         this.sidebar,
         {
           webviewOptions: { retainContextWhenHidden: true },
@@ -94,11 +116,10 @@ export class VsCodeExtension {
       ),
     );
     resolveWebviewProtocol(this.sidebar.webviewProtocol);
+    resolveWebviewProtocol(this.sidebar2.webviewProtocol);
 
     // Config Handler with output channel
-    const outputChannel = vscode.window.createOutputChannel(
-      "PearAI",
-    );
+    const outputChannel = vscode.window.createOutputChannel("PearAI");
     const inProcessMessenger = new InProcessMessenger<
       ToCoreProtocol,
       FromCoreProtocol
@@ -249,15 +270,20 @@ export class VsCodeExtension {
     });
 
     // Create a file system watcher
-    const watcher = vscode.workspace.createFileSystemWatcher('**/*', false, false, false);
+    const watcher = vscode.workspace.createFileSystemWatcher(
+      "**/*",
+      false,
+      false,
+      false,
+    );
 
     // Handle file creation
-    watcher.onDidCreate(uri => {
+    watcher.onDidCreate((uri) => {
       this.refreshContextProviders();
     });
 
     // Handle file deletion
-    watcher.onDidDelete(uri => {
+    watcher.onDidDelete((uri) => {
       this.refreshContextProviders();
     });
 
@@ -285,10 +311,7 @@ export class VsCodeExtension {
         }
       }
 
-      if (
-        filepath.endsWith(".pearairc.json") ||
-        filepath.endsWith(".prompt")
-      ) {
+      if (filepath.endsWith(".pearairc.json") || filepath.endsWith(".prompt")) {
         this.configHandler.reloadConfig();
       } else if (
         filepath.endsWith(".continueignore") ||
