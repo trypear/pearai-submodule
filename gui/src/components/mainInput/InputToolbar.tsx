@@ -1,6 +1,9 @@
 import {
   PhotoIcon as OutlinePhotoIcon,
   PlusIcon,
+  PaperAirplaneIcon,
+  AtSymbolIcon,
+  BoltIcon,
 } from "@heroicons/react/24/outline";
 import { PhotoIcon as SolidPhotoIcon } from "@heroicons/react/24/solid";
 import { InputModifiers } from "core";
@@ -52,8 +55,18 @@ const StyledDiv = styled.div<{ isHidden: boolean }>`
 `;
 
 const StyledSpan = styled.span`
+  padding: 3px 4px;
+  display: flex;
+  align-items: center;
+  border-radius: ${defaultBorderRadius};
+
   font-size: ${() => `${getFontSize() - 2}px`};
   color: ${lightGray};
+
+  &:hover {
+    background-color: ${vscBadgeBackground};
+    color: ${vscBadgeForeground};
+  }
 `;
 
 const EnterButton = styled.div<{ offFocus: boolean }>`
@@ -101,7 +114,7 @@ function InputToolbar(props: InputToolbarProps) {
         onClick={props.onClick}
         id="input-toolbar"
       >
-        <span className="flex gap-2 items-center whitespace-nowrap">
+        <span className="flex gap-0.5 items-center whitespace-nowrap">
           <ModelSelect />
           <StyledSpan
             onClick={(e) => {
@@ -109,7 +122,26 @@ function InputToolbar(props: InputToolbarProps) {
             }}
             className="hover:underline cursor-pointer"
           >
-            Add Context <PlusIcon className="h-2.5 w-2.5" aria-hidden="true" />
+            <AtSymbolIcon className="h-4 w-4" aria-hidden="true" />
+          </StyledSpan>
+          <StyledSpan
+            style={{
+              color: props.usingCodebase ? vscBadgeBackground : lightGray,
+              backgroundColor: props.usingCodebase
+                ? lightGray + "33"
+                : undefined,
+              borderRadius: defaultBorderRadius,
+              padding: "2px 4px",
+            }}
+            onClick={(e) => {
+              props.onEnter({
+                useCodebase: true,
+                noContext: !useActiveFile,
+              });
+            }}
+            className={"hover:underline cursor-pointer float-right"}
+          >
+            <BoltIcon className="h-4 w-4" aria-hidden="true" />
           </StyledSpan>
           {defaultModel &&
             modelSupportsImages(
@@ -202,7 +234,7 @@ function InputToolbar(props: InputToolbarProps) {
               });
             }}
           >
-            ⏎ Enter
+            <PaperAirplaneIcon className="h-4 w-4" aria-hidden="true" />
           </EnterButton>
         </span>
       </StyledDiv>
