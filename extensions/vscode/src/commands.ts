@@ -30,13 +30,25 @@ import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
 
+
 let fullScreenPanel: vscode.WebviewPanel | undefined;
+let aiderPanel: vscode.WebviewPanel | undefined;
 
 function getFullScreenTab() {
   const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs);
   return tabs.find((tab) =>
     (tab.input as any)?.viewType?.endsWith("pearai.continueGUIView"),
   );
+}
+
+function getAiderTab() {
+  const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs);
+  console.log("All tabs:", tabs);
+  return tabs.find((tab) => {
+    const viewType = (tab.input as any)?.viewType;
+    console.log("Tab view type:", viewType);
+    return viewType?.endsWith("pearai.aiderGUIView");
+  });
 }
 
 type TelemetryCaptureParams = Parameters<typeof Telemetry.capture>;
@@ -471,6 +483,59 @@ const commandsMap: (
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined);
     },
+    "pearai.aiderMode": () => {
+      // Check if aider is already open by checking open tabs
+      const aiderTab = getAiderTab();
+      console.log("Aider tab found:", aiderTab);
+      console.log("Aider tab active:", aiderTab?.isActive);
+      console.log("Aider panel exists:", !!aiderPanel);
+
+      // Check if the active editor is the Continue GUI View
+      if (aiderTab && aiderTab.isActive) {
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
+        return;
+      }
+
+      if (aiderTab && aiderPanel) {
+        //aider open, but not focused - focus it
+        aiderPanel.reveal();
+        return;
+      }
+
+      //create the full screen panel
+      let panel = vscode.window.createWebviewPanel(
+        "pearai.aiderGUIView",
+        "PearAI Creator (Powered by Aider)",
+        vscode.ViewColumn.One,
+        {
+          retainContextWhenHidden: true,
+        },
+      );
+      aiderPanel = panel;
+
+      //Add content to the panel
+      panel.webview.html = sidebar.getSidebarContent(
+        extensionContext,
+        panel,
+        undefined,
+        undefined,
+        true,
+        "/aiderMode",
+      );
+
+      vscode.commands.executeCommand("pearai.focusContinueInput");
+
+      //When panel closes, reset the webview and focus
+      panel.onDidDispose(
+        () => {
+          // The following order is important as it does not reset the history in chat when closing creator
+          vscode.commands.executeCommand("pearai.focusContinueInput");
+          sidebar.resetWebviewProtocolWebview();
+        },
+        null,
+        extensionContext.subscriptions,
+      );
+    },
     "pearai.toggleFullScreen": () => {
       // Check if full screen is already open by checking open tabs
       const fullScreenTab = getFullScreenTab();
@@ -769,7 +834,7 @@ const commandsMap: (
         vscode.window.showWarningMessage("WSL is for Windows only.");
         return;
       }
-      
+
       const wslExtension = vscode.extensions.getExtension('ms-vscode-remote.remote-wsl');
 
       if (!wslExtension) {
@@ -796,7 +861,7 @@ const commandsMap: (
         );
         PEAR_COMMIT_ID = productJson.commit;
         VSC_COMMIT_ID = productJson.VSCodeCommit;
-        // testing commit ids - its for VSC version 1.89 most probably. 
+        // testing commit ids - its for VSC version 1.89 most probably.
         // VSC_COMMIT_ID = "4849ca9bdf9666755eb463db297b69e5385090e3";
         // PEAR_COMMIT_ID="58996b5e761a7fe74bdfb4ac468e4b91d4d27294";
         vscode.window.showInformationMessage(`VSC commit: ${VSC_COMMIT_ID}`);
