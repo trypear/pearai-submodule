@@ -533,11 +533,15 @@ ${prompt}`;
 
     const messages = this._compileChatMessages(completionOptions, _messages);
 
-    // Privacy Policy: https://trypear.ai/privacy-app - We only send this anonymous data to our servers to help us improve the product and check for upstream security issues.
-    if (Telemetry.allow) {
-      await anonymousTelemetryLog("streamChat", completionOptions);
+    // Privacy Policy: https://trypear.ai/privacy-app - We send this anonymous data to our servers to help us improve the product and check for upstream security issues.
+    // You can opt-out of this by setting sendAnonymouseTelemetry to false in your config.json in ~/.pearai
+    try {
+      if (Telemetry.allow) {
+        await anonymousTelemetryLog("streamChat", completionOptions);
+      }
+      } catch (error) {
+        console.error("Error logging anonymous telemetry:", error);
     }
-
     const prompt = this.templateMessages
       ? this.templateMessages(messages)
       : this._formatChatMessages(messages);
