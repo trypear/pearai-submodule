@@ -125,6 +125,15 @@ export const defaultConfig: SerializedContinueConfig = {
       provider: "pearai_server",
       isDefault: true,
     },
+    {
+      model: "gemini-1.5-pro",
+      contextLength: 3000000,
+      title: "Gemini (PearAI)",
+      systemMessage:
+        "You are an expert software developer. You give helpful and concise responses.",
+      provider: "pearai_server",
+      isDefault: true,
+    },
   ],
   customCommands: [
     {
