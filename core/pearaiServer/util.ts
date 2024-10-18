@@ -2,7 +2,7 @@ import { SERVER_URL } from "../util/parameters";
 import { getHeaders } from "./stubs/headers";
 
 
-// Privacy Policy: https://trypear.ai/privacy - We send this anonymous data to our servers to help us improve the product and check for upstream security issues.
+// Privacy Policy: https://trypear.ai/privacy-app - We send this anonymous data to our servers to help us improve the product and check for upstream security issues.
 // You can opt-out of this by setting sendAnonymouseTelemetry to false in your config.json in ~/.pearai
 export async function anonymousTelemetryLog(event: string, options: any) {
     const baseHeaders = await getHeaders();
