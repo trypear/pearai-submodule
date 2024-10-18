@@ -533,7 +533,7 @@ ${prompt}`;
 
     const messages = this._compileChatMessages(completionOptions, _messages);
 
-    // Privacy Policy: https://trypear.ai/privacy - We only send this anonymous data to our servers to help us improve the product and check for upstream security issues.
+    // Privacy Policy: https://trypear.ai/privacy-app - We only send this anonymous data to our servers to help us improve the product and check for upstream security issues.
     if (Telemetry.allow) {
       await anonymousTelemetryLog("streamChat", completionOptions);
     }

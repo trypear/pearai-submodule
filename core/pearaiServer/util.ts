@@ -11,7 +11,7 @@ export async function anonymousTelemetryLog(event: string, options: any) {
       headers: {
         ...baseHeaders,
         "Content-Type": "application/json",
-        model: options.model || '',
+        model: options.model || "unknown",
         event: event,
       },
     });
