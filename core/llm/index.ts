@@ -534,7 +534,8 @@ ${prompt}`;
     const messages = this._compileChatMessages(completionOptions, _messages);
 
     // Privacy Policy: https://trypear.ai/privacy-app - We send this anonymous data to our servers to help us improve the product and check for upstream security issues.
-    // You can opt-out of this by setting sendAnonymouseTelemetry to false in your config.json in ~/.pearai
+    // No actual contents of the user's request are sent in this call.
+    // You can opt-out of this by setting sendAnonymousTelemetry to false in your config.json in ~/.pearai
     try {
       if (Telemetry.allow) {
         await anonymousTelemetryLog("streamChat", completionOptions);
