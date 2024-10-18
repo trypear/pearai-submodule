@@ -92,6 +92,7 @@ async function addHighlightedCodeToContext(
   if (editor) {
     const selection = editor.selection;
     if (selection.isEmpty) {
+      await addEntireFileToContext(editor.document.uri, false, webviewProtocol);
       return;
     }
     // adjust starting position to include indentation
