@@ -16,7 +16,7 @@ import {
   StatusBarStatus,
 } from "../autocomplete/statusBar";
 import { registerAllCommands } from "../commands";
-import { ContinueGUIWebviewViewProvider } from "../ContinueGUIWebviewViewProvider";
+import { PearAIWebviewManager } from "../PearAIWebviewManager";
 import { registerDebugTracker } from "../debug/debug";
 import { DiffManager } from "../diff/horizontal";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
@@ -40,7 +40,7 @@ export class VsCodeExtension {
   private extensionContext: vscode.ExtensionContext;
   private ide: VsCodeIde;
   private tabAutocompleteModel: TabAutocompleteModel;
-  private sidebar: ContinueGUIWebviewViewProvider;
+  private webviewManager: PearAIWebviewManager;
   private windowId: string;
   private diffManager: DiffManager;
   private verticalDiffManager: VerticalPerLineDiffManager;
@@ -77,23 +77,14 @@ export class VsCodeExtension {
     const configHandlerPromise = new Promise<ConfigHandler>((resolve) => {
       resolveConfigHandler = resolve;
     });
-    this.sidebar = new ContinueGUIWebviewViewProvider(
+    this.webviewManager = new PearAIWebviewManager(
+      this.extensionContext,
       configHandlerPromise,
       this.windowId,
-      this.extensionContext,
+      this.webviewProtocolPromise
     );
 
-    // Sidebar
-    context.subscriptions.push(
-      vscode.window.registerWebviewViewProvider(
-        "pearai.continueGUIView",
-        this.sidebar,
-        {
-          webviewOptions: { retainContextWhenHidden: true },
-        },
-      ),
-    );
-    resolveWebviewProtocol(this.sidebar.webviewProtocol);
+    this.webviewManager.registerWebview("pearAIChatView");
 
     // Config Handler with output channel
     const outputChannel = vscode.window.createOutputChannel(
@@ -106,7 +97,7 @@ export class VsCodeExtension {
 
     new VsCodeMessenger(
       inProcessMessenger,
-      this.sidebar.webviewProtocol,
+      this.webviewManager.getWebview("pearAIChatView")!.webviewProtocol,
       this.ide,
       verticalDiffManagerPromise,
       configHandlerPromise,
@@ -162,7 +153,7 @@ export class VsCodeExtension {
     );
 
     // Indexing + pause token
-    this.diffManager.webviewProtocol = this.sidebar.webviewProtocol;
+    this.diffManager.webviewProtocol = this.webviewManager.getWebview("pearAIChatView")!.webviewProtocol;
 
     this.configHandler.loadConfig().then((config) => {
       const { verticalDiffCodeLens } = registerAllCodeLensProviders(
@@ -177,7 +168,9 @@ export class VsCodeExtension {
     });
 
     this.configHandler.onConfigUpdate((newConfig) => {
-      this.sidebar.webviewProtocol?.request("configUpdate", undefined);
+      this.webviewManager.getAllWebviews().forEach(sidebar => {
+        sidebar.webviewProtocol?.request("configUpdate", undefined);
+      });
 
       this.tabAutocompleteModel.clearLlm();
 
@@ -216,7 +209,7 @@ export class VsCodeExtension {
     const quickEdit = new QuickEdit(
       this.verticalDiffManager,
       this.configHandler,
-      this.sidebar.webviewProtocol,
+      this.webviewManager.getWebview("pearAIChatView")!.webviewProtocol,
       this.ide,
       context,
     );
@@ -226,7 +219,7 @@ export class VsCodeExtension {
       context,
       this.ide,
       context,
-      this.sidebar,
+      this.webviewManager,
       this.configHandler,
       this.diffManager,
       this.verticalDiffManager,
@@ -236,7 +229,7 @@ export class VsCodeExtension {
       this.core,
     );
 
-    registerDebugTracker(this.sidebar.webviewProtocol, this.ide);
+    registerDebugTracker(this.webviewManager.getWebview("pearAIChatView")!.webviewProtocol, this.ide);
 
     // Listen for file saving - use global file watcher so that changes
     // from outside the window are also caught
@@ -376,7 +369,9 @@ export class VsCodeExtension {
   private PREVIOUS_BRANCH_FOR_WORKSPACE_DIR: { [dir: string]: string } = {};
 
   private async refreshContextProviders() {
-    this.sidebar.webviewProtocol.request("refreshSubmenuItems", undefined); // Refresh all context providers
+    this.webviewManager.getAllWebviews().forEach(sidebar => {
+      sidebar.webviewProtocol.request("refreshSubmenuItems", undefined); // Refresh all context providers
+    });
   }
 
   registerCustomContextProvider(contextProvider: IContextProvider) {

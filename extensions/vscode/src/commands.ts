@@ -29,6 +29,7 @@ import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
+import { PearAIWebviewManager } from "./PearAIWebviewManager";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -37,7 +38,7 @@ let aiderPanel: vscode.WebviewPanel | undefined;
 function getFullScreenTab() {
   const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs);
   return tabs.find((tab) =>
-    (tab.input as any)?.viewType?.endsWith("pearai.continueGUIView"),
+    (tab.input as any)?.viewType?.endsWith("pearai.pearAIChatView"),
   );
 }
 
@@ -178,7 +179,7 @@ async function addEntireFileToContext(
 const commandsMap: (
   ide: IDE,
   extensionContext: vscode.ExtensionContext,
-  sidebar: ContinueGUIWebviewViewProvider,
+  webviewManager: PearAIWebviewManager,
   configHandler: ConfigHandler,
   diffManager: DiffManager,
   verticalDiffManager: VerticalPerLineDiffManager,
@@ -189,7 +190,7 @@ const commandsMap: (
 ) => { [command: string]: (...args: any) => any } = (
   ide,
   extensionContext,
-  sidebar,
+  webviewManager,
   configHandler,
   diffManager,
   verticalDiffManager,
@@ -198,6 +199,8 @@ const commandsMap: (
   quickEdit,
   core,
 ) => {
+
+  let sidebar = webviewManager.getWebview("pearAIChatView");
   /**
    * Streams an inline edit to the vertical diff manager.
    *
@@ -280,7 +283,7 @@ const commandsMap: (
 
       const prompt = `How do I fix the following problem in the above code?: ${diagnosticMessage}`;
 
-      addCodeToContextFromRange(range, sidebar.webviewProtocol, prompt);
+      addCodeToContextFromRange(range, webviewManager.getWebview("pearAIChatView")!.webviewProtocol, prompt);
 
       vscode.commands.executeCommand("pearai.focusContinueInput");
     },
@@ -297,7 +300,7 @@ const commandsMap: (
 
       addCodeToContextFromRange(range, sidebar.webviewProtocol, prompt);
 
-      vscode.commands.executeCommand("pearai.continueGUIView.focus");
+      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
     },
     "pearai.customQuickActionStreamInlineEdit": async (
       prompt: string,
@@ -323,13 +326,13 @@ const commandsMap: (
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
         // focus sidebar
-        vscode.commands.executeCommand("pearai.continueGUIView.focus");
+        vscode.commands.executeCommand("pearai.pearAIChatView.focus");
       } else {
         // focus fullscreen
         fullScreenPanel?.reveal();
       }
-      sidebar.webviewProtocol?.request("focusContinueInput", undefined);
-      await addHighlightedCodeToContext(sidebar.webviewProtocol);
+      webviewManager.getWebview("pearAIChatView")!.webviewProtocol?.request("focusContinueInput", undefined);
+      await addHighlightedCodeToContext(webviewManager.getWebview("pearAIChatView")!.webviewProtocol);
     },
     "pearai.focusContinueInputWithoutClear": async () => {
       const fullScreenTab = getFullScreenTab();
@@ -350,7 +353,7 @@ const commandsMap: (
         // Handle opening the GUI otherwise
         if (!fullScreenTab) {
           // focus sidebar
-          vscode.commands.executeCommand("pearai.continueGUIView.focus");
+          vscode.commands.executeCommand("pearai.pearAIChatView.focus");
         } else {
           // focus fullscreen
           fullScreenPanel?.reveal();
@@ -423,9 +426,9 @@ const commandsMap: (
 
       const terminalContents = await ide.getTerminalContents();
 
-      vscode.commands.executeCommand("pearai.continueGUIView.focus");
+      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
 
-      sidebar.webviewProtocol?.request("userInput", {
+      webviewManager.getWebview("pearAIChatView")!.webviewProtocol?.request("userInput", {
         input: `I got the following error, can you please help explain how to fix it?\n\n${terminalContents.trim()}`,
       });
     },
@@ -439,11 +442,11 @@ const commandsMap: (
     "pearai.addModel": () => {
       captureCommandTelemetry("addModel");
 
-      vscode.commands.executeCommand("pearai.continueGUIView.focus");
+      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
       sidebar.webviewProtocol?.request("addModel", undefined);
     },
     "pearai.openSettingsUI": () => {
-      vscode.commands.executeCommand("pearai.continueGUIView.focus");
+      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
       sidebar.webviewProtocol?.request("openSettings", undefined);
     },
     "pearai.sendMainUserInput": (text: string) => {
@@ -485,6 +488,7 @@ const commandsMap: (
     },
     "pearai.aiderMode": () => {
       // Check if aider is already open by checking open tabs
+      console.log("IM IN AIDERMODE")
       const aiderTab = getAiderTab();
       core.invoke("llm/startAiderProcess", undefined);
       console.log("Aider tab found:", aiderTab);
@@ -502,6 +506,8 @@ const commandsMap: (
         aiderPanel.reveal();
         return;
       }
+
+      sidebar = webviewManager.registerWebview("aiderGUIView");
 
       //create the full screen panel
       let panel = vscode.window.createWebviewPanel(
@@ -567,7 +573,7 @@ const commandsMap: (
 
       //create the full screen panel
       let panel = vscode.window.createWebviewPanel(
-        "pearai.continueGUIView",
+        "pearai.pearAIChatView",
         "PearAI",
         vscode.ViewColumn.One,
         {
@@ -583,6 +589,7 @@ const commandsMap: (
         undefined,
         undefined,
         true,
+        "/",
       );
 
       //When panel closes, reset the webview and focus
@@ -602,7 +609,7 @@ const commandsMap: (
       firstUri: vscode.Uri,
       uris: vscode.Uri[],
     ) => {
-      vscode.commands.executeCommand("pearai.continueGUIView.focus");
+      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
 
       for (const uri of uris) {
         addEntireFileToContext(uri, false, sidebar.webviewProtocol);
@@ -912,7 +919,7 @@ export function registerAllCommands(
   context: vscode.ExtensionContext,
   ide: IDE,
   extensionContext: vscode.ExtensionContext,
-  sidebar: ContinueGUIWebviewViewProvider,
+  webviewManager: PearAIWebviewManager,
   configHandler: ConfigHandler,
   diffManager: DiffManager,
   verticalDiffManager: VerticalPerLineDiffManager,
@@ -925,7 +932,7 @@ export function registerAllCommands(
     commandsMap(
       ide,
       extensionContext,
-      sidebar,
+      webviewManager,
       configHandler,
       diffManager,
       verticalDiffManager,

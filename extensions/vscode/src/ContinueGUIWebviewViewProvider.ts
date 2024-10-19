@@ -9,7 +9,7 @@ import { VsCodeWebviewProtocol } from "./webviewProtocol";
 export class ContinueGUIWebviewViewProvider
   implements vscode.WebviewViewProvider
 {
-  public static readonly viewType = "pearai.continueGUIView";
+  public static readonly viewType = "pearai.pearAIChatView";
   public webviewProtocol: VsCodeWebviewProtocol;
 
   private updateDebugLogsStatus() {
