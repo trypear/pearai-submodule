@@ -41,7 +41,8 @@ export class VsCodeExtension {
   private ide: VsCodeIde;
   private tabAutocompleteModel: TabAutocompleteModel;
   private sidebar: ContinueGUIWebviewViewProvider;
-  private windowId: string;
+  private sidebar2: ContinueGUIWebviewViewProvider;
+  private activeWebview: 'sidebar' | 'sidebar2' = 'sidebar';  private windowId: string;
   private diffManager: DiffManager;
   private verticalDiffManager: VerticalPerLineDiffManager;
   webviewProtocolPromise: Promise<VsCodeWebviewProtocol>;
@@ -94,6 +95,29 @@ export class VsCodeExtension {
       ),
     );
     resolveWebviewProtocol(this.sidebar.webviewProtocol);
+
+    this.sidebar2 = new ContinueGUIWebviewViewProvider(
+      configHandlerPromise,
+      this.windowId + "_2",
+      this.extensionContext,
+    );
+    
+    // Register second sidebar
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        "pearai.continueGUIView2",
+        this.sidebar2,
+        {
+          webviewOptions: { retainContextWhenHidden: true },
+        },
+      ),
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand("pearai.internal.switchWebview", () => {
+        this.switchWebview();
+      })
+    );
 
     // Config Handler with output channel
     const outputChannel = vscode.window.createOutputChannel(
@@ -371,6 +395,21 @@ export class VsCodeExtension {
   }
 
   static continueVirtualDocumentScheme = "pearai";
+
+  public switchWebview() {
+    this.activeWebview = this.activeWebview === 'sidebar' ? 'sidebar2' : 'sidebar';
+    const activeProvider = this.activeWebview === 'sidebar' ? this.sidebar : this.sidebar2;
+    
+    this.webviewProtocolPromise.then(protocol => {
+      if (activeProvider.webview) {
+        protocol.webview = activeProvider.webview;
+      }
+    });
+    // Refresh the webview content
+    activeProvider.webviewProtocol?.request("didChangeAvailableProfiles", { profiles: [] });
+  
+    vscode.commands.executeCommand(`pearai.continueGUIView${this.activeWebview === 'sidebar' ? '' : '2'}.focus`);
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   private PREVIOUS_BRANCH_FOR_WORKSPACE_DIR: { [dir: string]: string } = {};

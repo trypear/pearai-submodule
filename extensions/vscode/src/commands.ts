@@ -526,6 +526,9 @@ const commandsMap: (
         extensionContext.subscriptions,
       );
     },
+    "pearai.switchWebview": () => {
+      vscode.commands.executeCommand("pearai.internal.switchWebview");
+    },
     "pearai.openConfigJson": () => {
       ide.openFile(getConfigJsonPath());
     },
