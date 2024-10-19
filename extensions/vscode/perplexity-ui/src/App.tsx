@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-toolkit";
+import "vscode-webview"
 
 // Register the VS Code design system
 provideVSCodeDesignSystem().register(vsCodeButton());

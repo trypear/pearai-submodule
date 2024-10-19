@@ -6,6 +6,7 @@
     "@types/node": "^16.18.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
+    "@types/vscode-webview": "^1.57.5",
     "@vscode/webview-ui-toolkit": "^1.2.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

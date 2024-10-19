@@ -20,20 +20,6 @@ export class PerplexityWebviewViewProvider implements vscode.WebviewViewProvider
         const reactAppPath = path.join(this._extensionUri.fsPath, 'perplexity-ui', 'build');
         let indexHtml = fs.readFileSync(path.join(reactAppPath, 'index.html'), 'utf8');
 
-        // // Inject necessary scripts to activate vscode within react app
-        // const injectedScript = `
-        //     <script>
-        //         const vscode = acquireVsCodeApi();
-        //         window.onload = function() {
-        //                     vscode.postMessage({ command: 'log' });
-        //                     console.log('Ready to accept data.');
-        //                 };
-        //     </script>
-        // `;
-
-        // // Insert the injected script right after the <head> tag
-        // indexHtml = indexHtml.replace('</head>', `${injectedScript}</head>`);
-
         // // Convert all links to vscode-resource URIs
          const convertedHtml = indexHtml.replace(
             /(href|src)="([^"]*)"/g,
