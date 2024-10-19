@@ -17,6 +17,7 @@ import {
 } from "../autocomplete/statusBar";
 import { registerAllCommands } from "../commands";
 import { ContinueGUIWebviewViewProvider } from "../ContinueGUIWebviewViewProvider";
+import { PerplexityWebviewViewProvider } from "../perplexityWebviewView";
 import { registerDebugTracker } from "../debug/debug";
 import { DiffManager } from "../diff/horizontal";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
@@ -94,6 +95,19 @@ export class VsCodeExtension {
       ),
     );
     resolveWebviewProtocol(this.sidebar.webviewProtocol);
+
+    // perplexity
+    const perplexityProvider = new PerplexityWebviewViewProvider(context.extensionUri);
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        PerplexityWebviewViewProvider.viewType, perplexityProvider,
+        {
+          webviewOptions: { retainContextWhenHidden: true },
+        },
+      )
+    );
+
+    // register commands in commands.ts
 
     // Config Handler with output channel
     const outputChannel = vscode.window.createOutputChannel(
