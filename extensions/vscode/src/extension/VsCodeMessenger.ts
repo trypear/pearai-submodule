@@ -26,6 +26,7 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
+import { PearAIWebviewManager } from "../PearAIWebviewManager";
 
 /**
  * A shared messenger class between Core and Webview
@@ -41,7 +42,10 @@ export class VsCodeMessenger {
       message: Message<FromWebviewProtocol[T][0]>,
     ) => Promise<FromWebviewProtocol[T][1]> | FromWebviewProtocol[T][1],
   ): void {
-    this.webviewProtocol.on(messageType, handler);
+
+    this.webviewManager.getAllWebviews().forEach(webview => {
+      webview.webviewProtocol.on(messageType, handler);
+    });
   }
 
   onCore<T extends keyof ToIdeOrWebviewFromCoreProtocol>(
@@ -72,7 +76,7 @@ export class VsCodeMessenger {
       ToCoreProtocol,
       FromCoreProtocol
     >,
-    private readonly webviewProtocol: VsCodeWebviewProtocol,
+    private readonly webviewManager: PearAIWebviewManager,
     private readonly ide: VsCodeIde,
     private readonly verticalDiffManagerPromise: Promise<VerticalPerLineDiffManager>,
     private readonly configHandlerPromise: Promise<ConfigHandler>,
@@ -191,9 +195,18 @@ export class VsCodeMessenger {
       const configHandler = await configHandlerPromise;
       const config = await configHandler.loadConfig();
 
-      const modelTitle =
-        config.experimental?.modelRoles?.applyCodeBlock ??
-        (await this.webviewProtocol.request("getDefaultModelTitle", undefined));
+      let modelTitle = "default"
+
+      const webviews = this.webviewManager.getAllWebviews();
+      for (const webview of webviews) {
+        if (webview.webviewProtocol) {
+          const protocol = webview.webviewProtocol as VsCodeWebviewProtocol;
+          const response =  (await protocol.request("getDefaultModelTitle", undefined));
+          if (response !== undefined) {
+            modelTitle = response;
+          }
+        }
+      }
 
       verticalDiffManager.streamEdit(prompt, modelTitle);
     });
@@ -249,7 +262,9 @@ export class VsCodeMessenger {
     /** PASS THROUGH FROM CORE TO WEBVIEW AND BACK **/
     CORE_TO_WEBVIEW_PASS_THROUGH.forEach((messageType) => {
       this.onCore(messageType, async (msg) => {
-        return this.webviewProtocol.request(messageType, msg.data);
+        this.webviewManager.getAllWebviews().forEach(webview => {
+          webview.webviewProtocol.request(messageType, msg.data);
+        });
       });
     });
 

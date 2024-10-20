@@ -97,7 +97,7 @@ export class VsCodeExtension {
 
     new VsCodeMessenger(
       inProcessMessenger,
-      this.webviewManager.getWebview("pearAIChatView")!.webviewProtocol,
+      this.webviewManager,
       this.ide,
       verticalDiffManagerPromise,
       configHandlerPromise,

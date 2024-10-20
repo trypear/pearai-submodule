@@ -4,7 +4,7 @@ import { ConfigHandler } from 'core/config/ConfigHandler';
 import { VsCodeWebviewProtocol } from './webviewProtocol';
 
 export class PearAIWebviewManager {
-    private sidebars: Map<string, ContinueGUIWebviewViewProvider> = new Map();
+    private webviews: Map<string, ContinueGUIWebviewViewProvider> = new Map();
     resolveWebviewProtocol: any;
 
     constructor(
@@ -38,20 +38,34 @@ export class PearAIWebviewManager {
             )
         );
 
-        this.sidebars.set(title, provider);
+        this.webviews.set(title, provider);
         this.resolveWebviewProtocol(provider.webviewProtocol);
         return provider;
     }
 
     getWebview(title: string): ContinueGUIWebviewViewProvider {
-        const provider = this.sidebars.get(title);
-        if (!provider) {
+        const webview = this.webviews.get(title);
+        if (!webview) {
             throw new Error(`Webview with title "${title}" does not exist.`);
         }
-        return provider;
+        return webview;
     }
 
     getAllWebviews(): ContinueGUIWebviewViewProvider[] {
-        return Array.from(this.sidebars.values());
+        return Array.from(this.webviews.values());
     }
+
+    // on(event: string, listener: (...args: any[]) => void): void {
+    //     this.webviews.forEach(webview => {
+    //         webview.webviewProtocol.on(event, listener);
+    //     });
+    // }
+
+    // request(event: string, ...args: any[]): void {
+    //     this.webviews.forEach(webviewProtocol => {
+    //         if (webviewProtocol.webview) {
+    //             webviewProtocol.webview.request(event, ...args);
+    //         }
+    //     });
+    // }
 }

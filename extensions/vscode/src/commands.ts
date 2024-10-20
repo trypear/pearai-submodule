@@ -31,7 +31,6 @@ import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
 import { PearAIWebviewManager } from "./PearAIWebviewManager";
 
-
 let fullScreenPanel: vscode.WebviewPanel | undefined;
 let aiderPanel: vscode.WebviewPanel | undefined;
 
@@ -99,7 +98,7 @@ function addCodeToContextFromRange(
 }
 
 async function addHighlightedCodeToContext(
-  webviewProtocol: VsCodeWebviewProtocol | undefined,
+  webviewProtocols: VsCodeWebviewProtocol[],
 ) {
   const editor = vscode.window.activeTextEditor;
   if (editor) {
@@ -126,16 +125,18 @@ async function addHighlightedCodeToContext(
       },
     };
 
-    webviewProtocol?.request("highlightedCode", {
-      rangeInFileWithContents,
-    });
+    for (const protocol of webviewProtocols) {
+      protocol.request("highlightedCode", {
+        rangeInFileWithContents,
+      });
+    }
   }
 }
 
 async function addEntireFileToContext(
   filepath: vscode.Uri,
   edit: boolean,
-  webviewProtocol: VsCodeWebviewProtocol | undefined,
+  webviewProtocols: VsCodeWebviewProtocol[],
 ) {
   // If a directory, add all files in the directory
   const stat = await vscode.workspace.fs.stat(filepath);
@@ -146,7 +147,7 @@ async function addEntireFileToContext(
         addEntireFileToContext(
           vscode.Uri.joinPath(filepath, filename),
           edit,
-          webviewProtocol,
+          webviewProtocols,
         );
       }
     }
@@ -170,12 +171,13 @@ async function addEntireFileToContext(
     },
   };
 
-  webviewProtocol?.request("highlightedCode", {
-    rangeInFileWithContents,
-  });
+  for (const protocol of webviewProtocols) {
+    protocol.request("highlightedCode", {
+      rangeInFileWithContents,
+    });
+  }
 }
 
-// Copy everything over from extension.ts
 const commandsMap: (
   ide: IDE,
   extensionContext: vscode.ExtensionContext,
@@ -200,20 +202,8 @@ const commandsMap: (
   core,
 ) => {
 
-  let sidebar = webviewManager.getWebview("pearAIChatView");
-  /**
-   * Streams an inline edit to the vertical diff manager.
-   *
-   * This function retrieves the configuration, determines the appropriate model title,
-   * increments the FTC count, and then streams an edit to the
-   * vertical diff manager.
-   *
-   * @param  promptName - The key for the prompt in the context menu configuration.
-   * @param  fallbackPrompt - The prompt to use if the configured prompt is not available.
-   * @param  [onlyOneInsertion] - Optional. If true, only one insertion will be made.
-   * @param  [range] - Optional. The range to edit if provided.
-   * @returns
-   */
+  let webviews = webviewManager.getAllWebviews();
+
   async function streamInlineEdit(
     promptName: keyof ContextMenuConfig,
     fallbackPrompt: string,
@@ -224,12 +214,14 @@ const commandsMap: (
 
     const modelTitle =
       config.experimental?.modelRoles?.inlineEdit ??
-      (await sidebar.webviewProtocol.request(
+      (await webviews[0].webviewProtocol.request(
         "getDefaultModelTitle",
         undefined,
       ));
 
-    sidebar.webviewProtocol.request("incrementFtc", undefined);
+    webviews.forEach(webview => {
+      webview.webviewProtocol.request("incrementFtc", undefined);
+    });
 
     await verticalDiffManager.streamEdit(
       config.experimental?.contextMenuPrompts?.[promptName] ?? fallbackPrompt,
@@ -283,11 +275,10 @@ const commandsMap: (
 
       const prompt = `How do I fix the following problem in the above code?: ${diagnosticMessage}`;
 
-      addCodeToContextFromRange(range, webviewManager.getWebview("pearAIChatView")!.webviewProtocol, prompt);
+      addCodeToContextFromRange(range, webviews[0].webviewProtocol, prompt);
 
       vscode.commands.executeCommand("pearai.focusContinueInput");
     },
-    // Passthrough for telemetry purposes
     "pearai.defaultQuickAction": async (args: QuickEditShowParams) => {
       captureCommandTelemetry("defaultQuickAction");
       vscode.commands.executeCommand("pearai.quickEdit", args);
@@ -298,7 +289,7 @@ const commandsMap: (
     ) => {
       captureCommandTelemetry("customQuickActionSendToChat");
 
-      addCodeToContextFromRange(range, sidebar.webviewProtocol, prompt);
+      addCodeToContextFromRange(range, webviews[0].webviewProtocol, prompt);
 
       vscode.commands.executeCommand("pearai.pearAIChatView.focus");
     },
@@ -325,46 +316,44 @@ const commandsMap: (
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
-        // focus sidebar
         vscode.commands.executeCommand("pearai.pearAIChatView.focus");
       } else {
-        // focus fullscreen
         fullScreenPanel?.reveal();
       }
-      webviewManager.getWebview("pearAIChatView")!.webviewProtocol?.request("focusContinueInput", undefined);
-      await addHighlightedCodeToContext(webviewManager.getWebview("pearAIChatView")!.webviewProtocol);
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("focusContinueInput", undefined);
+      });
+      await addHighlightedCodeToContext(webviews.map(webview => webview.webviewProtocol));
     },
     "pearai.focusContinueInputWithoutClear": async () => {
       const fullScreenTab = getFullScreenTab();
 
-      const isContinueInputFocused = await sidebar.webviewProtocol.request(
+      const isContinueInputFocused = await webviews[0].webviewProtocol.request(
         "isContinueInputFocused",
         undefined,
       );
 
       if (isContinueInputFocused) {
-        // Handle closing the GUI only if we are focused on the input
         if (fullScreenTab) {
           fullScreenPanel?.dispose();
         } else {
           vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
         }
       } else {
-        // Handle opening the GUI otherwise
         if (!fullScreenTab) {
-          // focus sidebar
           vscode.commands.executeCommand("pearai.pearAIChatView.focus");
         } else {
-          // focus fullscreen
           fullScreenPanel?.reveal();
         }
 
-        sidebar.webviewProtocol?.request(
-          "focusContinueInputWithoutClear",
-          undefined,
-        );
+        webviews.forEach(webview => {
+          webview.webviewProtocol?.request(
+            "focusContinueInputWithoutClear",
+            undefined,
+          );
+        });
 
-        await addHighlightedCodeToContext(sidebar.webviewProtocol);
+        await addHighlightedCodeToContext(webviews.map(webview => webview.webviewProtocol));
       }
     },
     "pearai.quickEdit": async (args: QuickEditShowParams) => {
@@ -410,9 +399,7 @@ const commandsMap: (
     "pearai.viewLogs": async () => {
       captureCommandTelemetry("viewLogs");
 
-      // Open ~/.pearai/pearai.log
       const logFile = path.join(os.homedir(), ".pearai", "pearai.log");
-      // Make sure the file/directory exist
       if (!fs.existsSync(logFile)) {
         fs.mkdirSync(path.dirname(logFile), { recursive: true });
         fs.writeFileSync(logFile, "");
@@ -428,8 +415,10 @@ const commandsMap: (
 
       vscode.commands.executeCommand("pearai.pearAIChatView.focus");
 
-      webviewManager.getWebview("pearAIChatView")!.webviewProtocol?.request("userInput", {
-        input: `I got the following error, can you please help explain how to fix it?\n\n${terminalContents.trim()}`,
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("userInput", {
+          input: `I got the following error, can you please help explain how to fix it?\n\n${terminalContents.trim()}`,
+        });
       });
     },
     "pearai.hideInlineTip": () => {
@@ -437,21 +426,25 @@ const commandsMap: (
         .getConfiguration("pearai")
         .update("showInlineTip", false, vscode.ConfigurationTarget.Global);
     },
-
-    // Commands without keyboard shortcuts
     "pearai.addModel": () => {
       captureCommandTelemetry("addModel");
 
       vscode.commands.executeCommand("pearai.pearAIChatView.focus");
-      sidebar.webviewProtocol?.request("addModel", undefined);
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("addModel", undefined);
+      });
     },
     "pearai.openSettingsUI": () => {
       vscode.commands.executeCommand("pearai.pearAIChatView.focus");
-      sidebar.webviewProtocol?.request("openSettings", undefined);
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("openSettings", undefined);
+      });
     },
     "pearai.sendMainUserInput": (text: string) => {
-      sidebar.webviewProtocol?.request("userInput", {
-        input: text,
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("userInput", {
+          input: text,
+        });
       });
     },
     "pearai.selectRange": (startLine: number, endLine: number) => {
@@ -481,13 +474,16 @@ const commandsMap: (
       ide.runCommand(text);
     },
     "pearai.newSession": () => {
-      sidebar.webviewProtocol?.request("newSession", undefined);
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("newSession", undefined);
+      });
     },
     "pearai.viewHistory": () => {
-      sidebar.webviewProtocol?.request("viewHistory", undefined);
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("viewHistory", undefined);
+      });
     },
     "pearai.aiderMode": () => {
-      // Check if aider is already open by checking open tabs
       console.log("IM IN AIDERMODE")
       const aiderTab = getAiderTab();
       core.invoke("llm/startAiderProcess", undefined);
@@ -495,21 +491,18 @@ const commandsMap: (
       console.log("Aider tab active:", aiderTab?.isActive);
       console.log("Aider panel exists:", !!aiderPanel);
 
-      // Check if the active editor is the Continue GUI View
       if (aiderTab && aiderTab.isActive) {
-        vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor");
         return;
       }
 
       if (aiderTab && aiderPanel) {
-        //aider open, but not focused - focus it
         aiderPanel.reveal();
         return;
       }
 
-      sidebar = webviewManager.registerWebview("aiderGUIView");
+      let webview = webviewManager.registerWebview("aiderGUIView");
 
-      //create the full screen panel
       let panel = vscode.window.createWebviewPanel(
         "pearai.aiderGUIView",
         "PearAI Creator (Powered by Aider)",
@@ -520,8 +513,7 @@ const commandsMap: (
       );
       aiderPanel = panel;
 
-      //Add content to the panel
-      panel.webview.html = sidebar.getSidebarContent(
+      panel.webview.html = webview.getSidebarContent(
         extensionContext,
         panel,
         undefined,
@@ -532,46 +524,34 @@ const commandsMap: (
 
       vscode.commands.executeCommand("pearai.focusContinueInput");
 
-      //When panel closes, reset the webview and focus
       panel.onDidDispose(
         () => {
-          // Kill background process
           core.invoke("llm/killAiderProcess", undefined);
 
-          // The following order is important as it does not reset the history in chat when closing creator
           vscode.commands.executeCommand("pearai.focusContinueInput");
-          sidebar.resetWebviewProtocolWebview();
+          webviews[0].resetWebviewProtocolWebview();
         },
         null,
         extensionContext.subscriptions,
       );
     },
     "pearai.toggleFullScreen": () => {
-      // Check if full screen is already open by checking open tabs
       const fullScreenTab = getFullScreenTab();
 
-      // Check if the active editor is the Continue GUI View
       if (fullScreenTab && fullScreenTab.isActive) {
-        //Full screen open and focused - close it
-        vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor");
         return;
       }
 
       if (fullScreenTab && fullScreenPanel) {
-        //Full screen open, but not focused - focus it
         fullScreenPanel.reveal();
         return;
       }
 
-      //Full screen not open - open it
       captureCommandTelemetry("openFullScreen");
 
-      // Close the sidebar.webviews
-      // vscode.commands.executeCommand("workbench.action.closeSidebar");
       vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
-      // vscode.commands.executeCommand("workbench.action.toggleZenMode");
 
-      //create the full screen panel
       let panel = vscode.window.createWebviewPanel(
         "pearai.pearAIChatView",
         "PearAI",
@@ -582,8 +562,7 @@ const commandsMap: (
       );
       fullScreenPanel = panel;
 
-      //Add content to the panel
-      panel.webview.html = sidebar.getSidebarContent(
+      panel.webview.html = webviews[0].getSidebarContent(
         extensionContext,
         panel,
         undefined,
@@ -592,10 +571,9 @@ const commandsMap: (
         "/",
       );
 
-      //When panel closes, reset the webview and focus
       panel.onDidDispose(
         () => {
-          sidebar.resetWebviewProtocolWebview();
+          webviews[0].resetWebviewProtocolWebview();
           vscode.commands.executeCommand("pearai.focusContinueInput");
         },
         null,
@@ -612,7 +590,7 @@ const commandsMap: (
       vscode.commands.executeCommand("pearai.pearAIChatView.focus");
 
       for (const uri of uris) {
-        addEntireFileToContext(uri, false, sidebar.webviewProtocol);
+        addEntireFileToContext(uri, false, webviews.map(webview => webview.webviewProtocol));
       }
     },
     "pearai.logAutocompleteOutcome": (
@@ -675,7 +653,6 @@ const commandsMap: (
         selected = autocompleteModelTitles[0];
       }
 
-      // Toggle between Disabled, Paused, and Enabled
       const pauseOnBattery =
         config.get<boolean>("pauseTabAutocompleteOnBattery") &&
         !battery.isACConnected();
@@ -683,7 +660,6 @@ const commandsMap: (
 
       let targetStatus: StatusBarStatus | undefined;
       if (pauseOnBattery) {
-        // Cycle from Disabled -> Paused -> Enabled
         targetStatus =
           currentStatus === StatusBarStatus.Paused
             ? StatusBarStatus.Enabled
@@ -691,7 +667,6 @@ const commandsMap: (
               ? StatusBarStatus.Paused
               : StatusBarStatus.Disabled;
       } else {
-        // Toggle between Disabled and Enabled
         targetStatus =
           currentStatus === StatusBarStatus.Disabled
             ? StatusBarStatus.Enabled
@@ -772,7 +747,6 @@ const commandsMap: (
       console.log("auth:", creds);
     },
     "pearai.getPearAuth": async () => {
-      // TODO: This may need some work, for now we dont have vscode ExtensionContext access in the ideProtocol.ts so this will do
       const accessToken = await extensionContext.secrets.get("pearai-token");
       const refreshToken = await extensionContext.secrets.get("pearai-refresh");
 
@@ -789,11 +763,10 @@ const commandsMap: (
         vscode.Uri.parse(extensionUrl),
       );
 
-      // TODO: Open the proxy location with vscode redirect
       await vscode.env.openExternal(
         await vscode.env.asExternalUri(
           vscode.Uri.parse(
-            `https://trypear.ai/signin?callback=${callbackUri.toString()}`, // Change to localhost if running locally
+            `https://trypear.ai/signin?callback=${callbackUri.toString()}`,
           ),
         ),
       );
@@ -808,7 +781,6 @@ const commandsMap: (
       accessToken: string;
       refreshToken: string;
     }) => {
-      // Ensure that refreshToken and accessToken are both present
       if (!data || !(data.refreshToken && data.accessToken)) {
         vscode.window.showWarningMessage(
           "PearAI: Failed to parse user auth request!",
@@ -819,15 +791,19 @@ const commandsMap: (
       extensionContext.secrets.store("pearai-token", data.accessToken);
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
       core.invoke("llm/resetPearAICredentials", undefined);
-      sidebar.webviewProtocol?.request("addPearAIModel", undefined);
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("addPearAIModel", undefined);
+      });
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
     },
     "pearai.closeChat": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
     },
     "pearai.loadRecentChat": () => {
-      sidebar.webviewProtocol?.request("loadMostRecentChat", undefined);
-      sidebar.webviewProtocol?.request("focusContinueInput", undefined);
+      webviews.forEach(webview => {
+        webview.webviewProtocol?.request("loadMostRecentChat", undefined);
+        webview.webviewProtocol?.request("focusContinueInput", undefined);
+      });
     },
     "pearai.resizeAuxiliaryBarWidth": () => {
       vscode.commands.executeCommand(
@@ -872,9 +848,6 @@ const commandsMap: (
         );
         PEAR_COMMIT_ID = productJson.commit;
         VSC_COMMIT_ID = productJson.VSCodeCommit;
-        // testing commit ids - its for VSC version 1.89 most probably.
-        // VSC_COMMIT_ID = "4849ca9bdf9666755eb463db297b69e5385090e3";
-        // PEAR_COMMIT_ID="58996b5e761a7fe74bdfb4ac468e4b91d4d27294";
         vscode.window.showInformationMessage(`VSC commit: ${VSC_COMMIT_ID}`);
       } catch (error) {
         vscode.window.showErrorMessage("Error reading product.json");
