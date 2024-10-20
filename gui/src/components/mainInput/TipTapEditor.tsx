@@ -117,7 +117,9 @@ const HoverTextDiv = styled.div`
   justify-content: center;
 `;
 
-const getPlaceholder = (defaultModel, historyLength: number) => {
+const getPlaceholder = (defaultModel, history, historyLength: number) => {
+  console.log("in tiptap editor")
+  console.log(history)
   if (defaultModel?.title?.toLowerCase() === "aider") {
     return historyLength === 0
       ? "Ask me to create, change, or fix anything..."
@@ -166,6 +168,10 @@ function TipTapEditor(props: TipTapEditorProps) {
     (store: RootState) => store.state.history.length,
   );
   const useActiveFile = useSelector(selectUseActiveFile);
+
+  const history = useSelector(
+    (store: RootState) => store.state.history
+  );
 
   const { saveSession } = useHistory(dispatch);
 
@@ -312,7 +318,7 @@ function TipTapEditor(props: TipTapEditorProps) {
         },
       }),
       Placeholder.configure({
-        placeholder: () => getPlaceholder(defaultModel, historyLengthRef.current),
+        placeholder: () => getPlaceholder(defaultModel, history, historyLengthRef.current),
       }),
       Paragraph.extend({
         addKeyboardShortcuts() {

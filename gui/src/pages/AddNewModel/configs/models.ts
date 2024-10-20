@@ -61,6 +61,21 @@ export const models: { [key: string]: ModelPackage } = {
     icon: "pearai.png",
     isOpenSource: false,
   },
+  Perplexity: {
+    title: "Perplexity",
+    description:
+      "An AI-powered coding assistant that helps developers write, edit, and understand code more efficiently.",
+    params: {
+      model: "Perplexity",
+      contextLength: 300_000,
+      title: "Perplexity",
+      systemMessage:
+        "You are an expert software developer. You give the concise responses using the latest software engineering best practices and documentation.",
+    },
+    providerOptions: ["perplexity"],
+    icon: "pearai.png",
+    isOpenSource: false,
+  },
   llama31Chat: {
     title: "Llama3.1 Chat",
     description: "The latest model from Meta, fine-tuned for chat",

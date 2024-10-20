@@ -21,6 +21,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   showFile: [{ filepath: string }, void];
   openConfigJson: [undefined, void];
   aiderMode: [undefined, void];
+  perplexityMode: [undefined, void];
   toggleDevTools: [undefined, void];
   reloadWindow: [undefined, void];
   focusEditor: [undefined, void];

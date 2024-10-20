@@ -556,7 +556,7 @@ const commandsMap: (
         return;
       }
 
-      if (perplexityPanel) {
+      if (perplexityTab && perplexityPanel) {
         //perplexity open, but not focused - focus it
         perplexityPanel.reveal();
         return;

@@ -560,6 +560,14 @@ function GUI() {
               >
                 dev: pearai creator (aider)
               </NewSessionButton>{" "}
+              <NewSessionButton
+                onClick={() => {
+                  ideMessenger.post("perplexityMode", undefined);
+                }}
+                className="mr-auto"
+              >
+                dev: pearai search (Perplexity)
+              </NewSessionButton>{" "}
             </div>
           ) : (
             <>
