@@ -29,6 +29,7 @@ import { editConfigJson } from "./util/paths";
 import { Telemetry } from "./util/posthog";
 import { streamDiffLines } from "./util/verticalEdit";
 import PearAIServer from "./llm/llms/PearAIServer";
+import Aider from "./llm/llms/Aider";
 
 export class Core {
   // implements IMessenger<ToCoreProtocol, FromCoreProtocol>
@@ -358,6 +359,7 @@ export class Core {
       abortedMessageIds: Set<string>,
       msg: Message<ToCoreProtocol["llm/streamChat"][0]>,
     ) {
+      console.log("HERE in llm")
       const model = await configHandler.llmFromTitle(msg.data.title);
       const gen = model.streamChat(
         msg.data.messages,
@@ -384,9 +386,10 @@ export class Core {
       return { done: true, content: next.value };
     }
 
-    on("llm/streamChat", (msg) =>
-      llmStreamChat(this.configHandler, this.abortedMessageIds, msg),
-    );
+  on("llm/streamChat", (msg) => {
+    return llmStreamChat(this.configHandler, this.abortedMessageIds, msg);
+  });
+
 
     async function* llmStreamComplete(
       configHandler: ConfigHandler,
@@ -447,6 +450,37 @@ export class Core {
         return undefined;
       } catch (e) {
         console.warn(`Error resetting PearAI credentials: ${e}`);
+        return undefined;
+      }
+    });
+    on("llm/startAiderProcess", async () => {
+      const config = await this.configHandler.loadConfig();
+      const aiderModel = config.models.find(model => model instanceof Aider) as Aider | undefined;
+
+      if (aiderModel) {
+        try {
+          await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
+        } catch (e) {
+          console.warn(`Error starting Aider process: ${e}`);
+        }
+      } else {
+        console.warn("No Aider model found in configuration");
+        return undefined;
+      }
+    });
+    on("llm/killAiderProcess", async () => {
+      const config = await this.configHandler.loadConfig();
+      const aiderModels = config.models.filter(model => model instanceof Aider) as Aider[];
+
+      try {
+        if (aiderModels.length > 0) {
+          aiderModels.forEach(model => {
+            model.killAiderProcess();
+          });
+        }
+        return undefined;
+      } catch (e) {
+        console.warn(`Error killing Aider process: ${e}`);
         return undefined;
       }
     });

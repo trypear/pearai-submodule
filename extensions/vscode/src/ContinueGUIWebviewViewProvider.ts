@@ -9,8 +9,12 @@ import { VsCodeWebviewProtocol } from "./webviewProtocol";
 export class ContinueGUIWebviewViewProvider
   implements vscode.WebviewViewProvider
 {
-  public static readonly viewType = "pearai.continueGUIView";
+  public static readonly viewType = "pearai.pearAIChatView";
   public webviewProtocol: VsCodeWebviewProtocol;
+  private _webview?: vscode.Webview;
+  private _webviewView?: vscode.WebviewView;
+  private outputChannel: vscode.OutputChannel;
+  private enableDebugLogs: boolean;
 
   private updateDebugLogsStatus() {
     const settings = vscode.workspace.getConfiguration("pearai");
@@ -67,10 +71,7 @@ export class ContinueGUIWebviewViewProvider
     );
   }
 
-  private _webview?: vscode.Webview;
-  private _webviewView?: vscode.WebviewView;
-  private outputChannel: vscode.OutputChannel;
-  private enableDebugLogs: boolean;
+
 
   get isVisible() {
     return this._webviewView?.visible;
@@ -82,7 +83,8 @@ export class ContinueGUIWebviewViewProvider
 
   public resetWebviewProtocolWebview(): void {
     if (this._webview) {
-      this.webviewProtocol.webview = this._webview;
+      this.webviewProtocol.resetWebviewToDefault()
+      // this.webviewProtocol.addWebview(this._webview);
     } else {
       console.warn("no webview found during reset");
     }
@@ -120,6 +122,7 @@ export class ContinueGUIWebviewViewProvider
     page: string | undefined = undefined,
     edits: FileEdit[] | undefined = undefined,
     isFullScreen = false,
+    initialRoute: string = "/"
   ): string {
     const extensionUri = getExtensionUri();
     let scriptUri: string;
@@ -168,7 +171,7 @@ export class ContinueGUIWebviewViewProvider
       }
     });
 
-    this.webviewProtocol.webview = panel.webview;
+    this.webviewProtocol.addWebview(panel.viewType, panel.webview);
 
     return `<!DOCTYPE html>
     <html lang="en">
@@ -227,6 +230,7 @@ export class ContinueGUIWebviewViewProvider
           ) || [],
         )}</script>
         <script>window.isFullScreen = ${isFullScreen}</script>
+        <script>window.initialRoute = "${initialRoute}"</script>
 
         ${
           edits
