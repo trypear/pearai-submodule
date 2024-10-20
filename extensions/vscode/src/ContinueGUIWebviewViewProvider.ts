@@ -173,7 +173,9 @@ export class ContinueGUIWebviewViewProvider
       }
     });
 
-    this.webviewProtocol.addWebview(panel.viewType, panel.webview);
+    // weview / panel's PearAIOverlay title is defined in pearai-app's PearOverlayParts.ts
+    // A unique identifier is needed for protocol to distinguish the webviews.
+    this.webviewProtocol.addWebview(panel?.title === "PearAIOverlay" ? panel.title : panel.viewType, panel.webview);
 
     return `<!DOCTYPE html>
     <html lang="en">
