@@ -5,13 +5,13 @@ import * as vscode from "vscode";
 import { getExtensionVersion } from "./util/util";
 import { getExtensionUri, getNonce, getUniqueId } from "./util/vscode";
 import { VsCodeWebviewProtocol } from "./webviewProtocol";
-import { PEARAI_VIEW_ID } from "./extension/VsCodeExtension";
+import { PEARAI_CHAT_VIEW_ID } from "./extension/VsCodeExtension";
 
 
 export class ContinueGUIWebviewViewProvider
   implements vscode.WebviewViewProvider
 {
-  public static readonly viewType = PEARAI_VIEW_ID;
+  public static readonly viewType = PEARAI_CHAT_VIEW_ID;
   public webviewProtocol: VsCodeWebviewProtocol;
   private _webview?: vscode.Webview;
   private _webviewView?: vscode.WebviewView;
