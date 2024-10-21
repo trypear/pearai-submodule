@@ -181,14 +181,14 @@ function ModelSelect() {
 
     if (location.pathname === "/aiderMode") {
       const aider = allModels.find(
-        (model) => model.title.toLowerCase() === "aider",
+        (model) => model?.title?.toLowerCase().includes("aider"),
       );
       dispatch(setDefaultModel({ title: aider?.title }));
     }
 
     setOptions(
       allModels
-        .filter((model) => model.title.toLowerCase() !== "aider")
+        .filter((model) => !model?.title?.toLowerCase().includes("aider"))
         .map((model) => {
           return {
             value: model.title,

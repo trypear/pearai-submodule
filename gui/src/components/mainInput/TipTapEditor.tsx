@@ -118,7 +118,7 @@ const HoverTextDiv = styled.div`
 `;
 
 const getPlaceholder = (defaultModel, historyLength: number) => {
-  if (defaultModel?.provider?.toLowerCase() === "aider") {
+  if (defaultModel?.title?.toLowerCase().includes("aider")) {
     return historyLength === 0
       ? "Ask me to create, change, or fix anything..."
       : "Send a follow-up";

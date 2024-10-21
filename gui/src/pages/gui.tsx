@@ -440,7 +440,7 @@ function GUI() {
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
-          {defaultModel?.title?.toLowerCase() === "aider" && (
+          {defaultModel?.title?.toLowerCase().includes("aider") && (
             <div className="pl-2 mt-8 border-b border-gray-700">
               <h1 className="text-2xl font-bold mb-2">PearAI Creator (Powered by <a href="https://aider.chat/2024/06/02/main-swe-bench.html" target="_blank" rel="noopener noreferrer">Aider</a>)</h1>
               <p className="text-sm text-gray-400">Ask for a feature, describe a bug, or ask for a change to your project. We'll take care of everything for you!</p>
@@ -572,7 +572,7 @@ function GUI() {
               <NewSessionButton
                 onClick={() => {
                   saveSession();
-                  if (defaultModel?.provider?.toLowerCase() === "aider") {
+                  if (defaultModel?.title?.toLowerCase().includes("aider")) {
                     ideMessenger.post("aiderResetSession", undefined)
                   }
                 }}
@@ -625,7 +625,7 @@ function GUI() {
             ) {
               dispatch(clearLastResponse());
             }
-            if (defaultModel?.provider?.toLowerCase() === "aider") {
+            if (defaultModel?.title?.toLowerCase().includes("aider")) {
               ideMessenger.post("aiderCtrlC", undefined)
             }
           }}
