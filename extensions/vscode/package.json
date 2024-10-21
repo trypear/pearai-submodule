@@ -535,7 +535,8 @@
           "type": "webview",
           "id": "pearai.pearAIChatView",
           "name": "",
-          "visibility": "visible"
+          "visibility": "visible",
+          "title": "PearAISidebar"
         }
       ]
     },
