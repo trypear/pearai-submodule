@@ -173,7 +173,7 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
             "--openai-api-key",
             accessToken,
             "--openai-api-base",
-            "http://localhost:8000/integrations/aider",
+            `${SERVER_URL}/integrations/aider`,
           ];
           break;
       }
