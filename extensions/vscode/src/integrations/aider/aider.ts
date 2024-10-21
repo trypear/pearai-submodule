@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as cp from 'child_process';
+import * as os from 'node:os';
 import { Core } from 'core/core';
 import { ContinueGUIWebviewViewProvider } from '../../ContinueGUIWebviewViewProvider';
 
@@ -14,11 +16,12 @@ export function getAiderTab() {
   });
 }
 
-export function handleAiderMode(
+export async function handleAiderMode(
   core: Core,
   sidebar: ContinueGUIWebviewViewProvider,
   extensionContext: vscode.ExtensionContext
 ) {
+  await installPythonAider();
   // Check if aider is already open by checking open tabs
   const aiderTab = getAiderTab();
   core.invoke("llm/startAiderProcess", undefined);
@@ -75,3 +78,88 @@ export function handleAiderMode(
     extensionContext.subscriptions,
   );
 }
+
+
+async function checkPythonInstallation(): Promise<boolean> {
+  const commands = ["python3 --version", "python --version"];
+
+  for (const command of commands) {
+    try {
+      await executeCommand(command);
+      return true;
+    } catch (error) {
+      console.warn(`${command} failed: ${error}`);
+    }
+  }
+
+  console.warn("Python 3 is not installed or not accessible on this system.");
+  return false;
+}
+
+async function checkAiderInstallation(): Promise<boolean> {
+  try {
+    await executeCommand("aider --version");
+    return true;
+  } catch (error) {
+    console.warn(`Aider is not installed: ${error}`);
+    return false;
+  }
+}
+
+async function installPythonAider() {
+  const isPythonInstalled = await checkPythonInstallation();
+  console.log("PYTHON IS INSTALLED");
+  console.dir(isPythonInstalled);
+  const isAiderInstalled = await checkAiderInstallation();
+  console.log("AIDER IS INSTALLED");
+  console.dir(isAiderInstalled);
+
+  if (isPythonInstalled && isAiderInstalled) {
+    return;
+  }
+
+  const terminal = vscode.window.createTerminal('Aider Installer');
+  terminal.show();
+
+  let command = '';
+
+  if (!isPythonInstalled) {
+    vscode.window.showInformationMessage('Installing Python 3');
+    command += `${getPythonInstallCommand()}; `;
+  }
+
+  if (!isAiderInstalled) {
+    vscode.window.showInformationMessage('Installing Aider');
+    command += 'pip3 install aider; ';
+  }
+
+  if (command) {
+    command += 'echo "Installation complete."';
+    await terminal.sendText(command);
+  }
+}
+
+  
+async function executeCommand(command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    cp.exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(stderr || error);
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+}
+
+function getPythonInstallCommand(): string {
+  switch (os.platform()) {
+    case 'win32':
+      return 'winget install Python.Python.3.9';
+    case 'darwin':
+      return 'brew install python@3';
+    default: // Linux
+      return 'sudo apt-get install -y python3';
+  }
+}
+
