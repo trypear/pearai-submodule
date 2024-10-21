@@ -218,8 +218,9 @@ function GUI() {
 
 
 
+  // AIDER HINT BUTTON HIDDEN IN V1.4.0
   const [showAiderHint, setShowAiderHint] = useState<boolean>(
-    true
+    false
   );
 
   const bareChatMode = isBareChatMode();
@@ -442,7 +443,7 @@ function GUI() {
         <div className="mx-2">
           {defaultModel?.title?.toLowerCase().includes("aider") && (
             <div className="pl-2 mt-8 border-b border-gray-700">
-              <h1 className="text-2xl font-bold mb-2">PearAI Creator (Powered by <a href="https://aider.chat/2024/06/02/main-swe-bench.html" target="_blank" rel="noopener noreferrer">aider</a>)</h1>
+              <h1 className="text-2xl font-bold mb-2">PearAI Creator (Powered by <a href="https://aider.chat/2024/06/02/main-swe-bench.html" target="_blank" rel="noopener noreferrer">aider</a>) - Beta</h1>
               <p className="text-sm text-gray-400">Ask for a feature, describe a bug, or ask for a change to your project. We'll take care of everything for you!</p>
             </div>
           )}
