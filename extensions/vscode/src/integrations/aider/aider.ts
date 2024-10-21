@@ -66,7 +66,7 @@ export async function handleAiderMode(
     "/aiderMode",
   );
 
-  vscode.commands.executeCommand("pearai.focusContinueInput");
+  sidebar.webviewProtocol?.request("focusContinueInputWithNewSession", undefined, ["pearai.aiderGUIView"]);
 
   //When panel closes, reset the webview and focus
   panel.onDidDispose(
