@@ -568,6 +568,14 @@ function GUI() {
                   </NewSessionButton>
                 </div>
               ) : null}
+              <NewSessionButton
+                onClick={() => {
+                  navigate("/inventory");
+                }}
+                className="mr-auto"
+              >
+                PearAI Inventory
+              </NewSessionButton>{" "}
 
               {!!showTutorialCard && (
                 <div className="flex justify-center w-full">
@@ -599,7 +607,6 @@ function GUI() {
           {getMetaKeyLabel()} ⌫ Cancel
         </StopButton>
       )}
-      <Button onClick={() => navigate("/inventory")}>Inventory</Button>
     </>
   );
 }

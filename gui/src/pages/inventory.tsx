@@ -26,7 +26,7 @@ const tabs = [
 
 export default function Inventory() {
   return (
-    <div className="h-full bg-background">
+    <div className="h-full bg-background p-4 pt-0">
       <Tabs defaultValue="inventory">
         <div className="flex justify-center mt-1 h-full">
           <TabsList className="bg-input text-center">

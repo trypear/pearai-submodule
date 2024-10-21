@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useNavigate } from "react-router-dom";
+import { Badge } from '@/components/ui/badge'
 
 interface AITool {
   id: string;
@@ -233,6 +234,7 @@ export default function AIToolInventory() {
         <header className="mb-6">
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold mb-2">PearAI Inventory</h1>{" "}
+            <Badge variant="outline" className="pl-0">Beta</Badge>
             <Button
               onClick={() => navigate("/")}
               className="mt-3 bg-input text-foreground cursor-pointer"
