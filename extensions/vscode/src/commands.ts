@@ -475,8 +475,8 @@ const commandsMap: (
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, ["pearai.pearAIChatView"]);
     },
-    "pearai.aiderMode": () => {
-      handleAiderMode(core, sidebar, extensionContext);
+    "pearai.aiderMode": async () => {
+      await handleAiderMode(core, sidebar, extensionContext);
     },
     "pearai.aiderCtrlC": () => {
       core.invoke("llm/aiderCtrlC", undefined);
