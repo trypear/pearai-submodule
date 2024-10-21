@@ -1,8 +1,12 @@
-import * as vscode from 'vscode';
-import * as cp from 'child_process';
-import * as os from 'node:os';
-import { Core } from 'core/core';
-import { ContinueGUIWebviewViewProvider } from '../../ContinueGUIWebviewViewProvider';
+import * as vscode from "vscode";
+import * as cp from "child_process";
+import { Core } from "core/core";
+import { ContinueGUIWebviewViewProvider } from "../../ContinueGUIWebviewViewProvider";
+
+const PLATFORM = process.platform;
+const IS_WINDOWS = PLATFORM === "win32";
+const IS_MAC = PLATFORM === "darwin";
+const IS_LINUX = PLATFORM === "linux";
 
 let aiderPanel: vscode.WebviewPanel | undefined;
 
@@ -19,7 +23,7 @@ export function getAiderTab() {
 export async function handleAiderMode(
   core: Core,
   sidebar: ContinueGUIWebviewViewProvider,
-  extensionContext: vscode.ExtensionContext
+  extensionContext: vscode.ExtensionContext,
 ) {
   await installPythonAider();
   // Check if aider is already open by checking open tabs
@@ -79,7 +83,6 @@ export async function handleAiderMode(
   );
 }
 
-
 async function checkPythonInstallation(): Promise<boolean> {
   const commands = ["python3 --version", "python --version"];
 
@@ -108,38 +111,54 @@ async function checkAiderInstallation(): Promise<boolean> {
 
 async function installPythonAider() {
   const isPythonInstalled = await checkPythonInstallation();
-  console.log("PYTHON IS INSTALLED");
+  console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
   const isAiderInstalled = await checkAiderInstallation();
-  console.log("AIDER IS INSTALLED");
+  console.log("AIDER CHECK RESULT :");
   console.dir(isAiderInstalled);
 
   if (isPythonInstalled && isAiderInstalled) {
     return;
   }
 
-  const terminal = vscode.window.createTerminal('Aider Installer');
-  terminal.show();
-
-  let command = '';
-
   if (!isPythonInstalled) {
-    vscode.window.showInformationMessage('Installing Python 3');
-    command += `${getPythonInstallCommand()}; `;
+    const installPythonConfirm = await vscode.window.showInformationMessage(
+      "Python is required to run Creator (Aider). Choose 'Install' to install Python.",
+      "Install",
+      "Cancel",
+    );
+
+    if (installPythonConfirm === "Cancel") {
+      return;
+    }
+
+    vscode.window.showInformationMessage("Installing Python 3");
+    const terminal = vscode.window.createTerminal("Python Installer");
+    terminal.show();
+    terminal.sendText(getPythonInstallCommand());
+
+    vscode.window.showInformationMessage(
+      "Please restart PearAI after python installation completes sucessfully, and then run Creator (Aider) again.",
+      "OK",
+    );
+
+    return;
   }
 
   if (!isAiderInstalled) {
-    vscode.window.showInformationMessage('Installing Aider');
-    command += 'pip3 install aider; ';
-  }
-
-  if (command) {
-    command += 'echo "Installation complete."';
-    await terminal.sendText(command);
+    vscode.window.showInformationMessage("Installing Aider");
+    const aiderTerminal = vscode.window.createTerminal("Aider Installer");
+    aiderTerminal.show();
+    let command = "python -m pip install -U aider-chat;";
+    if (IS_WINDOWS) {
+      command += 'echo "`nAider installation complete."';
+    } else {
+      command += "echo '\nAider installation complete.'";
+    }
+    aiderTerminal.sendText(command);
   }
 }
 
-  
 async function executeCommand(command: string): Promise<string> {
   return new Promise((resolve, reject) => {
     cp.exec(command, (error, stdout, stderr) => {
@@ -153,13 +172,12 @@ async function executeCommand(command: string): Promise<string> {
 }
 
 function getPythonInstallCommand(): string {
-  switch (os.platform()) {
-    case 'win32':
-      return 'winget install Python.Python.3.9';
-    case 'darwin':
-      return 'brew install python@3';
+  switch (PLATFORM) {
+    case "win32":
+      return "winget install Python.Python.3.9";
+    case "darwin":
+      return "brew install python@3";
     default: // Linux
-      return 'sudo apt-get install -y python3';
+      return "sudo apt-get install -y python3";
   }
 }
-
