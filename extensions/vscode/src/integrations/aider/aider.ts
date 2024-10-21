@@ -123,16 +123,24 @@ async function installPythonAider() {
 
   if (!isPythonInstalled) {
     const installPythonConfirm = await vscode.window.showInformationMessage(
-      "Python is required to run Creator (Aider). Choose 'Install' to install Python.",
+      "Python is required to run Creator (Aider). Choose 'Install' to install Python3.9",
       "Install",
       "Cancel",
+      "Manual Installation Guide",
     );
 
     if (installPythonConfirm === "Cancel") {
       return;
+    } else if (installPythonConfirm === "Manual Installation Guide") {
+      vscode.env.openExternal(
+        vscode.Uri.parse(
+          "https://trypear.ai/blog/how-to-setup-aider-in-pearai",
+        ),
+      );
+      return;
     }
 
-    vscode.window.showInformationMessage("Installing Python 3");
+    vscode.window.showInformationMessage("Installing Python 3.9");
     const terminal = vscode.window.createTerminal("Python Installer");
     terminal.show();
     terminal.sendText(getPythonInstallCommand());
