@@ -238,6 +238,7 @@ export class ContinueGUIWebviewViewProvider
           ) || [],
         )}</script>
         <script>window.isFullScreen = ${isFullScreen}</script>
+        <script>window.initialRoute = ${initialRoute}</script>
         <script>window.isOverlayPearAI = ${isOverlay}</script>
 
         ${

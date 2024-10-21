@@ -178,7 +178,7 @@ function ModelSelect() {
   );
 
   useEffect(() => {
-
+    console.log(location.pathname)
     if (location.pathname === "/aiderMode") {
       const aider = options.find(
         (option) => option.title.toLowerCase() === "aider",
