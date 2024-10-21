@@ -125,6 +125,7 @@ export class ContinueGUIWebviewViewProvider
     page: string | undefined = undefined,
     edits: FileEdit[] | undefined = undefined,
     isFullScreen = false,
+    initialRoute: string = "/"
   ): string {
     const isOverlay = panel?.title === PEAR_OVERLAY_TITLE; // defined in pearai-app PearOverlayPart.ts
     const extensionUri = getExtensionUri();
@@ -237,6 +238,7 @@ export class ContinueGUIWebviewViewProvider
           ) || [],
         )}</script>
         <script>window.isFullScreen = ${isFullScreen}</script>
+        <script>window.initialRoute = ${initialRoute}</script>
         <script>window.isOverlayPearAI = ${isOverlay}</script>
 
         ${

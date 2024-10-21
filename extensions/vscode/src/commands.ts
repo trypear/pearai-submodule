@@ -30,13 +30,26 @@ import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
 
+
 let fullScreenPanel: vscode.WebviewPanel | undefined;
+let aiderPanel: vscode.WebviewPanel | undefined;
+let perplexityPanel: vscode.WebviewPanel | undefined;
 
 function getFullScreenTab() {
   const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs);
   return tabs.find((tab) =>
     (tab.input as any)?.viewType?.endsWith("pearai.pearAIChatView"),
   );
+}
+
+function getIntegrationTab(webviewName: string) {
+  const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs);
+  console.log("All tabs:", tabs);
+  return tabs.find((tab) => {
+    const viewType = (tab.input as any)?.viewType;
+    console.log("Tab view type:", viewType);
+    return viewType?.endsWith(webviewName);
+  });
 }
 
 type TelemetryCaptureParams = Parameters<typeof Telemetry.capture>;
@@ -472,6 +485,118 @@ const commandsMap: (
       sidebar.webviewProtocol?.request("viewHistory", undefined, [
         "pearai.pearAIChatView",
       ]);
+    },
+    "pearai.aiderMode": () => {
+      // Check if aider is already open by checking open tabs
+      const webviewName = "pearai.aiderGUIView"
+      const aiderTab = getIntegrationTab(webviewName);
+      core.invoke("llm/startAiderProcess", undefined);
+      console.log("Aider tab found:", aiderTab);
+      console.log("Aider tab active:", aiderTab?.isActive);
+      console.log("Aider panel exists:", !!aiderPanel);
+
+      // Check if the active editor is the Continue GUI View
+      if (aiderTab && aiderTab.isActive) {
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
+        return;
+      }
+
+      if (aiderTab && aiderPanel) {
+        //aider open, but not focused - focus it
+        aiderPanel.reveal();
+        return;
+      }
+
+      //create the full screen panel
+      let panel = vscode.window.createWebviewPanel(
+        webviewName,
+        "PearAI Creator (Powered by Aider)",
+        vscode.ViewColumn.One,
+        {
+          retainContextWhenHidden: true,
+        },
+      );
+      aiderPanel = panel;
+
+      //Add content to the panel
+      panel.webview.html = sidebar.getSidebarContent(
+        extensionContext,
+        panel,
+        undefined,
+        undefined,
+        true,
+        "/aiderMode",
+      );
+
+      vscode.commands.executeCommand("pearai.focusContinueInput");
+
+      //When panel closes, reset the webview and focus
+      panel.onDidDispose(
+        () => {
+          // Kill background process
+          core.invoke("llm/killAiderProcess", undefined);
+
+          // The following order is important as it does not reset the history in chat when closing creator
+          vscode.commands.executeCommand("pearai.focusContinueInput");
+          sidebar.resetWebviewProtocolWebview();
+        },
+        null,
+        extensionContext.subscriptions,
+      );
+    },
+    "pearai.perplexityMode": () => {
+      // Check if perplexity is already open by checking open tabs
+      const webviewName = "pearai.perplexityGUIView"
+      const perplexityTab = getIntegrationTab(webviewName);
+      console.log("Perplexity tab found:", perplexityTab);
+      console.log("Perplexity tab active:", perplexityTab?.isActive);
+      console.log("Perplexity panel exists:", !!perplexityPanel);
+
+      // Check if the active editor is the Continue GUI View
+      if (perplexityTab && perplexityTab.isActive) {
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
+        return;
+      }
+
+      if (perplexityTab && perplexityPanel) {
+        //perplexity open, but not focused - focus it
+        perplexityPanel.reveal();
+        return;
+      }
+
+      // create the full screen panel
+      let panel = vscode.window.createWebviewPanel(
+        webviewName,
+        "PearAI Search (Powered by Perplexity)",
+        vscode.ViewColumn.One,
+        {
+          retainContextWhenHidden: true,
+        },
+      );
+      perplexityPanel = panel;
+
+      //Add content to the panel
+      perplexityPanel.webview.html = sidebar.getSidebarContent(
+        extensionContext,
+        panel,
+        undefined,
+        undefined,
+        true,
+        "/perplexityMode",
+      );
+
+      vscode.commands.executeCommand("pearai.focusContinueInput");
+
+      //When panel closes, reset the webview and focus
+      panel.onDidDispose(
+        () => {
+          // The following order is important as it does not reset the history in chat when closing Search
+          vscode.commands.executeCommand("pearai.focusContinueInput");
+          sidebar.resetWebviewProtocolWebview();
+        },
+        null,
+        extensionContext.subscriptions,
+      );
     },
     "pearai.toggleFullScreen": () => {
       // Check if full screen is already open by checking open tabs
