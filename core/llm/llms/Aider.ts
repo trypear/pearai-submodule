@@ -158,7 +158,7 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
 
       let command: string[];
 
-      const aiderFlags = "--no-pretty --yes-always --no-auto-commits";
+      const aiderFlags = "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands";
       const aiderCommands = [
         `python -m aider ${aiderFlags}`,
         `python3 -m aider ${aiderFlags}`,
@@ -364,7 +364,12 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
       this.aiderProcess.stdin &&
       !this.aiderProcess.killed
     ) {
-      this.aiderProcess.stdin.write(`${message}\n`);
+      // console.dir("Sending message to Aider:");
+      // console.dir(message);
+      const formattedMessage = message.replace(/\n+/g, " ");
+      // console.dir("Formatted message:");
+      // console.dir(formattedMessage);
+      this.aiderProcess.stdin.write(`${formattedMessage}\n`);
     } else {
       console.error("Aider process is not running");
     }
@@ -426,7 +431,14 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
   ): AsyncGenerator<ChatMessage> {
     console.log("Inside Aider _streamChat");
 
+    // console.dir('messages - ');
+    // console.dir(messages);
+    // console.dir('lastmessage - ');
+    // console.dir(messages[messages.length - 1]);
     const lastMessage = messages[messages.length - 1].content.toString();
+    // console.dir("===============")
+    // console.dir("lastMessage processed - ");
+    // console.dir(lastMessage);
     this.sendToAiderChat(lastMessage);
 
     this.aiderOutput = "";

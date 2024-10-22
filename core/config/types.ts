@@ -471,7 +471,8 @@ declare global {
     | "code"
     | "docs"
     | "gitlab-mr"
-    | "os";
+    | "os"
+    | "barefilecontext";
 
   type TemplateType =
     | "llama2"

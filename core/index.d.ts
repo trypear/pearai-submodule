@@ -569,7 +569,8 @@ type ContextProviderName =
   | "docs"
   | "gitlab-mr"
   | "os"
-  | "currentFile";
+  | "currentFile"
+  | "barefilecontext";
 
 type TemplateType =
   | "llama2"
