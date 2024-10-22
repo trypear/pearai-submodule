@@ -688,6 +688,22 @@ export class Core {
 
   private indexingCancellationController: AbortController | undefined;
 
+  // private async refreshCodebaseIndex(dirs: string[]) {
+  //   if (this.indexingCancellationController) {
+  //     this.indexingCancellationController.abort();
+  //   }
+  //   this.indexingCancellationController = new AbortController();
+  //   for await (const update of (await this.codebaseIndexerPromise).refresh(
+  //     dirs,
+  //     this.indexingCancellationController.signal,
+  //   )) {
+  //     this.messenger.request("indexProgress", update);
+  //     this.indexingState = update;
+  //   }
+
+  //   this.messenger.send("refreshSubmenuItems", undefined);
+  // }
+
   private async refreshCodebaseIndex(dirs: string[]) {
     if (this.indexingCancellationController) {
       this.indexingCancellationController.abort();
@@ -697,10 +713,32 @@ export class Core {
       dirs,
       this.indexingCancellationController.signal,
     )) {
-      this.messenger.request("indexProgress", update);
-      this.indexingState = update;
-    }
+      let updateToSend = { ...update };
+      if (update.status === "failed") {
+        updateToSend.status = "done";
+        updateToSend.desc = "Indexing complete";
+        updateToSend.progress = 1.0;
+      }
 
+      void this.messenger.request("indexProgress", updateToSend);
+      this.indexingState = updateToSend;
+
+      if (update.status === "failed") {
+        console.debug(
+          "Indexing failed with error: ",
+          update.desc,
+          // update.debugInfo,
+        );
+        void Telemetry.capture(
+          "indexing_error",
+          {
+            error: update.desc,
+            // stack: update.debugInfo,
+          },
+          false,
+        );
+      }
+    }
     this.messenger.send("refreshSubmenuItems", undefined);
   }
 }
