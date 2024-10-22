@@ -119,6 +119,7 @@ const HIDE_FOOTER_ON_PAGES = [
   "/onboarding",
   "/localOnboarding",
   "/apiKeyOnboarding",
+  "/aiderMode",
   "/inventory"
 ];
 

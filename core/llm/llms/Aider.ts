@@ -417,7 +417,7 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
 
     const escapeDollarSigns = (text: string | undefined) => {
       if (!text) return "Aider response over";
-      return text.replace(/\$/g, "\\$");
+      return text.replace(/([\\$])/g, "\\$1");
     };
 
     while (!responseComplete) {
