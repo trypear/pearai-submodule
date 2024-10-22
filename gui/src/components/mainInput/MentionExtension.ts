@@ -179,7 +179,7 @@ export const Mention = Node.create<MentionOptions>({
           this.options.HTMLAttributes,
           HTMLAttributes
         ),
-        node.attrs.label || node.attrs.id
+        `@${node.attrs.label}` || node.attrs.id
       ];
     }
     const html = this.options.renderHTML({
