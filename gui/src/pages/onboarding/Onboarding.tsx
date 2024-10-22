@@ -80,6 +80,8 @@ function Onboarding() {
      * we need to re-index the codebase.
      */
     if (selectedOnboardingMode !== "local") {
+      console.log("IM TRIGGERING REINDEX 5")
+      console.dir("IM TRIGGERING REINDEX 5")
       ideMessenger.post("index/forceReIndex", undefined);
     }
   }

@@ -128,6 +128,8 @@ const IndexingProgressBar = ({
         ) {
           setPaused((prev) => !prev);
         } else {
+          console.log("IM TRIGGERING REINDEX 4")
+          console.dir("IM TRIGGERING REINDEX 4")
           ideMessenger.post("index/forceReIndex", undefined);
         }
       }}
