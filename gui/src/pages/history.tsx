@@ -125,7 +125,7 @@ function TableRow({
     <td
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      style={isSelected ? { backgroundColor: vscBadgeBackground } : {}}
+      style={isSelected ? { backgroundColor: vscInputBackground } : {}}
     >
       <div className="flex justify-between items-center w-full">
         <TdDiv
@@ -234,16 +234,19 @@ function History() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const tableRef = React.useRef<HTMLDivElement>(null);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) =>
-        Math.min(prev + 1, filteredAndSortedSessions.length - 1),
-      );
+      const newIndex = Math.min(selectedIndex + 1, filteredAndSortedSessions.length - 1);
+      setSelectedIndex(newIndex);
+      scrollSelectedIntoView(newIndex);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) => Math.max(prev - 1, 0));
+      const newIndex = Math.max(selectedIndex - 1, 0);
+      setSelectedIndex(newIndex);
+      scrollSelectedIntoView(newIndex);
     } else if (e.key === "Enter" && selectedIndex !== -1) {
       e.preventDefault();
       const selectedSession = filteredAndSortedSessions[selectedIndex];
@@ -259,6 +262,18 @@ function History() {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedIndex, filteredAndSortedSessions]);
+
+  const scrollSelectedIntoView = (index: number) => {
+    if (tableRef.current) {
+      const rows = tableRef.current.querySelectorAll('tr');
+      if (rows[index]) {
+        rows[index].scrollIntoView({
+          behavior: 'instant',
+          block: 'center',
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -320,7 +335,7 @@ function History() {
       className="overflow-y-scroll"
       style={{ fontSize: getFontSize() }}
       tabIndex={0}
-      onFocus={() => setSelectedIndex(0)}
+      ref={tableRef}
     >
       <div
         ref={stickyHistoryHeaderRef}
@@ -366,7 +381,8 @@ function History() {
           </div>
         )}
 
-        <table className="w-full border-spacing-0 border-collapse">
+        <table className="w-full border-spacing-0 border-collapse"
+        >
           <tbody>
             {filteredAndSortedSessions.map((session, index) => {
               const prevDate =
@@ -398,11 +414,6 @@ function History() {
 
                   <Tr
                     key={index}
-                    style={
-                      index === selectedIndex
-                        ? { backgroundColor: vscBadgeBackground }
-                        : {}
-                    }
                   >
                     <TableRow
                       session={session}
