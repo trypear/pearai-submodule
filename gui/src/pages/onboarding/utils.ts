@@ -19,6 +19,7 @@ export function shouldBeginOnboarding() {
     return false;
   }
   const onboardingStatus = getLocalStorage("onboardingStatus");
+  console.dir("ONBOARDING STATUS: ", onboardingStatus)
 
   return onboardingStatus === undefined;
 }
