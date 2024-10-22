@@ -105,7 +105,7 @@ class VsCodeIde implements IDE {
   //         .then(async (selection) => {
   //           if (selection === "Use API key / local model") {
   //             await vscode.commands.executeCommand(
-  //               "continue.continueGUIView.focus",
+  //               "continue.pearAIChatView.focus",
   //             );
   //             (await this.vscodeWebviewProtocolPromise).request(
   //               "openOnboarding",
@@ -554,6 +554,21 @@ class VsCodeIde implements IDE {
 
   async authenticatePear(): Promise<void> {
     this.ideUtils.executePearLogin();
+  }
+
+  async getCurrentDirectory(): Promise<string> {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (workspaceFolders && workspaceFolders.length > 0) {
+      return workspaceFolders[0].uri.fsPath;
+    }
+
+    // If no workspace is open, return the directory of the active file
+    const activeEditor = vscode.window.activeTextEditor;
+    if (activeEditor) {
+      return path.dirname(activeEditor.document.uri.fsPath);
+    }
+
+    return "";
   }
 }
 
