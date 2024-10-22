@@ -16,12 +16,12 @@ export default function ErrorPage() {
       className="text-center"
       style={{ backgroundColor: vscBackground }}
     >
-      <h1>Error in Continue React App</h1>
+      <h1>Error from PearAI</h1>
       <p>
         <i>{error.statusText || error.message}</i>
       </p>
       <br />
-      <p>Click below to Continue</p>
+      <p>Click below to reset.</p>
       <br />
       <ContinueButton
         disabled={false}

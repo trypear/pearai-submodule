@@ -30,8 +30,9 @@ import HeaderButtonWithText from "./HeaderButtonWithText";
 import ProgressBar from "./loaders/ProgressBar";
 import PostHogPageView from "./PosthogPageView";
 import ProfileSwitcher from "./ProfileSwitcher";
-<<<<<<< HEAD
 import ShortcutContainer from "./ShortcutContainer";
+import IndexingProgressBar from "./loaders/IndexingProgressBar";
+
 
 // check mac or window
 const platform = navigator.userAgent.toLowerCase();
@@ -40,11 +41,9 @@ const isWindows = platform.includes("win");
 
 // #region Styled Components
 const HEADER_HEIGHT = "1.55rem";
-=======
 import { isNewUserOnboarding } from "./OnboardingCard/utils";
 import { useOnboardingCard } from "./OnboardingCard";
 
->>>>>>> 7ceb05beb (Added squahs)
 const FOOTER_HEIGHT = "1.8em";
 
 const BottomMessageDiv = styled.div<{ displayOnBottom: boolean }>`
@@ -118,7 +117,6 @@ const ProfileDropdownPortalDiv = styled.div`
   font-size: ${getFontSize() - 2};
 `;
 
-<<<<<<< HEAD
 // #endregion
 
 const HIDE_FOOTER_ON_PAGES = [
@@ -129,8 +127,6 @@ const HIDE_FOOTER_ON_PAGES = [
 
 const SHOW_SHORTCUTS_ON_PAGES = ["/"];
 
-=======
->>>>>>> 7ceb05beb (Added squahs)
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -153,6 +149,16 @@ const Layout = () => {
   const displayBottomMessageOnBottom = useSelector(
     (state: RootState) => state.uiState.displayBottomMessageOnBottom,
   );
+
+  const [indexingState, setIndexingState] = useState<IndexingProgressUpdate>({
+    desc: "Loading indexing config",
+    progress: 0.0,
+    status: "loading",
+  });
+
+  useWebviewListener("indexProgress", async (data) => {
+    setIndexingState(data);
+  });
 
   const timeline = useSelector((state: RootState) => state.state.history);
 
@@ -281,12 +287,13 @@ const Layout = () => {
                   total={FREE_TRIAL_LIMIT_REQUESTS}
                 />
               )}
+              <IndexingProgressBar indexingState={indexingState} />
             </div>
 
             <ProfileSwitcher />
             <HeaderButtonWithText
               tooltipPlacement="top-end"
-              text="More"
+              text="Help"
               onClick={() => {
                 if (location.pathname === "/help") {
                   navigate("/");
@@ -295,7 +302,7 @@ const Layout = () => {
                 }
               }}
             >
-              <EllipsisHorizontalCircleIcon width="1.4em" height="1.4em" />
+              <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
             </HeaderButtonWithText>
           </Footer>
         </GridDiv>

@@ -6,7 +6,6 @@
     "outDir": "out/tsc/src",
     "sourceMap": true,
     "rootDir": "../../",
-<<<<<<< HEAD
     "typeRoots": ["./node_modules/@types"],
     "paths": {
       "web-tree-sitter": ["../../core/node_modules/web-tree-sitter"]
@@ -18,11 +17,6 @@
     // "noUnusedParameters": true,  /* Report errors on unused parameters. */
     "esModuleInterop": true /* Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'. */,
     "resolveJsonModule": true /* Enable importing .json files */,
-=======
-    "strict": true,
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
->>>>>>> 7ceb05beb (Added squahs)
     "types": ["mocha"] // This solves conflict between jest and mocha: https://github.com/cypress-io/cypress/issues/7435#issuecomment-631695007
   },
   "include": ["src/**/*", "../../core/**/*.ts", "../../core/**/*.d.ts"],

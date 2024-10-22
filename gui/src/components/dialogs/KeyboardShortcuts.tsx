@@ -250,7 +250,6 @@ const jetbrainsShortcuts: KeyboardShortcutProps[] = [
 
 function KeyboardShortcutsDialog() {
   return (
-<<<<<<< HEAD
     <div className="p-2">
       <GridDiv className="rounded-xl w-3/4 mx-auto" style={{
           backgroundColor: vscEditorBackground,
@@ -270,22 +269,6 @@ function KeyboardShortcutsDialog() {
         )}
       </GridDiv>
     </div>
-=======
-    <GridDiv>
-      {(isJetBrains() ? jetbrainsShortcuts : vscodeShortcuts).map(
-        (shortcut, i) => {
-          return (
-            <KeyboardShortcut
-              key={i}
-              mac={shortcut.mac}
-              windows={shortcut.windows}
-              description={shortcut.description}
-            />
-          );
-        },
-      )}
-    </GridDiv>
->>>>>>> 7ceb05beb (Added squahs)
   );
 }
 

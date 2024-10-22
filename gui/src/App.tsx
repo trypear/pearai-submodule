@@ -15,6 +15,8 @@ import MonacoPage from "./pages/monaco";
 import { default as More, default as MorePage } from "./pages/more";
 import SettingsPage from "./pages/settings";
 import Stats from "./pages/stats";
+import { default as Help, default as HelpPage } from "./pages/help";
+
 
 const router = createMemoryRouter([
   {
@@ -40,7 +42,7 @@ const router = createMemoryRouter([
       },
       {
         path: "/help",
-        element: <More />,
+        element: <HelpPage />,
       },
       {
         path: "/settings",

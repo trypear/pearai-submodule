@@ -111,7 +111,6 @@ export const defaultSlashCommandsJetBrains = [
 ];
 
 export const defaultConfig: SerializedContinueConfig = {
-<<<<<<< HEAD
   models: [
     {
       model: "pearai_model",
@@ -141,10 +140,6 @@ export const defaultConfig: SerializedContinueConfig = {
       isDefault: true,
     },
   ],
-=======
-  models: [DEFAULT_CHAT_MODEL_CONFIG],
-  tabAutocompleteModel: DEFAULT_AUTOCOMPLETE_MODEL_CONFIG,
->>>>>>> 7ceb05beb (Added squahs)
   customCommands: [
     {
       name: "test",
@@ -153,15 +148,6 @@ export const defaultConfig: SerializedContinueConfig = {
       description: "Write unit tests for highlighted code",
     },
   ],
-<<<<<<< HEAD
-  // WIP: Add autocomplete by default
-  // tabAutocompleteModel: {
-  //   title: "PearAI Autocomplete",
-  //   provider: "pearai_server",
-  //   model: "pearai_autocomplete",
-  // },
-=======
->>>>>>> 7ceb05beb (Added squahs)
   contextProviders: defaultContextProvidersVsCode,
   slashCommands: defaultSlashCommandsVscode,
 };

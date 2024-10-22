@@ -1,6 +1,12 @@
 async function* toAsyncIterable(nodeReadable: NodeJS.ReadableStream): AsyncGenerator<Uint8Array> {
   for await (const chunk of nodeReadable) {
-    yield chunk as Uint8Array;
+    if (typeof chunk === 'string') {
+      yield new TextEncoder().encode(chunk);
+    } else if (Buffer.isBuffer(chunk)) {
+      yield new Uint8Array(chunk);
+    } else {
+      throw new Error('Unexpected chunk type');
+    }
   }
 }
 
