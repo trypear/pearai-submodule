@@ -272,6 +272,7 @@ export interface ContextItem {
   editing?: boolean;
   editable?: boolean;
   icon?: string;
+  uri?: ContextItemUri;
 }
 
 export interface ContextItemWithId {
