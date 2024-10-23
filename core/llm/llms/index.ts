@@ -30,6 +30,7 @@ import Mistral from "./Mistral.js";
 import Msty from "./Msty.js";
 import Ollama from "./Ollama.js";
 import OpenAI from "./OpenAI.js";
+import OpenRouter from "./OpenRouter.js";
 import Replicate from "./Replicate.js";
 import TextGenWebUI from "./TextGenWebUI.js";
 import Together from "./Together.js";
@@ -104,32 +105,33 @@ export async function renderTemplatedString(
 
 const LLMs = [
   Anthropic,
+  Azure,
+  Bedrock,
+  Cloudflare,
   Cohere,
+  ContinueProxy,
+  Deepseek,
+  DeepInfra,
+  Fireworks,
+  Flowise,
   FreeTrial,
   Gemini,
+  Groq,
+  HuggingFaceInferenceAPI,
+  HuggingFaceTGI,
+  LlamaCpp,
   Llamafile,
+  LMStudio,
+  Mistral,
+  Msty,
   Ollama,
+  OpenAI,
+  OpenRouter,
+  PearAIServer,
   Replicate,
   TextGenWebUI,
   Together,
-  HuggingFaceTGI,
-  HuggingFaceInferenceAPI,
-  LlamaCpp,
-  OpenAI,
-  LMStudio,
-  Mistral,
-  Bedrock,
-  DeepInfra,
-  Flowise,
-  Groq,
-  Fireworks,
-  ContinueProxy,
-  Cloudflare,
-  Deepseek,
-  Msty,
-  Azure,
   WatsonX,
-  PearAIServer,
 ];
 
 export async function llmFromDescription(

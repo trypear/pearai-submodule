@@ -1,6 +1,7 @@
 import * as JSONC from "comment-json";
 import * as fs from "fs";
 import path from "path";
+import { homedir } from "os";
 import {
   slashCommandFromDescription,
   slashFromCustomCommand,
@@ -72,7 +73,7 @@ function resolveSerializedConfig(filepath: string): SerializedContinueConfig {
 
   // Replace "pearai-server" with "pearai_server" at the beginning
   // This is to make v0.0.3 backwards compatible with v0.0.2
-  content = content.replace(/"pearai-server"/g, '"pearai_server"');
+  content = content.replace(/"pearai-server"/g, "pearai_server");
 
   const config = JSONC.parse(content) as unknown as SerializedContinueConfig;
   if (config.env && Array.isArray(config.env)) {
@@ -339,7 +340,6 @@ async function intermediateToFinalConfig(
   } else {
     // Remove free trial models
     models = models.filter((model) => model.providerName !== "free-trial");
-    console.log("Models:", models);
   }
 
   // Tab autocomplete model
@@ -566,8 +566,13 @@ function escapeSpacesInPath(p: string): string {
 }
 
 async function buildConfigTs() {
-  if (!fs.existsSync(getConfigTsPath())) {
-    return undefined;
+  const homeDir = homedir();
+  const configTsPath = path.join(homeDir, ".pearai", "config.ts");
+
+  if (!fs.existsSync(configTsPath)) {
+    console.error(`Config file does not exist: ${configTsPath}`);
+
+    return;
   }
 
   try {
@@ -576,17 +581,16 @@ async function buildConfigTs() {
         `${escapeSpacesInPath(path.dirname(process.execPath))}/esbuild${
           getTarget().startsWith("win32") ? ".exe" : ""
         } ${escapeSpacesInPath(
-          getConfigTsPath(),
+          configTsPath,
         )} --bundle --outfile=${escapeSpacesInPath(
           getConfigJsPath(),
         )} --platform=node --format=cjs --sourcemap --external:fetch --external:fs --external:path --external:os --external:child_process`,
       );
     } else {
-      // Dynamic import esbuild so potentially disastrous errors can be caught
       const esbuild = await import("esbuild");
 
       await esbuild.build({
-        entryPoints: [getConfigTsPath()],
+        entryPoints: [configTsPath],
         bundle: true,
         platform: "node",
         format: "cjs",
@@ -596,15 +600,16 @@ async function buildConfigTs() {
       });
     }
   } catch (e) {
-    console.log(
+    console.error(
       `Build error. Please check your ~/.pearai/config.ts file: ${e}`,
     );
-    return undefined;
+    return;
   }
 
   if (!fs.existsSync(getConfigJsPath())) {
-    return undefined;
+    return;
   }
+
   return fs.readFileSync(getConfigJsPath(), "utf8");
 }
 function addDefaults(config: SerializedContinueConfig): void {
@@ -633,7 +638,7 @@ function addDefaultModels(config: SerializedContinueConfig): void {
 
 function addDefaultCustomCommands(config: SerializedContinueConfig): void {
   const defaultCommands = defaultCustomCommands;
-  defaultCommands.forEach(defaultCommand => {
+  defaultCommands.forEach((defaultCommand) => {
     if (!config.customCommands) {
       config.customCommands = [];
     }
@@ -668,7 +673,6 @@ function addDefaultSlashCommands(config: SerializedContinueConfig): void {
     }
   });
 }
-
 
 async function loadFullConfigNode(
   ide: IDE,
@@ -707,7 +711,7 @@ async function loadFullConfigNode(
       }
       intermediate = module.modifyConfig(intermediate);
     } catch (e) {
-      console.log("Error loading config.ts: ", e);
+      console.error("Error loading config.ts: ", e);
     }
   }
 
@@ -724,7 +728,7 @@ async function loadFullConfigNode(
       }
       intermediate = module.modifyConfig(intermediate);
     } catch (e) {
-      console.log("Error loading remotely set config.js: ", e);
+      console.error("Error loading remotely set config.js: ", e);
     }
   }
 

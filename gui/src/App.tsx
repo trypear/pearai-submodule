@@ -1,4 +1,5 @@
 import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 import { RouterProvider, createMemoryRouter } from "react-router-dom";
 import Layout from "./components/Layout";
 import { SubmenuContextProvidersContext } from "./context/SubmenuContextProviders";
@@ -97,8 +98,11 @@ const router = createMemoryRouter([
 
 function App() {
   const dispatch = useDispatch();
-  console.log("Is overlay? ", (window as any).isOverlayPearAI);
   useSetup(dispatch);
+
+  useEffect(() => {
+    console.log("Is overlay? ", (window as any).isOverlayPearAI);
+  }, []);
 
   const vscTheme = useVscTheme();
   const submenuContextProvidersMethods = useSubmenuContextProviders();

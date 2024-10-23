@@ -86,3 +86,5 @@ Write-Output "`nInstalling docs dependencies..." -ForegroundColor White
 Push-Location docs
 
 npm install
+
+Pop-Location

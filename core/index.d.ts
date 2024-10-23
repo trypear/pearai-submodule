@@ -610,6 +610,7 @@ type ModelProvider =
   | "openai-aiohttp"
   | "msty"
   | "watsonx"
+  | "openrouter"
   | "pearai_server"
   | "other";
 
