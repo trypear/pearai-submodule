@@ -125,8 +125,7 @@ const getPlaceholder = (historyLength: number, location: Location | null) => {
       ? "Ask me to create, change, or fix anything..."
       : "Send a follow-up";
   }
-
-  if (defaultModel?.model?.toLowerCase().includes("perplexity")) {
+  else if (location?.pathname === "/perplexityMode") {
     return historyLength === 0 ? "Ask for any information" : "Ask a follow-up";
   }
 
