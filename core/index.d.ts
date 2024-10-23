@@ -550,6 +550,7 @@ type StepName =
   | "DraftIssueStep";
 
 type ContextProviderName =
+  | "file"
   | "diff"
   | "github"
   | "terminal"

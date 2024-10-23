@@ -18,8 +18,8 @@ const MAX_SUBMENU_ITEMS = 10_000;
 class RelativeFileContextProvider extends BaseContextProvider {
   static description: ContextProviderDescription = {
     title: "relativefilecontext",
-    displayTitle: "File Path",
-    description: "Insert relative file path",
+    displayTitle: "Files",
+    description: "Add file to context.",
     type: "submenu",
   };
 
