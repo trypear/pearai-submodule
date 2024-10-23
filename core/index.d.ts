@@ -265,6 +265,12 @@ export interface ContextItemId {
   itemId: string;
 }
 
+export type ContextItemUriTypes = "file" | "url";
+
+export interface ContextItemUri {
+  type: ContextItemUriTypes;
+  value: string;
+}
 export interface ContextItem {
   content: string;
   name: string;
