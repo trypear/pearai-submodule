@@ -15,7 +15,7 @@ import {
 import { modelSupportsImages } from "core/llm/autodetect";
 import { getBasename, getRelativePath } from "core/util";
 import { usePostHog } from "posthog-js/react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -56,6 +56,8 @@ import {
   getSlashCommandDropdownOptions,
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
+import { isBareChatMode } from '../../util/bareChatMode';
+
 
 const InputBoxDiv = styled.div`
   resize: none;
@@ -114,6 +116,18 @@ const HoverTextDiv = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
+const getPlaceholder = (defaultModel, historyLength: number) => {
+  if (defaultModel?.title?.toLowerCase().includes("aider")) {
+    return historyLength === 0
+      ? "Ask me to create, change, or fix anything..."
+      : "Send a follow-up";
+  }
+
+  return historyLength === 0
+    ? "Ask anything, '/' for slash commands, '@' to add context"
+    : "Ask a follow-up";
+};
 
 function getDataUrlForFile(file: File, img): string {
   const targetWidth = 512;
@@ -194,13 +208,10 @@ function TipTapEditor(props: TipTapEditorProps) {
   const contextItems = useSelector(
     (store: RootState) => store.state.contextItems,
   );
-
   const defaultModel = useSelector(defaultModelSelector);
-
+  const bareChatMode = isBareChatMode();
   const getSubmenuContextItemsRef = useUpdatingRef(getSubmenuContextItems);
-  const availableContextProvidersRef = useUpdatingRef(
-    props.availableContextProviders,
-  );
+  const availableContextProvidersRef = useUpdatingRef(props.availableContextProviders)
 
   const historyLengthRef = useUpdatingRef(historyLength);
   const availableSlashCommandsRef = useUpdatingRef(
@@ -299,10 +310,7 @@ function TipTapEditor(props: TipTapEditorProps) {
         },
       }),
       Placeholder.configure({
-        placeholder: () =>
-          historyLengthRef.current === 0
-            ? "Ask anything, '/' for slash commands, '@' to add context"
-            : "Ask a follow-up",
+        placeholder: () => getPlaceholder(defaultModel, historyLengthRef.current),
       }),
       Paragraph.extend({
         addKeyboardShortcuts() {
@@ -475,7 +483,19 @@ function TipTapEditor(props: TipTapEditorProps) {
   });
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
+  
+  useEffect(() => {
+    const handleShowFile = (event: CustomEvent) => {
+      const filepath = event.detail.filepath;
+      ideMessenger.post("showFile", { filepath });
+    };
 
+    window.addEventListener('showFile', handleShowFile as EventListener);
+    return () => {
+      window.removeEventListener('showFile', handleShowFile as EventListener);
+    };
+  }, [ideMessenger]);
+  
   useEffect(() => {
     if (isJetBrains()) {
       // This is only for VS Code .ipynb files

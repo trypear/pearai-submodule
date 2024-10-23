@@ -39,6 +39,7 @@ export interface ProviderInfo {
   refPage?: string;
   apiKeyUrl?: string;
   downloadUrl?: string;
+  showInMenu?: boolean;
 }
 
 const completionParamsInputsConfigs = Object.values(completionParamsInputs);
@@ -113,6 +114,18 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
     icon: "pearai.png",
     tags: [ModelProviderTags.Recommended, ModelProviderTags.Hosted],
     packages: [models.pearai_model],
+    showInMenu: false,
+  },
+  aider: {
+    title: "Aider",
+    provider: "aider",
+    refPage: "aider",
+    description:
+      "Leading AI Assistant for Code Generation: https://aider.chat/",
+    icon: "",
+    tags: [],
+    packages: [models.aider],
+    showInMenu: false,
   },
   other: {
     title: "Other",
@@ -121,6 +134,7 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
       "Use your own API key for different cloud, local, and other LLM providers (i.e. OpenAI).",
     icon: "openai.png",
     tags: [ModelProviderTags.RequiresApiKey],
+    showInMenu: false,
     packages: [],
   },
   openai: {

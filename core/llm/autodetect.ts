@@ -214,6 +214,10 @@ function autodetectTemplateType(model: string): TemplateType | undefined {
     return "none";
   }
 
+  if (lower.includes("aider")) {
+    return "none";
+  }
+
   return "chatml";
 }
 
