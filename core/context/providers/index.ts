@@ -22,7 +22,7 @@ import ProblemsContextProvider from "./ProblemsContextProvider.js";
 import SearchContextProvider from "./SearchContextProvider.js";
 import TerminalContextProvider from "./TerminalContextProvider.js";
 import URLContextProvider from "./URLContextProvider.js";
-import BareFileContextProvider from "./BareFileContextProvider.js";
+import RelativeFileContextProvider from "./RelativeFileContextProvider.js";
 
 /**
  * Note: We are currently omitting the following providers due to bugs:
@@ -53,7 +53,7 @@ const Providers: (typeof BaseContextProvider)[] = [
   CurrentFileContextProvider,
   URLContextProvider,
   ContinueProxyContextProvider,
-  BareFileContextProvider
+  RelativeFileContextProvider
 ];
 
 export function contextProviderClassFromName(

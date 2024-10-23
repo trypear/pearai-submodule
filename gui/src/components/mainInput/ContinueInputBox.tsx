@@ -67,20 +67,25 @@ function ContinueInputBox(props: ContinueInputBoxProps) {
 
   const active = useSelector((store: RootState) => store.state.active);
   const availableSlashCommands = useSelector(selectSlashCommands);
-  const availableContextProviders = useSelector(
+  let availableContextProviders = useSelector(
     (store: RootState) => store.state.config.contextProviders,
   );
-  const bareChatMode = isBareChatMode();
-
-  const filteredContextProviders = useMemo(() => {
-    return bareChatMode
-      ? availableContextProviders.filter(
-          (provider) => provider.title === "barefile",
-        )
-      : availableContextProviders.filter(
-          (provider) => provider.title !== "barefile",
-        );
-  }, [bareChatMode, availableContextProviders]);
+  const bareChatMode = isBareChatMode()
+  // const filteredContextProviders = useMemo(() => {
+  //   return bareChatMode
+  //     ? availableContextProviders.filter(
+  //         (provider) => provider.title === "relativefilecontext",
+  //       )
+  //     : availableContextProviders.filter(
+  //         (provider) => provider.title !== "relativefilecontext",
+  //       );
+  // }, [bareChatMode, availableContextProviders]);
+  //   if (bareChatMode) {
+  //     console.dir("BEFORE: ")
+  //     console.dir(availableContextProviders)
+  //     console.dir("after: ")
+  //     console.dir(filteredContextProviders)
+  //   }
 
   useWebviewListener(
     "newSessionWithPrompt",
@@ -117,7 +122,7 @@ function ContinueInputBox(props: ContinueInputBoxProps) {
           editorState={props.editorState}
           onEnter={props.onEnter}
           isMainInput={props.isMainInput}
-          availableContextProviders={filteredContextProviders}
+          availableContextProviders={undefined}
           availableSlashCommands={
             bareChatMode ? undefined : availableSlashCommands
           }

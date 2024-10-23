@@ -15,9 +15,9 @@ import { BaseContextProvider } from "../index.js";
 
 const MAX_SUBMENU_ITEMS = 10_000;
 
-class BareFileContextProvider extends BaseContextProvider {
+class RelativeFileContextProvider extends BaseContextProvider {
   static description: ContextProviderDescription = {
-    title: "barefilecontext",
+    title: "relativefilecontext",
     displayTitle: "File Path",
     description: "Insert relative file path",
     type: "submenu",
@@ -66,4 +66,4 @@ class BareFileContextProvider extends BaseContextProvider {
   }
 }
 
-export default BareFileContextProvider;
+export default RelativeFileContextProvider;

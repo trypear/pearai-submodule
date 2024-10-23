@@ -34,9 +34,6 @@ async function resolveEditorContent(
   let contextItemAttrs: MentionAttrs[] = [];
   const selectedCode: RangeInFile[] = [];
   let slashCommand = undefined;
-  // console.dir("Inside resolveEditorContent");
-  // console.dir("editorState - ");
-  // console.dir(editorState);
   for (const p of editorState?.content) {
     if (p.type === "paragraph") {
       const [text, ctxItems, foundSlashCommand] = resolveParagraph(p);
@@ -131,7 +128,7 @@ async function resolveEditorContent(
       fullInput: stripImages(parts),
       selectedCode,
     });
-  
+
     if (previousDirectoryItems !== directoryItems[0].content) {
       store.dispatch(setDirectoryItems(directoryItems[0].content));
       contextItems.push(...directoryItems);
@@ -172,12 +169,6 @@ async function resolveEditorContent(
     }
   }
 
-  // console.dir("contextItems - ");
-  // console.dir(contextItems);
-  // console.dir("selectedCode - ");
-  // console.dir(selectedCode);
-  // console.dir("parts - ");
-  // console.dir(parts);
 
   return [contextItems, selectedCode, parts];
 }
@@ -197,9 +188,6 @@ function findLastIndex<T>(
 function resolveParagraph(p: JSONContent): [string, MentionAttrs[], string] {
   const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
   const isBareChatMode = defaultModelTitle?.toLowerCase().includes("aider");
-  // console.dir("IS BARE CHAT MODE")
-  // console.dir(isBareChatMode)
-
   let text = "";
   const contextItems = [];
   let slashCommand = undefined;

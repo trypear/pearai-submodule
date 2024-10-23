@@ -158,7 +158,7 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
 
       let command: string[];
 
-      const aiderFlags = "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands";
+      const aiderFlags = "--no-pretty --yes-always --no-auto-commits";
       const aiderCommands = [
         `python -m aider ${aiderFlags}`,
         `python3 -m aider ${aiderFlags}`,
@@ -172,9 +172,8 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
           commandFound = true;
 
           switch (model) {
-            case "claude-3-5-sonnet-20240620":
-              console.log("claude model chosen");
-              command = [`${aiderCommand} --model claude-3-5-sonnet-20240620`];
+            case model.includes("claude") && model:
+              command = [`${aiderCommand} --model ${model}`];
               break;
             case "gpt-4o":
               command = [`${aiderCommand} --model gpt-4o`];
@@ -430,15 +429,7 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
     options: CompletionOptions,
   ): AsyncGenerator<ChatMessage> {
     console.log("Inside Aider _streamChat");
-
-    // console.dir('messages - ');
-    // console.dir(messages);
-    // console.dir('lastmessage - ');
-    // console.dir(messages[messages.length - 1]);
     const lastMessage = messages[messages.length - 1].content.toString();
-    // console.dir("===============")
-    // console.dir("lastMessage processed - ");
-    // console.dir(lastMessage);
     this.sendToAiderChat(lastMessage);
 
     this.aiderOutput = "";

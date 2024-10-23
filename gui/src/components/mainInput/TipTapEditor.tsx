@@ -211,13 +211,7 @@ function TipTapEditor(props: TipTapEditorProps) {
   const defaultModel = useSelector(defaultModelSelector);
   const bareChatMode = isBareChatMode();
   const getSubmenuContextItemsRef = useUpdatingRef(getSubmenuContextItems);
-  const availableContextProvidersRef = useUpdatingRef(
-    bareChatMode
-      ? props.availableContextProviders.filter(
-          (provider) => provider.title === "barefile"
-        )
-      : props.availableContextProviders
-  );
+  const availableContextProvidersRef = useUpdatingRef(props.availableContextProviders)
 
   const historyLengthRef = useUpdatingRef(historyLength);
   const availableSlashCommandsRef = useUpdatingRef(
