@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { defaultBorderRadius, lightGray, vscInputBackground } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
@@ -168,23 +168,25 @@ function ModelSelect() {
     (state: RootState) => state.state.config.models,
   );
 
+  const location = useLocation();
   const navigate = useNavigate();
 
   const [options, setOptions] = useState<Option[]>([]);
-
   const selectedProfileId = useSelector(
     (store: RootState) => store.state.selectedProfileId,
   );
 
   useEffect(() => {
     setOptions(
-      allModels.map((model) => {
-        return {
-          value: model.title,
-          title: modelSelectTitle(model),
-          isDefault: model?.isDefault,
-        };
-      }),
+      allModels
+        .filter((model) => !model?.title?.toLowerCase().includes("aider") && !model?.title?.toLowerCase().includes("perplexity"))
+        .map((model) => {
+          return {
+            value: model.title,
+            title: modelSelectTitle(model),
+            isDefault: model?.isDefault,
+          };
+        }),
     );
   }, [allModels]);
 

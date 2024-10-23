@@ -71,6 +71,8 @@ export interface ILLM extends LLMOptions {
   apiType?: string;
   region?: string;
   projectId?: string;
+  getCurrentDirectory?: (() => Promise<string>) | undefined | null;
+
 
   complete(prompt: string, options?: LLMFullCompletionOptions): Promise<string>;
 
@@ -289,6 +291,7 @@ export interface ContextItemWithId {
   editing?: boolean;
   editable?: boolean;
   icon?: string;
+  language?: string;
 }
 
 export interface InputModifiers {
@@ -361,6 +364,9 @@ export interface LLMOptions {
   watsonxUsername?: string;
   watsonxPassword?: string;
   watsonxProjectId?: string;
+  getCurrentDirectory?: (() => Promise<string>) | undefined | null;
+  getCredentials?: () => Promise<PearAuth | undefined>;
+  setCredentials?: (auth: PearAuth) => Promise<void>;
 }
 type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
   T,
@@ -510,6 +516,9 @@ export interface IDE {
   // Callbacks
   onDidChangeActiveTextEditor(callback: (filepath: string) => void): void;
   pathSep(): Promise<string>;
+
+  getCurrentDirectory(): Promise<string>;
+
 }
 
 // Slash Commands
@@ -549,6 +558,7 @@ type StepName =
   | "DraftIssueStep";
 
 type ContextProviderName =
+  | "file"
   | "diff"
   | "github"
   | "terminal"
@@ -568,7 +578,8 @@ type ContextProviderName =
   | "docs"
   | "gitlab-mr"
   | "os"
-  | "currentFile";
+  | "currentFile"
+  | "relativefilecontext";
 
 type TemplateType =
   | "llama2"
@@ -618,6 +629,8 @@ type ModelProvider =
   | "msty"
   | "watsonx"
   | "pearai_server"
+  | "aider"
+  | "perplexity"
   | "other";
 
 export type ModelName =
@@ -690,7 +703,9 @@ export type ModelName =
   | "starcoder-3b"
   | "starcoder2-3b"
   | "stable-code-3b"
-  | "pearai_model";
+  | "pearai_model"
+  | "aider"
+  | "perplexity";
 
 export interface RequestOptions {
   timeout?: number;

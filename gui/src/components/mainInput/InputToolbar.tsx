@@ -5,8 +5,8 @@ import {
 import { PhotoIcon as SolidPhotoIcon } from "@heroicons/react/24/solid";
 import { InputModifiers } from "core";
 import { modelSupportsImages } from "core/llm/autodetect";
-import { useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import {
   defaultBorderRadius,
@@ -25,6 +25,11 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ModelSelect from "../modelSelection/ModelSelect";
+import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
+import { setDefaultModel } from "../../redux/slices/stateSlice";
+import { RootState } from "@/redux/store";
+import { useLocation } from "react-router-dom";
+
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
   padding: 4px 0;
@@ -90,9 +95,31 @@ interface InputToolbarProps {
 function InputToolbar(props: InputToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileSelectHovered, setFileSelectHovered] = useState(false);
-
   const defaultModel = useSelector(defaultModelSelector);
+  const bareChatMode = isBareChatMode();
+  const perplexityMode = isPerplexityMode();
+
   const useActiveFile = useSelector(selectUseActiveFile);
+  const allModels = useSelector(
+    (state: RootState) => state.state.config.models,
+  );
+
+  const dispatch = useDispatch();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname === "/aiderMode") {
+      const aider = allModels.find(
+        (model) => model?.title?.toLowerCase().includes("aider"),
+      );
+      dispatch(setDefaultModel({ title: aider?.title }));
+    } else if (location.pathname === "/perplexityMode") {
+      const perplexity = allModels.find(
+        (model) => model?.title?.toLowerCase().includes("perplexity"),
+      );
+      dispatch(setDefaultModel({ title: perplexity?.title }));
+    }
+  }, [location, allModels]);
 
   return (
     <>
@@ -102,15 +129,20 @@ function InputToolbar(props: InputToolbarProps) {
         id="input-toolbar"
       >
         <span className="flex gap-2 items-center whitespace-nowrap">
-          <ModelSelect />
-          <StyledSpan
-            onClick={(e) => {
-              props.onAddContextItem();
-            }}
-            className="hover:underline cursor-pointer"
-          >
-            Add Context <PlusIcon className="h-2.5 w-2.5" aria-hidden="true" />
-          </StyledSpan>
+          {!bareChatMode && (
+            <>
+              {!perplexityMode && <ModelSelect />}
+              <StyledSpan
+                onClick={(e) => {
+                  props.onAddContextItem();
+                }}
+                className="hover:underline cursor-pointer"
+              >
+                Add Context{" "}
+                <PlusIcon className="h-2.5 w-2.5" aria-hidden="true" />
+              </StyledSpan>
+            </>
+          )}
           {defaultModel &&
             modelSupportsImages(
               defaultModel.provider,
@@ -172,7 +204,7 @@ function InputToolbar(props: InputToolbarProps) {
               {getAltKeyLabel()} ⏎{" "}
               {useActiveFile ? "No context" : "Use active file"}
             </span>
-          ) : (
+          ) : !bareChatMode ? (
             <StyledSpan
               style={{
                 color: props.usingCodebase ? vscBadgeBackground : lightGray,
@@ -192,7 +224,7 @@ function InputToolbar(props: InputToolbarProps) {
             >
               {getMetaKeyLabel()} ⏎ Use codebase
             </StyledSpan>
-          )}
+          ) : null}
           <EnterButton
             offFocus={props.usingCodebase}
             onClick={(e) => {
@@ -211,3 +243,4 @@ function InputToolbar(props: InputToolbarProps) {
 }
 
 export default InputToolbar;
+

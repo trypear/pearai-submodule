@@ -1,4 +1,5 @@
 import {
+  ArrowLeftEndOnRectangleIcon,
   ArrowUturnLeftIcon,
   BarsArrowDownIcon,
   CubeIcon,
@@ -8,7 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChatHistoryItem } from "core";
 import { stripImages } from "core/llm/images";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -16,6 +17,7 @@ import {
   lightGray,
   vscBackground,
   vscButtonBackground,
+  vscEditorBackground,
   vscInputBackground,
 } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
@@ -25,6 +27,7 @@ import { getFontSize } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
+import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
 
 interface StepContainerProps {
   item: ChatHistoryItem;
@@ -54,6 +57,8 @@ function StepContainer(props: StepContainerProps) {
   const isUserInput = props.item.message.role === "user";
   const active = useSelector((store: RootState) => store.state.active);
   const ideMessenger = useContext(IdeMessengerContext);
+  const bareChatMode = isBareChatMode();
+  const isPerplexity = isPerplexityMode();
 
   const [feedback, setFeedback] = useState<boolean | undefined>(undefined);
 
@@ -123,6 +128,13 @@ function StepContainer(props: StepContainerProps) {
             />
           )}
         </ContentDiv>
+        {!active && isPerplexity && <HeaderButtonWithText
+          onClick={() => {
+            ideMessenger.post("addPerplexityContext", { text: stripImages(props.item.message.content), language: "" });
+          }}>
+          <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+          Add to PearAI chat context
+        </HeaderButtonWithText>}
         {(isHovered || typeof feedback !== "undefined") && !active && (
           <div
             className="flex gap-1 absolute -bottom-2 right-0"
@@ -145,7 +157,7 @@ function StepContainer(props: StepContainerProps) {
                 />
               </div>
             )}
-            {truncatedEarly && (
+            {truncatedEarly && !bareChatMode && (
               <HeaderButtonWithText
                 text="Continue generation"
                 onClick={(e) => {
@@ -159,23 +171,25 @@ function StepContainer(props: StepContainerProps) {
                 />
               </HeaderButtonWithText>
             )}
-
+            
             <CopyButton
               text={stripImages(props.item.message.content)}
               color={lightGray}
             />
-            <HeaderButtonWithText
-              text="Regenerate"
-              onClick={(e) => {
-                props.onRetry();
-              }}
-            >
+            {!bareChatMode && (
+              <HeaderButtonWithText
+                text="Regenerate"
+                onClick={(e) => {
+                  props.onRetry();
+                }}
+              >
               <ArrowUturnLeftIcon
                 color={lightGray}
                 width="1.2em"
                 height="1.2em"
               />
-            </HeaderButtonWithText>
+              </HeaderButtonWithText>
+            )}
             <HeaderButtonWithText text="Delete Message">
               <TrashIcon
                 color={lightGray}
