@@ -214,7 +214,6 @@ function TipTapEditor(props: TipTapEditorProps) {
     (store: RootState) => store.state.contextItems,
   );
   const defaultModel = useSelector(defaultModelSelector);
-  const bareChatMode = isBareChatMode();
   const getSubmenuContextItemsRef = useUpdatingRef(getSubmenuContextItems);
   const availableContextProvidersRef = useUpdatingRef(props.availableContextProviders)
 
