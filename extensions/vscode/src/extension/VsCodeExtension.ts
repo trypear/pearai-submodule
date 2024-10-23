@@ -298,8 +298,6 @@ export class VsCodeExtension {
         filepath.endsWith(".gitignore")
       ) {
         // Reindex the workspaces
-        console.log("IM TRIGGERING REINDEX 2")
-        console.dir("IM TRIGGERING REINDEX 2")
         this.core.invoke("index/forceReIndex", undefined);
       } else {
         // Reindex the file
@@ -340,8 +338,6 @@ export class VsCodeExtension {
                   currentBranch !== this.PREVIOUS_BRANCH_FOR_WORKSPACE_DIR[dir]
                 ) {
                   // Trigger refresh of index only in this directory
-                  console.log("IM TRIGGERING REINDEX 1")
-                  console.dir("IM TRIGGERING REINDEX 1")
                   this.core.invoke("index/forceReIndex", { dir });
                 }
               }

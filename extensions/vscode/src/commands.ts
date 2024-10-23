@@ -303,8 +303,6 @@ const commandsMap: (
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
     },
     "pearai.codebaseForceReIndex": async () => {
-      console.log("IM TRIGGERING REINDEX 3")
-      console.dir("IM TRIGGERING REINDEX 3")
       core.invoke("index/forceReIndex", undefined);
     },
     "pearai.docsIndex": async () => {
