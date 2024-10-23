@@ -108,8 +108,6 @@ function InputToolbar(props: InputToolbarProps) {
   const location = useLocation();
 
   useEffect(() => {
-    console.dir("IN NEW EFFECT")
-    console.dir(location?.pathname)
     if (location.pathname === "/aiderMode") {
       const aider = allModels.find(
         (model) => model?.title?.toLowerCase().includes("aider"),

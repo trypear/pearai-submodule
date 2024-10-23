@@ -119,7 +119,7 @@ const HoverTextDiv = styled.div`
 `;
 
 
-const getPlaceholder = (historyLength: number, location: Location | null) => {
+const getPlaceholder = (historyLength: number, location: Location<any>) => {
   if (location?.pathname === "/aiderMode") {
     return historyLength === 0
       ? "Ask me to create, change, or fix anything..."
