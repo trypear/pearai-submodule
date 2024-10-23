@@ -47,6 +47,10 @@ const router = createMemoryRouter(
           element: <GUI />,
         },
         {
+          path: "/perplexityMode",
+          element: <GUI />,
+        },
+        {
           path: "/history",
           element: <History />,
         },
@@ -112,7 +116,6 @@ const router = createMemoryRouter(
 
 function App() {
   const dispatch = useDispatch();
-  console.log("Is overlay? ", (window as any).isOverlayPearAI);
   useSetup(dispatch);
 
   const vscTheme = useVscTheme();
