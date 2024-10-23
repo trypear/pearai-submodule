@@ -119,13 +119,15 @@ const HoverTextDiv = styled.div`
 `;
 
 
-const getPlaceholder = (historyLength: number, location: Location | null) => {
-  if (location?.pathname === "/aiderMode") {
+const getPlaceholder = (defaultModel, historyLength: number) => {
+  console.dir("HIHIH")
+  console.dir(defaultModel?.title)
+  if (defaultModel?.title?.toLowerCase().includes("aider")) {
     return historyLength === 0
       ? "Ask me to create, change, or fix anything..."
       : "Send a follow-up";
   }
-  else if (location?.pathname === "/perplexityMode") {
+  if (defaultModel?.model?.toLowerCase().includes("perplexity")) {
     return historyLength === 0 ? "Ask for any information" : "Ask a follow-up";
   }
 
@@ -315,7 +317,7 @@ function TipTapEditor(props: TipTapEditorProps) {
         },
       }),
       Placeholder.configure({
-        placeholder: () => getPlaceholder(historyLengthRef.current, location),
+        placeholder: () => getPlaceholder(defaultModel, historyLengthRef.current),
       }),
       Paragraph.extend({
         addKeyboardShortcuts() {
