@@ -61,6 +61,21 @@ export const models: { [key: string]: ModelPackage } = {
     icon: "pearai.png",
     isOpenSource: false,
   },
+  perplexity: {
+    title: "Perplexity",
+    description:
+      "An AI-powered coding assistant that helps developers write, edit, and understand code more efficiently.",
+    params: {
+      model: "perplexity",
+      contextLength: 300_000,
+      title: "Perplexity",
+      systemMessage:
+        "You are an expert software developer. You give helpful and concise responses based on latest documentation and software engineering best practices.",
+    },
+    providerOptions: ["perplexity"],
+    icon: "pearai.png",
+    isOpenSource: false,
+  },
   openrouter: {
     title: "OpenRouter",
     description:
@@ -69,6 +84,8 @@ export const models: { [key: string]: ModelPackage } = {
       model: "",
       contextLength: 128000,
       title: "OpenRouter Model",
+      systemMessage:
+        "You are an expert software developer. You give helpful and concise responses based on latest documentation and software engineering best practices.",
     },
     providerOptions: ["openrouter"],
     icon: "open-router.png",
