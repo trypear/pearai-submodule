@@ -162,7 +162,6 @@ interface Option {
 }
 
 function ModelSelect() {
-  console.dir("IM RUNNING")
   const dispatch = useDispatch();
   const defaultModel = useSelector(defaultModelSelector);
   const allModels = useSelector(
@@ -178,6 +177,12 @@ function ModelSelect() {
   const selectedProfileId = useSelector(
     (store: RootState) => store.state.selectedProfileId,
   );
+
+  console.dir("IM RUNNING")
+  console.dir(location?.pathname)
+  console.dir(allModels)
+  console.dir("OUT")
+
 
   useEffect(() => {
     console.dir("HI88")
