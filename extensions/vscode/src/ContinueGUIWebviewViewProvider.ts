@@ -5,12 +5,21 @@ import * as vscode from "vscode";
 import { getExtensionVersion } from "./util/util";
 import { getExtensionUri, getNonce, getUniqueId } from "./util/vscode";
 import { VsCodeWebviewProtocol } from "./webviewProtocol";
+import { PEARAI_CHAT_VIEW_ID } from "./extension/VsCodeExtension";
+
+// The overlay's webview / panel's title is defined in pearai-app's PearOverlayParts.ts
+// A unique identifier is needed for the messaging protocol to distinguish the webviews.
+const PEAR_OVERLAY_TITLE = "pearai.pearOverlay"
 
 export class ContinueGUIWebviewViewProvider
   implements vscode.WebviewViewProvider
 {
-  public static readonly viewType = "pearai.continueGUIView";
+  public static readonly viewType = PEARAI_CHAT_VIEW_ID;
   public webviewProtocol: VsCodeWebviewProtocol;
+  private _webview?: vscode.Webview;
+  private _webviewView?: vscode.WebviewView;
+  private outputChannel: vscode.OutputChannel;
+  private enableDebugLogs: boolean;
 
   private updateDebugLogsStatus() {
     const settings = vscode.workspace.getConfiguration("pearai");
@@ -25,7 +34,7 @@ export class ContinueGUIWebviewViewProvider
   // Show or hide the output channel on enableDebugLogs
   private setupDebugLogsListener() {
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('pearai.enableDebugLogs')) {
+      if (event.affectsConfiguration("pearai.enableDebugLogs")) {
         const settings = vscode.workspace.getConfiguration("pearai");
         const enableDebugLogs = settings.get<boolean>("enableDebugLogs", false);
         if (enableDebugLogs) {
@@ -38,19 +47,19 @@ export class ContinueGUIWebviewViewProvider
   }
 
   private async handleWebviewMessage(message: any) {
-  if (message.messageType === "log") {
-    const settings = vscode.workspace.getConfiguration("pearai");
-    const enableDebugLogs = settings.get<boolean>("enableDebugLogs", false);
+    if (message.messageType === "log") {
+      const settings = vscode.workspace.getConfiguration("pearai");
+      const enableDebugLogs = settings.get<boolean>("enableDebugLogs", false);
 
-    if (message.level === "debug" && !enableDebugLogs) {
-      return; // Skip debug logs if enableDebugLogs is false
+      if (message.level === "debug" && !enableDebugLogs) {
+        return; // Skip debug logs if enableDebugLogs is false
+      }
+
+      const timestamp = new Date().toISOString().split(".")[0];
+      const logMessage = `[${timestamp}] [${message.level.toUpperCase()}] ${message.text}`;
+      this.outputChannel.appendLine(logMessage);
     }
-
-    const timestamp = new Date().toISOString().split(".")[0];
-    const logMessage = `[${timestamp}] [${message.level.toUpperCase()}] ${message.text}`;
-    this.outputChannel.appendLine(logMessage);
   }
-}
 
   resolveWebviewView(
     webviewView: vscode.WebviewView,
@@ -58,19 +67,15 @@ export class ContinueGUIWebviewViewProvider
     _token: vscode.CancellationToken,
   ): void | Thenable<void> {
     this._webview = webviewView.webview;
-    this._webview.onDidReceiveMessage((message) =>
-      this.handleWebviewMessage(message),
-    );
+
+    this._webview.onDidReceiveMessage((message) => {
+      return this.handleWebviewMessage(message);
+    });
     webviewView.webview.html = this.getSidebarContent(
       this.extensionContext,
       webviewView,
     );
   }
-
-  private _webview?: vscode.Webview;
-  private _webviewView?: vscode.WebviewView;
-  private outputChannel: vscode.OutputChannel;
-  private enableDebugLogs: boolean;
 
   get isVisible() {
     return this._webviewView?.visible;
@@ -82,7 +87,7 @@ export class ContinueGUIWebviewViewProvider
 
   public resetWebviewProtocolWebview(): void {
     if (this._webview) {
-      this.webviewProtocol.webview = this._webview;
+      this.webviewProtocol.resetWebviewToDefault()
     } else {
       console.warn("no webview found during reset");
     }
@@ -95,13 +100,12 @@ export class ContinueGUIWebviewViewProvider
     });
   }
 
-
   constructor(
     private readonly configHandlerPromise: Promise<ConfigHandler>,
     private readonly windowId: string,
     private readonly extensionContext: vscode.ExtensionContext,
   ) {
-    this.outputChannel = vscode.window.createOutputChannel("Continue");
+    this.outputChannel = vscode.window.createOutputChannel("PearAI");
     this.enableDebugLogs = false;
     this.updateDebugLogsStatus();
     this.setupDebugLogsListener();
@@ -120,7 +124,9 @@ export class ContinueGUIWebviewViewProvider
     page: string | undefined = undefined,
     edits: FileEdit[] | undefined = undefined,
     isFullScreen = false,
+    initialRoute: string = "/"
   ): string {
+    const isOverlay = panel?.title === PEAR_OVERLAY_TITLE; // defined in pearai-app PearOverlayPart.ts
     const extensionUri = getExtensionUri();
     let scriptUri: string;
     let styleMainUri: string;
@@ -164,21 +170,25 @@ export class ContinueGUIWebviewViewProvider
       if (e.affectsConfiguration("workbench.colorTheme")) {
         // Send new theme to GUI to update embedded Monaco themes
         this.webviewProtocol?.request("setTheme", { theme: getTheme() });
-        this.webviewProtocol?.request("setThemeType", { themeType: getThemeType() });
+        this.webviewProtocol?.request("setThemeType", {
+          themeType: getThemeType(),
+        });
       }
     });
 
-    this.webviewProtocol.webview = panel.webview;
+    this.webviewProtocol.addWebview(panel?.title === PEAR_OVERLAY_TITLE? panel.title : panel.viewType, panel.webview);
 
     return `<!DOCTYPE html>
     <html lang="en">
       <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script>const vscode = acquireVsCodeApi();</script>
+        <script>
+          const vscode = acquireVsCodeApi();
+        </script>
         <link href="${styleMainUri}" rel="stylesheet">
 
-        <title>Continue</title>
+        <title>PearAI</title>
       </head>
       <body>
         <div id="root"></div>
@@ -227,6 +237,8 @@ export class ContinueGUIWebviewViewProvider
           ) || [],
         )}</script>
         <script>window.isFullScreen = ${isFullScreen}</script>
+        <script>window.isPearOverlay = ${isOverlay}</script>
+        <script>window.initialRoute = "${initialRoute}"</script>
 
         ${
           edits
