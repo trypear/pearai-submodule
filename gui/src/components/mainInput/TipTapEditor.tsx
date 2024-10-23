@@ -271,6 +271,7 @@ function TipTapEditor(props: TipTapEditorProps) {
   );
 
   const { prevRef, nextRef, addRef } = useInputHistory();
+  const location = useLocation();
 
   const editor: Editor = useEditor({
     extensions: [
