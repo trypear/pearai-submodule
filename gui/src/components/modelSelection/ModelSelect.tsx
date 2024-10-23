@@ -162,11 +162,13 @@ interface Option {
 }
 
 function ModelSelect() {
+  console.dir("IM RUNNING")
   const dispatch = useDispatch();
   const defaultModel = useSelector(defaultModelSelector);
   const allModels = useSelector(
     (state: RootState) => state.state.config.models,
   );
+
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -178,7 +180,8 @@ function ModelSelect() {
   );
 
   useEffect(() => {
-
+    console.dir("HI88")
+    console.dir(location.pathname)
     if (location.pathname === "/aiderMode") {
       const aider = allModels.find(
         (model) => model?.title?.toLowerCase().includes("aider"),
