@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Search, Star, X } from "lucide-react";
+import { Search, Star } from "lucide-react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,9 @@ import {
 } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
 interface AITool {
   id: string;
@@ -131,12 +135,14 @@ function AIToolCard({
 }) {
   return (
     <Card
-      className={`cursor-pointer transition-all ${tool.enabled ? "bg-button" : "bg-input"} ${tool.comingSoon ? "opacity-50" : ""}`}
+      className={`cursor-pointer transition-all ${tool.enabled ? "bg-input" : "bg-button"} ${tool.comingSoon ? "opacity-50" : ""}`}
       onClick={tool.comingSoon ? undefined : onClick}
     >
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-2xl">{tool.icon}</div>
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-3xl bg-primary/10 p-2 rounded-full">
+            {tool.icon}
+          </div>
           <Switch
             checked={tool.enabled}
             onCheckedChange={onToggle}
@@ -145,7 +151,7 @@ function AIToolCard({
           />
         </div>
         <h3
-          className={`font-bold mb-1 ${tool.enabled ? "text-button-foreground" : ""}`}
+          className={`text-lg font-semibold mb-2 ${tool.enabled ? "text-button-foreground" : ""} transition-colors`}
         >
           {tool.name}
         </h3>
@@ -159,33 +165,38 @@ function AIToolCard({
   );
 }
 
-function QuickActionSlot({
-  tool,
-  onRemove,
-}: {
+interface QuickActionSlotProps {
   tool: AITool | null;
   onRemove: () => void;
-}) {
+}
+
+function QuickActionSlot({ tool, onRemove }: QuickActionSlotProps) {
   return (
     <div
-      className={`w-24 h-24 flex flex-col items-center justify-center ${tool ? "bg-button" : "bg-input"} rounded relative`}
+      className={`relative w-24 h-24 rounded-lg shadow-sm transition-all duration-200 ease-in-out
+                  flex flex-col items-center justify-center space-y-2
+                  hover:shadow-md
+                  ${tool ? "bg-button" : "bg-input"}
+                  ${tool ? "border border-input-border" : "border border-dashed border-input-border"}`}
     >
       {tool ? (
         <>
-          <div className="text-2xl mb-1">{tool.icon}</div>
-          <div className="text-xs text-button-foreground text-center">
+          <div className="text-3xl text-foreground">{tool.icon}</div>
+          <div className="text-xs font-medium text-center text-button-foreground px-2 line-clamp-2">
             {tool.name}
           </div>
           <button
+            className="absolute top-0.5 right-1 p-0.5 m-1 text-foreground/50
+                       bg-button hover:bg-button-hover border-0
+                       rounded-md duration-200 ease-in-out"
             onClick={onRemove}
-            className="absolute top-1 right-1 p-1 text-foreground/50 cursor-pointer hover:text-input bg-button border-none outline-none focus:outline-none transition-colors duration-50 ease-in-out"
             aria-label={`Remove ${tool.name} from quick action slot`}
           >
-            <X size={14} />
+            <XMarkIcon className="h-4 w-4" />
           </button>
         </>
       ) : (
-        <div className="text-muted-foreground">Empty</div>
+        <div className="text-sm text-foreground/50">Empty</div>
       )}
     </div>
   );
@@ -235,33 +246,33 @@ export default function AIToolInventory() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full overflow-y-auto">
+      <div className="flex flex-col h-full overflow-y-auto bg-background text-foreground">
         <header className="flex-none mb-6">
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold mb-2">PearAI Inventory</h1>{" "}
+            <h1 className="text-xl font-bold mb-2">PearAI Inventory</h1>
             <Badge variant="outline" className="pl-0">
               Beta
             </Badge>
+            <div className="relative mt-2">
+              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-foreground opacity-50" />
+              <Input
+                type="text"
+                placeholder="Search AI tools..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 w-full bg-input text-foreground border-input"
+                aria-label="Search AI tools"
+              />
+            </div>
             <Button
               onClick={() => navigate("/")}
-              className="mt-3 bg-input text-foreground cursor-pointer"
+              className="mt-3 ml-auto bg-input text-foreground cursor-pointer"
             >
-              Temporary Back Button
+              Back to Dashboard
             </Button>
           </div>
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="text"
-              placeholder="Search AI tools..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 w-full bg-input text-foreground border-input"
-              aria-label="Search AI tools"
-            />
-          </div>
         </header>
-  
+
         <main className="flex-1 flex gap-4 min-h-0">
           <div className="w-1/2 flex flex-col">
             <div className="flex-1 overflow-y-auto pr-4">
@@ -277,7 +288,7 @@ export default function AIToolInventory() {
               </div>
             </div>
           </div>
-  
+
           <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-base">
             {focusedTool ? (
               <div>
@@ -288,13 +299,13 @@ export default function AIToolInventory() {
                 <h3 className="font-bold mb-2">When to use:</h3>
                 <p className="mb-4">{focusedTool.whenToUse}</p>
                 <h3 className="font-bold mb-2">Strengths:</h3>
-                <ul className="list-disc mb-4">
+                <ul className="list-disc mb-4 pl-5">
                   {focusedTool.strengths.map((strength, index) => (
                     <li key={index}>{strength}</li>
                   ))}
                 </ul>
                 <h3 className="font-bold mb-2">Weaknesses:</h3>
-                <ul className="list-disc mb-4">
+                <ul className="list-disc mb-4 pl-5">
                   {focusedTool.weaknesses.map((weakness, index) => (
                     <li key={index}>{weakness}</li>
                   ))}
@@ -302,7 +313,7 @@ export default function AIToolInventory() {
                 {!focusedTool.comingSoon && (
                   <div className="mt-4">
                     <Button
-                      className="border bg-input text-foreground cursor-pointer"
+                      className="bg-button text-button-foreground hover:bg-button-hover cursor-pointer"
                       onClick={() => handleEquipToQuickSlot(focusedTool)}
                     >
                       Equip to quick action slots
@@ -316,13 +327,13 @@ export default function AIToolInventory() {
                 )}
               </div>
             ) : (
-              <div className="text-center text-muted-foreground mt-8">
+              <div className="text-center text-foreground opacity-50 mt-8">
                 Select an AI tool to view details
               </div>
             )}
           </div>
         </main>
-  
+
         <footer className="flex-none mt-6">
           <h3 className="font-bold mb-2">Quick Action Slots</h3>
           <div className="flex gap-2 mb-4">
@@ -335,7 +346,7 @@ export default function AIToolInventory() {
             ))}
           </div>
           <div className="flex items-center">
-            <Star className="text-accent-foreground mr-1" />
+            <Star className="text-accent mr-1" />
             <span className="font-bold">Suggested Build:</span>
             <div className="flex ml-2">
               {suggestedBuild.map((id) => {
