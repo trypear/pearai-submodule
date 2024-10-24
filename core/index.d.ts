@@ -267,6 +267,12 @@ export interface ContextItemId {
   itemId: string;
 }
 
+export type ContextItemUriTypes = "file" | "url";
+
+export interface ContextItemUri {
+  type: ContextItemUriTypes;
+  value: string;
+}
 export interface ContextItem {
   content: string;
   name: string;
@@ -274,6 +280,7 @@ export interface ContextItem {
   editing?: boolean;
   editable?: boolean;
   icon?: string;
+  uri?: ContextItemUri;
 }
 
 export interface ContextItemWithId {
@@ -1008,6 +1015,7 @@ export interface ContinueConfig {
   experimental?: ExperimentalConfig;
   analytics?: AnalyticsConfig;
   docs?: SiteIndexingConfig[];
+  isBetaAccess?: boolean;
 }
 
 export interface BrowserSerializedContinueConfig {
@@ -1026,6 +1034,7 @@ export interface BrowserSerializedContinueConfig {
   reranker?: RerankerDescription;
   experimental?: ExperimentalConfig;
   analytics?: AnalyticsConfig;
+  isBetaAccess?: boolean;
 }
 
 export interface PearAuth {

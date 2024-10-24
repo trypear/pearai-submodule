@@ -158,7 +158,7 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
 
       let command: string[];
 
-      const aiderFlags = "--no-pretty --yes-always --no-auto-commits";
+      const aiderFlags = "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands";
       const aiderCommands = [
         `python -m aider ${aiderFlags}`,
         `python3 -m aider ${aiderFlags}`,
@@ -468,7 +468,7 @@ public async aiderResetSession(model: string, apiKey: string | undefined): Promi
   }
 
   async listModels(): Promise<string[]> {
-    return ["aider", "claude-3-5-sonnet-20240620", "pearai_model", "gpt-4o"];
+    return ["claude-3-5-sonnet-20240620", "pearai_model", "gpt-4o"];
   }
 
   supportsFim(): boolean {
