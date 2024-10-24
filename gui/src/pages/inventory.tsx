@@ -27,15 +27,15 @@ const tabs = [
 ];
 
 export default function Inventory() {
-
   const location = useLocation();
   const navigate = useNavigate();
-
-  // Extract current tab from path or default to inventory
   const currentTab = location.pathname.split('/').pop() || 'inventory';
 
-  // Handle tab change
   const handleTabChange = (value: string) => {
+    if (value === 'inventory') {
+      navigate('/inventory');
+      return;
+    }
     navigate(`/inventory/${value}`);
   };
 
@@ -56,7 +56,8 @@ export default function Inventory() {
         className="flex flex-col h-full"
       >
         <div className="flex flex-col h-full">
-          <div className="px-4 pt-4">
+          {/* Made the header sticky with shadow */}
+          <div className="sticky top-0 px-4 pt-4 bg-background z-10 shadow-sm">
             <TabsList className="bg-input text-center">
               {tabs.map((tab) => (
                 <TabsTrigger
@@ -71,7 +72,7 @@ export default function Inventory() {
             <span className="ml-2">current path : {location.pathname}</span>
           </div>
           
-          <div className="flex-1 min-h-0 p-4">
+          <div className="flex-1 min-h-0 p-4 overflow-auto">
             {tabs.map((tab) => (
               <TabsContent 
                 key={tab.id} 

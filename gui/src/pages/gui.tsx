@@ -237,7 +237,7 @@ function GUI() {
   );
 
   const bareChatMode = isBareChatMode();
-  const aiderMode = location?.pathname === "/aiderMode"
+  const aiderMode = location?.pathname.split('/').pop() === "aiderMode"
   const perplexityMode = isPerplexityMode();
 
   const onCloseTutorialCard = () => {
