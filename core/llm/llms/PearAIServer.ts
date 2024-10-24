@@ -202,6 +202,7 @@ class PearAIServer extends BaseLLM {
     return false;
   }
 
+  // Not used, keeping temporarily ;)
   protected async _sendTokensUsed(
     kind: string,
     prompt: string,
@@ -209,7 +210,7 @@ class PearAIServer extends BaseLLM {
   ) {
     let promptTokens = this.countTokens(prompt);
     let generatedTokens = this.countTokens(completion);
-
+  
     const response = await this.fetch(`${SERVER_URL}/log_tokens`, {
       method: "POST",
       headers: {
