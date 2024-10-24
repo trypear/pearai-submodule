@@ -103,14 +103,14 @@ const router = createMemoryRouter(
           element: <ApiKeyAutocompleteOnboarding />,
         },
         {
-          path: "/inventory",
+          path: "/inventory/*",
           element: <Inventory />,
         },
       ],
     },
   ],
   {
-    initialEntries: [window.initialRoute],
+    initialEntries: [window.isPearOverlay ? "/inventory" : window.initialRoute], 
   },
 );
 

@@ -108,12 +108,13 @@ function InputToolbar(props: InputToolbarProps) {
   const location = useLocation();
 
   useEffect(() => {
-    if (location.pathname === "/aiderMode") {
+    console.dir(location.pathname.split('/').pop())
+    if (location.pathname.split('/').pop() === "aiderMode") {
       const aider = allModels.find(
         (model) => model?.title?.toLowerCase().includes("aider"),
       );
       dispatch(setDefaultModel({ title: aider?.title }));
-    } else if (location.pathname === "/perplexityMode") {
+    } else if (location.pathname.split('/').pop() === "perplexityMode") {
       const perplexity = allModels.find(
         (model) => model?.title?.toLowerCase().includes("perplexity"),
       );
