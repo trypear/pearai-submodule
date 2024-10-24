@@ -103,7 +103,7 @@ const router = createMemoryRouter(
           element: <ApiKeyAutocompleteOnboarding />,
         },
         {
-          path: "/inventory",
+          path: "/inventory/*",
           element: <Inventory />,
         },
       ],

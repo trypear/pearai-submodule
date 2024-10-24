@@ -1,7 +1,8 @@
 import InventoryPage from "../inventory/pages/InventoryPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Gui from "./gui";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const TemplateComponent = ({ name }: { name: string }) => {
   return (
@@ -13,25 +14,47 @@ const TemplateComponent = ({ name }: { name: string }) => {
 
 const tabs = [
   {
-    id: "aider",
+    id: "aiderMode",
     name: "Creator (aider)",
     component: <Gui />,
   },
   { id: "inventory", name: "Inventory", component: <InventoryPage /> },
   {
-    id: "perplexity",
+    id: "perplexityMode",
     name: "Search (Perplexity)",
-    component: <TemplateComponent name="Perplexity" />,
+    component: <Gui />,
   },
 ];
 
 export default function Inventory() {
 
-  const location =  useLocation();
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Extract current tab from path or default to inventory
+  const currentTab = location.pathname.split('/').pop() || 'inventory';
+
+  // Handle tab change
+  const handleTabChange = (value: string) => {
+    navigate(`/inventory/${value}`);
+  };
+
+  // // Set initial path if on root inventory path
+  // useEffect(() => {
+  //   if (location.pathname === '/inventory') {
+  //     navigate('/inventory/inventory');
+  //   }
+  // }, [location.pathname, navigate]);
+
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
-      <Tabs defaultValue="inventory" className="flex flex-col h-full">
+      <Tabs 
+        value={currentTab} 
+        defaultValue="inventory"
+        onValueChange={handleTabChange} 
+        className="flex flex-col h-full"
+      >
         <div className="flex flex-col h-full">
           <div className="px-4 pt-4">
             <TabsList className="bg-input text-center">
