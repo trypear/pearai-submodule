@@ -110,7 +110,7 @@ const router = createMemoryRouter(
     },
   ],
   {
-    initialEntries: [window.initialRoute],
+    initialEntries: [window.isPearOverlay ? "/inventory" : window.initialRoute], 
   },
 );
 

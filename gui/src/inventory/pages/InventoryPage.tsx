@@ -1,12 +1,17 @@
-import { useState } from 'react'
-import { Search, Star, X } from 'lucide-react'
-import { Input } from "@/components/ui/input"
-import { Switch } from "@/components/ui/switch"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useState } from "react";
+import { Search, Star, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
-import { Badge } from '@/components/ui/badge'
+import { Badge } from "@/components/ui/badge";
 
 interface AITool {
   id: string;
@@ -230,11 +235,13 @@ export default function AIToolInventory() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full bg-background text-foreground">
-        <header className="mb-6">
+      <div className="flex flex-col h-full overflow-y-auto">
+        <header className="flex-none mb-6">
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold mb-2">PearAI Inventory</h1>{" "}
-            <Badge variant="outline" className="pl-0">Beta</Badge>
+            <Badge variant="outline" className="pl-0">
+              Beta
+            </Badge>
             <Button
               onClick={() => navigate("/")}
               className="mt-3 bg-input text-foreground cursor-pointer"
@@ -254,10 +261,10 @@ export default function AIToolInventory() {
             />
           </div>
         </header>
-
-        <main className="flex-grow flex gap-4 overflow-hidden">
+  
+        <main className="flex-1 flex gap-4 min-h-0">
           <div className="w-1/2 flex flex-col">
-            <div className="flex-grow overflow-auto pr-4">
+            <div className="flex-1 overflow-y-auto pr-4">
               <div className="grid grid-cols-2 gap-4">
                 {filteredTools.map((tool) => (
                   <AIToolCard
@@ -270,8 +277,8 @@ export default function AIToolInventory() {
               </div>
             </div>
           </div>
-
-          <div className="w-1/2 overflow-auto pl-4 border-l border-input text-base">
+  
+          <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-base">
             {focusedTool ? (
               <div>
                 <h2 className="text-2xl font-bold mb-4">
@@ -287,7 +294,7 @@ export default function AIToolInventory() {
                   ))}
                 </ul>
                 <h3 className="font-bold mb-2">Weaknesses:</h3>
-                <ul className="list-discmb-4">
+                <ul className="list-disc mb-4">
                   {focusedTool.weaknesses.map((weakness, index) => (
                     <li key={index}>{weakness}</li>
                   ))}
@@ -315,8 +322,8 @@ export default function AIToolInventory() {
             )}
           </div>
         </main>
-
-        <footer className="mt-6">
+  
+        <footer className="flex-none mt-6">
           <h3 className="font-bold mb-2">Quick Action Slots</h3>
           <div className="flex gap-2 mb-4">
             {quickSlots.map((slot, index) => (
