@@ -199,6 +199,7 @@ function GUI() {
   const navigate = useNavigate();
   const location =  useLocation();
   const ideMessenger = useContext(IdeMessengerContext);
+  const isBetaAccess = useSelector((state: RootState) => state.state.config.isBetaAccess);
 
   const sessionState = useSelector((state: RootState) => state.state);
 
@@ -263,7 +264,7 @@ function GUI() {
         }}
         className="mr-auto"
       >
-        {perplexityMode ? "Exit Perplexity" : "Hint: Try out PearAI Search (Beta), powered by Perplexity."  }                  
+        {perplexityMode ? "Exit Perplexity" : "Hint: Try out PearAI Search (Beta), powered by Perplexity."  }
     </NewSessionButton>
   )
 
@@ -467,7 +468,7 @@ function GUI() {
             {aiderMode && (
               <div className="pl-2 mt-8 border-b border-gray-700">
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold mb-2">PearAI Creator- Beta</h1>{" "}
+                  <h1 className="text-2xl font-bold mb-2">PearAI Creator - Beta</h1>{" "}
                   <Badge variant="outline" className="pl-0">
                     (Powered by{" "}
                     <a
@@ -494,7 +495,7 @@ function GUI() {
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-400 mt-0">
-                  Ask for anything. We'll retrieve the most up to date information in real-time and summarize it for you. 
+                  Ask for anything. We'll retrieve the most up to date information in real-time and summarize it for you.
                 </p>
               </div>
             )}
@@ -662,12 +663,12 @@ function GUI() {
         </NewSessionButton>
       </div>
     ) : null}
-    {!!showTutorialCard && (
+    {!!showTutorialCard && !bareChatMode && !aiderMode && !perplexityMode && (
       <div className="flex justify-center w-full">
         <TutorialCard onClose={onCloseTutorialCard} />
       </div>
     )}
-    {!bareChatMode && !aiderMode && !!showAiderHint && <AiderBetaButton />}
+    {!aiderMode && !!showAiderHint && <AiderBetaButton />}
   </>
 )}
       {!perplexityMode && showPerplexityHint && <PerplexityBetaButton />}
@@ -697,6 +698,9 @@ function GUI() {
           {getMetaKeyLabel()} ⌫ Cancel
         </StopButton>
       )}
+            {isBetaAccess &&
+        <NewSessionButton onClick={() => navigate("/inventory")} style={{marginLeft: "0.8rem", marginBottom: "0rem"}} >Inventory</NewSessionButton>
+      }
     </>
   );
 }
