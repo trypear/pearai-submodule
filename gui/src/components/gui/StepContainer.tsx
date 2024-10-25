@@ -190,14 +190,15 @@ function StepContainer(props: StepContainerProps) {
               />
               </HeaderButtonWithText>
             )}
-            <HeaderButtonWithText text="Delete Message">
+            <HeaderButtonWithText 
+              text="Delete Message"
+              onClick={() => {
+                props.onDelete();
+              }}>
               <TrashIcon
                 color={lightGray}
                 width="1.2em"
                 height="1.2em"
-                onClick={() => {
-                  props.onDelete();
-                }}
               />
             </HeaderButtonWithText>
           </div>
