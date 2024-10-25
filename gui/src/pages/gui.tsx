@@ -640,7 +640,7 @@ function GUI() {
                     className="mr-auto"
                   >
                     New Session
-                    {!bareChatMode &&
+                    {!bareChatMode && !perplexityMode &&
                       ` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
                   </NewSessionButton>
                   {!bareChatMode && !!showAiderHint && <AiderBetaButton />}
@@ -703,15 +703,15 @@ function GUI() {
           {getMetaKeyLabel()} ⌫ Cancel
         </StopButton>
       )}
-      {isBetaAccess && (
+      {/* commenting out for now, it will be handy until we finish developing the overlay feature */}
+      {/* {isBetaAccess && (
         <div>
-          {/* commenting out for now, it will be handy until we finish developing the overlay feature */}
-          {/* <NewSessionButton
+          <NewSessionButton
             onClick={() => navigate("/inventory")}
             style={{ marginLeft: "0.8rem", marginBottom: "0rem" }}
           >
             Inventory
-          </NewSessionButton> */}
+          </NewSessionButton>
           <NewSessionButton
             onClick={() => {
               saveSession();
@@ -721,7 +721,7 @@ function GUI() {
             new session
           </NewSessionButton>
         </div>
-      )}
+      )} */}
     </>
   );
 }
