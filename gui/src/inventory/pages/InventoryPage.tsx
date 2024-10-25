@@ -264,7 +264,7 @@ export default function AIToolInventory() {
                 placeholder="Search AI tools..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-3 w-full bg-input text-foreground border border-input rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                className="pl-10 py-0 pr-3 w-full bg-input text-foreground border border-input rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 aria-label="Search AI tools"
               />
             </div>
@@ -281,16 +281,29 @@ export default function AIToolInventory() {
         <main className="flex-1 flex gap-4 min-h-0">
           <div className="w-1/2 flex flex-col">
             <div className="flex-1 overflow-y-auto pr-4 border-solid rounded-2xl p-2">
-              <div className="grid grid-cols-2 gap-4">
-                {filteredTools.map((tool) => (
-                  <AIToolCard
-                    key={tool.id}
-                    tool={tool}
-                    onClick={() => setFocusedTool(tool)}
-                    onToggle={() => handleToggle(tool.id)}
-                  />
-                ))}
-              </div>
+              {filteredTools.length > 0 ? (
+                <div className="grid grid-cols-2 gap-4">
+                  {filteredTools.map((tool) => (
+                    <AIToolCard
+                      key={tool.id}
+                      tool={tool}
+                      onClick={() => setFocusedTool(tool)}
+                      onToggle={() => handleToggle(tool.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-full text-center">
+                  <div className="text-muted-foreground">
+                    <p className="text-lg font-semibold mb-2">
+                      No tools match your search.
+                    </p>
+                    <p className="text-sm">
+                      Try adjusting your search criteria.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
