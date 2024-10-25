@@ -705,12 +705,13 @@ function GUI() {
       )}
       {isBetaAccess && (
         <div>
-          <NewSessionButton
+          {/* commenting out for now, it will be handy until we finish developing the overlay feature */}
+          {/* <NewSessionButton
             onClick={() => navigate("/inventory")}
             style={{ marginLeft: "0.8rem", marginBottom: "0rem" }}
           >
             Inventory
-          </NewSessionButton>
+          </NewSessionButton> */}
           <NewSessionButton
             onClick={() => {
               saveSession();

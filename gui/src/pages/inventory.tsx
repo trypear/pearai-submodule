@@ -46,7 +46,6 @@ export default function Inventory() {
   //   }
   // }, [location.pathname, navigate]);
 
-
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
       <Tabs
@@ -73,9 +72,10 @@ export default function Inventory() {
                 </TabsTrigger>
               ))}
             </TabsList>
-            <span className="ml-2 text-sm text-muted-foreground">
+            {/* commenting out for now, it will be handy until we finish developing the overlay feature */}
+            {/* <span className="ml-2 text-sm text-muted-foreground">
               Current path: {location.pathname}
-            </span>
+            </span> */}
           </div>
 
           <div className="flex-1 min-h-0 p-4 pt-0 overflow-hidden">

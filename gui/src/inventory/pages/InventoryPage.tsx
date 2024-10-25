@@ -269,12 +269,12 @@ export default function AIToolInventory() {
               />
             </div>
 
-            <Button
+            {/* <Button
               onClick={() => navigate("/")}
               className="mt-3 ml-auto bg-input text-foreground cursor-pointer"
             >
               Back to Dashboard
-            </Button>
+            </Button> */}
           </div>
         </header>
 
