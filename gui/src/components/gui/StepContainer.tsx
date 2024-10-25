@@ -27,7 +27,7 @@ import { getFontSize } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
-import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
+import { isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
 
 interface StepContainerProps {
   item: ChatHistoryItem;
@@ -48,21 +48,34 @@ const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
   background-color: ${(props) =>
     props.isUserInput ? vscInputBackground : vscBackground};
   font-size: ${(props) => props.fontSize || getFontSize()}px;
-  // border-radius: ${defaultBorderRadius};
+  border-radius: ${defaultBorderRadius};
   overflow: hidden;
 `;
 
+const MenuContainer = styled.div`
+  display: flex;
+  gap: 4px;
+  position: absolute;
+  bottom: -8px; // Adjust this value to create consistent spacing
+  right: 0;
+  z-index: 40;
+  color: ${lightGray};
+  font-size: ${getFontSize() - 3}px;
+  padding-bottom: 8px;
+  background-color: inherit;
+`;
+
 function StepContainer(props: StepContainerProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const isUserInput = props.item.message.role === "user";
   const active = useSelector((store: RootState) => store.state.active);
+  const sessionId = useSelector((store: RootState) => store.state.sessionId);
   const ideMessenger = useContext(IdeMessengerContext);
   const bareChatMode = isBareChatMode();
   const isPerplexity = isPerplexityMode();
 
+  const [isHovered, setIsHovered] = useState(false);
   const [feedback, setFeedback] = useState<boolean | undefined>(undefined);
-
-  const sessionId = useSelector((store: RootState) => store.state.sessionId);
+  const [truncatedEarly, setTruncatedEarly] = useState(false);
 
   const sendFeedback = (feedback: boolean) => {
     setFeedback(feedback);
@@ -75,8 +88,6 @@ function StepContainer(props: StepContainerProps) {
       }
     }
   };
-
-  const [truncatedEarly, setTruncatedEarly] = useState(false);
 
   const uiConfig = useUIConfig();
 
@@ -128,22 +139,21 @@ function StepContainer(props: StepContainerProps) {
             />
           )}
         </ContentDiv>
-        {!active && isPerplexity && <HeaderButtonWithText
-          onClick={() => {
-            ideMessenger.post("addPerplexityContext", { text: stripImages(props.item.message.content), language: "" });
-          }}>
-          <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-          Add to PearAI chat context
-        </HeaderButtonWithText>}
-        {(isHovered || typeof feedback !== "undefined") && !active && (
-          <div
-            className="flex gap-1 absolute -bottom-2 right-0"
-            style={{
-              zIndex: 200,
-              color: lightGray,
-              fontSize: getFontSize() - 3,
+        {!active && isPerplexity && (
+          <HeaderButtonWithText
+            onClick={() => {
+              ideMessenger.post("addPerplexityContext", {
+                text: stripImages(props.item.message.content),
+                language: "",
+              });
             }}
           >
+            <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+            Add to PearAI chat context
+          </HeaderButtonWithText>
+        )}
+        {(isHovered || typeof feedback !== "undefined") && !active && (
+          <MenuContainer>
             {props.modelTitle && (
               <div className="flex items-center">
                 <CubeIcon className="w-3 h-4 mr-1 flex-shrink-0" />
@@ -171,7 +181,6 @@ function StepContainer(props: StepContainerProps) {
                 />
               </HeaderButtonWithText>
             )}
-            
             <CopyButton
               text={stripImages(props.item.message.content)}
               color={lightGray}
@@ -183,11 +192,11 @@ function StepContainer(props: StepContainerProps) {
                   props.onRetry();
                 }}
               >
-              <ArrowUturnLeftIcon
-                color={lightGray}
-                width="1.2em"
-                height="1.2em"
-              />
+                <ArrowUturnLeftIcon
+                  color={lightGray}
+                  width="1.2em"
+                  height="1.2em"
+                />
               </HeaderButtonWithText>
             )}
             <HeaderButtonWithText text="Delete Message">
@@ -200,7 +209,7 @@ function StepContainer(props: StepContainerProps) {
                 }}
               />
             </HeaderButtonWithText>
-          </div>
+          </MenuContainer>
         )}
       </div>
     </div>
