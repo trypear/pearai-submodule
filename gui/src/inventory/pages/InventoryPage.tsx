@@ -70,7 +70,8 @@ const initialTools: AITool[] = [
   {
     id: "3",
     name: "Memory (mem0)",
-    description: "Personalization: let the AI remember your past thoughts (coming soon)",
+    description:
+      "Personalization: let the AI remember your past thoughts (coming soon)",
     icon: "📝",
     whenToUse:
       "When you want the AI to remember insights from past prompts you've given it. It can automatically remember details like what version of for e.g. Python you're using, or other specific details of your codebase, like your coding styles, or your expertise level",
@@ -138,11 +139,9 @@ function AIToolCard({
       className={`cursor-pointer transition-all ${tool.enabled ? "bg-input" : "bg-button"} ${tool.comingSoon ? "opacity-50" : ""}`}
       onClick={tool.comingSoon ? undefined : onClick}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-2">
         <div className="flex items-center justify-between">
-          <div className="text-2xl bg-primary/10 rounded-full">
-            {tool.icon}
-          </div>
+          <div className="text-lg bg-primary/10 rounded-full">{tool.icon}</div>
           <Switch
             checked={tool.enabled}
             onCheckedChange={onToggle}
@@ -151,12 +150,12 @@ function AIToolCard({
           />
         </div>
         <h3
-          className={`text-base font-semibold ${tool.enabled ? "text-button-foreground" : ""} transition-colors`}
+          className={`text-sm font-semibold ${tool.enabled ? "text-button-foreground" : ""} transition-colors`}
         >
           {tool.name}
         </h3>
         <p
-          className={`text-sm ${tool.enabled ? "text-button-foreground" : "text-muted-foreground"}`}
+          className={`text-xs ${tool.enabled ? "text-button-foreground" : "text-muted-foreground"}`}
         >
           {tool.comingSoon ? "Coming soon" : tool.description}
         </p>
@@ -248,7 +247,7 @@ export default function AIToolInventory() {
     <TooltipProvider>
       <div className="flex flex-col h-full overflow-y-auto bg-background text-foreground">
         <header className="flex-none mb-6">
-          <div className="flex items-center gap-2" >
+          <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold mb-2">PearAI Inventory</h1>
             <Badge variant="outline" className="pl-0">
               Beta
@@ -289,46 +288,52 @@ export default function AIToolInventory() {
             </div>
           </div>
 
-          <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-base border-solid rounded-2xl p-2">
+          <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-sm border-solid rounded-2xl p-2">
             {focusedTool ? (
               <div>
-                <h2 className="text-2xl font-bold mb-4">
+                <h2 className="text-lg font-bold mb-2">
                   {focusedTool.name} {focusedTool.icon}
                 </h2>
-                <p className="mb-4">{focusedTool.description}</p>
-                <h3 className="font-bold mb-2">When to use:</h3>
-                <p className="mb-4">{focusedTool.whenToUse}</p>
-                <h3 className="font-bold mb-2">Strengths:</h3>
-                <ul className="list-disc mb-4 pl-5">
-                  {focusedTool.strengths.map((strength, index) => (
-                    <li key={index}>{strength}</li>
-                  ))}
+                <p className="mb-2">{focusedTool.description.split(":")[0]}</p>{" "}
+                {/* Shortened description */}
+                <h3 className="font-semibold mb-1">Usage:</h3>
+                <p className="mb-2">
+                  {focusedTool.whenToUse.split(".")[0]}
+                </p>{" "}
+                {/* Shortened usage details */}
+                <h3 className="font-semibold mb-1">Strengths:</h3>
+                <ul className="list-disc mb-2 pl-4">
+                  {focusedTool.strengths
+                    .map((strength, index) => (
+                      <li key={index}>{strength}</li>
+                    ))}
                 </ul>
-                <h3 className="font-bold mb-2">Weaknesses:</h3>
-                <ul className="list-disc mb-4 pl-5">
-                  {focusedTool.weaknesses.map((weakness, index) => (
-                    <li key={index}>{weakness}</li>
-                  ))}
+                <h3 className="font-semibold mb-1">Weaknesses:</h3>
+                <ul className="list-disc mb-2 pl-4">
+                  {focusedTool.weaknesses
+                    .map((weakness, index) => (
+                      <li key={index}>{weakness}</li>
+                    ))}
                 </ul>
                 {!focusedTool.comingSoon && (
-                  <div className="mt-4">
+                  <div className="mt-2">
                     <Button
-                      className="bg-button text-button-foreground hover:bg-button-hover cursor-pointer"
+                      className="bg-button text-button-foreground hover:bg-button-hover cursor-pointer text-xs"
                       onClick={() => handleEquipToQuickSlot(focusedTool)}
                     >
-                      Equip to quick action slots
+                      Equip to quick slots
                     </Button>
                     {quickSlots.every((slot) => slot !== null) && (
-                      <p className="text-destructive mt-2">
-                        Quick action slots are full
+                      <p className="text-destructive mt-1 text-xs">
+                        Quick slots are full
                       </p>
                     )}
                   </div>
                 )}
               </div>
             ) : (
-              <div className="text-center text-foreground opacity-50 mt-8">
-                Select an AI tool to view details
+              <div className="text-center text-foreground opacity-50 mt-4">
+                Select a tool to view details
               </div>
             )}
           </div>
