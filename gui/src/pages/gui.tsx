@@ -57,6 +57,7 @@ import {
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
+
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
 

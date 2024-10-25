@@ -61,7 +61,6 @@ import {
   import { Badge } from "../../components/ui/badge";
   import { TopGuiDiv, StopButton, StepsDiv, NewSessionButton, fallbackRender } from "../../pages/gui";
 
-
   function PerplexityGUI() {
     const posthog = usePostHog();
     const dispatch = useDispatch();
