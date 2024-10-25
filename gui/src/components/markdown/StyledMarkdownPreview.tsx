@@ -215,7 +215,7 @@ const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
   }, [props.source]);
 
   return (
-    <StyledMarkdown fontSize={getFontSize()} showBorder={props.showCodeBorder}>
+    <StyledMarkdown fontSize={getFontSize()} showBorder={false}>
       {reactContent}
     </StyledMarkdown>
   );

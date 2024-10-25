@@ -124,7 +124,7 @@ function StepContainer(props: StepContainerProps) {
           ) : (
             <StyledMarkdownPreview
               source={stripImages(props.item.message.content)}
-              showCodeBorder={false}
+              showCodeBorder={true}
             />
           )}
         </ContentDiv>
