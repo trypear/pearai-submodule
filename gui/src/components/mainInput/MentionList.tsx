@@ -181,47 +181,19 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
   const dispatch = useDispatch();
 
   const [selectedIndex, setSelectedIndex] = useState(0);
-
+  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const [allItems, setAllItems] = useState<ComboBoxItem[]>([]);
   const [subMenuTitle, setSubMenuTitle] = useState<string | undefined>(
     undefined,
   );
+
   const [querySubmenuItem, setQuerySubmenuItem] = useState<
     ComboBoxItem | undefined
   >(undefined);
 
-  const [allItems, setAllItems] = useState<ComboBoxItem[]>([]);
-
-  useEffect(() => {
-    const items = [...props.items];
-    if (subMenuTitle === "Type to search docs") {
-      items.push({
-        title: "Add Docs",
-        type: "action",
-        action: () => {
-          dispatch(setShowDialog(true));
-          dispatch(setDialogMessage(<AddDocsDialog />));
-
-          // Delete back to last '@'
-          const { tr } = props.editor.view.state;
-          const text = tr.doc.textBetween(0, tr.selection.from);
-          const start = text.lastIndexOf("@");
-          props.editor.view.dispatch(
-            tr.delete(start, tr.selection.from).scrollIntoView(),
-          );
-        },
-        description: "Add a new documentation source",
-      });
-    }
-    setAllItems(items);
-  }, [subMenuTitle, props.items, props.editor]);
+  const totalItems = allItems.length;
 
   const queryInputRef = useRef<HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (queryInputRef.current) {
-      queryInputRef.current.focus();
-    }
-  }, [querySubmenuItem]);
 
   const selectItem = (index) => {
     const item = allItems[index];
@@ -260,10 +232,6 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
     }
   };
 
-  const totalItems = allItems.length;
-
-  const itemRefs = useRef<Array<HTMLButtonElement | null>>([]);
-
   const upHandler = () => {
     setSelectedIndex((prevIndex) => {
       const newIndex = prevIndex - 1 >= 0 ? prevIndex - 1 : 0;
@@ -289,8 +257,6 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
   const enterHandler = () => {
     selectItem(selectedIndex);
   };
-
-  useEffect(() => setSelectedIndex(0), [allItems]);
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }) => {
@@ -332,9 +298,41 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
     return ["file", "code"].includes(item.type);
   };
 
+  useEffect(() => setSelectedIndex(0), [allItems]);
+
   useEffect(() => {
     itemRefs.current = itemRefs.current.slice(0, allItems.length);
   }, [allItems]);
+
+  useEffect(() => {
+    const items = [...props.items];
+    if (subMenuTitle === "Type to search docs") {
+      items.push({
+        title: "Add Docs",
+        type: "action",
+        action: () => {
+          dispatch(setShowDialog(true));
+          dispatch(setDialogMessage(<AddDocsDialog />));
+
+          // Delete back to last '@'
+          const { tr } = props.editor.view.state;
+          const text = tr.doc.textBetween(0, tr.selection.from);
+          const start = text.lastIndexOf("@");
+          props.editor.view.dispatch(
+            tr.delete(start, tr.selection.from).scrollIntoView(),
+          );
+        },
+        description: "Add a new documentation source",
+      });
+    }
+    setAllItems(items);
+  }, [subMenuTitle, props.items, props.editor]);
+
+  useEffect(() => {
+    if (queryInputRef.current) {
+      queryInputRef.current.focus();
+    }
+  }, [querySubmenuItem]);
 
   return (
     <ItemsDiv className="items-container">
@@ -364,7 +362,6 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
       ) : (
         <>
           {subMenuTitle && <ItemDiv className="mb-2">{subMenuTitle}</ItemDiv>}
-          {/* <CustomScrollbarDiv className="overflow-y-scroll max-h-96"> */}
           {allItems.length ? (
             allItems.map((item, index) => (
               <ItemDiv
@@ -436,7 +433,6 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
           ) : (
             <ItemDiv className="item">No results</ItemDiv>
           )}
-          {/* </CustomScrollbarDiv> */}
         </>
       )}
     </ItemsDiv>

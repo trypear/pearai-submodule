@@ -10,7 +10,7 @@ import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { isJetBrains } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "./CopyButton";
-import { isPerplexityMode } from '../../util/bareChatMode';
+import { isPerplexityMode } from "../../util/bareChatMode";
 
 const TopDiv = styled.div`
   position: sticky;
@@ -19,7 +19,7 @@ const TopDiv = styled.div`
   height: 0;
   width: 0;
   overflow: visible;
-  z-index: 100;
+  z-index: 40;
 `;
 
 const SecondDiv = styled.div<{ bottom: boolean }>`
@@ -80,60 +80,68 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
   return (
     <TopDiv>
       <SecondDiv bottom={props.bottom || false}>
-        {isPerplexityMode() && <HeaderButtonWithText
-          text="Add to PearAI chat context"
-          style={{ backgroundColor: vscEditorBackground }}
-          onClick={() => {
-            ideMessenger.post("addPerplexityContext", { text: props.text, language: props.language });
-          }}
-        >
-          <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-        </HeaderButtonWithText>}
-        {isJetBrains() || !isPerplexityMode() && (
+        {isPerplexityMode() && (
           <HeaderButtonWithText
-            text={
-              isTerminalCodeBlock(props.language, props.text)
-                ? "Run in terminal"
-                : applying
-                  ? "Applying..."
-                  : "Apply to current file"
-            }
-            disabled={applying}
+            text="Add to PearAI chat context"
             style={{ backgroundColor: vscEditorBackground }}
             onClick={() => {
-              if (isTerminalCodeBlock(props.language, props.text)) {
-                let text = props.text;
-                if (text.startsWith("$ ")) {
-                  text = text.slice(2);
-                }
-                ideMessenger.ide.runCommand(text);
-                return;
-              }
-
-              if (applying) return;
-              ideMessenger.post("applyToCurrentFile", {
+              ideMessenger.post("addPerplexityContext", {
                 text: props.text,
+                language: props.language,
               });
-              setApplying(true);
-              setTimeout(() => setApplying(false), 2000);
             }}
           >
-            {applying ? (
-              <CheckIcon className="w-4 h-4 text-green-500" />
-            ) : (
-              <PlayIcon className="w-4 h-4" />
-            )}
+            <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
           </HeaderButtonWithText>
         )}
-        {!isPerplexityMode() && <HeaderButtonWithText
-          text="Insert at cursor"
-          style={{ backgroundColor: vscEditorBackground }}
-          onClick={() => {
-            ideMessenger.post("insertAtCursor", { text: props.text });
-          }}
-        >
-          <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-        </HeaderButtonWithText>}
+        {isJetBrains() ||
+          (!isPerplexityMode() && (
+            <HeaderButtonWithText
+              text={
+                isTerminalCodeBlock(props.language, props.text)
+                  ? "Run in terminal"
+                  : applying
+                  ? "Applying..."
+                  : "Apply to current file"
+              }
+              disabled={applying}
+              style={{ backgroundColor: vscEditorBackground }}
+              onClick={() => {
+                if (isTerminalCodeBlock(props.language, props.text)) {
+                  let text = props.text;
+                  if (text.startsWith("$ ")) {
+                    text = text.slice(2);
+                  }
+                  ideMessenger.ide.runCommand(text);
+                  return;
+                }
+
+                if (applying) return;
+                ideMessenger.post("applyToCurrentFile", {
+                  text: props.text,
+                });
+                setApplying(true);
+                setTimeout(() => setApplying(false), 2000);
+              }}
+            >
+              {applying ? (
+                <CheckIcon className="w-4 h-4 text-green-500" />
+              ) : (
+                <PlayIcon className="w-4 h-4" />
+              )}
+            </HeaderButtonWithText>
+          ))}
+        {!isPerplexityMode() && (
+          <HeaderButtonWithText
+            text="Insert at cursor"
+            style={{ backgroundColor: vscEditorBackground }}
+            onClick={() => {
+              ideMessenger.post("insertAtCursor", { text: props.text });
+            }}
+          >
+            <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+          </HeaderButtonWithText>
+        )}
         <CopyButton text={props.text} />
       </SecondDiv>
     </TopDiv>

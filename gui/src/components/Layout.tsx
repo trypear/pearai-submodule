@@ -5,7 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
-  CustomScrollbarDiv,
   defaultBorderRadius,
   vscForeground,
   vscInputBackground,
@@ -31,16 +30,14 @@ import ProgressBar from "./loaders/ProgressBar";
 import PostHogPageView from "./PosthogPageView";
 import ProfileSwitcher from "./ProfileSwitcher";
 import ShortcutContainer from "./ShortcutContainer";
-import { isBareChatMode } from '../util/bareChatMode';
 
 // check mac or window
 const platform = navigator.userAgent.toLowerCase();
 const isMac = platform.includes("mac");
 const isWindows = platform.includes("win");
 
-// #region Styled Components
-const HEADER_HEIGHT = "1.55rem";
-const FOOTER_HEIGHT = "1.8em";
+export const HEADER_HEIGHT = "1.55rem";
+export const FOOTER_HEIGHT = "1.8em";
 
 const BottomMessageDiv = styled.div<{ displayOnBottom: boolean }>`
   position: fixed;
@@ -93,8 +90,8 @@ const GridDiv = styled.div<{ showHeader: boolean }>`
   display: grid;
   grid-template-rows: ${(props) =>
     props.showHeader ? "auto 1fr auto" : "1fr auto"};
-  min-height: 100vh;
-  overflow-x: visible;
+  height: 100vh;
+  overflow: hidden;
 `;
 
 const ModelDropdownPortalDiv = styled.div`
@@ -113,14 +110,13 @@ const ProfileDropdownPortalDiv = styled.div`
   font-size: ${getFontSize() - 2};
 `;
 
-// #endregion
-
 const HIDE_FOOTER_ON_PAGES = [
   "/onboarding",
   "/localOnboarding",
   "/apiKeyOnboarding",
   "/aiderMode",
-  "/inventory"
+  "/inventory",
+  "/perplexityMode",
 ];
 
 const SHOW_SHORTCUTS_ON_PAGES = ["/"];
@@ -131,46 +127,29 @@ const Layout = () => {
   const dispatch = useDispatch();
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const defaultModel = useSelector(defaultModelSelector);
+  const timeline = useSelector((state: RootState) => state.state.history);
   const dialogMessage = useSelector(
     (state: RootState) => state.uiState.dialogMessage,
   );
+
   const showDialog = useSelector(
     (state: RootState) => state.uiState.showDialog,
   );
 
-  const defaultModel = useSelector(defaultModelSelector);
-  // #region Selectors
-
   const bottomMessage = useSelector(
     (state: RootState) => state.uiState.bottomMessage,
   );
+
   const displayBottomMessageOnBottom = useSelector(
     (state: RootState) => state.uiState.displayBottomMessageOnBottom,
   );
 
-  const timeline = useSelector((state: RootState) => state.state.history);
-
-  // #endregion
-
-  useEffect(() => {
-    const handleKeyDown = (event: any) => {
-      if (isMetaEquivalentKeyPressed(event) && event.code === "KeyC") {
-        const selection = window.getSelection()?.toString();
-        if (selection) {
-          // Copy to clipboard
-          setTimeout(() => {
-            navigator.clipboard.writeText(selection);
-          }, 100);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [timeline]);
+  const [indexingState, setIndexingState] = useState<IndexingProgressUpdate>({
+    desc: "Loading indexing config",
+    progress: 0.0,
+    status: "loading",
+  });
 
   useWebviewListener(
     "addModel",
@@ -242,6 +221,26 @@ const Layout = () => {
   );
 
   useEffect(() => {
+    const handleKeyDown = (event: any) => {
+      if (isMetaEquivalentKeyPressed(event) && event.code === "KeyC") {
+        const selection = window.getSelection()?.toString();
+        if (selection) {
+          // Copy to clipboard
+          setTimeout(() => {
+            navigator.clipboard.writeText(selection);
+          }, 100);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [timeline]);
+
+  useEffect(() => {
     if (
       shouldBeginOnboarding() &&
       (location.pathname === "/" || location.pathname === "/index.html")
@@ -249,12 +248,6 @@ const Layout = () => {
       navigate("/onboarding");
     }
   }, [location]);
-
-  const [indexingState, setIndexingState] = useState<IndexingProgressUpdate>({
-    desc: "Loading indexing config",
-    progress: 0.0,
-    status: "loading",
-  });
 
   return (
     <div>
@@ -277,15 +270,18 @@ const Layout = () => {
           }}
           message={dialogMessage}
         />
-
         <GridDiv
-          showHeader={!window.isPearOverlay && SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
+          showHeader={
+            !window.isPearOverlay &&
+            SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)
+          }
         >
-          {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && !window.isPearOverlay && (
-            <Header>
-              <ShortcutContainer />
-            </Header>
-          )}
+          {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) &&
+            !window.isPearOverlay && (
+              <Header>
+                <ShortcutContainer />
+              </Header>
+            )}
           <PostHogPageView />
           <Outlet />
           <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
@@ -302,7 +298,6 @@ const Layout = () => {
                   )}
                 <IndexingProgressBar indexingState={indexingState} />
               </div>
-
               <ProfileSwitcher />
               <HeaderButtonWithText
                 tooltipPlacement="top-end"
@@ -320,7 +315,6 @@ const Layout = () => {
             </Footer>
           )}
         </GridDiv>
-
         <BottomMessageDiv
           displayOnBottom={displayBottomMessageOnBottom}
           onMouseEnter={() => {

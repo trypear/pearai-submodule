@@ -1,8 +1,7 @@
 import {
   ArrowLeftIcon,
   ChatBubbleOvalLeftIcon,
-  CodeBracketSquareIcon,
-  ExclamationTriangleIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
@@ -26,7 +25,6 @@ import {
   vscBackground,
   vscForeground,
 } from "../components";
-import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
 import StepContainer from "../components/gui/StepContainer";
 import TimelineItem from "../components/gui/TimelineItem";
 import ContinueInputBox from "../components/mainInput/ContinueInputBox";
@@ -43,11 +41,7 @@ import {
   newSession,
   setInactive,
 } from "../redux/slices/stateSlice";
-import {
-  setDialogEntryOn,
-  setDialogMessage,
-  setShowDialog,
-} from "../redux/slices/uiStateSlice";
+
 import { RootState } from "../redux/store";
 import {
   getFontSize,
@@ -57,42 +51,37 @@ import {
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
-import { isBareChatMode, isPerplexityMode } from '../util/bareChatMode';
+import { isBareChatMode, isPerplexityMode } from "../util/bareChatMode";
 import { Badge } from "../components/ui/badge";
+import { FOOTER_HEIGHT, HEADER_HEIGHT } from "@/components/Layout";
 
-
-
-const TopGuiDiv = styled.div`
-  overflow-y: scroll;
-
-  scrollbar-width: none; /* Firefox */
-
-  /* Hide scrollbar for Chrome, Safari and Opera */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  height: 100%;
+export const TopGuiDiv = styled.div<{ isAiderOrPerplexity?: boolean }>`
+  overflow-y: auto;
+  flex: 1;
+  height: ${(props) =>
+    props.isAiderOrPerplexity
+      ? `calc(100vh - ${HEADER_HEIGHT})`
+      : `calc(100vh - ${HEADER_HEIGHT} - ${FOOTER_HEIGHT})`};
+  display: flex;
+  flex-direction: column;
 `;
 
-const StopButton = styled.div`
+export const StopButton = styled.div`
   width: fit-content;
   margin-right: auto;
   margin-left: auto;
-
   font-size: ${getFontSize() - 2}px;
-
   border: 0.5px solid ${lightGray};
   border-radius: ${defaultBorderRadius};
   padding: 4px 8px;
   background: ${vscBackground};
   z-index: 50;
   color: var(--vscode-textPreformat-foreground);
-
   cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 `;
 
-const StepsDiv = styled.div`
+export const StepsDiv = styled.div`
   padding-bottom: 8px;
   position: relative;
   background-color: transparent;
@@ -100,17 +89,6 @@ const StepsDiv = styled.div`
   & > * {
     position: relative;
   }
-
-  // Gray, vertical line on the left ("thread")
-  // &::before {
-  //   content: "";
-  //   position: absolute;
-  //   height: calc(100% - 12px);
-  //   border-left: 2px solid ${lightGray};
-  //   left: 28px;
-  //   z-index: 0;
-  //   bottom: 12px;
-  // }
 
   .thread-message {
     margin: 16px 8px 0 8px;
@@ -120,63 +98,82 @@ const StepsDiv = styled.div`
   }
 `;
 
-const NewSessionButton = styled.div`
-  width: fit-content;
-  margin-right: auto;
-  margin-left: 6px;
-  margin-top: 2px;
-  margin-bottom: 8px;
-  font-size: ${getFontSize() - 2}px;
+export const TopGuiDivContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto; // Changed from overflow: hidden
 
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: ${lightGray}44;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: ${lightGray}88;
+  }
+`;
+
+export const ContinueInputBoxContainer = styled.div`
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  background-color: inherit;
+  box-shadow: 0 -8px 16px -8px rgba(0, 0, 0, 0.3);
+  margin-top: -8px; // Keep the negative margin
+`;
+
+export const NewSessionButton = styled.div`
+  width: fit-content;
+  margin: 2px auto 8px 6px;
+  font-size: ${getFontSize() - 2}px;
   border-radius: ${defaultBorderRadius};
   padding: 2px 6px;
   color: ${lightGray};
+  cursor: pointer;
 
   &:hover {
     background-color: ${lightGray}33;
     color: ${vscForeground};
   }
-
-  cursor: pointer;
 `;
 
-const ThreadHead = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 18px 6px 0 6px;
-`;
-
-const THREAD_AVATAR_SIZE = 15;
-
-const ThreadAvatar = styled.div`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: rgba(248, 248, 248, 0.75);
-  color: #000;
+export const ScrollToBottomButton = styled.button`
+  position: sticky;
+  bottom: 84px;
+  margin-left: auto;
+  margin-right: 16px;
+  margin-bottom: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: ${vscBackground};
+  border: 1px solid ${lightGray}44;
+  color: ${lightGray};
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(136, 136, 136, 0.3);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.8;
+  z-index: 51;
+
+  &:hover {
+    opacity: 1;
+    background: ${lightGray}22;
+  }
 `;
 
-const ThreadUserTitle = styled.div`
-  text-transform: capitalize;
-  font-weight: 500;
-  margin-bottom: 2px;
-`;
-
-const ThreadUserName = styled.div`
-  font-size: ${getFontSize() - 3}px;
-  color: ${lightGray};
-`;
-
-
-
-function fallbackRender({ error, resetErrorBoundary }) {
+export function fallbackRender({ error, resetErrorBoundary }) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
-
   return (
     <div
       role="alert"
@@ -193,47 +190,38 @@ function fallbackRender({ error, resetErrorBoundary }) {
   );
 }
 
-function GUI() {
+const GUI = () => {
   const posthog = usePostHog();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location =  useLocation();
+  const location = useLocation();
   const ideMessenger = useContext(IdeMessengerContext);
-  const isBetaAccess = useSelector((state: RootState) => state.state.config.isBetaAccess);
-
+  const { streamResponse } = useChatHandler(dispatch, ideMessenger);
   const sessionState = useSelector((state: RootState) => state.state);
-
   const defaultModel = useSelector(defaultModelSelector);
-
   const active = useSelector((state: RootState) => state.state.active);
-
-  const [stepsOpen, setStepsOpen] = useState<(boolean | undefined)[]>([]);
+  const state = useSelector((state: RootState) => state.state);
+  const isBetaAccess = useSelector(
+    (state: RootState) => state.state.config.isBetaAccess,
+  );
+  const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
+    useHistory(dispatch);
 
   const mainTextInputRef = useRef<HTMLInputElement>(null);
   const topGuiDivRef = useRef<HTMLDivElement>(null);
 
+  const [stepsOpen, setStepsOpen] = useState<(boolean | undefined)[]>([]);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
-
-  const state = useSelector((state: RootState) => state.state);
-
+  // AIDER HINT BUTTON HIDDEN IN V1.4.0
+  const [showAiderHint, setShowAiderHint] = useState<boolean>(false);
+  // Perplexity hint button hidden
+  const [showPerplexityHint, setShowPerplexityHint] = useState<boolean>(false);
   const [showTutorialCard, setShowTutorialCard] = useState<boolean>(
     getLocalStorage("showTutorialCard"),
   );
 
-
-
-  // AIDER HINT BUTTON HIDDEN IN V1.4.0
-  const [showAiderHint, setShowAiderHint] = useState<boolean>(
-    false
-  );
-
-  // Perplexity hint button hidden
-  const [showPerplexityHint, setShowPerplexityHint] = useState<boolean>(
-    false
-  );
-
   const bareChatMode = isBareChatMode();
-  const aiderMode = location?.pathname === "/aiderMode"
+  const aiderMode = location?.pathname === "/aiderMode";
   const perplexityMode = isPerplexityMode();
 
   const onCloseTutorialCard = () => {
@@ -244,13 +232,11 @@ function GUI() {
 
   const AiderBetaButton: React.FC = () => (
     <NewSessionButton
-      onClick={() =>
-      {
-        ideMessenger.post("aiderMode", undefined)
+      onClick={() => {
+        ideMessenger.post("aiderMode", undefined);
         setShowAiderHint(false);
-      }
-    }
-    className="mr-auto py-2" // Added padding top and bottom
+      }}
+      className="mr-auto py-2"
     >
       Hint: Try out PearAI Creator (Beta), powered by aider (Beta)!
     </NewSessionButton>
@@ -261,83 +247,93 @@ function GUI() {
       onClick={async () => {
         ideMessenger.post("perplexityMode", undefined);
         setShowPerplexityHint(false);
-        }}
-        className="mr-auto"
-      >
-        {perplexityMode ? "Exit Perplexity" : "Hint: Try out PearAI Search (Beta), powered by Perplexity."  }
+      }}
+      className="mr-auto"
+    >
+      {perplexityMode
+        ? "Exit Perplexity"
+        : "Hint: Try out PearAI Search (Beta), powered by Perplexity."}
     </NewSessionButton>
-  )
+  );
 
-
-  const handleScroll = () => {
-    // Temporary fix to account for additional height when code blocks are added
-    const OFFSET_HERUISTIC = 300;
+  const handleScroll = useCallback(() => {
+    // Reduce the offset to make it more sensitive to user scrolling
+    const OFFSET_HERUISTIC = 50;
     if (!topGuiDivRef.current) return;
 
     const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
     const atBottom =
       scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
 
-    setIsAtBottom(atBottom);
-  };
+    // Add immediate state update when user scrolls up
+    if (!atBottom) {
+      setIsAtBottom(false);
+    } else if (atBottom && !isAtBottom) {
+      setIsAtBottom(true);
+    }
+  }, [isAtBottom]);
 
-  useEffect(() => {
-    if (!active || !topGuiDivRef.current) return;
+  const handleManualScroll = useCallback(() => {
+    if (!topGuiDivRef.current) return;
 
-    const scrollAreaElement = topGuiDivRef.current;
+    const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
 
-    scrollAreaElement.scrollTop =
-      scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
+    if (scrollHeight - clientHeight - scrollTop > 50) {
+      setIsAtBottom(false);
+    }
+  }, []);
 
-    setIsAtBottom(true);
-  }, [active]);
+  const scrollToBottom = useCallback(() => {
+    if (!topGuiDivRef.current) return;
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      window.scrollTo({
-        top: topGuiDivRef.current?.scrollHeight,
-        behavior: "instant" as any,
-      });
-    }, 1);
+    requestAnimationFrame(() => {
+      const scrollAreaElement = topGuiDivRef.current!;
 
-    return () => {
-      clearTimeout(timeoutId)
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [topGuiDivRef.current]);
+      scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight;
+      setIsAtBottom(true);
 
-  useEffect(() => {
-    // Cmd + Backspace to delete current step
-    const listener = (e: any) => {
-      if (
-        e.key === "Backspace" &&
-        isMetaEquivalentKeyPressed(e) &&
-        !e.shiftKey
-      ) {
-        dispatch(setInactive());
+      // For aider mode, keep checking scroll position
+      if (aiderMode && !active) {
+        let attempts = 0;
+
+        const maxAttempts = 10;
+        const checkScroll = () => {
+          if (!topGuiDivRef.current || attempts >= maxAttempts) return;
+
+          const currentHeight = topGuiDivRef.current.scrollHeight;
+          topGuiDivRef.current.scrollTop = currentHeight;
+
+          // If not at bottom, try again
+          const isAtBottom =
+            Math.abs(
+              currentHeight -
+                topGuiDivRef.current.clientHeight -
+                topGuiDivRef.current.scrollTop,
+            ) < 2;
+
+          if (!isAtBottom) {
+            attempts++;
+            setTimeout(checkScroll, 50);
+          }
+        };
+
+        setTimeout(checkScroll, 50);
       }
-    };
-    window.addEventListener("keydown", listener);
-
-    return () => {
-      window.removeEventListener("keydown", listener);
-    };
-  }, [active]);
-
-  // #endregion
-
-  const { streamResponse } = useChatHandler(dispatch, ideMessenger);
+    });
+  }, [aiderMode, active]);
 
   const sendInput = useCallback(
     (editorState: JSONContent, modifiers: InputModifiers) => {
       if (defaultModel?.provider === "free-trial") {
         const u = getLocalStorage("ftc");
+
         if (u) {
           setLocalStorage("ftc", u + 1);
 
           if (u >= FREE_TRIAL_LIMIT_REQUESTS) {
             navigate("/onboarding");
             posthog?.capture("ftc_reached");
+
             return;
           }
         } else {
@@ -346,73 +342,11 @@ function GUI() {
       }
 
       streamResponse(editorState, modifiers, ideMessenger);
+      scrollToBottom();
 
-      // Increment localstorage counter for popup
       const currentCount = getLocalStorage("mainTextEntryCounter");
       if (currentCount) {
         setLocalStorage("mainTextEntryCounter", currentCount + 1);
-        // if (currentCount === 300) {
-        //   dispatch(
-        //     setDialogMessage(
-        //       <div className="text-center p-4">
-        //         👋 Thanks for using PearAI. We are always trying to improve
-        //         and love hearing from users. If you're interested in speaking,
-        //         enter your name and email. We won't use this information for
-        //         anything other than reaching out.
-        //         <br />
-        //         <br />
-        //         <form
-        //           onSubmit={(e: any) => {
-        //             e.preventDefault();
-        //             posthog?.capture("user_interest_form", {
-        //               name: e.target.elements[0].value,
-        //               email: e.target.elements[1].value,
-        //             });
-        //             dispatch(
-        //               setDialogMessage(
-        //                 <div className="text-center p-4">
-        //                   Thanks! We'll be in touch soon.
-        //                 </div>,
-        //               ),
-        //             );
-        //           }}
-        //           style={{
-        //             display: "flex",
-        //             flexDirection: "column",
-        //             gap: "10px",
-        //           }}
-        //         >
-        //           <input
-        //             style={{ padding: "10px", borderRadius: "5px" }}
-        //             type="text"
-        //             name="name"
-        //             placeholder="Name"
-        //             required
-        //           />
-        //           <input
-        //             style={{ padding: "10px", borderRadius: "5px" }}
-        //             type="email"
-        //             name="email"
-        //             placeholder="Email"
-        //             required
-        //           />
-        //           <button
-        //             style={{
-        //               padding: "10px",
-        //               borderRadius: "5px",
-        //               cursor: "pointer",
-        //             }}
-        //             type="submit"
-        //           >
-        //             Submit
-        //           </button>
-        //         </form>
-        //       </div>,
-        //     ),
-        //   );
-        //   dispatch(setDialogEntryOn(false));
-        //   dispatch(setShowDialog(true));
-        // }
       } else {
         setLocalStorage("mainTextEntryCounter", 1);
       }
@@ -423,11 +357,23 @@ function GUI() {
       defaultModel,
       state,
       streamResponse,
+      scrollToBottom,
     ],
   );
 
-  const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
-    useHistory(dispatch);
+  const isLastUserInput = useCallback(
+    (index: number): boolean => {
+      let foundLaterUserInput = false;
+      for (let i = index + 1; i < state.history.length; i++) {
+        if (state.history[i].message.role === "user") {
+          foundLaterUserInput = true;
+          break;
+        }
+      }
+      return !foundLaterUserInput;
+    },
+    [state.history],
+  );
 
   useWebviewListener(
     "newSession",
@@ -447,60 +393,109 @@ function GUI() {
     [loadMostRecentChat],
   );
 
-  const isLastUserInput = useCallback(
-    (index: number): boolean => {
-      let foundLaterUserInput = false;
-      for (let i = index + 1; i < state.history.length; i++) {
-        if (state.history[i].message.role === "user") {
-          foundLaterUserInput = true;
-          break;
-        }
+  useEffect(() => {
+    if (!active || !topGuiDivRef.current) return;
+
+    const scrollInterval = setInterval(() => {
+      if (topGuiDivRef.current && isAtBottom) {
+        scrollToBottom();
       }
-      return !foundLaterUserInput;
-    },
-    [state.history],
-  );
+    }, 100);
+
+    return () => clearInterval(scrollInterval);
+  }, [active, scrollToBottom, isAtBottom]);
+
+  useEffect(() => {
+    if (!topGuiDivRef.current) return;
+
+    if (!active && isAtBottom) {
+      // Only snap to bottom if user hadn't scrolled up
+      const scrollAreaElement = topGuiDivRef.current;
+
+      requestAnimationFrame(() => {
+        scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight;
+
+        if (aiderMode) {
+          // One more time after a brief delay for aider mode
+          setTimeout(() => {
+            if (scrollAreaElement) {
+              scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight;
+            }
+          }, 100);
+        }
+      });
+    }
+  }, [active, isAtBottom, aiderMode]);
+
+  useEffect(() => {
+    // Cmd + Backspace to delete current step
+    const listener = (e: any) => {
+      if (
+        e.key === "Backspace" &&
+        isMetaEquivalentKeyPressed(e) &&
+        !e.shiftKey
+      ) {
+        dispatch(setInactive());
+      }
+    };
+    window.addEventListener("keydown", listener);
+
+    return () => {
+      window.removeEventListener("keydown", listener);
+    };
+  }, [active]);
 
   return (
-    <>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-          <div className="mx-2">
-            {aiderMode && (
-              <div className="pl-2 mt-8 border-b border-gray-700">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold mb-2">PearAI Creator - Beta</h1>{" "}
-                  <Badge variant="outline" className="pl-0">
-                    (Powered by{" "}
-                    <a
-                      href="https://aider.chat/2024/06/02/main-swe-bench.html"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline px-1"
-                    >
-                      aider)
-                    </a>
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-400 mt-0">
-                  Ask for a feature, describe a bug, or ask for a change to your project. We'll take care of everything for you!
-                </p>
+    <TopGuiDivContainer>
+      <TopGuiDiv
+        ref={topGuiDivRef}
+        onScroll={handleScroll}
+        onWheel={handleManualScroll}
+        onTouchMove={handleManualScroll}
+        isAiderOrPerplexity={aiderMode || perplexityMode}
+      >
+        <div className="mx-2 flex-grow flex flex-col">
+          {aiderMode && (
+            <div className="pl-2 mt-8 border-b border-gray-700">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold mb-2">
+                  PearAI Creator - Beta
+                </h1>{" "}
+                <Badge variant="outline" className="pl-0">
+                  (Powered by{" "}
+                  <a
+                    href="https://aider.chat/2024/06/02/main-swe-bench.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline px-1"
+                  >
+                    aider)
+                  </a>
+                </Badge>
               </div>
-            )}
-            {perplexityMode && (
-              <div className="pl-2 mt-8 border-b border-gray-700">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold mb-2">PearAI Search - Beta</h1>{" "}
-                  <Badge variant="outline" className="pl-0">
-                    (Powered by Perplexity)
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-400 mt-0">
-                  Ask for anything. We'll retrieve the most up to date information in real-time and summarize it for you.
-                </p>
+              <p className="text-sm text-gray-400 mt-0">
+                Ask for a feature, describe a bug, or ask for a change to your
+                project. We'll take care of everything for you!
+              </p>
+            </div>
+          )}
+          {perplexityMode && (
+            <div className="pl-2 mt-8 border-b border-gray-700">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold mb-2">
+                  PearAI Search - Beta
+                </h1>{" "}
+                <Badge variant="outline" className="pl-0">
+                  (Powered by Perplexity)
+                </Badge>
               </div>
-            )}
+              <p className="text-sm text-gray-400 mt-0">
+                Ask for anything. We'll retrieve the most up to date information
+                in real-time and summarize it for you.
+              </p>
+            </div>
+          )}
           <StepsDiv>
-
             {state.history.map((item, index: number) => {
               return (
                 <Fragment key={index}>
@@ -519,40 +514,26 @@ function GUI() {
                             ideMessenger,
                             index,
                           );
+                          scrollToBottom();
                         }}
                         isLastUserInput={isLastUserInput(index)}
                         isMainInput={false}
                         editorState={item.editorState}
                         contextItems={item.contextItems}
-                      ></ContinueInputBox>
+                      />
                     ) : (
                       <div className="thread-message">
                         <TimelineItem
                           item={item}
                           iconElement={
-                            false ? (
-                              <CodeBracketSquareIcon
-                                width="16px"
-                                height="16px"
-                              />
-                            ) : false ? (
-                              <ExclamationTriangleIcon
-                                width="16px"
-                                height="16px"
-                                color="red"
-                              />
-                            ) : (
-                              <ChatBubbleOvalLeftIcon
-                                width="16px"
-                                height="16px"
-                              />
-                            )
+                            <ChatBubbleOvalLeftIcon
+                              width="16px"
+                              height="16px"
+                            />
                           }
                           open={
                             typeof stepsOpen[index] === "undefined"
-                              ? false
-                                ? false
-                                : true
+                              ? true
                               : stepsOpen[index]!
                           }
                           onToggle={() => {}}
@@ -606,103 +587,119 @@ function GUI() {
               );
             })}
           </StepsDiv>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          ></ContinueInputBox>
-            {active ? (
-              <>
-                <br />
-                <br />
-              </>
-            ) : state.history.length > 0 ? (
-              <div className="mt-2">
-                {aiderMode ? (
+          {!isAtBottom && (
+            <ScrollToBottomButton
+              onClick={scrollToBottom}
+              aria-label="Scroll to bottom"
+            >
+              <ChevronDownIcon width={16} height={16} />
+            </ScrollToBottomButton>
+          )}
+          <ContinueInputBoxContainer>
+            <ContinueInputBox
+              onEnter={(editorContent, modifiers) => {
+                sendInput(editorContent, modifiers);
+              }}
+              isLastUserInput={false}
+              isMainInput={true}
+              hidden={active}
+            />
+          </ContinueInputBoxContainer>
+          {active ? (
+            <>
+              <br />
+              <br />
+            </>
+          ) : state.history.length > 0 ? (
+            <div className="mt-2">
+              {aiderMode ? (
+                <NewSessionButton
+                  onClick={() => {
+                    saveSession();
+                    ideMessenger.post("aiderResetSession", undefined);
+                  }}
+                  className="mr-auto"
+                >
+                  Restart Session
+                </NewSessionButton>
+              ) : (
+                <>
                   <NewSessionButton
                     onClick={() => {
                       saveSession();
-                      ideMessenger.post("aiderResetSession", undefined)
                     }}
                     className="mr-auto"
                   >
-                    Restart Session
+                    New Session
+                    {!bareChatMode &&
+                      ` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
                   </NewSessionButton>
-                ) : (
-                  <>
-                    <NewSessionButton
-                      onClick={() => {
-                        saveSession();
-                      }}
-                      className="mr-auto"
-                    >
-                      New Session
-                      {!bareChatMode && ` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
-                    </NewSessionButton>
-                    {!bareChatMode && !!showAiderHint && <AiderBetaButton />}
-                  </>
+                  {!bareChatMode && !!showAiderHint && <AiderBetaButton />}
+                </>
+              )}
+              {!perplexityMode && showPerplexityHint && (
+                <PerplexityBetaButton />
+              )}
+            </div>
+          ) : (
+            <>
+              {!aiderMode && getLastSessionId() ? (
+                <div className="mt-2">
+                  <NewSessionButton
+                    onClick={async () => {
+                      loadLastSession();
+                    }}
+                    className="mr-auto flex items-center gap-2"
+                  >
+                    <ArrowLeftIcon width="11px" height="11px" />
+                    Last Session
+                  </NewSessionButton>
+                </div>
+              ) : null}
+              {!!showTutorialCard &&
+                !bareChatMode &&
+                !aiderMode &&
+                !perplexityMode && (
+                  <div className="flex justify-center w-full">
+                    <TutorialCard onClose={onCloseTutorialCard} />
+                  </div>
                 )}
-                {!perplexityMode && showPerplexityHint && <PerplexityBetaButton />}
-
-  </div>
-) : (
-  <>
-    {!aiderMode && getLastSessionId() ? (
-      <div className="mt-2">
-        <NewSessionButton
-          onClick={async () => {
-            loadLastSession();
-          }}
-          className="mr-auto flex items-center gap-2"
-        >
-          <ArrowLeftIcon width="11px" height="11px" />
-          Last Session
-        </NewSessionButton>
-      </div>
-    ) : null}
-    {!!showTutorialCard && !bareChatMode && !aiderMode && !perplexityMode && (
-      <div className="flex justify-center w-full">
-        <TutorialCard onClose={onCloseTutorialCard} />
-      </div>
-    )}
-    {!aiderMode && !!showAiderHint && <AiderBetaButton />}
-  </>
-)}
-      {!perplexityMode && showPerplexityHint && <PerplexityBetaButton />}
+              {!aiderMode && !!showAiderHint && <AiderBetaButton />}
+            </>
+          )}
+          {!perplexityMode && showPerplexityHint && <PerplexityBetaButton />}
         </div>
-        <ChatScrollAnchor
-          scrollAreaRef={topGuiDivRef}
-          isAtBottom={isAtBottom}
-          trackVisibility={active}
-        />
+        {active && (
+          <StopButton
+            className="mt-auto mb-4 sticky bottom-4"
+            onClick={() => {
+              dispatch(setInactive());
+
+              if (
+                state.history[state.history.length - 1]?.message.content
+                  .length === 0
+              ) {
+                dispatch(clearLastResponse());
+              }
+              if (aiderMode) {
+                ideMessenger.post("aiderCtrlC", undefined);
+              }
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        )}
       </TopGuiDiv>
-      {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setInactive());
-            if (
-              state.history[state.history.length - 1]?.message.content
-                .length === 0
-            ) {
-              dispatch(clearLastResponse());
-            }
-            if (aiderMode) {
-              ideMessenger.post("aiderCtrlC", undefined)
-            }
-          }}
+      {isBetaAccess && (
+        <NewSessionButton
+          onClick={() => navigate("/inventory")}
+          style={{ marginLeft: "0.8rem", marginBottom: "0rem" }}
         >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
+          Inventory
+        </NewSessionButton>
       )}
-            {isBetaAccess &&
-        <NewSessionButton onClick={() => navigate("/inventory")} style={{marginLeft: "0.8rem", marginBottom: "0rem"}} >Inventory</NewSessionButton>
-      }
-    </>
+    </TopGuiDivContainer>
   );
-}
+};
 
 export default GUI;
