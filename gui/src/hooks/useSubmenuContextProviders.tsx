@@ -11,6 +11,8 @@ import { useSelector } from "react-redux";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { selectContextProviderDescriptions } from "../redux/selectors";
 import { useWebviewListener } from "./useWebviewListener";
+import { store } from '../redux/store';
+
 
 const MINISEARCH_OPTIONS = {
   prefix: true,
@@ -192,39 +194,55 @@ function useSubmenuContextProviders() {
     [fallbackResults, getSubmenuSearchResults],
   );
 
-  useEffect(() => {
-    if (contextProviderDescriptions.length === 0 || loaded) {
+
+useEffect(() => {
+  if (contextProviderDescriptions.length === 0 || loaded) {
+    return;
+  }
+  setLoaded(true);
+
+  contextProviderDescriptions.forEach(async (description) => {
+    // Check if we're in aider mode by checking the default model title
+    const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
+    console.dir("Im here")
+    const isAiderMode = defaultModelTitle?.toLowerCase().includes('aider');
+
+    // Skip if:
+    // 1. In aider mode and not relativefilecontext
+    // 2. Not in aider mode and is relativefilecontext
+    if ((isAiderMode && description.title !== "relativefilecontext") ||
+        (!isAiderMode && description.title === "relativefilecontext")) {
       return;
     }
-    setLoaded(true);
-    contextProviderDescriptions.forEach(async (description) => {
-      const minisearch = new MiniSearch<ContextSubmenuItem>({
-        fields: ["title", "description"],
-        storeFields: ["id", "title", "description"],
-      });
-      const items = await ideMessenger.request("context/loadSubmenuItems", {
-        title: description.title,
-      });
-      minisearch.addAll(items);
-      setMinisearches((prev) => ({ ...prev, [description.title]: minisearch }));
 
-      if (description.title === "file") {
-        const openFiles = await getOpenFileItems();
-        setFallbackResults((prev) => ({
-          ...prev,
-          file: [
-            ...openFiles,
-            ...items.slice(0, MAX_LENGTH - openFiles.length),
-          ],
-        }));
-      } else {
-        setFallbackResults((prev) => ({
-          ...prev,
-          [description.title]: items.slice(0, MAX_LENGTH),
-        }));
-      }
+    const minisearch = new MiniSearch<ContextSubmenuItem>({
+      fields: ["title", "description"],
+      storeFields: ["id", "title", "description"],
     });
-  }, [contextProviderDescriptions, loaded]);
+    const items = await ideMessenger.request("context/loadSubmenuItems", {
+      title: description.title,
+    });
+    minisearch.addAll(items);
+    setMinisearches((prev) => ({ ...prev, [description.title]: minisearch }));
+
+    if (description.title === "file") {
+      const openFiles = await getOpenFileItems();
+      setFallbackResults((prev) => ({
+        ...prev,
+        file: [
+          ...openFiles,
+          ...items.slice(0, MAX_LENGTH - openFiles.length),
+        ],
+      }));
+    } else {
+      setFallbackResults((prev) => ({
+        ...prev,
+        [description.title]: items.slice(0, MAX_LENGTH),
+      }));
+    }
+  });
+}, [contextProviderDescriptions, loaded]); // Removed location?.pathname from dependencies
+
 
   useWebviewListener("configUpdate", async () => {
     // When config is updated (for example switching to a different workspace)

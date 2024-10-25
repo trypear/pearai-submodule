@@ -34,7 +34,7 @@ export const FREE_TRIAL_MODELS: ModelDescription[] = [
 ];
 
 export const defaultContextProvidersVsCode: ContextProviderWithParams[] = [
-  { name: "file", params: {} },
+  // { name: "file", params: {} },
   { name: "directory", params: {} },
   { name: "code", params: {} },
   { name: "docs", params: {} },
@@ -42,7 +42,7 @@ export const defaultContextProvidersVsCode: ContextProviderWithParams[] = [
   { name: "terminal", params: {} },
   { name: "problems", params: {} },
   { name: "folder", params: {} },
-  { name: "relativefilecontext", params: {} },
+  // { name: "relativefilecontext", params: {} },
    // TODO: Known bug v.1.3.0. codebase works on its own, but doesnt send a message if there is text in the same message as the @Codebase
   { name: "codebase", params: {} },
 
