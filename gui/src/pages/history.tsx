@@ -239,17 +239,25 @@ function History() {
   const handleKeyDown = (e: KeyboardEvent) => {
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      const newIndex = Math.min(selectedIndex + 1, filteredAndSortedSessions.length - 1);
+
+      const newIndex = Math.min(
+        selectedIndex + 1,
+        filteredAndSortedSessions.length - 1,
+      );
+
       setSelectedIndex(newIndex);
       scrollSelectedIntoView(newIndex);
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       const newIndex = Math.max(selectedIndex - 1, 0);
+
       setSelectedIndex(newIndex);
       scrollSelectedIntoView(newIndex);
     } else if (e.key === "Enter" && selectedIndex !== -1) {
       e.preventDefault();
+
       const selectedSession = filteredAndSortedSessions[selectedIndex];
+
       saveSession();
       loadSession(selectedSession.sessionId);
       navigate("/");
@@ -258,6 +266,7 @@ function History() {
 
   useEffect(() => {
     window.addEventListener("keydown", handleKeyDown);
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -265,7 +274,8 @@ function History() {
 
   const scrollSelectedIntoView = (index: number) => {
     if (tableRef.current) {
-      const rows = tableRef.current.querySelectorAll('tr');
+      const rows = tableRef.current.querySelectorAll("tr");
+
       if (rows[index]) {
         rows[index].scrollIntoView({
           behavior: "smooth",
@@ -356,33 +366,20 @@ function History() {
           />
           <h3 className="text-lg font-bold m-2 inline-block">History</h3>
         </div>
-        {/* {workspacePaths && workspacePaths.length > 0 && (
-          <CheckDiv
-            checked={filteringByWorkspace}
-            onClick={() => setFilteringByWorkspace((prev) => !prev)}
-            title={`Show only sessions from ${lastPartOfPath(
-              workspacePaths[workspacePaths.length - 1]
-            )}/`}
-          />
-        )} */}
       </div>
-
       <div>
         <SearchBar
           placeholder="Search past sessions"
           type="text"
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-
         {filteredAndSortedSessions.length === 0 && (
           <div className="text-center m-4">
             No past sessions found. To start a new session, either click the "+"
             button or use the keyboard shortcut: <b>Option + Command + N</b>
           </div>
         )}
-
-        <table className="w-full border-spacing-0 border-collapse"
-        >
+        <table className="w-full border-spacing-0 border-collapse">
           <tbody>
             {filteredAndSortedSessions.map((session, index) => {
               const prevDate =
@@ -411,10 +408,7 @@ function History() {
                         This Month
                       </SectionHeader>
                     )}
-
-                  <Tr
-                    key={index}
-                  >
+                  <Tr key={index}>
                     <TableRow
                       session={session}
                       date={date}

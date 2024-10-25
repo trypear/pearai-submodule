@@ -159,26 +159,6 @@ export const SecondaryButton = styled.button`
   }
 `;
 
-export const CustomScrollbarDiv = styled.div`
-  scrollbar-base-color: transparent;
-  scrollbar-width: thin;
-  background-color: ${vscBackground};
-
-  & * {
-    ::-webkit-scrollbar {
-      width: 4px;
-    }
-
-    ::-webkit-scrollbar:horizontal {
-      height: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      border-radius: 2px;
-    }
-  }
-`;
-
 const TooltipStyles = {
   fontSize: `${getFontSize() - 2}px`,
   backgroundColor: vscInputBackground,
