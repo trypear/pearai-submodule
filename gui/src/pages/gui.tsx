@@ -1,8 +1,6 @@
 import {
   ArrowLeftIcon,
   ChatBubbleOvalLeftIcon,
-  CodeBracketSquareIcon,
-  ExclamationTriangleIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
@@ -18,7 +16,7 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   Button,
@@ -57,7 +55,7 @@ import { isBareChatMode, isPerplexityMode } from "../util/bareChatMode";
 import { Badge } from "../components/ui/badge";
 import { FOOTER_HEIGHT, HEADER_HEIGHT } from "@/components/Layout";
 
-const TopGuiDiv = styled.div<{ isAiderOrPerplexity?: boolean }>`
+export const TopGuiDiv = styled.div<{ isAiderOrPerplexity?: boolean }>`
   overflow-y: auto;
   flex: 1;
   height: ${(props) =>
@@ -100,61 +98,82 @@ export const StepsDiv = styled.div`
   }
 `;
 
+export const TopGuiDivContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto; // Changed from overflow: hidden
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: ${lightGray}44;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: ${lightGray}88;
+  }
+`;
+
+export const ContinueInputBoxContainer = styled.div`
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  background-color: inherit;
+  box-shadow: 0 -8px 16px -8px rgba(0, 0, 0, 0.3);
+  margin-top: -8px; // Keep the negative margin
+`;
+
 export const NewSessionButton = styled.div`
   width: fit-content;
-  margin-right: auto;
-  margin-left: 6px;
-  margin-top: 2px;
-  margin-bottom: 8px;
+  margin: 2px auto 8px 6px;
   font-size: ${getFontSize() - 2}px;
-
   border-radius: ${defaultBorderRadius};
   padding: 2px 6px;
   color: ${lightGray};
+  cursor: pointer;
 
   &:hover {
     background-color: ${lightGray}33;
     color: ${vscForeground};
   }
-
-  cursor: pointer;
 `;
 
-const ThreadHead = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 18px 6px 0 6px;
-`;
-
-const THREAD_AVATAR_SIZE = 15;
-
-const ThreadAvatar = styled.div`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: rgba(248, 248, 248, 0.75);
-  color: #000;
+export const ScrollToBottomButton = styled.button`
+  position: sticky;
+  bottom: 84px;
+  margin-left: auto;
+  margin-right: 16px;
+  margin-bottom: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  background: ${vscBackground};
+  border: 1px solid ${lightGray}44;
+  color: ${lightGray};
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(136, 136, 136, 0.3);
-`;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.8;
+  z-index: 51;
 
-const ThreadUserTitle = styled.div`
-  text-transform: capitalize;
-  font-weight: 500;
-  margin-bottom: 2px;
-`;
-
-const ThreadUserName = styled.div`
-  font-size: ${getFontSize() - 3}px;
-  color: ${lightGray};
+  &:hover {
+    opacity: 1;
+    background: ${lightGray}22;
+  }
 `;
 
 export function fallbackRender({ error, resetErrorBoundary }) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
-
   return (
     <div
       role="alert"
@@ -170,6 +189,7 @@ export function fallbackRender({ error, resetErrorBoundary }) {
     </div>
   );
 }
+
 const GUI = () => {
   const posthog = usePostHog();
   const dispatch = useDispatch();
