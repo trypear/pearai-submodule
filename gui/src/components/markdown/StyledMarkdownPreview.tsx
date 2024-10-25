@@ -25,7 +25,7 @@ const StyledMarkdown = styled.div<{
   showBorder?: boolean;
 }>`
   pre {
-    background-color: ${vscEditorBackground};
+    background-color: ${window.isPearOverlay ?  vscBackground : vscEditorBackground};
     border-radius: ${defaultBorderRadius};
 
     max-width: calc(100vw - 24px);
@@ -39,7 +39,7 @@ const StyledMarkdown = styled.div<{
         `;
       }
     }}
-    padding: ${(props) => (props.showBorder ? "12px" : "0px 2px")};
+    padding: 12px;
   }
 
   code {
