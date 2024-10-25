@@ -1,73 +1,89 @@
 import {
-    ArrowLeftIcon,
-    ChatBubbleOvalLeftIcon,
-    CodeBracketSquareIcon,
-    ExclamationTriangleIcon,
-  } from "@heroicons/react/24/outline";
-  import { JSONContent } from "@tiptap/react";
-  import { InputModifiers } from "core";
-  import { usePostHog } from "posthog-js/react";
-  import {
-    Fragment,
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-  } from "react";
-  import { ErrorBoundary } from "react-error-boundary";
-  import { useDispatch, useSelector } from "react-redux";
-  import { useLocation, useNavigate } from "react-router-dom";
-  import styled from "styled-components";
-  import {
-    Button,
-    defaultBorderRadius,
-    lightGray,
-    vscBackground,
-    vscForeground,
-  } from "../../components";
-  import { ChatScrollAnchor } from "../../components/ChatScrollAnchor";
-  import StepContainer from "../../components/gui/StepContainer";
-  import TimelineItem from "../../components/gui/TimelineItem";
-  import ContinueInputBox from "../../components/mainInput/ContinueInputBox";
-  import { defaultInputModifiers } from "../../components/mainInput/inputModifiers";
-  import { TutorialCard } from "../../components/mainInput/TutorialCard";
-  import { IdeMessengerContext } from "../../context/IdeMessenger";
-  import useChatHandler from "../../hooks/useChatHandler";
-  import useHistory from "../../hooks/useHistory";
-  import { useWebviewListener } from "../../hooks/useWebviewListener";
-  import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
-  import {
-    clearLastResponse,
-    deleteMessage,
-    newSession,
-    setInactive,
-  } from "../../redux/slices/stateSlice";
-  import {
-    setDialogEntryOn,
-    setDialogMessage,
-    setShowDialog,
-  } from "../../redux/slices/uiStateSlice";
-  import { RootState } from "../../redux/store";
-  import {
-    getFontSize,
-    getMetaKeyLabel,
-    isJetBrains,
-    isMetaEquivalentKeyPressed,
-  } from "../../util";
-  import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
-  import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
-  import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
-  import { Badge } from "../../components/ui/badge";
-  import { TopGuiDiv, StopButton, StepsDiv, NewSessionButton, fallbackRender } from "../../pages/gui";
-
+  ArrowLeftIcon,
+  ChatBubbleOvalLeftIcon,
+  ChevronDownIcon,
+  CodeBracketSquareIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
+import { JSONContent } from "@tiptap/react";
+import { InputModifiers } from "core";
+import { usePostHog } from "posthog-js/react";
+import {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import {
+  Button,
+  defaultBorderRadius,
+  lightGray,
+  vscBackground,
+  vscForeground,
+} from "../../components";
+import StepContainer from "../../components/gui/StepContainer";
+import TimelineItem from "../../components/gui/TimelineItem";
+import ContinueInputBox from "../../components/mainInput/ContinueInputBox";
+import { defaultInputModifiers } from "../../components/mainInput/inputModifiers";
+import { TutorialCard } from "../../components/mainInput/TutorialCard";
+import { IdeMessengerContext } from "../../context/IdeMessenger";
+import useChatHandler from "../../hooks/useChatHandler";
+import useHistory from "../../hooks/useHistory";
+import { useWebviewListener } from "../../hooks/useWebviewListener";
+import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
+import {
+  clearLastResponse,
+  deleteMessage,
+  newSession,
+  setInactive,
+} from "../../redux/slices/stateSlice";
+import {
+  setDialogEntryOn,
+  setDialogMessage,
+  setShowDialog,
+} from "../../redux/slices/uiStateSlice";
+import { RootState } from "../../redux/store";
+import {
+  getFontSize,
+  getMetaKeyLabel,
+  isJetBrains,
+  isMetaEquivalentKeyPressed,
+} from "../../util";
+import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
+import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
+import { isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
+import { Badge } from "../../components/ui/badge";
+import {
+  TopGuiDiv,
+  StopButton,
+  StepsDiv,
+  NewSessionButton,
+  fallbackRender,
+  ContinueInputBoxContainer,
+  ScrollToBottomButton,
+  TopGuiDivContainer,
+} from "../../pages/gui";
+import { useScrollBehavior } from "@/hooks/useScrollBehavior";
+import {
+  createManualScrollHandler,
+  createScrollHandler,
+  scrollElementToBottom,
+} from "@/lib/scrollUtils";
 
 function AiderGUI() {
   const posthog = usePostHog();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
-  const isBetaAccess = useSelector((state: RootState) => state.state.config.isBetaAccess);
+  const isBetaAccess = useSelector(
+    (state: RootState) => state.state.config.isBetaAccess,
+  );
 
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
@@ -79,40 +95,24 @@ function AiderGUI() {
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
 
-  const handleScroll = () => {
-    const OFFSET_HERUISTIC = 300;
-    if (!topGuiDivRef.current) return;
+  const handleScroll = createScrollHandler(
+    topGuiDivRef,
+    setIsAtBottom,
+    isAtBottom,
+  );
 
-    const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
-    const atBottom = scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
-
-    setIsAtBottom(atBottom);
-  };
-
-  useEffect(() => {
-    if (!active || !topGuiDivRef.current) return;
-    const scrollAreaElement = topGuiDivRef.current;
-    scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
-    setIsAtBottom(true);
-  }, [active]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      window.scrollTo({
-        top: topGuiDivRef.current?.scrollHeight,
-        behavior: "instant" as any,
-      });
-    }, 1);
-
-    return () => {
-      clearTimeout(timeoutId)
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [topGuiDivRef.current]);
+  const handleManualScroll = createManualScrollHandler(
+    topGuiDivRef,
+    setIsAtBottom,
+  );
 
   useEffect(() => {
     const listener = (e: any) => {
-      if (e.key === "Backspace" && isMetaEquivalentKeyPressed(e) && !e.shiftKey) {
+      if (
+        e.key === "Backspace" &&
+        isMetaEquivalentKeyPressed(e) &&
+        !e.shiftKey
+      ) {
         dispatch(setInactive());
       }
     };
@@ -140,14 +140,29 @@ function AiderGUI() {
 
       streamResponse(editorState, modifiers, ideMessenger);
 
+      scrollElementToBottom(topGuiDivRef, {
+        isInventoryMode: true,
+        isActive: active,
+        onScrollComplete: () => setIsAtBottom(true),
+      });
+
       const currentCount = getLocalStorage("mainTextEntryCounter");
+
       if (currentCount) {
         setLocalStorage("mainTextEntryCounter", currentCount + 1);
       } else {
         setLocalStorage("mainTextEntryCounter", 1);
       }
     },
-    [sessionState.history, sessionState.contextItems, defaultModel, state, streamResponse],
+    [
+      sessionState.history,
+      sessionState.contextItems,
+      defaultModel,
+      state,
+      streamResponse,
+      scrollElementToBottom,
+      active,
+    ],
   );
 
   const { saveSession } = useHistory(dispatch);
@@ -157,6 +172,11 @@ function AiderGUI() {
     async () => {
       saveSession();
       mainTextInputRef.current?.focus?.();
+      scrollElementToBottom(topGuiDivRef, {
+        isInventoryMode: true,
+        isActive: active,
+        onScrollComplete: () => setIsAtBottom(true),
+      });
     },
     [saveSession],
   );
@@ -175,9 +195,23 @@ function AiderGUI() {
     [state.history],
   );
 
+  useScrollBehavior({
+    divRef: topGuiDivRef,
+    active,
+    isAtBottom,
+    setIsAtBottom,
+    isInventoryMode: true,
+  });
+
   return (
-    <>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+    <TopGuiDivContainer>
+      <TopGuiDiv
+        ref={topGuiDivRef}
+        onScroll={handleScroll}
+        onWheel={handleManualScroll}
+        onTouchMove={handleManualScroll}
+        isAiderOrPerplexity={true}
+      >
         <div className="mx-2">
           <div className="pl-2 mt-8 border-b border-gray-700">
             <div className="flex items-center gap-2">
@@ -195,7 +229,8 @@ function AiderGUI() {
               </Badge>
             </div>
             <p className="text-sm text-gray-400 mt-0">
-              Ask for a feature, describe a bug, or ask for a change to your project. We'll take care of everything for you!
+              Ask for a feature, describe a bug, or ask for a change to your
+              project. We'll take care of everything for you!
             </p>
           </div>
           <StepsDiv>
@@ -216,6 +251,11 @@ function AiderGUI() {
                           ideMessenger,
                           index,
                         );
+                        scrollElementToBottom(topGuiDivRef, {
+                          isInventoryMode: true,
+                          isActive: active,
+                          onScrollComplete: () => setIsAtBottom(true),
+                        });
                       }}
                       isLastUserInput={isLastUserInput(index)}
                       isMainInput={false}
@@ -227,19 +267,24 @@ function AiderGUI() {
                       <TimelineItem
                         item={item}
                         iconElement={
-                          <ChatBubbleOvalLeftIcon
-                            width="16px"
-                            height="16px"
-                          />
+                          <ChatBubbleOvalLeftIcon width="16px" height="16px" />
                         }
-                        open={typeof stepsOpen[index] === "undefined" ? true : stepsOpen[index]!}
+                        open={
+                          typeof stepsOpen[index] === "undefined"
+                            ? true
+                            : stepsOpen[index]!
+                        }
                         onToggle={() => {}}
                       >
                         <StepContainer
                           index={index}
                           isLast={index === sessionState.history.length - 1}
                           isFirst={index === 0}
-                          open={typeof stepsOpen[index] === "undefined" ? true : stepsOpen[index]!}
+                          open={
+                            typeof stepsOpen[index] === "undefined"
+                              ? true
+                              : stepsOpen[index]!
+                          }
                           key={index}
                           onUserInput={(input: string) => {}}
                           item={item}
@@ -247,10 +292,16 @@ function AiderGUI() {
                           onRetry={() => {
                             streamResponse(
                               state.history[index - 1].editorState,
-                              state.history[index - 1].modifiers ?? defaultInputModifiers,
+                              state.history[index - 1].modifiers ??
+                                defaultInputModifiers,
                               ideMessenger,
                               index - 1,
                             );
+                            scrollElementToBottom(topGuiDivRef, {
+                              isInventoryMode: true,
+                              isActive: active,
+                              onScrollComplete: () => setIsAtBottom(true),
+                            });
                           }}
                           onContinueGeneration={() => {
                             window.postMessage(
@@ -266,7 +317,9 @@ function AiderGUI() {
                           onDelete={() => {
                             dispatch(deleteMessage(index));
                           }}
-                          modelTitle={item.promptLogs?.[0]?.completionOptions?.model ?? ""}
+                          modelTitle={
+                            item.promptLogs?.[0]?.completionOptions?.model ?? ""
+                          }
                         />
                       </TimelineItem>
                     </div>
@@ -275,14 +328,30 @@ function AiderGUI() {
               </Fragment>
             ))}
           </StepsDiv>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          />
+          {!isAtBottom && (
+            <ScrollToBottomButton
+              onClick={() =>
+                scrollElementToBottom(topGuiDivRef, {
+                  isInventoryMode: true,
+                  isActive: active,
+                  onScrollComplete: () => setIsAtBottom(true),
+                })
+              }
+              aria-label="Scroll to bottom"
+            >
+              <ChevronDownIcon width={16} height={16} />
+            </ScrollToBottomButton>
+          )}
+          <ContinueInputBoxContainer>
+            <ContinueInputBox
+              onEnter={(editorContent, modifiers) => {
+                sendInput(editorContent, modifiers);
+              }}
+              isLastUserInput={false}
+              isMainInput={true}
+              hidden={active}
+            />
+          </ContinueInputBoxContainer>
           {active ? (
             <>
               <br />
@@ -293,7 +362,7 @@ function AiderGUI() {
               <NewSessionButton
                 onClick={() => {
                   saveSession();
-                  ideMessenger.post("aiderResetSession", undefined)
+                  ideMessenger.post("aiderResetSession", undefined);
                 }}
                 className="mr-auto"
               >
@@ -302,32 +371,34 @@ function AiderGUI() {
             </div>
           ) : null}
         </div>
-        <ChatScrollAnchor
-          scrollAreaRef={topGuiDivRef}
-          isAtBottom={isAtBottom}
-          trackVisibility={active}
-        />
+        {active && (
+          <StopButton
+            className="mt-auto mb-4 sticky bottom-4"
+            onClick={() => {
+              dispatch(setInactive());
+
+              if (
+                state.history[state.history.length - 1]?.message.content
+                  .length === 0
+              ) {
+                dispatch(clearLastResponse());
+              }
+              ideMessenger.post("aiderCtrlC", undefined);
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        )}
       </TopGuiDiv>
-      {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setInactive());
-            if (state.history[state.history.length - 1]?.message.content.length === 0) {
-              dispatch(clearLastResponse());
-            }
-            ideMessenger.post("aiderCtrlC", undefined)
-          }}
+      {isBetaAccess && (
+        <NewSessionButton
+          onClick={() => navigate("/inventory")}
+          style={{ marginLeft: "0.8rem", marginBottom: "0rem" }}
         >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
-      )}
-      {isBetaAccess &&
-        <NewSessionButton onClick={() => navigate("/inventory")} style={{marginLeft: "0.8rem", marginBottom: "0rem"}} >
           Inventory
         </NewSessionButton>
-      }
-    </>
+      )}
+    </TopGuiDivContainer>
   );
 }
 

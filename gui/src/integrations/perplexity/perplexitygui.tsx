@@ -1,6 +1,7 @@
 import {
   ArrowLeftIcon,
   ChatBubbleOvalLeftIcon,
+  ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
@@ -48,7 +49,16 @@ import {
   StepsDiv,
   NewSessionButton,
   fallbackRender,
+  TopGuiDivContainer,
+  ContinueInputBoxContainer,
+  ScrollToBottomButton,
 } from "../../pages/gui";
+import {
+  createManualScrollHandler,
+  createScrollHandler,
+  scrollElementToBottom,
+} from "../../lib/scrollUtils";
+import { useScrollBehavior } from "@/hooks/useScrollBehavior";
 
 function PerplexityGUI() {
   const posthog = usePostHog();
@@ -71,6 +81,17 @@ function PerplexityGUI() {
     getLocalStorage("showTutorialCard"),
   );
 
+  const handleScroll = createScrollHandler(
+    topGuiDivRef,
+    setIsAtBottom,
+    isAtBottom,
+  );
+
+  const handleManualScroll = createManualScrollHandler(
+    topGuiDivRef,
+    setIsAtBottom,
+  );
+
   const bareChatMode = isBareChatMode();
 
   const onCloseTutorialCard = () => {
@@ -79,70 +100,20 @@ function PerplexityGUI() {
     setShowTutorialCard(false);
   };
 
-  const handleScroll = () => {
-    const OFFSET_HERUISTIC = 300;
-    if (!topGuiDivRef.current) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
-    const atBottom =
-      scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
-
-    setIsAtBottom(atBottom);
-  };
-
-  useEffect(() => {
-    if (!active || !topGuiDivRef.current) return;
-
-    const scrollAreaElement = topGuiDivRef.current;
-    scrollAreaElement.scrollTop =
-      scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
-
-    setIsAtBottom(true);
-  }, [active]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      window.scrollTo({
-        top: topGuiDivRef.current?.scrollHeight,
-        behavior: "instant" as any,
-      });
-    }, 1);
-
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [topGuiDivRef.current]);
-
-  useEffect(() => {
-    const listener = (e: any) => {
-      if (
-        e.key === "Backspace" &&
-        isMetaEquivalentKeyPressed(e) &&
-        !e.shiftKey
-      ) {
-        dispatch(setInactive());
-      }
-    };
-    window.addEventListener("keydown", listener);
-
-    return () => {
-      window.removeEventListener("keydown", listener);
-    };
-  }, [active]);
-
   const { streamResponse } = useChatHandler(dispatch, ideMessenger);
 
   const sendInput = useCallback(
     (editorState: JSONContent, modifiers: InputModifiers) => {
       if (defaultModel?.provider === "free-trial") {
         const u = getLocalStorage("ftc");
+
         if (u) {
           setLocalStorage("ftc", u + 1);
 
           if (u >= FREE_TRIAL_LIMIT_REQUESTS) {
             navigate("/onboarding");
             posthog?.capture("ftc_reached");
+
             return;
           }
         } else {
@@ -152,7 +123,14 @@ function PerplexityGUI() {
 
       streamResponse(editorState, modifiers, ideMessenger);
 
+      scrollElementToBottom(topGuiDivRef, {
+        isInventoryMode: true,
+        isActive: active,
+        onScrollComplete: () => setIsAtBottom(true),
+      });
+
       const currentCount = getLocalStorage("mainTextEntryCounter");
+
       if (currentCount) {
         setLocalStorage("mainTextEntryCounter", currentCount + 1);
       } else {
@@ -165,6 +143,8 @@ function PerplexityGUI() {
       defaultModel,
       state,
       streamResponse,
+      scrollElementToBottom,
+      active,
     ],
   );
 
@@ -176,6 +156,11 @@ function PerplexityGUI() {
     async () => {
       saveSession();
       mainTextInputRef.current?.focus?.();
+      scrollElementToBottom(topGuiDivRef, {
+        isInventoryMode: true,
+        isActive: active,
+        onScrollComplete: () => setIsAtBottom(true),
+      });
     },
     [saveSession],
   );
@@ -185,6 +170,11 @@ function PerplexityGUI() {
     async () => {
       await loadMostRecentChat();
       mainTextInputRef.current?.focus?.();
+      scrollElementToBottom(topGuiDivRef, {
+        isInventoryMode: true,
+        isActive: active,
+        onScrollComplete: () => setIsAtBottom(true),
+      });
     },
     [loadMostRecentChat],
   );
@@ -203,9 +193,40 @@ function PerplexityGUI() {
     [state.history],
   );
 
+  useScrollBehavior({
+    divRef: topGuiDivRef,
+    active,
+    isAtBottom,
+    setIsAtBottom,
+    isInventoryMode: true,
+  });
+
+  useEffect(() => {
+    const listener = (e: any) => {
+      if (
+        e.key === "Backspace" &&
+        isMetaEquivalentKeyPressed(e) &&
+        !e.shiftKey
+      ) {
+        dispatch(setInactive());
+      }
+    };
+    window.addEventListener("keydown", listener);
+
+    return () => {
+      window.removeEventListener("keydown", listener);
+    };
+  }, [active]);
+
   return (
-    <>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+    <TopGuiDivContainer>
+      <TopGuiDiv
+        ref={topGuiDivRef}
+        onScroll={handleScroll}
+        onWheel={handleManualScroll}
+        onTouchMove={handleManualScroll}
+        isAiderOrPerplexity={true}
+      >
         <div className="mx-2">
           <div className="pl-2 mt-8 border-b border-gray-700">
             <div className="flex items-center gap-2">
@@ -237,6 +258,11 @@ function PerplexityGUI() {
                           ideMessenger,
                           index,
                         );
+                        scrollElementToBottom(topGuiDivRef, {
+                          isInventoryMode: true,
+                          isActive: active,
+                          onScrollComplete: () => setIsAtBottom(true),
+                        });
                       }}
                       isLastUserInput={isLastUserInput(index)}
                       isMainInput={false}
@@ -304,14 +330,30 @@ function PerplexityGUI() {
               </Fragment>
             ))}
           </StepsDiv>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          ></ContinueInputBox>
+          {!isAtBottom && (
+            <ScrollToBottomButton
+              onClick={() =>
+                scrollElementToBottom(topGuiDivRef, {
+                  isInventoryMode: true,
+                  isActive: active,
+                  onScrollComplete: () => setIsAtBottom(true),
+                })
+              }
+              aria-label="Scroll to bottom"
+            >
+              <ChevronDownIcon width={16} height={16} />
+            </ScrollToBottomButton>
+          )}
+          <ContinueInputBoxContainer>
+            <ContinueInputBox
+              onEnter={(editorContent, modifiers) => {
+                sendInput(editorContent, modifiers);
+              }}
+              isLastUserInput={false}
+              isMainInput={true}
+              hidden={active}
+            ></ContinueInputBox>
+          </ContinueInputBoxContainer>
           {active ? (
             <>
               <br />
@@ -353,23 +395,23 @@ function PerplexityGUI() {
             </>
           )}
         </div>
+        {active && (
+          <StopButton
+            className="mt-auto mb-4 sticky bottom-4"
+            onClick={() => {
+              dispatch(setInactive());
+              if (
+                state.history[state.history.length - 1]?.message.content
+                  .length === 0
+              ) {
+                dispatch(clearLastResponse());
+              }
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        )}
       </TopGuiDiv>
-      {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setInactive());
-            if (
-              state.history[state.history.length - 1]?.message.content
-                .length === 0
-            ) {
-              dispatch(clearLastResponse());
-            }
-          }}
-        >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
-      )}
       {isBetaAccess && (
         <NewSessionButton
           onClick={() => navigate("/inventory")}
@@ -378,7 +420,7 @@ function PerplexityGUI() {
           Inventory
         </NewSessionButton>
       )}
-    </>
+    </TopGuiDivContainer>
   );
 }
 

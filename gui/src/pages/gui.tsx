@@ -54,6 +54,12 @@ import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 import { isBareChatMode, isPerplexityMode } from "../util/bareChatMode";
 import { Badge } from "../components/ui/badge";
 import { FOOTER_HEIGHT, HEADER_HEIGHT } from "@/components/Layout";
+import {
+  scrollElementToBottom,
+  createManualScrollHandler,
+  createScrollHandler,
+} from "@/lib/scrollUtils";
+import { useScrollBehavior } from "../hooks/useScrollBehavior";
 
 export const TopGuiDiv = styled.div<{ isAiderOrPerplexity?: boolean }>`
   overflow-y: auto;
@@ -204,6 +210,7 @@ const GUI = () => {
   const isBetaAccess = useSelector(
     (state: RootState) => state.state.config.isBetaAccess,
   );
+
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
     useHistory(dispatch);
 
@@ -223,6 +230,17 @@ const GUI = () => {
   const bareChatMode = isBareChatMode();
   const aiderMode = location?.pathname === "/aiderMode";
   const perplexityMode = isPerplexityMode();
+
+  const handleScroll = createScrollHandler(
+    topGuiDivRef,
+    setIsAtBottom,
+    isAtBottom,
+  );
+
+  const handleManualScroll = createManualScrollHandler(
+    topGuiDivRef,
+    setIsAtBottom,
+  );
 
   const onCloseTutorialCard = () => {
     posthog.capture("closedTutorialCard");
@@ -256,72 +274,6 @@ const GUI = () => {
     </NewSessionButton>
   );
 
-  const handleScroll = useCallback(() => {
-    // Reduce the offset to make it more sensitive to user scrolling
-    const OFFSET_HERUISTIC = 50;
-    if (!topGuiDivRef.current) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
-    const atBottom =
-      scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
-
-    // Add immediate state update when user scrolls up
-    if (!atBottom) {
-      setIsAtBottom(false);
-    } else if (atBottom && !isAtBottom) {
-      setIsAtBottom(true);
-    }
-  }, [isAtBottom]);
-
-  const handleManualScroll = useCallback(() => {
-    if (!topGuiDivRef.current) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
-
-    if (scrollHeight - clientHeight - scrollTop > 50) {
-      setIsAtBottom(false);
-    }
-  }, []);
-
-  const scrollToBottom = useCallback(() => {
-    if (!topGuiDivRef.current) return;
-
-    requestAnimationFrame(() => {
-      const scrollAreaElement = topGuiDivRef.current!;
-
-      scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight;
-      setIsAtBottom(true);
-
-      // For aider mode, keep checking scroll position
-      if (aiderMode && !active) {
-        let attempts = 0;
-
-        const maxAttempts = 10;
-        const checkScroll = () => {
-          if (!topGuiDivRef.current || attempts >= maxAttempts) return;
-
-          const currentHeight = topGuiDivRef.current.scrollHeight;
-          topGuiDivRef.current.scrollTop = currentHeight;
-
-          // If not at bottom, try again
-          const isAtBottom =
-            Math.abs(
-              currentHeight -
-                topGuiDivRef.current.clientHeight -
-                topGuiDivRef.current.scrollTop,
-            ) < 2;
-
-          if (!isAtBottom) {
-            attempts++;
-            setTimeout(checkScroll, 50);
-          }
-        };
-
-        setTimeout(checkScroll, 50);
-      }
-    });
-  }, [aiderMode, active]);
-
   const sendInput = useCallback(
     (editorState: JSONContent, modifiers: InputModifiers) => {
       if (defaultModel?.provider === "free-trial") {
@@ -342,7 +294,11 @@ const GUI = () => {
       }
 
       streamResponse(editorState, modifiers, ideMessenger);
-      scrollToBottom();
+      scrollElementToBottom(topGuiDivRef, {
+        isInventoryMode: aiderMode || perplexityMode,
+        isActive: active,
+        onScrollComplete: () => setIsAtBottom(true),
+      });
 
       const currentCount = getLocalStorage("mainTextEntryCounter");
       if (currentCount) {
@@ -357,7 +313,8 @@ const GUI = () => {
       defaultModel,
       state,
       streamResponse,
-      scrollToBottom,
+      scrollElementToBottom,
+      active,
     ],
   );
 
@@ -380,6 +337,11 @@ const GUI = () => {
     async () => {
       saveSession();
       mainTextInputRef.current?.focus?.();
+      scrollElementToBottom(topGuiDivRef, {
+        isInventoryMode: aiderMode || perplexityMode,
+        isActive: active,
+        onScrollComplete: () => setIsAtBottom(true),
+      });
     },
     [saveSession],
   );
@@ -389,43 +351,22 @@ const GUI = () => {
     async () => {
       await loadMostRecentChat();
       mainTextInputRef.current?.focus?.();
+      scrollElementToBottom(topGuiDivRef, {
+        isInventoryMode: aiderMode || perplexityMode,
+        isActive: active,
+        onScrollComplete: () => setIsAtBottom(true),
+      });
     },
     [loadMostRecentChat],
   );
 
-  useEffect(() => {
-    if (!active || !topGuiDivRef.current) return;
-
-    const scrollInterval = setInterval(() => {
-      if (topGuiDivRef.current && isAtBottom) {
-        scrollToBottom();
-      }
-    }, 100);
-
-    return () => clearInterval(scrollInterval);
-  }, [active, scrollToBottom, isAtBottom]);
-
-  useEffect(() => {
-    if (!topGuiDivRef.current) return;
-
-    if (!active && isAtBottom) {
-      // Only snap to bottom if user hadn't scrolled up
-      const scrollAreaElement = topGuiDivRef.current;
-
-      requestAnimationFrame(() => {
-        scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight;
-
-        if (aiderMode) {
-          // One more time after a brief delay for aider mode
-          setTimeout(() => {
-            if (scrollAreaElement) {
-              scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight;
-            }
-          }, 100);
-        }
-      });
-    }
-  }, [active, isAtBottom, aiderMode]);
+  useScrollBehavior({
+    divRef: topGuiDivRef,
+    active,
+    isAtBottom,
+    setIsAtBottom,
+    isInventoryMode: aiderMode || perplexityMode,
+  });
 
   useEffect(() => {
     // Cmd + Backspace to delete current step
@@ -514,7 +455,11 @@ const GUI = () => {
                             ideMessenger,
                             index,
                           );
-                          scrollToBottom();
+                          scrollElementToBottom(topGuiDivRef, {
+                            isInventoryMode: aiderMode || perplexityMode,
+                            isActive: active,
+                            onScrollComplete: () => setIsAtBottom(true),
+                          });
                         }}
                         isLastUserInput={isLastUserInput(index)}
                         isMainInput={false}
@@ -559,6 +504,11 @@ const GUI = () => {
                                 ideMessenger,
                                 index - 1,
                               );
+                              scrollElementToBottom(topGuiDivRef, {
+                                isInventoryMode: aiderMode || perplexityMode,
+                                isActive: active,
+                                onScrollComplete: () => setIsAtBottom(true),
+                              });
                             }}
                             onContinueGeneration={() => {
                               window.postMessage(
@@ -589,7 +539,13 @@ const GUI = () => {
           </StepsDiv>
           {!isAtBottom && (
             <ScrollToBottomButton
-              onClick={scrollToBottom}
+              onClick={() =>
+                scrollElementToBottom(topGuiDivRef, {
+                  isInventoryMode: aiderMode || perplexityMode,
+                  isActive: active,
+                  onScrollComplete: () => setIsAtBottom(true),
+                })
+              }
               aria-label="Scroll to bottom"
             >
               <ChevronDownIcon width={16} height={16} />
