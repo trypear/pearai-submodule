@@ -294,39 +294,45 @@ export default function AIToolInventory() {
             </div>
           </div>
 
-          <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-sm border-solid rounded-2xl p-2">
+          <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-sm border-solid rounded-2xl p-2 flex flex-col justify-between">
             {focusedTool ? (
-              <div>
-                <h2 className="text-lg font-bold mb-2">
-                  {focusedTool.name} {focusedTool.icon}
-                </h2>
-                <p className="mb-2">{focusedTool.description.split(":")[0]}</p>{" "}
-                {/* Shortened description */}
-                <h3 className="font-semibold mb-1">Usage:</h3>
-                <p className="mb-2">
-                  {focusedTool.whenToUse.split(".")[0]}
-                </p>{" "}
-                {/* Shortened usage details */}
-                <h3 className="font-semibold mb-1">Strengths:</h3>
-                <ul className="list-disc mb-2 pl-4">
-                  {focusedTool.strengths.map((strength, index) => (
-                    <li key={index}>{strength}</li>
-                  ))}
-                </ul>
-                <h3 className="font-semibold mb-1">Weaknesses:</h3>
-                <ul className="list-disc mb-2 pl-4">
-                  {focusedTool.weaknesses.map((weakness, index) => (
-                    <li key={index}>{weakness}</li>
-                  ))}
-                </ul>
+              <>
+                <div className="flex-grow">
+                  <h2 className="text-lg font-bold mb-2">
+                    {focusedTool.name} {focusedTool.icon}
+                  </h2>
+                  <p className="mb-2">
+                    {focusedTool.description.split(":")[0]}
+                  </p>{" "}
+                  <h3 className="font-semibold mb-1">Usage:</h3>
+                  <p className="mb-2">
+                    {focusedTool.whenToUse.split(".")[0]}
+                  </p>{" "}
+                  <h3 className="font-semibold mb-1">Strengths:</h3>
+                  <ul className="list-disc mb-2 pl-4">
+                    {focusedTool.strengths.map((strength, index) => (
+                      <li key={index}>{strength}</li>
+                    ))}
+                  </ul>
+                  <h3 className="font-semibold mb-1">Weaknesses:</h3>
+                  <ul className="list-disc mb-2 pl-4">
+                    {focusedTool.weaknesses.map((weakness, index) => (
+                      <li key={index}>{weakness}</li>
+                    ))}
+                  </ul>
+                </div>
                 {!focusedTool.comingSoon && (
-                  <div className="mt-2">
+                  <div className="mt-2 flex items-center sticky bottom-0 bg-background p-2">
                     <Button
-                      className="bg-button text-button-foreground hover:bg-button-hover cursor-pointer text-xs"
-                      onClick={() => handleEquipToQuickSlot(focusedTool)}
+                      className="bg-button text-button-foreground cursor-not-allowed text-xs opacity-50"
+                      // onClick={() => handleEquipToQuickSlot(focusedTool)}
+                      // disabled={true} // Disable the button
                     >
                       Equip to quick slots
                     </Button>
+                    <span className="ml-2 px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded-full font-medium">
+                      Coming Soon
+                    </span>
                     {quickSlots.every((slot) => slot !== null) && (
                       <p className="text-destructive mt-1 text-xs">
                         Quick slots are full
@@ -334,9 +340,9 @@ export default function AIToolInventory() {
                     )}
                   </div>
                 )}
-              </div>
+              </>
             ) : (
-              <div className="flex flex-col items-center justify-center text-foreground opacity-60 mt-4">
+              <div className="flex flex-col items-center justify-center text-foreground opacity-60 mt-4 flex-grow">
                 <p className="text-sm font-medium">No tool selected</p>
                 <p className="text-xs">Select a tool to view its details</p>
               </div>
