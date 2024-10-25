@@ -70,7 +70,7 @@ const initialTools: AITool[] = [
   {
     id: "3",
     name: "Memory (mem0)",
-    description: "Personalization: let the AI remember your past thoughts",
+    description: "Personalization: let the AI remember your past thoughts (coming soon)",
     icon: "📝",
     whenToUse:
       "When you want the AI to remember insights from past prompts you've given it. It can automatically remember details like what version of for e.g. Python you're using, or other specific details of your codebase, like your coding styles, or your expertise level",
@@ -138,9 +138,9 @@ function AIToolCard({
       className={`cursor-pointer transition-all ${tool.enabled ? "bg-input" : "bg-button"} ${tool.comingSoon ? "opacity-50" : ""}`}
       onClick={tool.comingSoon ? undefined : onClick}
     >
-      <CardContent className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="text-3xl bg-primary/10 p-2 rounded-full">
+      <CardContent className="p-4">
+        <div className="flex items-center justify-between">
+          <div className="text-2xl bg-primary/10 rounded-full">
             {tool.icon}
           </div>
           <Switch
@@ -151,7 +151,7 @@ function AIToolCard({
           />
         </div>
         <h3
-          className={`text-lg font-semibold mb-2 ${tool.enabled ? "text-button-foreground" : ""} transition-colors`}
+          className={`text-base font-semibold ${tool.enabled ? "text-button-foreground" : ""} transition-colors`}
         >
           {tool.name}
         </h3>
@@ -248,7 +248,7 @@ export default function AIToolInventory() {
     <TooltipProvider>
       <div className="flex flex-col h-full overflow-y-auto bg-background text-foreground">
         <header className="flex-none mb-6">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" >
             <h1 className="text-xl font-bold mb-2">PearAI Inventory</h1>
             <Badge variant="outline" className="pl-0">
               Beta
@@ -260,7 +260,7 @@ export default function AIToolInventory() {
                 placeholder="Search AI tools..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full bg-input text-foreground border-input"
+                className="pl-10 w-full bg-input text-foreground border-input pr-0 sm:pr-2 lg:pr-[6.5rem]"
                 aria-label="Search AI tools"
               />
             </div>
@@ -275,7 +275,7 @@ export default function AIToolInventory() {
 
         <main className="flex-1 flex gap-4 min-h-0">
           <div className="w-1/2 flex flex-col">
-            <div className="flex-1 overflow-y-auto pr-4">
+            <div className="flex-1 overflow-y-auto pr-4 border-solid rounded-2xl p-2">
               <div className="grid grid-cols-2 gap-4">
                 {filteredTools.map((tool) => (
                   <AIToolCard
@@ -289,7 +289,7 @@ export default function AIToolInventory() {
             </div>
           </div>
 
-          <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-base">
+          <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-base border-solid rounded-2xl p-2">
             {focusedTool ? (
               <div>
                 <h2 className="text-2xl font-bold mb-4">
@@ -334,7 +334,7 @@ export default function AIToolInventory() {
           </div>
         </main>
 
-        <footer className="flex-none mt-6">
+        <footer className="flex-none mt-6 mb-4">
           <h3 className="font-bold mb-2">Quick Action Slots</h3>
           <div className="flex gap-2 mb-4">
             {quickSlots.map((slot, index) => (

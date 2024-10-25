@@ -13,12 +13,12 @@ const TemplateComponent = ({ name }: { name: string }) => {
 };
 
 const tabs = [
+  { id: "inventory", name: "Inventory", component: <InventoryPage /> },
   {
     id: "aiderMode",
     name: "Creator (aider)",
     component: <Gui />,
   },
-  { id: "inventory", name: "Inventory", component: <InventoryPage /> },
   {
     id: "perplexityMode",
     name: "Search (Perplexity)",
