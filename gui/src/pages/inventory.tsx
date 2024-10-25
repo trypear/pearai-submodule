@@ -29,11 +29,11 @@ const tabs = [
 export default function Inventory() {
   const location = useLocation();
   const navigate = useNavigate();
-  const currentTab = location.pathname.split('/').pop() || 'inventory';
+  const currentTab = location.pathname.split("/").pop() || "inventory";
 
   const handleTabChange = (value: string) => {
-    if (value === 'inventory') {
-      navigate('/inventory');
+    if (value === "inventory") {
+      navigate("/inventory");
       return;
     }
     navigate(`/inventory/${value}`);
@@ -49,34 +49,40 @@ export default function Inventory() {
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
-      <Tabs 
-        value={currentTab} 
+      <Tabs
+        value={currentTab}
         defaultValue="inventory"
-        onValueChange={handleTabChange} 
+        onValueChange={handleTabChange}
         className="flex flex-col h-full"
       >
         <div className="flex flex-col h-full">
           {/* Made the header sticky with shadow */}
           <div className="sticky top-0 px-4 pt-4 bg-background z-10 shadow-sm">
-            <TabsList className="bg-input text-center">
+            <TabsList className="bg-input text-center rounded-lg shadow-md">
               {tabs.map((tab) => (
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className="text-[0.60rem]"
+                  className={`text-xs font-medium px-3 py-1 rounded transition-all duration-300 ${
+                    currentTab === tab.id
+                      ? "bg-primary text-primary-foreground border-b-2 border-accent"
+                      : "text-foreground hover:bg-muted hover:text-muted-foreground"
+                  }`}
                 >
                   {tab.name}
                 </TabsTrigger>
               ))}
             </TabsList>
-            <span className="ml-2">current path : {location.pathname}</span>
+            <span className="ml-2 text-sm text-muted-foreground">
+              Current path: {location.pathname}
+            </span>
           </div>
-          
+
           <div className="flex-1 min-h-0 p-4 pt-0 overflow-hidden">
             {tabs.map((tab) => (
-              <TabsContent 
-                key={tab.id} 
-                value={tab.id} 
+              <TabsContent
+                key={tab.id}
+                value={tab.id}
                 className="h-full data-[state=active]:flex flex-col"
               >
                 {tab.component}
