@@ -57,10 +57,8 @@ import {
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
-import { isBareChatMode, isPerplexityMode } from '../util/bareChatMode';
+import { isBareChatMode, isPerplexityMode } from "../util/bareChatMode";
 import { Badge } from "../components/ui/badge";
-
-
 
 const TopGuiDiv = styled.div`
   overflow-y: scroll;
@@ -172,8 +170,6 @@ const ThreadUserName = styled.div`
   color: ${lightGray};
 `;
 
-
-
 function fallbackRender({ error, resetErrorBoundary }) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
 
@@ -197,9 +193,11 @@ function GUI() {
   const posthog = usePostHog();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location =  useLocation();
+  const location = useLocation();
   const ideMessenger = useContext(IdeMessengerContext);
-  const isBetaAccess = useSelector((state: RootState) => state.state.config.isBetaAccess);
+  const isBetaAccess = useSelector(
+    (state: RootState) => state.state.config.isBetaAccess,
+  );
 
   const sessionState = useSelector((state: RootState) => state.state);
 
@@ -224,20 +222,14 @@ function GUI() {
   // console.dir(defaultModel.title)
   // console.dir(location.pathname)
 
-
-
   // AIDER HINT BUTTON HIDDEN IN V1.4.0
-  const [showAiderHint, setShowAiderHint] = useState<boolean>(
-    false
-  );
+  const [showAiderHint, setShowAiderHint] = useState<boolean>(false);
 
   // Perplexity hint button hidden
-  const [showPerplexityHint, setShowPerplexityHint] = useState<boolean>(
-    false
-  );
+  const [showPerplexityHint, setShowPerplexityHint] = useState<boolean>(false);
 
   const bareChatMode = isBareChatMode();
-  const aiderMode = location?.pathname.split('/').pop() === "aiderMode"
+  const aiderMode = location?.pathname.split("/").pop() === "aiderMode";
   const perplexityMode = isPerplexityMode();
 
   const onCloseTutorialCard = () => {
@@ -248,13 +240,11 @@ function GUI() {
 
   const AiderBetaButton: React.FC = () => (
     <NewSessionButton
-      onClick={() =>
-      {
-        ideMessenger.post("aiderMode", undefined)
+      onClick={() => {
+        ideMessenger.post("aiderMode", undefined);
         setShowAiderHint(false);
-      }
-    }
-    className="mr-auto py-2" // Added padding top and bottom
+      }}
+      className="mr-auto py-2" // Added padding top and bottom
     >
       Hint: Try out PearAI Creator (Beta), powered by aider (Beta)!
     </NewSessionButton>
@@ -265,13 +255,14 @@ function GUI() {
       onClick={async () => {
         ideMessenger.post("perplexityMode", undefined);
         setShowPerplexityHint(false);
-        }}
-        className="mr-auto"
-      >
-        {perplexityMode ? "Exit Perplexity" : "Hint: Try out PearAI Search (Beta), powered by Perplexity."  }
+      }}
+      className="mr-auto"
+    >
+      {perplexityMode
+        ? "Exit Perplexity"
+        : "Hint: Try out PearAI Search (Beta), powered by Perplexity."}
     </NewSessionButton>
-  )
-
+  );
 
   const handleScroll = () => {
     // Temporary fix to account for additional height when code blocks are added
@@ -468,43 +459,48 @@ function GUI() {
   return (
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-          <div className="mx-2">
-            {aiderMode && (
-              <div className="pl-2 mt-8 border-b border-gray-700">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold mb-2">PearAI Creator - Beta</h1>{" "}
-                  <Badge variant="outline" className="pl-0">
-                    (Powered by{" "}
-                    <a
-                      href="https://aider.chat/2024/06/02/main-swe-bench.html"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline px-1"
-                    >
-                      aider)
-                    </a>
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-400 mt-0">
-                  Ask for a feature, describe a bug, or ask for a change to your project. We'll take care of everything for you!
-                </p>
+        <div className="mx-2">
+          {aiderMode && (
+            <div className="pl-2 border-gray-700">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold mb-1">
+                  PearAI Creator - Beta
+                </h1>{" "}
+                <Badge variant="outline" className="pl-0">
+                  (Powered by{" "}
+                  <a
+                    href="https://aider.chat/2024/06/02/main-swe-bench.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline px-1"
+                  >
+                    aider)
+                  </a>
+                </Badge>
               </div>
-            )}
-            {perplexityMode && (
-              <div className="pl-2 mt-8 border-b border-gray-700">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold mb-2">PearAI Search - Beta</h1>{" "}
-                  <Badge variant="outline" className="pl-0">
-                    (Powered by Perplexity)
-                  </Badge>
-                </div>
-                <p className="text-sm text-gray-400 mt-0">
-                  Ask for anything. We'll retrieve the most up to date information in real-time and summarize it for you.
-                </p>
+              <p className="text-sm text-gray-400 mt-0">
+                Ask for a feature, describe a bug, or ask for a change to your
+                project. We'll take care of everything for you!
+              </p>
+            </div>
+          )}
+          {perplexityMode && (
+            <div className="pl-2 border-gray-700">
+              <div className="flex items-center gap-2">
+                <h1 className="text-xl font-bold mb-1">
+                  PearAI Search - Beta
+                </h1>{" "}
+                <Badge variant="outline" className="pl-0">
+                  (Powered by Perplexity)
+                </Badge>
               </div>
-            )}
+              <p className="text-sm text-gray-400 mt-0">
+                Ask for anything. We'll retrieve the most up to date information
+                in real-time and summarize it for you.
+              </p>
+            </div>
+          )}
           <StepsDiv>
-
             {state.history.map((item, index: number) => {
               return (
                 <Fragment key={index}>
@@ -618,64 +614,69 @@ function GUI() {
             isMainInput={true}
             hidden={active}
           ></ContinueInputBox>
-            {active ? (
-              <>
-                <br />
-                <br />
-              </>
-            ) : state.history.length > 0 ? (
-              <div className="mt-2">
-                {aiderMode ? (
+          {active ? (
+            <>
+              <br />
+              <br />
+            </>
+          ) : state.history.length > 0 ? (
+            <div className="mt-2">
+              {aiderMode ? (
+                <NewSessionButton
+                  onClick={() => {
+                    saveSession();
+                    ideMessenger.post("aiderResetSession", undefined);
+                  }}
+                  className="mr-auto"
+                >
+                  Restart Session
+                </NewSessionButton>
+              ) : (
+                <>
                   <NewSessionButton
                     onClick={() => {
                       saveSession();
-                      ideMessenger.post("aiderResetSession", undefined)
                     }}
                     className="mr-auto"
                   >
-                    Restart Session
+                    New Session
+                    {!bareChatMode &&
+                      ` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
                   </NewSessionButton>
-                ) : (
-                  <>
-                    <NewSessionButton
-                      onClick={() => {
-                        saveSession();
-                      }}
-                      className="mr-auto"
-                    >
-                      New Session
-                      {!bareChatMode && ` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
-                    </NewSessionButton>
-                    {!bareChatMode && !!showAiderHint && <AiderBetaButton />}
-                  </>
+                  {!bareChatMode && !!showAiderHint && <AiderBetaButton />}
+                </>
+              )}
+              {!perplexityMode && showPerplexityHint && (
+                <PerplexityBetaButton />
+              )}
+            </div>
+          ) : (
+            <>
+              {!aiderMode && getLastSessionId() ? (
+                <div className="mt-2">
+                  <NewSessionButton
+                    onClick={async () => {
+                      loadLastSession();
+                    }}
+                    className="mr-auto flex items-center gap-2"
+                  >
+                    <ArrowLeftIcon width="11px" height="11px" />
+                    Last Session
+                  </NewSessionButton>
+                </div>
+              ) : null}
+              {!!showTutorialCard &&
+                !bareChatMode &&
+                !aiderMode &&
+                !perplexityMode && (
+                  <div className="flex justify-center w-full">
+                    <TutorialCard onClose={onCloseTutorialCard} />
+                  </div>
                 )}
-                {!perplexityMode && showPerplexityHint && <PerplexityBetaButton />}
-
-  </div>
-) : (
-  <>
-    {!aiderMode && getLastSessionId() ? (
-      <div className="mt-2">
-        <NewSessionButton
-          onClick={async () => {
-            loadLastSession();
-          }}
-          className="mr-auto flex items-center gap-2"
-        >
-          <ArrowLeftIcon width="11px" height="11px" />
-          Last Session
-        </NewSessionButton>
-      </div>
-    ) : null}
-    {!!showTutorialCard && !bareChatMode && !aiderMode && !perplexityMode && (
-      <div className="flex justify-center w-full">
-        <TutorialCard onClose={onCloseTutorialCard} />
-      </div>
-    )}
-    {!aiderMode && !!showAiderHint && <AiderBetaButton />}
-  </>
-)}
-      {!perplexityMode && showPerplexityHint && <PerplexityBetaButton />}
+              {!aiderMode && !!showAiderHint && <AiderBetaButton />}
+            </>
+          )}
+          {!perplexityMode && showPerplexityHint && <PerplexityBetaButton />}
         </div>
         <ChatScrollAnchor
           scrollAreaRef={topGuiDivRef}
@@ -695,16 +696,31 @@ function GUI() {
               dispatch(clearLastResponse());
             }
             if (aiderMode) {
-              ideMessenger.post("aiderCtrlC", undefined)
+              ideMessenger.post("aiderCtrlC", undefined);
             }
           }}
         >
           {getMetaKeyLabel()} ⌫ Cancel
         </StopButton>
       )}
-            {isBetaAccess &&
-        <NewSessionButton onClick={() => navigate("/inventory")} style={{marginLeft: "0.8rem", marginBottom: "0rem"}} >Inventory</NewSessionButton>
-      }
+      {isBetaAccess && (
+        <div>
+          <NewSessionButton
+            onClick={() => navigate("/inventory")}
+            style={{ marginLeft: "0.8rem", marginBottom: "0rem" }}
+          >
+            Inventory
+          </NewSessionButton>
+          <NewSessionButton
+            onClick={() => {
+              saveSession();
+            }}
+            style={{ marginLeft: "0.8rem", marginBottom: "0rem" }}
+          >
+            new session
+          </NewSessionButton>
+        </div>
+      )}
     </>
   );
 }

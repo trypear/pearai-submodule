@@ -72,7 +72,7 @@ export default function Inventory() {
             <span className="ml-2">current path : {location.pathname}</span>
           </div>
           
-          <div className="flex-1 min-h-0 p-4 overflow-hidden">
+          <div className="flex-1 min-h-0 p-4 pt-0 overflow-hidden">
             {tabs.map((tab) => (
               <TabsContent 
                 key={tab.id} 
