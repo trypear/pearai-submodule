@@ -1,8 +1,6 @@
 import {
   ArrowLeftIcon,
   ChatBubbleOvalLeftIcon,
-  CodeBracketSquareIcon,
-  ExclamationTriangleIcon,
   ChevronDownIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
@@ -57,7 +55,7 @@ import { isBareChatMode, isPerplexityMode } from "../util/bareChatMode";
 import { Badge } from "../components/ui/badge";
 import { FOOTER_HEIGHT, HEADER_HEIGHT } from "@/components/Layout";
 
-const TopGuiDiv = styled.div<{ isAiderOrPerplexity?: boolean }>`
+export const TopGuiDiv = styled.div<{ isAiderOrPerplexity?: boolean }>`
   overflow-y: auto;
   flex: 1;
   height: ${(props) =>
@@ -68,7 +66,7 @@ const TopGuiDiv = styled.div<{ isAiderOrPerplexity?: boolean }>`
   flex-direction: column;
 `;
 
-const StopButton = styled.div`
+export const StopButton = styled.div`
   width: fit-content;
   margin-right: auto;
   margin-left: auto;
@@ -83,7 +81,7 @@ const StopButton = styled.div`
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 `;
 
-const StepsDiv = styled.div`
+export const StepsDiv = styled.div`
   padding-bottom: 8px;
   position: relative;
   background-color: transparent;
@@ -91,17 +89,6 @@ const StepsDiv = styled.div`
   & > * {
     position: relative;
   }
-
-  // Gray, vertical line on the left ("thread")
-  // &::before {
-  //   content: "";
-  //   position: absolute;
-  //   height: calc(100% - 12px);
-  //   border-left: 2px solid ${lightGray};
-  //   left: 28px;
-  //   z-index: 0;
-  //   bottom: 12px;
-  // }
 
   .thread-message {
     margin: 16px 8px 0 8px;
@@ -111,27 +98,7 @@ const StepsDiv = styled.div`
   }
 `;
 
-const NewSessionButton = styled.div`
-  width: fit-content;
-  margin-right: auto;
-  margin-left: 6px;
-  margin-top: 2px;
-  margin-bottom: 8px;
-  font-size: ${getFontSize() - 2}px;
-
-  border-radius: ${defaultBorderRadius};
-  padding: 2px 6px;
-  color: ${lightGray};
-
-  &:hover {
-    background-color: ${lightGray}33;
-    color: ${vscForeground};
-  }
-
-  cursor: pointer;
-`;
-
-const TopGuiDivContainer = styled.div`
+export const TopGuiDivContainer = styled.div`
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -155,20 +122,35 @@ const TopGuiDivContainer = styled.div`
   }
 `;
 
-const ContinueInputBoxContainer = styled.div`
+export const ContinueInputBoxContainer = styled.div`
   position: sticky;
   bottom: 0;
   z-index: 50;
   background-color: inherit;
   box-shadow: 0 -8px 16px -8px rgba(0, 0, 0, 0.3);
-  margin-top: -8px;
+  margin-top: -8px; // Keep the negative margin
 `;
 
-const ScrollToBottomButton = styled.button`
+export const NewSessionButton = styled.div`
+  width: fit-content;
+  margin: 2px auto 8px 6px;
+  font-size: ${getFontSize() - 2}px;
+  border-radius: ${defaultBorderRadius};
+  padding: 2px 6px;
+  color: ${lightGray};
+  cursor: pointer;
+
+  &:hover {
+    background-color: ${lightGray}33;
+    color: ${vscForeground};
+  }
+`;
+
+export const ScrollToBottomButton = styled.button`
   position: sticky;
   bottom: 84px;
   margin-left: auto;
-  margin-right: 24px;
+  margin-right: 16px;
   margin-bottom: 8px;
   width: 32px;
   height: 32px;
@@ -190,7 +172,7 @@ const ScrollToBottomButton = styled.button`
   }
 `;
 
-function fallbackRender({ error, resetErrorBoundary }) {
+export function fallbackRender({ error, resetErrorBoundary }) {
   // Call resetErrorBoundary() to reset the error boundary and retry the render.
   return (
     <div
@@ -207,6 +189,7 @@ function fallbackRender({ error, resetErrorBoundary }) {
     </div>
   );
 }
+
 const GUI = () => {
   const posthog = usePostHog();
   const dispatch = useDispatch();
@@ -221,7 +204,6 @@ const GUI = () => {
   const isBetaAccess = useSelector(
     (state: RootState) => state.state.config.isBetaAccess,
   );
-
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
     useHistory(dispatch);
 
@@ -362,72 +344,9 @@ const GUI = () => {
       streamResponse(editorState, modifiers, ideMessenger);
       scrollToBottom();
 
-      // Increment localstorage counter for popup
       const currentCount = getLocalStorage("mainTextEntryCounter");
       if (currentCount) {
         setLocalStorage("mainTextEntryCounter", currentCount + 1);
-        // if (currentCount === 300) {
-        //   dispatch(
-        //     setDialogMessage(
-        //       <div className="text-center p-4">
-        //         👋 Thanks for using PearAI. We are always trying to improve
-        //         and love hearing from users. If you're interested in speaking,
-        //         enter your name and email. We won't use this information for
-        //         anything other than reaching out.
-        //         <br />
-        //         <br />
-        //         <form
-        //           onSubmit={(e: any) => {
-        //             e.preventDefault();
-        //             posthog?.capture("user_interest_form", {
-        //               name: e.target.elements[0].value,
-        //               email: e.target.elements[1].value,
-        //             });
-        //             dispatch(
-        //               setDialogMessage(
-        //                 <div className="text-center p-4">
-        //                   Thanks! We'll be in touch soon.
-        //                 </div>,
-        //               ),
-        //             );
-        //           }}
-        //           style={{
-        //             display: "flex",
-        //             flexDirection: "column",
-        //             gap: "10px",
-        //           }}
-        //         >
-        //           <input
-        //             style={{ padding: "10px", borderRadius: "5px" }}
-        //             type="text"
-        //             name="name"
-        //             placeholder="Name"
-        //             required
-        //           />
-        //           <input
-        //             style={{ padding: "10px", borderRadius: "5px" }}
-        //             type="email"
-        //             name="email"
-        //             placeholder="Email"
-        //             required
-        //           />
-        //           <button
-        //             style={{
-        //               padding: "10px",
-        //               borderRadius: "5px",
-        //               cursor: "pointer",
-        //             }}
-        //             type="submit"
-        //           >
-        //             Submit
-        //           </button>
-        //         </form>
-        //       </div>,
-        //     ),
-        //   );
-        //   dispatch(setDialogEntryOn(false));
-        //   dispatch(setShowDialog(true));
-        // }
       } else {
         setLocalStorage("mainTextEntryCounter", 1);
       }
@@ -607,29 +526,14 @@ const GUI = () => {
                         <TimelineItem
                           item={item}
                           iconElement={
-                            false ? (
-                              <CodeBracketSquareIcon
-                                width="16px"
-                                height="16px"
-                              />
-                            ) : false ? (
-                              <ExclamationTriangleIcon
-                                width="16px"
-                                height="16px"
-                                color="red"
-                              />
-                            ) : (
-                              <ChatBubbleOvalLeftIcon
-                                width="16px"
-                                height="16px"
-                              />
-                            )
+                            <ChatBubbleOvalLeftIcon
+                              width="16px"
+                              height="16px"
+                            />
                           }
                           open={
                             typeof stepsOpen[index] === "undefined"
-                              ? false
-                                ? false
-                                : true
+                              ? true
                               : stepsOpen[index]!
                           }
                           onToggle={() => {}}
