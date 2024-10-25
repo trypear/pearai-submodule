@@ -139,14 +139,16 @@ function AIToolCard({
       className={`cursor-pointer transition-all ${tool.enabled ? "bg-input" : "bg-button"} ${tool.comingSoon ? "opacity-50" : ""}`}
       onClick={tool.comingSoon ? undefined : onClick}
     >
-      <CardContent className="p-2">
+      <CardContent className="p-2 px-4">
         <div className="flex items-center justify-between">
           <div className="text-lg bg-primary/10 rounded-full">{tool.icon}</div>
           <Switch
-            checked={tool.enabled}
-            onCheckedChange={onToggle}
+            checked={tool.comingSoon ? false : true} // always enabled
             aria-label={`Toggle ${tool.name}`}
-            disabled={tool.comingSoon}
+            disabled={true} // disable toggle for now
+            className={`bg-button text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out ${
+              tool.comingSoon ? "opacity-50" : "opacity-100"
+            }`}
           />
         </div>
         <h3
@@ -252,17 +254,21 @@ export default function AIToolInventory() {
             <Badge variant="outline" className="pl-0">
               Beta
             </Badge>
-            <div className="relative mt-2">
-              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-foreground opacity-50" />
+            <div className="relative mt-2 w-full max-w-md">
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground opacity-60"
+                size={18}
+              />
               <Input
                 type="text"
                 placeholder="Search AI tools..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full bg-input text-foreground border-input pr-0 sm:pr-2 lg:pr-[6.5rem]"
+                className="pl-10 pr-3 w-full bg-input text-foreground border border-input rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 aria-label="Search AI tools"
               />
             </div>
+
             <Button
               onClick={() => navigate("/")}
               className="mt-3 ml-auto bg-input text-foreground cursor-pointer"
@@ -303,17 +309,15 @@ export default function AIToolInventory() {
                 {/* Shortened usage details */}
                 <h3 className="font-semibold mb-1">Strengths:</h3>
                 <ul className="list-disc mb-2 pl-4">
-                  {focusedTool.strengths
-                    .map((strength, index) => (
-                      <li key={index}>{strength}</li>
-                    ))}
+                  {focusedTool.strengths.map((strength, index) => (
+                    <li key={index}>{strength}</li>
+                  ))}
                 </ul>
                 <h3 className="font-semibold mb-1">Weaknesses:</h3>
                 <ul className="list-disc mb-2 pl-4">
-                  {focusedTool.weaknesses
-                    .map((weakness, index) => (
-                      <li key={index}>{weakness}</li>
-                    ))}
+                  {focusedTool.weaknesses.map((weakness, index) => (
+                    <li key={index}>{weakness}</li>
+                  ))}
                 </ul>
                 {!focusedTool.comingSoon && (
                   <div className="mt-2">
@@ -332,16 +336,17 @@ export default function AIToolInventory() {
                 )}
               </div>
             ) : (
-              <div className="text-center text-foreground opacity-50 mt-4">
-                Select a tool to view details
+              <div className="flex flex-col items-center justify-center text-foreground opacity-60 mt-4">
+                <p className="text-sm font-medium">No tool selected</p>
+                <p className="text-xs">Select a tool to view its details</p>
               </div>
             )}
           </div>
         </main>
 
-        <footer className="flex-none mt-6 mb-4">
-          <h3 className="font-bold mb-2">Quick Action Slots</h3>
-          <div className="flex gap-2 mb-4">
+        <footer className="flex-none mt-2 mb-2 p-2">
+          <h3 className="font-semibold text-sm mb-2">Quick Action Slots</h3>
+          <div className="flex gap-1 mb-2">
             {quickSlots.map((slot, index) => (
               <QuickActionSlot
                 key={index}
@@ -350,22 +355,22 @@ export default function AIToolInventory() {
               />
             ))}
           </div>
-          <div className="flex items-center">
-            <Star className="text-accent mr-1" />
-            <span className="font-bold">Suggested Build:</span>
-            <div className="flex ml-2">
+          <div className="flex mt-6 items-center text-xs">
+            <Star className="text-accent mr-1" size={14} />
+            <span className="font-medium">Suggested Build:</span>
+            <div className="flex ml-2 space-x-1">
               {suggestedBuild.map((id) => {
                 const tool = tools.find((t) => t.id === id);
                 return tool ? (
                   <Tooltip key={id}>
                     <TooltipTrigger asChild>
-                      <div className="flex text-button-foreground items-center bg-button rounded mr-2 px-2 py-1">
+                      <div className="flex items-center bg-button text-button-foreground rounded-full px-2 py-0.5 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                         <span className="mr-1">{tool.icon}</span>
-                        <span className="text-xs">{tool.name}</span>
+                        <span className="truncate">{tool.name}</span>
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p>{tool.description}</p>
+                      <p className="text-xs">{tool.description}</p>
                     </TooltipContent>
                   </Tooltip>
                 ) : null;
