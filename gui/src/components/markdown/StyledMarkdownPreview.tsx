@@ -58,7 +58,7 @@ const StyledMarkdown = styled.div<{
     color: #f78383;
   }
 
-  background-color: ${vscBackground};
+  background-color: ${window.isPearOverlay ?  "transparent" : vscBackground};
   font-family:
     var(--vscode-font-family),
     system-ui,

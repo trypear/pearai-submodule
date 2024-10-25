@@ -46,7 +46,7 @@ interface StepContainerProps {
 const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
   padding: 4px 0px 8px 0px;
   background-color: ${(props) =>
-    props.isUserInput ? vscInputBackground : vscBackground};
+    props.isUserInput ? vscInputBackground : window.isPearOverlay ?  "transparent" : vscBackground};
   font-size: ${(props) => props.fontSize || getFontSize()}px;
   // border-radius: ${defaultBorderRadius};
   overflow: hidden;
