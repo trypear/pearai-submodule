@@ -129,9 +129,9 @@ const initialTools: AITool[] = [
     icon: "🤖",
     whenToUse: (
       <span>
-        When you need a feature or a bug fix completed directly. Creator will
-        have knowledge of your codebase, and make changes directly to your code.
-        See changes in your source control tab afterwards.
+        When you need a feature or a bug fix completed directly, Creator will
+        find the relevant files, and make changes directly to your code. You can
+        see specific diff changes in your source control tab afterwards.
       </span>
     ),
     strengths: [

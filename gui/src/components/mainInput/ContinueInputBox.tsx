@@ -10,7 +10,6 @@ import { RootState } from "../../redux/store";
 import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
 import { useMemo } from "react";
-import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import { isBareChatMode } from "../../util/bareChatMode";
 
 const gradient = keyframes`
