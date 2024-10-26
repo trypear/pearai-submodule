@@ -42,6 +42,7 @@ import {
     deleteMessage,
     newSession,
     setInactive,
+    updateAiderProcessStatus,
   } from "../../redux/slices/stateSlice";
   import {
     setDialogEntryOn,
@@ -68,6 +69,7 @@ function AiderGUI() {
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
   const isBetaAccess = useSelector((state: RootState) => state.state.config.isBetaAccess);
+  const aiderProcessStatus = useSelector((state: RootState) => state.state.aiderProcessStatus);
 
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
@@ -109,6 +111,8 @@ function AiderGUI() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [topGuiDivRef.current]);
+
+  // console.dir("Iam from aider gui")
 
   useEffect(() => {
     const listener = (e: any) => {
@@ -161,6 +165,16 @@ function AiderGUI() {
     [saveSession],
   );
 
+  useWebviewListener(
+    "aiderProcessStateUpdate", 
+    async (data) => {
+      console.dir("Iam from aiderProcessStateUpdate")
+      console.dir(data.status)
+      dispatch(updateAiderProcessStatus({ status: data.status }));
+    },
+    [],
+  );
+
   const isLastUserInput = useCallback(
     (index: number): boolean => {
       let foundLaterUserInput = false;
@@ -177,6 +191,13 @@ function AiderGUI() {
 
   return (
     <>
+    {aiderProcessStatus.status === "starting" ? <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
+      <div className="text-white text-2xl">
+        <div className="spinner-border text-white" role="status">
+          <span className="visually-hidden">Spinning up Aider, please wait...</span>
+        </div>
+      </div>
+    </div> :
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
           <div className="pl-2 mt-8 border-b border-gray-700">
@@ -307,7 +328,7 @@ function AiderGUI() {
           isAtBottom={isAtBottom}
           trackVisibility={active}
         />
-      </TopGuiDiv>
+      </TopGuiDiv> }
       {active && (
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"

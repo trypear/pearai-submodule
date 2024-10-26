@@ -139,6 +139,8 @@ class Aider extends BaseLLM {
     this.aiderOutput += cleanOutput;
   }
 
+  public isAiderReady: boolean = false;
+
   public async startAiderChat(
     model: string,
     apiKey: string | undefined,
@@ -147,6 +149,8 @@ class Aider extends BaseLLM {
       console.log("Aider process already running");
       return;
     }
+
+    this.isAiderReady = false;
 
     return new Promise(async (resolve, reject) => {
       let currentDir: string;
@@ -305,9 +309,22 @@ class Aider extends BaseLLM {
         this.aiderProcess = await spawnAiderProcess();
 
         if (this.aiderProcess.stdout && this.aiderProcess.stderr) {
+          const timeout = setTimeout(() => {
+            reject(new Error("Aider failed to start within timeout period"));
+          }, 30000); // 30 second timeout
+
           this.aiderProcess.stdout.on("data", (data: Buffer) => {
-            this.captureAiderOutput(data);
-          });
+            this.captureAiderOutput(data);     
+          // Look for the prompt that indicates aider is ready
+          const output = data.toString();
+          console.log("Output: ", output);
+          if (output.endsWith("> ")) { // Aider's ready prompt
+            console.log("Aider is ready!");
+            this.isAiderReady = true;
+            clearTimeout(timeout);
+            resolve();
+          }
+        });
 
           this.aiderProcess.stderr.on("data", (data: Buffer) => {
             console.error(`Aider error: ${data.toString()}`);
@@ -315,6 +332,8 @@ class Aider extends BaseLLM {
 
           this.aiderProcess.on("close", (code: number | null) => {
             console.log(`Aider process exited with code ${code}`);
+            this.isAiderReady = false;
+            clearTimeout(timeout);
             if (code !== 0) {
               reject(new Error(`Aider process exited with code ${code}`));
             } else {
@@ -325,6 +344,8 @@ class Aider extends BaseLLM {
 
           this.aiderProcess.on("error", (error: Error) => {
             console.error(`Error starting Aider: ${error.message}`);
+            this.isAiderReady = false;
+            clearTimeout(timeout);
             reject(error);
               let message = "PearAI Creator (Powered by aider) failed to start. Please contact PearAI support on Discord."
               vscode.window

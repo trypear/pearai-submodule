@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { JSONContent } from "@tiptap/react";
 import {
+  AiderStatusUpdate,
   ChatHistory,
   ChatHistoryItem,
   ChatMessage,
@@ -14,6 +15,7 @@ import { stripImages } from "core/llm/images";
 import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
+import { update } from "lodash";
 
 export const memoizedContextItemsSelector = createSelector(
   [(state: RootState) => state.state.history],
@@ -106,12 +108,14 @@ type State = {
   mainEditorContent?: JSONContent;
   selectedProfileId: string;
   directoryItems: string;
+  aiderProcessStatus: AiderStatusUpdate;
 };
 
 const initialState: State = {
   history: [],
   contextItems: [],
   active: false,
+  aiderProcessStatus: { status: "starting" },
   config: {
     slashCommands: [
       {
@@ -173,6 +177,9 @@ export const stateSlice = createSlice({
     },
     setActive: (state) => {
       state.active = true;
+    },
+    updateAiderProcessStatus: (state, action: PayloadAction<AiderStatusUpdate>) => {
+      state.aiderProcessStatus = action.payload;
     },
     clearLastResponse: (state) => {
       if (state.history.length < 2) {
@@ -519,6 +526,7 @@ export const {
   setConfig,
   addPromptCompletionPair,
   setActive,
+  updateAiderProcessStatus,
   setEditingContextItemAtIndex,
   initNewActiveMessage,
   setMessageAtIndex,
