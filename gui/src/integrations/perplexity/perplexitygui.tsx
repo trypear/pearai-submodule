@@ -231,7 +231,7 @@ function PerplexityGUI() {
                 <ErrorBoundary
                   FallbackComponent={fallbackRender}
                   onReset={() => {
-                    dispatch(newSession());
+                    dispatch(newSession({session: undefined, source: 'perplexity'}));
                   }}
                 >
                   {item.message.role === "user" ? (

@@ -119,12 +119,12 @@ const HoverTextDiv = styled.div`
 
 
 const getPlaceholder = (historyLength: number, location: any) => {
-  if (location?.pathname === "/aiderMode") {
+  if (location?.pathname === "/aiderMode" || location?.pathname === "/inventory/aiderMode") {
     return historyLength === 0
       ? "Ask me to create, change, or fix anything..."
       : "Send a follow-up";
   }
-  else if (location?.pathname === "/perplexityMode") {
+  else if (location?.pathname === "/perplexityMode" || location?.pathname === "/inventory/perplexityMode") {
     return historyLength === 0 ? "Ask for any information" : "Ask a follow-up";
   }
 

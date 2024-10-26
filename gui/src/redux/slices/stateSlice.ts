@@ -456,18 +456,23 @@ export const stateSlice = createSlice({
     },
     newSession: (
       state,
-      { payload }: PayloadAction<PersistedSessionInfo | undefined>,
+      { payload }: PayloadAction<{session: PersistedSessionInfo | undefined, source: 'perplexity' | 'aider' | 'continue'}>,
     ) => {
-      if (payload) {
-        state.history = payload.history;
-        state.perplexityHistory = payload.perplexityHistory;
-        state.aiderHistory = payload.aiderHistory;
-        state.title = payload.title;
-        state.sessionId = payload.sessionId;
+      const {session, source} = payload;
+      if (session) {
+        state.history = session.history;
+        state.perplexityHistory = session.perplexityHistory;
+        state.aiderHistory = session.aiderHistory;
+        state.title = session.title;
+        state.sessionId = session.sessionId;
       } else {
-        state.history = [];
-        state.perplexityHistory = [];
-        state.aiderHistory = [];
+        if (source === 'perplexity') {
+          state.perplexityHistory = [];
+        } else if (source === 'aider') {
+          state.aiderHistory = [];
+        } else {
+          state.history = [];
+        }
         state.contextItems = [];
         state.active = false;
         state.title = "New Session";

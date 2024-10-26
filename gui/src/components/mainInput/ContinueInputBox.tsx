@@ -93,7 +93,7 @@ function ContinueInputBox({
     "newSessionWithPrompt",
     async (data) => {
       if (isMainInput) {
-        dispatch(newSession());
+        dispatch(newSession({session: undefined, source}));
         dispatch(
           setMessageAtIndex({
             message: { role: "user", content: data.prompt },
@@ -128,6 +128,7 @@ function ContinueInputBox({
           availableSlashCommands={
             bareChatMode ? undefined : availableSlashCommands
           }
+          source={source}
         ></TipTapEditor>
       </GradientBorder>
       <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>

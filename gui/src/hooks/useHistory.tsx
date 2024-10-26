@@ -38,7 +38,7 @@ function useHistory(dispatch: Dispatch, source: 'perplexity' | 'aider' | 'contin
     if (history.length === 0) return;
 
     const stateCopy = { ...state };
-    dispatch(newSession());
+    dispatch(newSession({session: undefined, source}));
     await new Promise((resolve) => setTimeout(resolve, 10));
     const copyHistory = source === 'perplexity' ? stateCopy.perplexityHistory : source === 'aider' ? stateCopy.aiderHistory : stateCopy.history;
     let title =
@@ -111,7 +111,7 @@ function useHistory(dispatch: Dispatch, source: 'perplexity' | 'aider' | 'contin
       "history/load",
       { id },
     );
-    dispatch(newSession(json));
+    dispatch(newSession({session: json, source}));
     return json;
   }
 

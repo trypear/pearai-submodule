@@ -212,7 +212,7 @@ function AiderGUI() {
                 <ErrorBoundary
                   FallbackComponent={fallbackRender}
                   onReset={() => {
-                    dispatch(newSession());
+                    dispatch(newSession({session: undefined, source: 'aider'}));
                   }}
                 >
                   {item.message.role === "user" ? (
