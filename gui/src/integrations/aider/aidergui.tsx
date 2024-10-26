@@ -189,8 +189,6 @@ function AiderGUI() {
   useWebviewListener(
     "aiderProcessStateUpdate",
     async (data) => {
-      console.dir("Iam from aiderProcessStateUpdate");
-      console.dir(data.status);
       dispatch(updateAiderProcessStatus({ status: data.status }));
     },
     [],
@@ -212,164 +210,167 @@ function AiderGUI() {
 
   return (
     <>
-      {aiderProcessStatus.status === "starting" ? (
-        <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
-          <div className="text-white text-2xl">
-            <div className="spinner-border text-white" role="status">
-              <span className="visually-hidden">
-                Spinning up Aider, please wait...
-              </span>
+      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+        <div className="mx-2">
+          <div className="pl-2 mt-8 border-b border-gray-700">
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold mb-2">
+                PearAI Creator - Beta
+              </h1>
+              <Badge variant="outline" className="pl-0">
+                (Powered by{" "}
+                <a
+                  href="https://aider.chat/2024/06/02/main-swe-bench.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline px-1"
+                >
+                  aider)
+                </a>
+              </Badge>
             </div>
+            <p className="text-sm text-gray-400 mt-0">
+              Ask for a feature, describe a bug, or ask for a change to your
+              project. We'll take care of everything for you!
+            </p>
           </div>
-        </div>
-      ) : (
-        <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-          <div className="mx-2">
-            <div className="pl-2 mt-8 border-b border-gray-700">
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold mb-2">
-                  PearAI Creator - Beta
-                </h1>
-                <Badge variant="outline" className="pl-0">
-                  (Powered by{" "}
-                  <a
-                    href="https://aider.chat/2024/06/02/main-swe-bench.html"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline px-1"
-                  >
-                    aider)
-                  </a>
-                </Badge>
+
+          {aiderProcessStatus.status === "starting" ? (
+            <div className="fixed top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
+              <div className="text-white text-2xl">
+                <div className="spinner-border text-white" role="status">
+                  <span className="visually-hidden">
+                    Spinning up Aider, please wait...
+                  </span>
+                </div>
               </div>
-              <p className="text-sm text-gray-400 mt-0">
-                Ask for a feature, describe a bug, or ask for a change to your
-                project. We'll take care of everything for you!
-              </p>
             </div>
-            <StepsDiv>
-              {state.history.map((item, index: number) => (
-                <Fragment key={index}>
-                  <ErrorBoundary
-                    FallbackComponent={fallbackRender}
-                    onReset={() => {
-                      dispatch(newSession());
-                    }}
-                  >
-                    {item.message.role === "user" ? (
-                      <ContinueInputBox
-                        onEnter={async (editorState, modifiers) => {
-                          streamResponse(
-                            editorState,
-                            modifiers,
-                            ideMessenger,
-                            index,
-                          );
-                        }}
-                        isLastUserInput={isLastUserInput(index)}
-                        isMainInput={false}
-                        editorState={item.editorState}
-                        contextItems={item.contextItems}
-                      />
-                    ) : (
-                      <div className="thread-message">
-                        <TimelineItem
-                          item={item}
-                          iconElement={
-                            <ChatBubbleOvalLeftIcon
-                              width="16px"
-                              height="16px"
-                            />
-                          }
-                          open={
-                            typeof stepsOpen[index] === "undefined"
-                              ? true
-                              : stepsOpen[index]!
-                          }
-                          onToggle={() => {}}
-                        >
-                          <StepContainer
-                            index={index}
-                            isLast={index === sessionState.history.length - 1}
-                            isFirst={index === 0}
+          ) : (
+            <>
+              <StepsDiv>
+                {state.history.map((item, index: number) => (
+                  <Fragment key={index}>
+                    <ErrorBoundary
+                      FallbackComponent={fallbackRender}
+                      onReset={() => {
+                        dispatch(newSession());
+                      }}
+                    >
+                      {item.message.role === "user" ? (
+                        <ContinueInputBox
+                          onEnter={async (editorState, modifiers) => {
+                            streamResponse(
+                              editorState,
+                              modifiers,
+                              ideMessenger,
+                              index,
+                            );
+                          }}
+                          isLastUserInput={isLastUserInput(index)}
+                          isMainInput={false}
+                          editorState={item.editorState}
+                          contextItems={item.contextItems}
+                        />
+                      ) : (
+                        <div className="thread-message">
+                          <TimelineItem
+                            item={item}
+                            iconElement={
+                              <ChatBubbleOvalLeftIcon
+                                width="16px"
+                                height="16px"
+                              />
+                            }
                             open={
                               typeof stepsOpen[index] === "undefined"
                                 ? true
                                 : stepsOpen[index]!
                             }
-                            key={index}
-                            onUserInput={(input: string) => {}}
-                            item={item}
-                            onReverse={() => {}}
-                            onRetry={() => {
-                              streamResponse(
-                                state.history[index - 1].editorState,
-                                state.history[index - 1].modifiers ??
-                                  defaultInputModifiers,
-                                ideMessenger,
-                                index - 1,
-                              );
-                            }}
-                            onContinueGeneration={() => {
-                              window.postMessage(
-                                {
-                                  messageType: "userInput",
-                                  data: {
-                                    input: "Keep going.",
+                            onToggle={() => {}}
+                          >
+                            <StepContainer
+                              index={index}
+                              isLast={index === sessionState.history.length - 1}
+                              isFirst={index === 0}
+                              open={
+                                typeof stepsOpen[index] === "undefined"
+                                  ? true
+                                  : stepsOpen[index]!
+                              }
+                              key={index}
+                              onUserInput={(input: string) => {}}
+                              item={item}
+                              onReverse={() => {}}
+                              onRetry={() => {
+                                streamResponse(
+                                  state.history[index - 1].editorState,
+                                  state.history[index - 1].modifiers ??
+                                    defaultInputModifiers,
+                                  ideMessenger,
+                                  index - 1,
+                                );
+                              }}
+                              onContinueGeneration={() => {
+                                window.postMessage(
+                                  {
+                                    messageType: "userInput",
+                                    data: {
+                                      input: "Keep going.",
+                                    },
                                   },
-                                },
-                                "*",
-                              );
-                            }}
-                            onDelete={() => {
-                              dispatch(deleteMessage(index));
-                            }}
-                            modelTitle={
-                              item.promptLogs?.[0]?.completionOptions?.model ??
-                              ""
-                            }
-                          />
-                        </TimelineItem>
-                      </div>
-                    )}
-                  </ErrorBoundary>
-                </Fragment>
-              ))}
-            </StepsDiv>
-            <ContinueInputBox
-              onEnter={(editorContent, modifiers) => {
-                sendInput(editorContent, modifiers);
-              }}
-              isLastUserInput={false}
-              isMainInput={true}
-              hidden={active}
-            />
-            {active ? (
-              <>
-                <br />
-                <br />
-              </>
-            ) : state.history.length > 0 ? (
-              <div className="mt-2">
-                <NewSessionButton
-                  onClick={() => {
-                    saveSession();
-                    ideMessenger.post("aiderResetSession", undefined);
-                  }}
-                  className="mr-auto"
-                >
-                  Restart Session
-                </NewSessionButton>
-              </div>
-            ) : null}
-          </div>
-          <ChatScrollAnchor
-            scrollAreaRef={topGuiDivRef}
-            isAtBottom={isAtBottom}
-            trackVisibility={active}
-          />
-        </TopGuiDiv>
-      )}
+                                  "*",
+                                );
+                              }}
+                              onDelete={() => {
+                                dispatch(deleteMessage(index));
+                              }}
+                              modelTitle={
+                                item.promptLogs?.[0]?.completionOptions?.model ??
+                                ""
+                              }
+                            />
+                          </TimelineItem>
+                        </div>
+                      )}
+                    </ErrorBoundary>
+                  </Fragment>
+                ))}
+              </StepsDiv>
+              <ContinueInputBox
+                onEnter={(editorContent, modifiers) => {
+                  sendInput(editorContent, modifiers);
+                }}
+                isLastUserInput={false}
+                isMainInput={true}
+                hidden={active}
+              />
+              {active ? (
+                <>
+                  <br />
+                  <br />
+                </>
+              ) : state.history.length > 0 ? (
+                <div className="mt-2">
+                  <NewSessionButton
+                    onClick={() => {
+                      saveSession();
+                      ideMessenger.post("aiderResetSession", undefined);
+                    }}
+                    className="mr-auto"
+                  >
+                    Restart Session
+                  </NewSessionButton>
+                </div>
+              ) : null}
+            </>
+          )}
+        </div>
+        <ChatScrollAnchor
+          scrollAreaRef={topGuiDivRef}
+          isAtBottom={isAtBottom}
+          trackVisibility={active}
+        />
+      </TopGuiDiv>
       {active && (
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"
