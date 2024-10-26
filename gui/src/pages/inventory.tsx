@@ -56,9 +56,8 @@ export default function Inventory() {
         className="flex flex-col h-full"
       >
         <div className="flex flex-col h-full">
-          {/* Made the header sticky with shadow */}
-          <div className="sticky top-0 px-4 pt-4 bg-background z-10 shadow-sm">
-            <TabsList className="bg-input text-center rounded-lg shadow-md">
+          <div className="top-0 px-4 pt-4 z-10">
+            <TabsList className="bg-input text-center">
               {tabs.map((tab) => (
                 <TabsTrigger
                   key={tab.id}

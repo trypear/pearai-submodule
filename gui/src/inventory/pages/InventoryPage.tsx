@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ReactElement, useState } from "react";
 import { Search, Star } from "lucide-react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { Input } from "@/components/ui/input";
@@ -13,18 +13,15 @@ import {
 } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 
 interface AITool {
   id: string;
   name: string;
-  description: string;
+  description: ReactElement;
   icon: string;
-  whenToUse: string;
-  strengths: string[];
-  weaknesses: string[];
+  whenToUse: ReactElement;
+  strengths: ReactElement[];
+  weaknesses: ReactElement[];
   enabled: boolean;
   comingSoon?: boolean;
 }
@@ -33,90 +30,136 @@ const initialTools: AITool[] = [
   {
     id: "1",
     name: "Search (Perplexity)",
-    description:
-      "AI-powered search engine: up-to-date information for docs, libraries, etc.",
+    description: (
+      <span>
+        AI-powered search engine: up-to-date information for docs, libraries,
+        etc.
+      </span>
+    ),
     icon: "🔍",
-    whenToUse:
-      "When you need to find information where the latest, most up-to-date version is important, e.g. documentation, software libraries, etc. Regular LLMs' knowledge are outdated by several months, so they will not be as good as Perplexity for such use cases",
+    whenToUse: (
+      <span>
+        When you need to find information where recency is important. Regular
+        LLMs' knowledge are outdated by several months, PearAI Search will also
+        search the web for the latest data.
+      </span>
+    ),
     strengths: [
-      "Most up-to-date information",
-      "Non coding specific questions are also supported",
-      "Provides cited sources",
+      <span>Most up-to-date information</span>,
+      <span>Non coding specific questions are also supported</span>,
+      <span>Provides cited sources</span>,
     ],
     weaknesses: [
-      "May be wordy and verbose",
-      "Not specialized for pure code generation",
+      <span>May be wordy and verbose</span>,
+      <span>Not specialized for pure code generation</span>,
     ],
     enabled: true,
   },
   {
     id: "2",
-    name: "AI Chat (Continue)",
-    description: "AI pair programmer for flexible coding assistance",
+    name: "Chat (Continue)",
+    description: <span>AI pair programmer for flexible coding assistance</span>,
     icon: "👨‍💻",
-    whenToUse:
-      "When you need fragmented coding assistance and suggestions. Ask the chat any question, it can generate code decently well and also create files. Requires medium human intervention to apply and review changes.",
+    whenToUse: (
+      <span>
+        When you need fragmented coding assistance and suggestions. Ask the chat
+        any question, it can generate code decently well and also create files.
+        Requires medium human intervention to apply and review changes.
+      </span>
+    ),
     strengths: [
-      "AI chat (CMD/CTRL+L and CMD/CTRL+I)",
-      "Context-aware suggestions",
-      "Code and file generation",
-      "Flexibility on choosing what you want to keep and discard from suggestions",
+      <span>
+        AI chat (<kbd>CMD/CTRL+L</kbd> and <kbd>CMD/CTRL+I</kbd>)
+      </span>,
+      <span>Context-aware suggestions</span>,
+      <span>Code and file generation</span>,
+      <span>
+        Flexibility on choosing what you want to keep and discard from
+        suggestions
+      </span>,
     ],
     weaknesses: [
-      "The flexibility also means it requires at least a medium level of human intervention",
+      <span>
+        The flexibility also means it requires more human intervention
+      </span>,
+      <span>
+        The <kbd>Apply</kbd> button may not work as expected in some cases,
+        requiring manual copy-pasting
+      </span>,
     ],
     enabled: true,
   },
   {
     id: "3",
     name: "Memory (mem0)",
-    description:
-      "Personalization: let the AI remember your past thoughts (coming soon)",
+    description: (
+      <span>
+        Personalization: let the AI remember your past thoughts (coming soon)
+      </span>
+    ),
     icon: "📝",
-    whenToUse:
-      "When you want the AI to remember insights from past prompts you've given it. It can automatically remember details like what version of for e.g. Python you're using, or other specific details of your codebase, like your coding styles, or your expertise level",
+    whenToUse: (
+      <span>
+        When you want the AI to remember insights from past prompts you've given
+        it. It can automatically remember details like what version of for e.g.
+        Python you're using, or other specific details of your codebase, like
+        your coding styles, or your expertise level
+      </span>
+    ),
     strengths: [
-      "Intelligent memory of your coding profile",
-      "Increase in accuracy of results due to personalization",
+      <span>Intelligent memory of your coding profile</span>,
+      <span>Increase in accuracy of results due to personalization</span>,
     ],
     weaknesses: [
-      "Requires you to remove expired memories manually that are no longer relevant",
-      "Requires PearAI server due to essential custom logic",
+      <span>
+        Requires you to remove expired memories manually that are no longer
+        relevant
+      </span>,
+      <span>Requires PearAI server due to essential custom logic</span>,
     ],
     enabled: false,
+    comingSoon: true,
   },
   {
     id: "4",
     name: "Creator (aider)",
-    description: '"No-code" assistant: complete features zero to one directly',
+    description: (
+      <span>"No-code" assistant; complete features zero to one directly</span>
+    ),
     icon: "🤖",
-    whenToUse:
-      "When you need a feature or bug fixes investigated, or completed directly. Requires lower human intervention.",
+    whenToUse: (
+      <span>
+        When you need a feature or a bug fix completed directly. Creator will
+        have knowledge of your codebase, and make changes directly to your code.
+        See changes in your source control tab afterwards.
+      </span>
+    ),
     strengths: [
-      "Zero to one feature completions",
-      "Automated refactoring",
-      "Lower level of human intervention needed",
+      <span>Zero to one feature completions</span>,
+      <span>Automated refactoring</span>,
+      <span>Lower level of human intervention needed</span>,
     ],
-    weaknesses: [
-      "Lower level of human intervention needed means less flexibility on what to keep and discard from suggestions",
-    ],
+    weaknesses: [<span>May fail on more complex tasks</span>],
     enabled: true,
   },
   {
     id: "5",
     name: "Painter (DALL-E)",
-    description: "AI image generation from textual descriptions",
+    description: <span>AI image generation from textual descriptions</span>,
     icon: "🎨",
-    whenToUse:
-      "Use when you need to create unique images based on text prompts",
+    whenToUse: (
+      <span>
+        Use when you need to create unique images based on text prompts
+      </span>
+    ),
     strengths: [
-      "Creative image generation",
-      "Wide range of styles",
-      "Quick results",
+      <span>Creative image generation</span>,
+      <span>Wide range of styles</span>,
+      <span>Quick results</span>,
     ],
     weaknesses: [
-      "May misinterpret complex prompts",
-      "Limited control over specific details",
+      <span>May misinterpret complex prompts</span>,
+      <span>Limited control over specific details</span>,
     ],
     enabled: false,
     comingSoon: true,
@@ -136,7 +179,7 @@ function AIToolCard({
 }) {
   return (
     <Card
-      className={`cursor-pointer transition-all ${tool.enabled ? "bg-input" : "bg-button"} ${tool.comingSoon ? "opacity-50" : ""}`}
+      className={`cursor-pointer h-32 transition-all bg-input ${tool.comingSoon ? "opacity-50" : ""}`}
       onClick={tool.comingSoon ? undefined : onClick}
     >
       <CardContent className="p-2 px-4">
@@ -152,12 +195,12 @@ function AIToolCard({
           />
         </div>
         <h3
-          className={`text-sm font-semibold ${tool.enabled ? "text-button-foreground" : ""} transition-colors`}
+          className={`text-sm font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
         >
           {tool.name}
         </h3>
         <p
-          className={`text-xs ${tool.enabled ? "text-button-foreground" : "text-muted-foreground"}`}
+          className={`text-xs ${tool.enabled ? "text-foreground" : "text-muted-foreground"}`}
         >
           {tool.comingSoon ? "Coming soon" : tool.description}
         </p>
@@ -250,7 +293,7 @@ export default function AIToolInventory() {
       <div className="flex flex-col h-full overflow-y-auto bg-background text-foreground">
         <header className="flex-none mb-6">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold mb-2">PearAI Inventory</h1>
+            <h1 className="text-xl font-bold mb-2 ml-4">PearAI Inventory</h1>
             <Badge variant="outline" className="pl-0">
               Beta
             </Badge>
@@ -264,17 +307,10 @@ export default function AIToolInventory() {
                 placeholder="Search AI tools..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 py-0 pr-3 w-full bg-input text-foreground border border-input rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                className="pl-10 py-0 w-64 bg-input text-foreground border border-input rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 aria-label="Search AI tools"
               />
             </div>
-
-            {/* <Button
-              onClick={() => navigate("/")}
-              className="mt-3 ml-auto bg-input text-foreground cursor-pointer"
-            >
-              Back to Dashboard
-            </Button> */}
           </div>
         </header>
 
@@ -310,17 +346,13 @@ export default function AIToolInventory() {
           <div className="w-1/2 overflow-y-auto pl-4 border-l border-input text-sm border-solid rounded-2xl p-2 flex flex-col justify-between">
             {focusedTool ? (
               <>
-                <div className="flex-grow">
-                  <h2 className="text-lg font-bold mb-2">
+                <div className="flex-grow text-foreground">
+                  <h2 className="text-lg text-font-bold mb-2">
                     {focusedTool.name} {focusedTool.icon}
                   </h2>
-                  <p className="mb-2">
-                    {focusedTool.description.split(":")[0]}
-                  </p>{" "}
-                  <h3 className="font-semibold mb-1">Usage:</h3>
-                  <p className="mb-2">
-                    {focusedTool.whenToUse.split(".")[0]}
-                  </p>{" "}
+                  <p className="mb-2">{focusedTool.description}</p>{" "}
+                  <h3 className="font-semibold mb-1">When to use:</h3>
+                  <p className="mb-2">{focusedTool.whenToUse}</p>{" "}
                   <h3 className="font-semibold mb-1">Strengths:</h3>
                   <ul className="list-disc mb-2 pl-4">
                     {focusedTool.strengths.map((strength, index) => (
@@ -339,12 +371,12 @@ export default function AIToolInventory() {
                     <Button
                       className="bg-button text-button-foreground cursor-not-allowed text-xs opacity-50"
                       // onClick={() => handleEquipToQuickSlot(focusedTool)}
-                      // disabled={true} // Disable the button
+                      // disabled={true} // Disable the button for now
                     >
                       Equip to quick slots
                     </Button>
-                    <span className="ml-2 px-2 py-0.5 bg-accent text-accent-foreground text-xs rounded-full font-medium">
-                      Coming Soon
+                    <span className="ml-2 py-0.5 bg-accent text-accent-foreground text-xs rounded-full font-medium">
+                      (Equip functionality coming soon!)
                     </span>
                     {quickSlots.every((slot) => slot !== null) && (
                       <p className="text-destructive mt-1 text-xs">
@@ -364,7 +396,12 @@ export default function AIToolInventory() {
         </main>
 
         <footer className="flex-none mt-2 mb-2 p-2">
-          <h3 className="font-semibold text-sm mb-2">Quick Action Slots</h3>
+          <h3 className="flex items-center gap-1 font-semibold text-sm mb-2">
+            Quick Action Slots{" "}
+            <Badge variant="outline" className="pl-0">
+              (Coming soon)
+            </Badge>
+          </h3>
           <div className="flex gap-1 mb-2">
             {quickSlots.map((slot, index) => (
               <QuickActionSlot
@@ -389,7 +426,9 @@ export default function AIToolInventory() {
                       </div>
                     </TooltipTrigger>
                     <TooltipContent>
-                      <p className="text-xs">{tool.description}</p>
+                      <p className="text-xs bg-input p-1 px-2 rounded-xl">
+                        {tool.description}
+                      </p>
                     </TooltipContent>
                   </Tooltip>
                 ) : null;
