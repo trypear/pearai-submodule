@@ -138,7 +138,7 @@ function AiderGUI() {
         }
       }
 
-      streamResponse(editorState, modifiers, ideMessenger);
+      streamResponse(editorState, modifiers, ideMessenger, null, 'aider');
 
       const currentCount = getLocalStorage("mainTextEntryCounter");
       if (currentCount) {
@@ -147,10 +147,10 @@ function AiderGUI() {
         setLocalStorage("mainTextEntryCounter", 1);
       }
     },
-    [sessionState.history, sessionState.contextItems, defaultModel, state, streamResponse],
+    [sessionState.aiderHistory, sessionState.contextItems, defaultModel, state, streamResponse],
   );
 
-  const { saveSession } = useHistory(dispatch);
+  const { saveSession } = useHistory(dispatch, "aider");
 
   useWebviewListener(
     "newSession",
@@ -164,15 +164,15 @@ function AiderGUI() {
   const isLastUserInput = useCallback(
     (index: number): boolean => {
       let foundLaterUserInput = false;
-      for (let i = index + 1; i < state.history.length; i++) {
-        if (state.history[i].message.role === "user") {
+      for (let i = index + 1; i < state.aiderHistory.length; i++) {
+        if (state.aiderHistory[i].message.role === "user") {
           foundLaterUserInput = true;
           break;
         }
       }
       return !foundLaterUserInput;
     },
-    [state.history],
+    [state.aiderHistory],
   );
 
   return (
@@ -199,7 +199,7 @@ function AiderGUI() {
             </p>
           </div>
           <StepsDiv>
-            {state.history.map((item, index: number) => (
+            {state.aiderHistory.map((item, index: number) => (
               <Fragment key={index}>
                 <ErrorBoundary
                   FallbackComponent={fallbackRender}
@@ -215,6 +215,7 @@ function AiderGUI() {
                           modifiers,
                           ideMessenger,
                           index,
+                          'aider'
                         );
                       }}
                       isLastUserInput={isLastUserInput(index)}
@@ -237,7 +238,7 @@ function AiderGUI() {
                       >
                         <StepContainer
                           index={index}
-                          isLast={index === sessionState.history.length - 1}
+                          isLast={index === sessionState.aiderHistory.length - 1}
                           isFirst={index === 0}
                           open={typeof stepsOpen[index] === "undefined" ? true : stepsOpen[index]!}
                           key={index}
@@ -246,10 +247,11 @@ function AiderGUI() {
                           onReverse={() => {}}
                           onRetry={() => {
                             streamResponse(
-                              state.history[index - 1].editorState,
-                              state.history[index - 1].modifiers ?? defaultInputModifiers,
+                              state.aiderHistory[index - 1].editorState,
+                              state.aiderHistory[index - 1].modifiers ?? defaultInputModifiers,
                               ideMessenger,
                               index - 1,
+                              'aider'
                             );
                           }}
                           onContinueGeneration={() => {
@@ -282,13 +284,14 @@ function AiderGUI() {
             isLastUserInput={false}
             isMainInput={true}
             hidden={active}
+            source='aider'
           />
           {active ? (
             <>
               <br />
               <br />
             </>
-          ) : state.history.length > 0 ? (
+          ) : state.aiderHistory.length > 0 ? (
             <div className="mt-2">
               <NewSessionButton
                 onClick={() => {
@@ -313,7 +316,7 @@ function AiderGUI() {
           className="mt-auto mb-4 sticky bottom-4"
           onClick={() => {
             dispatch(setInactive());
-            if (state.history[state.history.length - 1]?.message.content.length === 0) {
+            if (state.aiderHistory[state.aiderHistory.length - 1]?.message.content.length === 0) {
               dispatch(clearLastResponse('aider'));
             }
             ideMessenger.post("aiderCtrlC", undefined)

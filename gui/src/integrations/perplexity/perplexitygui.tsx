@@ -170,7 +170,7 @@ import {
     );
 
     const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
-      useHistory(dispatch);
+      useHistory(dispatch, "perplexity");
 
     useWebviewListener(
       "newSession",
@@ -317,6 +317,7 @@ import {
                 isLastUserInput={false}
                 isMainInput={true}
                 hidden={active}
+                source='perplexity'
               ></ContinueInputBox>
               {active ? (
                 <>

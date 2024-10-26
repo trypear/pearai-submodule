@@ -158,6 +158,7 @@ interface TipTapEditorProps {
   isMainInput: boolean;
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
+  source?: 'perplexity' | 'aider' | 'continue';
 }
 
 function TipTapEditor(props: TipTapEditorProps) {
@@ -167,8 +168,21 @@ function TipTapEditor(props: TipTapEditorProps) {
   const { getSubmenuContextItems } = useContext(SubmenuContextProvidersContext);
 
   const historyLength = useSelector(
-    (store: RootState) => store.state.history.length,
+    (store: RootState) => {
+      switch(props.source) {
+        case 'perplexity':
+          return store.state.perplexityHistory.length;
+        case 'aider':
+          return store.state.aiderHistory.length;
+        default:
+          return store.state.history.length;
+      }
+    }
   );
+
+  // Create a unique key for each editor instance
+  const editorKey = useMemo(() => `${(props.source || 'continue')}-editor`, [props.source]);
+
   const useActiveFile = useSelector(selectUseActiveFile);
 
   const { saveSession } = useHistory(dispatch);

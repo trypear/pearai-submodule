@@ -60,6 +60,7 @@ interface ContinueInputBoxProps {
   editorState?: JSONContent;
   contextItems?: ContextItemWithId[];
   hidden?: boolean;
+  source?: 'perplexity' | 'aider' | 'continue';
 }
 
 function ContinueInputBox(props: ContinueInputBoxProps) {
