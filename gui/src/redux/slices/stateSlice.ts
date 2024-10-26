@@ -111,6 +111,7 @@ type State = {
     progress: number;
     desc: string;
   };
+  activeFile: string;
 };
 
 const initialState: State = {
@@ -150,12 +151,16 @@ const initialState: State = {
     progress: 0,
     desc: "",
   },
+  activeFile: undefined,
 };
 
 export const stateSlice = createSlice({
   name: "state",
   initialState,
   reducers: {
+    setActiveFile: (state, action: PayloadAction<string>) => {
+      state.activeFile = action.payload;
+    },
     setIndexingState: (
       state,
       action: PayloadAction<State["indexingState"]>,
@@ -543,5 +548,6 @@ export const {
   setSelectedProfileId,
   deleteMessage,
   setIndexingState,
+  setActiveFile,
 } = stateSlice.actions;
 export default stateSlice.reducer;

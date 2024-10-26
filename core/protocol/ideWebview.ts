@@ -75,6 +75,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setupLocalModel: [undefined, void];
   incrementFtc: [undefined, void];
   openOnboarding: [undefined, void];
-  addPerplexityContext: [{text: string, language: string}, void]
-  addPerplexityContextinChat: [{ text: string, language: string }, void];
+  addPerplexityContext: [{ text: string; language: string }, void];
+  addPerplexityContextinChat: [{ text: string; language: string }, void];
+  activeFileChanged: [{ filepath: string }, void];
 };

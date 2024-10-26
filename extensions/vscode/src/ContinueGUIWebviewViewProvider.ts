@@ -20,6 +20,14 @@ export class ContinueGUIWebviewViewProvider
   private _webviewView?: vscode.WebviewView;
   private outputChannel: vscode.OutputChannel;
   private enableDebugLogs: boolean;
+  private setupFileChangeListener() {
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      if (editor) {
+        const filepath = editor.document.uri.fsPath;
+        this.webviewProtocol?.request("activeFileChanged", { filepath });
+      }
+    });
+  }
 
   private updateDebugLogsStatus() {
     const settings = vscode.workspace.getConfiguration("pearai");
@@ -56,7 +64,9 @@ export class ContinueGUIWebviewViewProvider
       }
 
       const timestamp = new Date().toISOString().split(".")[0];
-      const logMessage = `[${timestamp}] [${message.level.toUpperCase()}] ${message.text}`;
+      const logMessage = `[${timestamp}] [${message.level.toUpperCase()}] ${
+        message.text
+      }`;
       this.outputChannel.appendLine(logMessage);
     }
   }
@@ -87,7 +97,7 @@ export class ContinueGUIWebviewViewProvider
 
   public resetWebviewProtocolWebview(): void {
     if (this._webview) {
-      this.webviewProtocol.resetWebviewToDefault()
+      this.webviewProtocol.resetWebviewToDefault();
     } else {
       console.warn("no webview found during reset");
     }
@@ -109,6 +119,7 @@ export class ContinueGUIWebviewViewProvider
     this.enableDebugLogs = false;
     this.updateDebugLogsStatus();
     this.setupDebugLogsListener();
+    this.setupFileChangeListener(); // Add this line
 
     this.webviewProtocol = new VsCodeWebviewProtocol(
       (async () => {
@@ -124,7 +135,7 @@ export class ContinueGUIWebviewViewProvider
     page: string | undefined = undefined,
     edits: FileEdit[] | undefined = undefined,
     isFullScreen = false,
-    initialRoute: string = "/"
+    initialRoute: string = "/",
   ): string {
     const isOverlay = panel?.title === PEAR_OVERLAY_VIEW_ID; // defined in pearai-app PearOverlayPart.ts
     const extensionUri = getExtensionUri();
@@ -176,7 +187,10 @@ export class ContinueGUIWebviewViewProvider
       }
     });
 
-    this.webviewProtocol.addWebview(panel?.title === PEAR_OVERLAY_VIEW_ID? panel.title : panel.viewType, panel.webview);
+    this.webviewProtocol.addWebview(
+      panel?.title === PEAR_OVERLAY_VIEW_ID ? panel.title : panel.viewType,
+      panel.webview,
+    );
 
     return `<!DOCTYPE html>
     <html lang="en">

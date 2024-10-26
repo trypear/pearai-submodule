@@ -33,10 +33,11 @@ import useHistory from "../../hooks/useHistory";
 import { useInputHistory } from "../../hooks/useInputHistory";
 import useUpdatingRef from "../../hooks/useUpdatingRef";
 import { useWebviewListener } from "../../hooks/useWebviewListener";
-import { selectUseActiveFile } from "../../redux/selectors";
+import { selectActiveFileName, selectUseActiveFile } from "@/redux/selectors";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import {
   consumeMainEditorContent,
+  setActiveFile,
   setEditingContextItemAtIndex,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
@@ -169,6 +170,8 @@ const TipTapEditor = (props: TipTapEditorProps) => {
   );
 
   const useActiveFile = useSelector(selectUseActiveFile);
+  const activeFileName = useSelector(selectActiveFileName);
+  const activeFileNameRef = useUpdatingRef(activeFileName);
   const indexingState = useSelector(
     (state: RootState) => state.state.indexingState,
   );
@@ -287,7 +290,6 @@ const TipTapEditor = (props: TipTapEditorProps) => {
             props: {
               handleDOMEvents: {
                 paste(view, event) {
-                  console.log("Pasting image");
                   const items = event.clipboardData.items;
                   for (const item of items) {
                     const file = item.getAsFile();
@@ -372,9 +374,10 @@ const TipTapEditor = (props: TipTapEditorProps) => {
               if (!this.editor.getJSON().content?.some((c) => c.content))
                 return true;
 
+              const currentFileName = activeFileNameRef.current;
               const text = this.editor.getText();
 
-              if (!text.includes("@Active File")) {
+              if (!text.includes(`@${currentFileName}`)) {
                 const lastChar = text[text.length - 1];
 
                 if (text.length > 0 && !/\s/.test(lastChar)) {
@@ -385,7 +388,7 @@ const TipTapEditor = (props: TipTapEditorProps) => {
                   type: "mention",
                   attrs: {
                     id: "activeFile",
-                    label: "Active File",
+                    label: currentFileName, // Use fresh value
                     providerTitle: "code",
                   },
                 });
@@ -724,6 +727,21 @@ const TipTapEditor = (props: TipTapEditorProps) => {
       window.removeEventListener("dragleave", leaveListener);
     };
   }, []);
+
+  useWebviewListener(
+    "activeFileChanged",
+    async (data) => {
+      const currentFile = data.filepath;
+      if (
+        currentFile &&
+        !currentFile.includes("extension-output") &&
+        currentFile !== activeFileName
+      ) {
+        dispatch(setActiveFile(currentFile));
+      }
+    },
+    [activeFileName],
+  );
 
   // IDE event listeners
   useWebviewListener(

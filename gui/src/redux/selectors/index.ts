@@ -1,6 +1,7 @@
 import { createSelector } from "@reduxjs/toolkit";
 import { ComboBoxItemType } from "../../components/mainInput/types";
 import { RootState } from "../store";
+import { getBasename } from "core/util";
 
 export const selectSlashCommands = createSelector(
   [(store: RootState) => store.state.config.slashCommands],
@@ -27,4 +28,16 @@ export const selectContextProviderDescriptions = createSelector(
 export const selectUseActiveFile = createSelector(
   [(store: RootState) => store.state.config.experimental?.defaultContext],
   (defaultContext) => defaultContext?.includes("activeFile"),
+);
+
+export const selectActiveFileName = createSelector(
+  [(state: RootState) => state.state.activeFile],
+  (activeFile) => {
+    if (!activeFile || activeFile.includes("extension-output")) {
+      return "Active File";
+    }
+    const basename = getBasename(activeFile);
+
+    return basename;
+  },
 );
