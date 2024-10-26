@@ -122,7 +122,7 @@ function PerplexityGUI() {
     };
   }, [active]);
 
-  const { streamResponse } = useChatHandler(dispatch, ideMessenger);
+  const { streamResponse } = useChatHandler(dispatch, ideMessenger, 'perplexity');
 
   const sendInput = useCallback(
     (editorState: JSONContent, modifiers: InputModifiers) => {
@@ -312,6 +312,7 @@ function PerplexityGUI() {
                           modelTitle={
                             item.promptLogs?.[0]?.completionOptions?.model ?? ""
                           }
+                          source="perplexity"
                         />
                       </TimelineItem>
                     </div>

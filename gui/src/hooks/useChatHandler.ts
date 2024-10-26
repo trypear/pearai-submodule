@@ -28,6 +28,8 @@ import {
   initNewActiveAiderMessage,
   resubmitAtIndex,
   setInactive,
+  setPerplexityInactive,
+  setAiderInactive,
   setMessageAtIndex,
   streamUpdate,
   streamAiderUpdate,
@@ -35,7 +37,7 @@ import {
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
 
-function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
+function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source?: 'perplexity' | 'aider' | 'continue') {
   const posthog = usePostHog();
 
   const defaultModel = useSelector(defaultModelSelector);
@@ -49,7 +51,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
   );
 
   const history = useSelector((store: RootState) => store.state.history);
-  const active = useSelector((store: RootState) => store.state.active);
+  const active = source === 'perplexity' ? useSelector((store: RootState) => store.state.perplexityActive) : source === 'aider' ? useSelector((store: RootState) => store.state.aiderActive) : useSelector((store: RootState) => store.state.active);
   const activeRef = useRef(active);
   useEffect(() => {
     activeRef.current = active;
@@ -66,7 +68,6 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
         messages,
       );
       let next = await gen.next();
-
       while (!next.done) {
         if (!activeRef.current) {
           abortController.abort();
@@ -81,7 +82,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
 
       let returnVal = next.value as PromptLog;
       if (returnVal) {
-        dispatch(addPromptCompletionPair([returnVal]));
+        dispatch(addPromptCompletionPair({promptLogs: [returnVal], source: source}));
       }
     } catch (e) {
       // If there's an error, we should clear the response so there aren't two input boxes
@@ -267,7 +268,8 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
         message: `Error streaming response: ${e.message}`,
       });
     } finally {
-      dispatch(setInactive());
+      const disableActive = source === 'perplexity' ? setPerplexityInactive : source === 'aider' ? setAiderInactive : setInactive;
+      dispatch(disableActive());
     }
   }
 

@@ -90,6 +90,7 @@ interface StyledMarkdownPreviewProps {
   className?: string;
   showCodeBorder?: boolean;
   scrollLocked?: boolean;
+  integrationSource?: "perplexity" | "aider" | "continue";
 }
 
 const FadeInWords: React.FC = (props: any) => {

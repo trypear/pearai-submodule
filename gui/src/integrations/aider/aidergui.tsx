@@ -105,7 +105,7 @@ function AiderGUI() {
     return () => window.removeEventListener("keydown", listener);
   }, [active]);
 
-  const { streamResponse } = useChatHandler(dispatch, ideMessenger);
+  const { streamResponse } = useChatHandler(dispatch, ideMessenger, 'aider');
 
   const sendInput = useCallback(
     (editorState: JSONContent, modifiers: InputModifiers) => {
@@ -293,6 +293,7 @@ function AiderGUI() {
                           modelTitle={
                             item.promptLogs?.[0]?.completionOptions?.model ?? ""
                           }
+                          source="aider"
                         />
                       </TimelineItem>
                     </div>

@@ -168,16 +168,18 @@ export const stateSlice = createSlice({
     },
     addPromptCompletionPair: (
       state,
-      { payload }: PayloadAction<PromptLog[]>,
+      { payload }: PayloadAction<{promptLogs: PromptLog[], source: string}>,
     ) => {
+      const {promptLogs, source} = payload;
+      const history = source === 'perplexity' ? state.perplexityHistory : source === 'aider' ? state.aiderHistory : state.history;
       if (!state.history.length) {
         return;
       }
-      const lastHistory = state.history[state.history.length - 1];
+      const lastHistory = history[history.length - 1];
 
       lastHistory.promptLogs = lastHistory.promptLogs
-        ? lastHistory.promptLogs.concat(payload)
-        : payload;
+        ? lastHistory.promptLogs.concat(promptLogs)
+        : promptLogs;
     },
     setActive: (state) => {
       state.active = true;
