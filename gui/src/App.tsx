@@ -123,7 +123,6 @@ function App() {
 
   const vscTheme = useVscTheme();
   const submenuContextProvidersMethods = useSubmenuContextProviders();
-  // Oh it is from here
 
   return (
     <VscThemeContext.Provider value={vscTheme}>

@@ -204,9 +204,7 @@ useEffect(() => {
   contextProviderDescriptions.forEach(async (description) => {
     // Check if we're in aider mode by checking the default model title
     const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
-    console.dir("Im here")
     const isAiderMode = defaultModelTitle?.toLowerCase().includes('aider');
-
     // Skip if:
     // 1. In aider mode and not relativefilecontext
     // 2. Not in aider mode and is relativefilecontext

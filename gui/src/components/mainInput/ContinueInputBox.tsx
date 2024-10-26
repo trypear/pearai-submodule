@@ -12,8 +12,6 @@ import TipTapEditor from "./TipTapEditor";
 import { useMemo } from "react";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import { isBareChatMode } from "../../util/bareChatMode";
-import RelativeFileContextProvider from "core/context/providers/RelativeFileContextProvider";
-import FileContextProvider from "core/context/providers/FileContextProvider";
 
 const gradient = keyframes`
   0% {
@@ -69,21 +67,22 @@ function ContinueInputBox(props: ContinueInputBoxProps) {
 
   const active = useSelector((store: RootState) => store.state.active);
   const availableSlashCommands = useSelector(selectSlashCommands);
-
+  let availableContextProviders = useSelector(
+    (store: RootState) => store.state.config.contextProviders,
+  );
   const bareChatMode = isBareChatMode()
-  let availableContextProviders;
-  if (bareChatMode) {
-    availableContextProviders = [
-      ...useSelector((store: RootState) => store.state.config.contextProviders),
-      RelativeFileContextProvider.description
-    ];
-  } else {
-    availableContextProviders = [
-      ...useSelector((store: RootState) => store.state.config.contextProviders),
-      FileContextProvider.description
-    ];
-  }
+  const filteredContextProviders = bareChatMode
+      ? availableContextProviders.filter(
+          (provider) => provider.title === "relativefilecontext",
+        )
+      : availableContextProviders.filter(
+          (provider) => provider.title !== "relativefilecontext",
+        );
 
+  if (bareChatMode) {
+    console.dir("bareChatMode")
+    console.dir(filteredContextProviders)
+  }
 
   useWebviewListener(
     "newSessionWithPrompt",
@@ -120,7 +119,7 @@ function ContinueInputBox(props: ContinueInputBoxProps) {
           editorState={props.editorState}
           onEnter={props.onEnter}
           isMainInput={props.isMainInput}
-          availableContextProviders={availableContextProviders}
+          availableContextProviders={filteredContextProviders}
           availableSlashCommands={
             bareChatMode ? undefined : availableSlashCommands
           }
