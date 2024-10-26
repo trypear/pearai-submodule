@@ -1,73 +1,52 @@
+import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
+import { JSONContent } from "@tiptap/react";
+import { InputModifiers } from "core";
+import { usePostHog } from "posthog-js/react";
 import {
-    ArrowLeftIcon,
-    ChatBubbleOvalLeftIcon,
-    CodeBracketSquareIcon,
-    ExclamationTriangleIcon,
-  } from "@heroicons/react/24/outline";
-  import { JSONContent } from "@tiptap/react";
-  import { InputModifiers } from "core";
-  import { usePostHog } from "posthog-js/react";
-  import {
-    Fragment,
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-  } from "react";
-  import { ErrorBoundary } from "react-error-boundary";
-  import { useDispatch, useSelector } from "react-redux";
-  import { useLocation, useNavigate } from "react-router-dom";
-  import styled from "styled-components";
-  import {
-    Button,
-    defaultBorderRadius,
-    lightGray,
-    vscBackground,
-    vscForeground,
-  } from "../../components";
-  import { ChatScrollAnchor } from "../../components/ChatScrollAnchor";
-  import StepContainer from "../../components/gui/StepContainer";
-  import TimelineItem from "../../components/gui/TimelineItem";
-  import ContinueInputBox from "../../components/mainInput/ContinueInputBox";
-  import { defaultInputModifiers } from "../../components/mainInput/inputModifiers";
-  import { TutorialCard } from "../../components/mainInput/TutorialCard";
-  import { IdeMessengerContext } from "../../context/IdeMessenger";
-  import useChatHandler from "../../hooks/useChatHandler";
-  import useHistory from "../../hooks/useHistory";
-  import { useWebviewListener } from "../../hooks/useWebviewListener";
-  import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
-  import {
-    clearLastResponse,
-    deleteMessage,
-    newSession,
-    setInactive,
-  } from "../../redux/slices/stateSlice";
-  import {
-    setDialogEntryOn,
-    setDialogMessage,
-    setShowDialog,
-  } from "../../redux/slices/uiStateSlice";
-  import { RootState } from "../../redux/store";
-  import {
-    getFontSize,
-    getMetaKeyLabel,
-    isJetBrains,
-    isMetaEquivalentKeyPressed,
-  } from "../../util";
-  import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
-  import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
-  import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
-  import { Badge } from "../../components/ui/badge";
-  import { TopGuiDiv, StopButton, StepsDiv, NewSessionButton, fallbackRender } from "../../pages/gui";
-
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { ChatScrollAnchor } from "../../components/ChatScrollAnchor";
+import StepContainer from "../../components/gui/StepContainer";
+import TimelineItem from "../../components/gui/TimelineItem";
+import ContinueInputBox from "../../components/mainInput/ContinueInputBox";
+import { defaultInputModifiers } from "../../components/mainInput/inputModifiers";
+import { IdeMessengerContext } from "../../context/IdeMessenger";
+import useChatHandler from "../../hooks/useChatHandler";
+import useHistory from "../../hooks/useHistory";
+import { useWebviewListener } from "../../hooks/useWebviewListener";
+import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
+import {
+  clearLastResponse,
+  deleteMessage,
+  newSession,
+  setInactive,
+} from "../../redux/slices/stateSlice";
+import { RootState } from "../../redux/store";
+import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
+import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
+import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
+import { Badge } from "../../components/ui/badge";
+import {
+  TopGuiDiv,
+  StopButton,
+  StepsDiv,
+  NewSessionButton,
+  fallbackRender,
+} from "../../pages/gui";
 
 function AiderGUI() {
   const posthog = usePostHog();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
-  const isBetaAccess = useSelector((state: RootState) => state.state.config.isBetaAccess);
 
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
@@ -84,7 +63,8 @@ function AiderGUI() {
     if (!topGuiDivRef.current) return;
 
     const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
-    const atBottom = scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
+    const atBottom =
+      scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
 
     setIsAtBottom(atBottom);
   };
@@ -92,7 +72,8 @@ function AiderGUI() {
   useEffect(() => {
     if (!active || !topGuiDivRef.current) return;
     const scrollAreaElement = topGuiDivRef.current;
-    scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
+    scrollAreaElement.scrollTop =
+      scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
     setIsAtBottom(true);
   }, [active]);
 
@@ -105,14 +86,18 @@ function AiderGUI() {
     }, 1);
 
     return () => {
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
       window.removeEventListener("scroll", handleScroll);
     };
   }, [topGuiDivRef.current]);
 
   useEffect(() => {
     const listener = (e: any) => {
-      if (e.key === "Backspace" && isMetaEquivalentKeyPressed(e) && !e.shiftKey) {
+      if (
+        e.key === "Backspace" &&
+        isMetaEquivalentKeyPressed(e) &&
+        !e.shiftKey
+      ) {
         dispatch(setInactive());
       }
     };
@@ -147,7 +132,13 @@ function AiderGUI() {
         setLocalStorage("mainTextEntryCounter", 1);
       }
     },
-    [sessionState.history, sessionState.contextItems, defaultModel, state, streamResponse],
+    [
+      sessionState.history,
+      sessionState.contextItems,
+      defaultModel,
+      state,
+      streamResponse,
+    ],
   );
 
   const { saveSession } = useHistory(dispatch);
@@ -195,7 +186,8 @@ function AiderGUI() {
               </Badge>
             </div>
             <p className="text-sm text-gray-400 mt-0">
-              Ask for a feature, describe a bug, or ask for a change to your project. We'll take care of everything for you!
+              Ask for a feature, describe a bug, or ask for a change to your
+              project. We'll take care of everything for you!
             </p>
           </div>
           <StepsDiv>
@@ -227,19 +219,24 @@ function AiderGUI() {
                       <TimelineItem
                         item={item}
                         iconElement={
-                          <ChatBubbleOvalLeftIcon
-                            width="16px"
-                            height="16px"
-                          />
+                          <ChatBubbleOvalLeftIcon width="16px" height="16px" />
                         }
-                        open={typeof stepsOpen[index] === "undefined" ? true : stepsOpen[index]!}
+                        open={
+                          typeof stepsOpen[index] === "undefined"
+                            ? true
+                            : stepsOpen[index]!
+                        }
                         onToggle={() => {}}
                       >
                         <StepContainer
                           index={index}
                           isLast={index === sessionState.history.length - 1}
                           isFirst={index === 0}
-                          open={typeof stepsOpen[index] === "undefined" ? true : stepsOpen[index]!}
+                          open={
+                            typeof stepsOpen[index] === "undefined"
+                              ? true
+                              : stepsOpen[index]!
+                          }
                           key={index}
                           onUserInput={(input: string) => {}}
                           item={item}
@@ -247,7 +244,8 @@ function AiderGUI() {
                           onRetry={() => {
                             streamResponse(
                               state.history[index - 1].editorState,
-                              state.history[index - 1].modifiers ?? defaultInputModifiers,
+                              state.history[index - 1].modifiers ??
+                                defaultInputModifiers,
                               ideMessenger,
                               index - 1,
                             );
@@ -264,9 +262,16 @@ function AiderGUI() {
                             );
                           }}
                           onDelete={() => {
-                            dispatch(deleteMessage({index: index+1, source: 'aider'}));
+                            dispatch(
+                              deleteMessage({
+                                index: index + 1,
+                                source: "aider",
+                              }),
+                            );
                           }}
-                          modelTitle={item.promptLogs?.[0]?.completionOptions?.model ?? ""}
+                          modelTitle={
+                            item.promptLogs?.[0]?.completionOptions?.model ?? ""
+                          }
                         />
                       </TimelineItem>
                     </div>
@@ -293,7 +298,7 @@ function AiderGUI() {
               <NewSessionButton
                 onClick={() => {
                   saveSession();
-                  ideMessenger.post("aiderResetSession", undefined)
+                  ideMessenger.post("aiderResetSession", undefined);
                 }}
                 className="mr-auto"
               >
@@ -313,20 +318,18 @@ function AiderGUI() {
           className="mt-auto mb-4 sticky bottom-4"
           onClick={() => {
             dispatch(setInactive());
-            if (state.history[state.history.length - 1]?.message.content.length === 0) {
-              dispatch(clearLastResponse('aider'));
+            if (
+              state.history[state.history.length - 1]?.message.content
+                .length === 0
+            ) {
+              dispatch(clearLastResponse("aider"));
             }
-            ideMessenger.post("aiderCtrlC", undefined)
+            ideMessenger.post("aiderCtrlC", undefined);
           }}
         >
           {getMetaKeyLabel()} ⌫ Cancel
         </StopButton>
       )}
-      {isBetaAccess &&
-        <NewSessionButton onClick={() => navigate("/inventory")} style={{marginLeft: "0.8rem", marginBottom: "0rem"}} >
-          Inventory
-        </NewSessionButton>
-      }
     </>
   );
 }
