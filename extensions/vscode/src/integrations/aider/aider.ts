@@ -102,7 +102,7 @@ export async function handleAiderMode(
 
   if (!isPythonInstalled || !isAiderInstalled) {
     core.send("aiderProcessStateUpdate", { status: "installing" });
-    await installPythonAider();
+    await handlePythonAiderNotInstalled();
     return;
     // await aiderResetSession(core); // Todo: might need this to reset GUI too?
   }
@@ -202,7 +202,7 @@ async function checkAiderInstallation(): Promise<boolean> {
   return false;
 }
 
-async function installPythonAider() {
+async function handlePythonAiderNotInstalled() {
   const isPythonInstalled = await checkPythonInstallation();
   console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
@@ -218,7 +218,6 @@ async function installPythonAider() {
     const installPythonConfirm = await vscode.window.showInformationMessage(
       "Python was not found in your ENV PATH. Python is required to run Creator (Aider). Choose 'Install' to install Python3.9 and add it to PATH (if already installed, add it to PATH)",
       "Install",
-      "Add python to PATH",
       "Manual Installation Guide",
       "Cancel",
     );
@@ -228,11 +227,6 @@ async function installPythonAider() {
     }
 
     if (installPythonConfirm === "Cancel") {
-      return;
-    }
-
-    if (installPythonConfirm === "Add python to PATH") {
-      await setupPythonEnvironmentVariables();
       return;
     }
 
@@ -297,82 +291,86 @@ function getPythonInstallCommand(): string {
   }
 }
 
-async function isPythonInPath(): Promise<boolean> {
-  try {
-    return checkPythonInstallation();
-  } catch (error) {
-    console.warn(`Error checking Python in PATH: ${error}`);
-    return false;
-  }
-}
 
-async function setupPythonEnvironmentVariables(): Promise<void> {
-  const pythonAlreadyInPath = await isPythonInPath();
-  if (pythonAlreadyInPath) {
-    console.log("Python is already in PATH, skipping environment setup");
-    return;
-  }
 
-  vscode.window.showInformationMessage(
-    "Adding Python to PATH. Please restart PearAI after Python is added to PATH successfully.",
-  );
-  const terminal = vscode.window.createTerminal("Python PATH Setup");
-  terminal.show();
+// Commented out as the user must do this themselves
 
-  switch (PLATFORM) {
-    case "win32":
-      terminal.sendText(`
-# PowerShell Script to Add Specific Python Paths to User PATH Variable at the Top
+// async function isPythonInPath(): Promise<boolean> {
+//   try {
+//     return checkPythonInstallation();
+//   } catch (error) {
+//     console.warn(`Error checking Python in PATH: ${error}`);
+//     return false;
+//   }
+// }
 
-# Get the current username
-$username = [System.Environment]::UserName
+// async function setupPythonEnvironmentVariables(): Promise<void> {
+//   const pythonAlreadyInPath = await isPythonInPath();
+//   if (pythonAlreadyInPath) {
+//     console.log("Python is already in PATH, skipping environment setup");
+//     return;
+//   }
 
-# Define Python paths with the current username
-$pythonPath = "C:\\Users\\$username\\AppData\\Local\\Programs\\Python\\Python39"
-$pythonScriptsPath = "C:\\Users\\$username\\AppData\\Local\\Programs\\Python\\Python39\\Scripts"
+//   vscode.window.showInformationMessage(
+//     "Adding Python to PATH. Please restart PearAI after Python is added to PATH successfully.",
+//   );
+//   const terminal = vscode.window.createTerminal("Python PATH Setup");
+//   terminal.show();
 
-# Retrieve the current user PATH
-$currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
+//   switch (PLATFORM) {
+//     case "win32":
+//       terminal.sendText(`
+// # PowerShell Script to Add Specific Python Paths to User PATH Variable at the Top
 
-# Add the new paths at the top if they're not already present
-if ($currentUserPath -notlike "*$pythonPath*") {
-    # Prepend the Python paths to the existing user PATH
-    $newUserPath = "$pythonPath;$pythonScriptsPath;$currentUserPath"
-    [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, [System.EnvironmentVariableTarget]::User)
-    Write-Output "Python paths have been added to user PATH."
-} else {
-    Write-Output "Python paths are already in the user PATH. "
-    Write-Output "Try Running PearAI Creator (Aider) Again."
-}
-        `);
-      break;
+// # Get the current username
+// $username = [System.Environment]::UserName
 
-    case "darwin":
-      terminal.sendText(`
-          PYTHON_PATH=$(which python3)
-          if [ -n "$PYTHON_PATH" ]; then
-            PYTHON_DIR=$(dirname "$PYTHON_PATH")
-            if ! grep -q "export PATH=.*$PYTHON_DIR" ~/.zshrc; then
-              echo "\\nexport PATH=\\"$PYTHON_DIR:\$PATH\\"" >> ~/.zshrc
-              echo "Python path added to .zshrc"
-              source ~/.zshrc
-            fi
-          fi
-        `);
-      break;
+// # Define Python paths with the current username
+// $pythonPath = "C:\\Users\\$username\\AppData\\Local\\Programs\\Python\\Python39"
+// $pythonScriptsPath = "C:\\Users\\$username\\AppData\\Local\\Programs\\Python\\Python39\\Scripts"
 
-    case "linux":
-      terminal.sendText(`
-          PYTHON_PATH=$(which python3)
-          if [ -n "$PYTHON_PATH" ]; then
-            PYTHON_DIR=$(dirname "$PYTHON_PATH")
-            if ! grep -q "export PATH=.*$PYTHON_DIR" ~/.bashrc; then
-              echo "\\nexport PATH=\\"$PYTHON_DIR:\$PATH\\"" >> ~/.bashrc
-              echo "Python path added to .bashrc"
-              source ~/.bashrc
-            fi
-          fi
-        `);
-      break;
-  }
+// # Retrieve the current user PATH
+// $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
+
+// # Add the new paths at the top if they're not already present
+// if ($currentUserPath -notlike "*$pythonPath*") {
+//     # Prepend the Python paths to the existing user PATH
+//     $newUserPath = "$pythonPath;$pythonScriptsPath;$currentUserPath"
+//     [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, [System.EnvironmentVariableTarget]::User)
+//     Write-Output "Python paths have been added to user PATH."
+// } else {
+//     Write-Output "Python paths are already in the user PATH. "
+//     Write-Output "Try Running PearAI Creator (Aider) Again."
+// }
+//         `);
+//       break;
+
+//     case "darwin":
+//       terminal.sendText(`
+//           PYTHON_PATH=$(which python3)
+//           if [ -n "$PYTHON_PATH" ]; then
+//             PYTHON_DIR=$(dirname "$PYTHON_PATH")
+//             if ! grep -q "export PATH=.*$PYTHON_DIR" ~/.zshrc; then
+//               echo "\\nexport PATH=\\"$PYTHON_DIR:\$PATH\\"" >> ~/.zshrc
+//               echo "Python path added to .zshrc"
+//               source ~/.zshrc
+//             fi
+//           fi
+//         `);
+//       break;
+
+//     case "linux":
+//       terminal.sendText(`
+//           PYTHON_PATH=$(which python3)
+//           if [ -n "$PYTHON_PATH" ]; then
+//             PYTHON_DIR=$(dirname "$PYTHON_PATH")
+//             if ! grep -q "export PATH=.*$PYTHON_DIR" ~/.bashrc; then
+//               echo "\\nexport PATH=\\"$PYTHON_DIR:\$PATH\\"" >> ~/.bashrc
+//               echo "Python path added to .bashrc"
+//               source ~/.bashrc
+//             fi
+//           fi
+//         `);
+//       break;
+//   }
 }
