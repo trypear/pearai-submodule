@@ -103,7 +103,7 @@ export async function handleAiderMode(
   if (!isPythonInstalled || !isAiderInstalled) {
     core.send("aiderProcessStateUpdate", { status: "installing" });
     await installPythonAider();
-    return
+    return;
     // await aiderResetSession(core); // Todo: might need this to reset GUI too?
   }
 
