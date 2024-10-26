@@ -18,7 +18,6 @@ import { execSync } from "child_process";
 import * as os from "os";
 import * as vscode from "vscode";
 
-
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
 const IS_MAC = PLATFORM === "darwin";
@@ -55,11 +54,14 @@ class Aider extends BaseLLM {
     console.log("Aider constructor called");
   }
 
-  public async aiderResetSession(model: string, apiKey: string | undefined): Promise<void> {
+  public async aiderResetSession(
+    model: string,
+    apiKey: string | undefined,
+  ): Promise<void> {
     console.log("Resetting Aider process...");
 
     // Kill the current process if it exists
-    
+
     this.killAiderProcess();
     this.isAiderUp = false;
     // Reset the output
@@ -74,7 +76,6 @@ class Aider extends BaseLLM {
       throw error;
     }
   }
-
 
   public killAiderProcess(): void {
     if (this.aiderProcess && !this.aiderProcess.killed) {
@@ -134,7 +135,7 @@ class Aider extends BaseLLM {
     // console.log("Raw Aider output:");
 
     // Remove ANSI escape codes
-    const cleanOutput = output.replace(/\x1B\[[0-9;]*[JKmsu]/g, '');
+    const cleanOutput = output.replace(/\x1B\[[0-9;]*[JKmsu]/g, "");
 
     // Preserve line breaks
     this.aiderOutput += cleanOutput;
@@ -163,17 +164,18 @@ class Aider extends BaseLLM {
 
       let command: string[];
 
-      const aiderFlags = "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands";
+      const aiderFlags =
+        "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands";
       const aiderCommands = [
         `python -m aider ${aiderFlags}`,
         `python3 -m aider ${aiderFlags}`,
-        `aider ${aiderFlags}`
+        `aider ${aiderFlags}`,
       ];
       let commandFound = false;
 
       for (const aiderCommand of aiderCommands) {
         try {
-          await execSync(`${aiderCommand} --version`, { stdio: 'ignore' });
+          await execSync(`${aiderCommand} --version`, { stdio: "ignore" });
           commandFound = true;
 
           switch (model) {
@@ -188,27 +190,24 @@ class Aider extends BaseLLM {
               await this.credentials.checkAndUpdateCredentials();
               const accessToken = this.credentials.getAccessToken();
               if (!accessToken) {
-                let message = "PearAI token invalid. Please try logging in or contact PearAI support."
+                let message =
+                  "PearAI token invalid. Please try logging in or contact PearAI support.";
                 vscode.window
-                .showErrorMessage(
-                  message,
-                  'Login To PearAI',
-                  'Show Logs',
-                )
-                .then((selection: any) => {
-                  if (selection === 'Login To PearAI') {
-                    // Redirect to auth login URL
-                    vscode.env.openExternal(
-                      vscode.Uri.parse(
-                        'https://trypear.ai/signin?callback=pearai://pearai.pearai/auth',
-                      ),
-                    );
-                  } else if (selection === 'Show Logs') {
-                    vscode.commands.executeCommand(
-                      'workbench.action.toggleDevTools',
-                    );
-                  }
-                });
+                  .showErrorMessage(message, "Login To PearAI", "Show Logs")
+                  .then((selection: any) => {
+                    if (selection === "Login To PearAI") {
+                      // Redirect to auth login URL
+                      vscode.env.openExternal(
+                        vscode.Uri.parse(
+                          "https://trypear.ai/signin?callback=pearai://pearai.pearai/auth",
+                        ),
+                      );
+                    } else if (selection === "Show Logs") {
+                      vscode.commands.executeCommand(
+                        "workbench.action.toggleDevTools",
+                      );
+                    }
+                  });
                 throw new Error("User not logged in to PearAI.");
               }
               command = [
@@ -220,17 +219,19 @@ class Aider extends BaseLLM {
               ];
               break;
           }
-          break;  // Exit the loop if a working command is found
+          break; // Exit the loop if a working command is found
         } catch (error) {
-          console.log(`Command ${aiderCommand} not found or errored. Trying next...`);
+          console.log(
+            `Command ${aiderCommand} not found or errored. Trying next...`,
+          );
         }
       }
 
       if (!commandFound) {
-        throw new Error("Aider command not found. Please ensure it's installed correctly.");
+        throw new Error(
+          "Aider command not found. Please ensure it's installed correctly.",
+        );
       }
-
-
 
       const userPath = this.getUserPath();
       const userShell = this.getUserShell();
@@ -281,27 +282,26 @@ class Aider extends BaseLLM {
             windowsHide: true,
           });
         } else {
-        // For non-Windows platforms, keep the existing implementation
-        if (model === "claude-3-5-sonnet-20240620") {
-          command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
-        } else if (model === "gpt-4o") {
-          command.unshift(`export OPENAI_API_KEY=${apiKey};`);
-        } else {
-          // For pearai_model, we're using the access token
-          const accessToken = this.credentials.getAccessToken();
-          command.unshift(`export OPENAI_API_KEY=${accessToken};`);
-        }
-        return cp.spawn(userShell, ["-c", command.join(" ")], {
-          stdio: ["pipe", "pipe", "pipe"],
-          cwd: currentDir,
-          env: {
-            ...process.env,
-            PATH: userPath,
-            PYTHONIOENCODING: "utf-8",
-            AIDER_SIMPLE_OUTPUT: "1",
-          },
-        });
-
+          // For non-Windows platforms, keep the existing implementation
+          if (model === "claude-3-5-sonnet-20240620") {
+            command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
+          } else if (model === "gpt-4o") {
+            command.unshift(`export OPENAI_API_KEY=${apiKey};`);
+          } else {
+            // For pearai_model, we're using the access token
+            const accessToken = this.credentials.getAccessToken();
+            command.unshift(`export OPENAI_API_KEY=${accessToken};`);
+          }
+          return cp.spawn(userShell, ["-c", command.join(" ")], {
+            stdio: ["pipe", "pipe", "pipe"],
+            cwd: currentDir,
+            env: {
+              ...process.env,
+              PATH: userPath,
+              PYTHONIOENCODING: "utf-8",
+              AIDER_SIMPLE_OUTPUT: "1",
+            },
+          });
         }
       };
 
@@ -315,17 +315,18 @@ class Aider extends BaseLLM {
           }, 30000); // 30 second timeout
 
           this.aiderProcess.stdout.on("data", (data: Buffer) => {
-            this.captureAiderOutput(data);     
-          // Look for the prompt that indicates aider is ready
-          const output = data.toString();
-          console.log("Output: ", output);
-          if (output.endsWith("> ")) { // Aider's ready prompt
-            console.log("Aider is ready!");
-            this.isAiderUp = true;
-            clearTimeout(timeout);
-            resolve();
-          }
-        });
+            this.captureAiderOutput(data);
+            // Look for the prompt that indicates aider is ready
+            const output = data.toString();
+            console.log("Output: ", output);
+            if (output.endsWith("> ")) {
+              // Aider's ready prompt
+              console.log("Aider is ready!");
+              this.isAiderUp = true;
+              clearTimeout(timeout);
+              resolve();
+            }
+          });
 
           this.aiderProcess.stderr.on("data", (data: Buffer) => {
             console.error(`Aider error: ${data.toString()}`);
@@ -348,24 +349,23 @@ class Aider extends BaseLLM {
             this.isAiderUp = false;
             clearTimeout(timeout);
             reject(error);
-              let message = "PearAI Creator (Powered by aider) failed to start. Please contact PearAI support on Discord."
-              vscode.window
+            let message =
+              "PearAI Creator (Powered by aider) failed to start. Please contact PearAI support on Discord.";
+            vscode.window
               .showErrorMessage(
                 message,
-                'PearAI Support (Discord)',
-                'Show Logs',
+                "PearAI Support (Discord)",
+                "Show Logs",
               )
               .then((selection: any) => {
-                if (selection === 'PearAI Support (Discord)') {
+                if (selection === "PearAI Support (Discord)") {
                   // Redirect to auth login URL
                   vscode.env.openExternal(
-                    vscode.Uri.parse(
-                      'https://discord.com/invite/7QMraJUsQt',
-                    ),
+                    vscode.Uri.parse("https://discord.com/invite/7QMraJUsQt"),
                   );
-                } else if (selection === 'Show Logs') {
+                } else if (selection === "Show Logs") {
                   vscode.commands.executeCommand(
-                    'workbench.action.toggleDevTools',
+                    "workbench.action.toggleDevTools",
                   );
                 }
               });
@@ -452,8 +452,7 @@ class Aider extends BaseLLM {
     let lastProcessedIndex = 0;
     let responseComplete = false;
 
-    const END_MARKER = IS_WINDOWS ? '\r\n> ' : '\n> ';
-
+    const END_MARKER = IS_WINDOWS ? "\r\n> " : "\n> ";
 
     const escapeDollarSigns = (text: string | undefined) => {
       if (!text) return "Aider response over";
