@@ -191,12 +191,11 @@ function resolveParagraph(p: JSONContent): [string, MentionAttrs[], string] {
   let text = "";
   const contextItems = [];
   let slashCommand = undefined;
+
   for (const child of p.content || []) {
     if (child.type === "text") {
       text += text === "" ? child.text.trimStart() : child.text;
     } else if (child.type === "mention") {
-      // console.dir("MENTION")
-      // console.dir(child)
       if (!isBareChatMode) {
         text +=
           typeof child.attrs.renderInlineAs === "string"

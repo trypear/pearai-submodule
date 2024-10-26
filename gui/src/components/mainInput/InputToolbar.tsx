@@ -5,7 +5,7 @@ import {
 import { PhotoIcon as SolidPhotoIcon } from "@heroicons/react/24/solid";
 import { InputModifiers } from "core";
 import { modelSupportsImages } from "core/llm/autodetect";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -25,11 +25,11 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ModelSelect from "../modelSelection/ModelSelect";
-import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
+import { isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useLocation } from "react-router-dom";
-
+import { Editor } from "@tiptap/core";
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
   padding: 4px 0;
@@ -83,16 +83,14 @@ interface InputToolbarProps {
   onEnter?: (modifiers: InputModifiers) => void;
   usingCodebase?: boolean;
   onAddContextItem?: () => void;
-
   onClick?: () => void;
-
   onImageFileSelected?: (file: File) => void;
-
   hidden?: boolean;
   showNoContext: boolean;
+  editorHasContent: boolean;
 }
 
-function InputToolbar(props: InputToolbarProps) {
+const InputToolbar = (props: InputToolbarProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileSelectHovered, setFileSelectHovered] = useState(false);
   const defaultModel = useSelector(defaultModelSelector);
@@ -107,15 +105,43 @@ function InputToolbar(props: InputToolbarProps) {
   const dispatch = useDispatch();
   const location = useLocation();
 
+  const indexingState = useSelector(
+    (state: RootState) => state.state.indexingState,
+  );
+  const editor = useRef<Editor>(null);
+
+  const isCodebaseButtonEnabled = useMemo(() => {
+    return props.editorHasContent && indexingState.status === "done";
+  }, [props.editorHasContent, indexingState.status]);
+
+  const handleCodebaseClick = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isCodebaseButtonEnabled) return;
+
+      props.onAddContextItem?.();
+
+      props.onEnter?.({
+        useCodebase: true,
+        noContext: !useActiveFile,
+      });
+    },
+    [
+      isCodebaseButtonEnabled,
+      props.onAddContextItem,
+      props.onEnter,
+      useActiveFile,
+    ],
+  );
+
   useEffect(() => {
     if (location.pathname === "/aiderMode") {
-      const aider = allModels.find(
-        (model) => model?.title?.toLowerCase().includes("aider"),
+      const aider = allModels.find((model) =>
+        model?.title?.toLowerCase().includes("aider"),
       );
       dispatch(setDefaultModel({ title: aider?.title }));
     } else if (location.pathname === "/perplexityMode") {
-      const perplexity = allModels.find(
-        (model) => model?.title?.toLowerCase().includes("perplexity"),
+      const perplexity = allModels.find((model) =>
+        model?.title?.toLowerCase().includes("perplexity"),
       );
       dispatch(setDefaultModel({ title: perplexity?.title }));
     }
@@ -188,7 +214,6 @@ function InputToolbar(props: InputToolbarProps) {
               </span>
             )}
         </span>
-
         <span className="flex items-center gap-2 whitespace-nowrap">
           {props.showNoContext ? (
             <span
@@ -207,20 +232,24 @@ function InputToolbar(props: InputToolbarProps) {
           ) : !bareChatMode ? (
             <StyledSpan
               style={{
-                color: props.usingCodebase ? vscBadgeBackground : lightGray,
+                color: isCodebaseButtonEnabled
+                  ? props.usingCodebase
+                    ? vscBadgeBackground
+                    : lightGray
+                  : lightGray + "66",
                 backgroundColor: props.usingCodebase
                   ? lightGray + "33"
                   : undefined,
                 borderRadius: defaultBorderRadius,
                 padding: "2px 4px",
+                cursor: isCodebaseButtonEnabled ? "pointer" : "not-allowed",
               }}
-              onClick={(e) => {
-                props.onEnter({
-                  useCodebase: true,
-                  noContext: !useActiveFile,
-                });
-              }}
-              className={"hover:underline cursor-pointer float-right"}
+              onClick={handleCodebaseClick}
+              className={
+                isCodebaseButtonEnabled
+                  ? "hover:underline cursor-pointer float-right"
+                  : ""
+              }
             >
               {getMetaKeyLabel()} ⏎ Use codebase
             </StyledSpan>
@@ -240,7 +269,6 @@ function InputToolbar(props: InputToolbarProps) {
       </StyledDiv>
     </>
   );
-}
+};
 
 export default InputToolbar;
-
