@@ -1,75 +1,84 @@
 import {
-    ArrowLeftIcon,
-    ChatBubbleOvalLeftIcon,
-    CodeBracketSquareIcon,
-    ExclamationTriangleIcon,
-  } from "@heroicons/react/24/outline";
-  import { JSONContent } from "@tiptap/react";
-  import { InputModifiers } from "core";
-  import { usePostHog } from "posthog-js/react";
-  import {
-    Fragment,
-    useCallback,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-  } from "react";
-  import { ErrorBoundary } from "react-error-boundary";
-  import { useDispatch, useSelector } from "react-redux";
-  import { useLocation, useNavigate } from "react-router-dom";
-  import styled from "styled-components";
-  import {
-    Button,
-    defaultBorderRadius,
-    lightGray,
-    vscBackground,
-    vscForeground,
-  } from "../../components";
-  import { ChatScrollAnchor } from "../../components/ChatScrollAnchor";
-  import StepContainer from "../../components/gui/StepContainer";
-  import TimelineItem from "../../components/gui/TimelineItem";
-  import ContinueInputBox from "../../components/mainInput/ContinueInputBox";
-  import { defaultInputModifiers } from "../../components/mainInput/inputModifiers";
-  import { TutorialCard } from "../../components/mainInput/TutorialCard";
-  import { IdeMessengerContext } from "../../context/IdeMessenger";
-  import useChatHandler from "../../hooks/useChatHandler";
-  import useHistory from "../../hooks/useHistory";
-  import { useWebviewListener } from "../../hooks/useWebviewListener";
-  import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
-  import {
-    clearLastResponse,
-    deleteMessage,
-    newSession,
-    setInactive,
-    updateAiderProcessStatus,
-  } from "../../redux/slices/stateSlice";
-  import {
-    setDialogEntryOn,
-    setDialogMessage,
-    setShowDialog,
-  } from "../../redux/slices/uiStateSlice";
-  import { RootState } from "../../redux/store";
-  import {
-    getFontSize,
-    getMetaKeyLabel,
-    isJetBrains,
-    isMetaEquivalentKeyPressed,
-  } from "../../util";
-  import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
-  import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
-  import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
-  import { Badge } from "../../components/ui/badge";
-  import { TopGuiDiv, StopButton, StepsDiv, NewSessionButton, fallbackRender } from "../../pages/gui";
-
+  ArrowLeftIcon,
+  ChatBubbleOvalLeftIcon,
+  CodeBracketSquareIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
+import { JSONContent } from "@tiptap/react";
+import { InputModifiers } from "core";
+import { usePostHog } from "posthog-js/react";
+import {
+  Fragment,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
+import styled from "styled-components";
+import {
+  Button,
+  defaultBorderRadius,
+  lightGray,
+  vscBackground,
+  vscForeground,
+} from "../../components";
+import { ChatScrollAnchor } from "../../components/ChatScrollAnchor";
+import StepContainer from "../../components/gui/StepContainer";
+import TimelineItem from "../../components/gui/TimelineItem";
+import ContinueInputBox from "../../components/mainInput/ContinueInputBox";
+import { defaultInputModifiers } from "../../components/mainInput/inputModifiers";
+import { TutorialCard } from "../../components/mainInput/TutorialCard";
+import { IdeMessengerContext } from "../../context/IdeMessenger";
+import useChatHandler from "../../hooks/useChatHandler";
+import useHistory from "../../hooks/useHistory";
+import { useWebviewListener } from "../../hooks/useWebviewListener";
+import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
+import {
+  clearLastResponse,
+  deleteMessage,
+  newSession,
+  setInactive,
+  updateAiderProcessStatus,
+} from "../../redux/slices/stateSlice";
+import {
+  setDialogEntryOn,
+  setDialogMessage,
+  setShowDialog,
+} from "../../redux/slices/uiStateSlice";
+import { RootState } from "../../redux/store";
+import {
+  getFontSize,
+  getMetaKeyLabel,
+  isJetBrains,
+  isMetaEquivalentKeyPressed,
+} from "../../util";
+import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
+import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
+import { isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
+import { Badge } from "../../components/ui/badge";
+import {
+  TopGuiDiv,
+  StopButton,
+  StepsDiv,
+  NewSessionButton,
+  fallbackRender,
+} from "../../pages/gui";
 
 function AiderGUI() {
   const posthog = usePostHog();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
-  const isBetaAccess = useSelector((state: RootState) => state.state.config.isBetaAccess);
-  const aiderProcessStatus = useSelector((state: RootState) => state.state.aiderProcessStatus);
+  const isBetaAccess = useSelector(
+    (state: RootState) => state.state.config.isBetaAccess,
+  );
+  const aiderProcessStatus = useSelector(
+    (state: RootState) => state.state.aiderProcessStatus,
+  );
 
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
@@ -86,7 +95,8 @@ function AiderGUI() {
     if (!topGuiDivRef.current) return;
 
     const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
-    const atBottom = scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
+    const atBottom =
+      scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
 
     setIsAtBottom(atBottom);
   };
@@ -94,7 +104,8 @@ function AiderGUI() {
   useEffect(() => {
     if (!active || !topGuiDivRef.current) return;
     const scrollAreaElement = topGuiDivRef.current;
-    scrollAreaElement.scrollTop = scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
+    scrollAreaElement.scrollTop =
+      scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
     setIsAtBottom(true);
   }, [active]);
 
@@ -107,7 +118,7 @@ function AiderGUI() {
     }, 1);
 
     return () => {
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
       window.removeEventListener("scroll", handleScroll);
     };
   }, [topGuiDivRef.current]);
@@ -116,7 +127,11 @@ function AiderGUI() {
 
   useEffect(() => {
     const listener = (e: any) => {
-      if (e.key === "Backspace" && isMetaEquivalentKeyPressed(e) && !e.shiftKey) {
+      if (
+        e.key === "Backspace" &&
+        isMetaEquivalentKeyPressed(e) &&
+        !e.shiftKey
+      ) {
         dispatch(setInactive());
       }
     };
@@ -151,7 +166,13 @@ function AiderGUI() {
         setLocalStorage("mainTextEntryCounter", 1);
       }
     },
-    [sessionState.history, sessionState.contextItems, defaultModel, state, streamResponse],
+    [
+      sessionState.history,
+      sessionState.contextItems,
+      defaultModel,
+      state,
+      streamResponse,
+    ],
   );
 
   const { saveSession } = useHistory(dispatch);
@@ -166,10 +187,10 @@ function AiderGUI() {
   );
 
   useWebviewListener(
-    "aiderProcessStateUpdate", 
+    "aiderProcessStateUpdate",
     async (data) => {
-      console.dir("Iam from aiderProcessStateUpdate")
-      console.dir(data.status)
+      console.dir("Iam from aiderProcessStateUpdate");
+      console.dir(data.status);
       dispatch(updateAiderProcessStatus({ status: data.status }));
     },
     [],
@@ -191,163 +212,189 @@ function AiderGUI() {
 
   return (
     <>
-    {aiderProcessStatus.status === "starting" ? <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
-      <div className="text-white text-2xl">
-        <div className="spinner-border text-white" role="status">
-          <span className="visually-hidden">Spinning up Aider, please wait...</span>
-        </div>
-      </div>
-    </div> :
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-        <div className="mx-2">
-          <div className="pl-2 mt-8 border-b border-gray-700">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold mb-2">PearAI Creator - Beta</h1>
-              <Badge variant="outline" className="pl-0">
-                (Powered by{" "}
-                <a
-                  href="https://aider.chat/2024/06/02/main-swe-bench.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline px-1"
-                >
-                  aider)
-                </a>
-              </Badge>
+      {aiderProcessStatus.status === "starting" ? (
+        <div className="fixed top-0 left-0 w-full h-full bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
+          <div className="text-white text-2xl">
+            <div className="spinner-border text-white" role="status">
+              <span className="visually-hidden">
+                Spinning up Aider, please wait...
+              </span>
             </div>
-            <p className="text-sm text-gray-400 mt-0">
-              Ask for a feature, describe a bug, or ask for a change to your project. We'll take care of everything for you!
-            </p>
           </div>
-          <StepsDiv>
-            {state.history.map((item, index: number) => (
-              <Fragment key={index}>
-                <ErrorBoundary
-                  FallbackComponent={fallbackRender}
-                  onReset={() => {
-                    dispatch(newSession());
-                  }}
-                >
-                  {item.message.role === "user" ? (
-                    <ContinueInputBox
-                      onEnter={async (editorState, modifiers) => {
-                        streamResponse(
-                          editorState,
-                          modifiers,
-                          ideMessenger,
-                          index,
-                        );
-                      }}
-                      isLastUserInput={isLastUserInput(index)}
-                      isMainInput={false}
-                      editorState={item.editorState}
-                      contextItems={item.contextItems}
-                    />
-                  ) : (
-                    <div className="thread-message">
-                      <TimelineItem
-                        item={item}
-                        iconElement={
-                          <ChatBubbleOvalLeftIcon
-                            width="16px"
-                            height="16px"
-                          />
-                        }
-                        open={typeof stepsOpen[index] === "undefined" ? true : stepsOpen[index]!}
-                        onToggle={() => {}}
-                      >
-                        <StepContainer
-                          index={index}
-                          isLast={index === sessionState.history.length - 1}
-                          isFirst={index === 0}
-                          open={typeof stepsOpen[index] === "undefined" ? true : stepsOpen[index]!}
-                          key={index}
-                          onUserInput={(input: string) => {}}
-                          item={item}
-                          onReverse={() => {}}
-                          onRetry={() => {
-                            streamResponse(
-                              state.history[index - 1].editorState,
-                              state.history[index - 1].modifiers ?? defaultInputModifiers,
-                              ideMessenger,
-                              index - 1,
-                            );
-                          }}
-                          onContinueGeneration={() => {
-                            window.postMessage(
-                              {
-                                messageType: "userInput",
-                                data: {
-                                  input: "Keep going.",
-                                },
-                              },
-                              "*",
-                            );
-                          }}
-                          onDelete={() => {
-                            dispatch(deleteMessage(index));
-                          }}
-                          modelTitle={item.promptLogs?.[0]?.completionOptions?.model ?? ""}
-                        />
-                      </TimelineItem>
-                    </div>
-                  )}
-                </ErrorBoundary>
-              </Fragment>
-            ))}
-          </StepsDiv>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          />
-          {active ? (
-            <>
-              <br />
-              <br />
-            </>
-          ) : state.history.length > 0 ? (
-            <div className="mt-2">
-              <NewSessionButton
-                onClick={() => {
-                  saveSession();
-                  ideMessenger.post("aiderResetSession", undefined)
-                }}
-                className="mr-auto"
-              >
-                Restart Session
-              </NewSessionButton>
-            </div>
-          ) : null}
         </div>
-        <ChatScrollAnchor
-          scrollAreaRef={topGuiDivRef}
-          isAtBottom={isAtBottom}
-          trackVisibility={active}
-        />
-      </TopGuiDiv> }
+      ) : (
+        <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+          <div className="mx-2">
+            <div className="pl-2 mt-8 border-b border-gray-700">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold mb-2">
+                  PearAI Creator - Beta
+                </h1>
+                <Badge variant="outline" className="pl-0">
+                  (Powered by{" "}
+                  <a
+                    href="https://aider.chat/2024/06/02/main-swe-bench.html"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline px-1"
+                  >
+                    aider)
+                  </a>
+                </Badge>
+              </div>
+              <p className="text-sm text-gray-400 mt-0">
+                Ask for a feature, describe a bug, or ask for a change to your
+                project. We'll take care of everything for you!
+              </p>
+            </div>
+            <StepsDiv>
+              {state.history.map((item, index: number) => (
+                <Fragment key={index}>
+                  <ErrorBoundary
+                    FallbackComponent={fallbackRender}
+                    onReset={() => {
+                      dispatch(newSession());
+                    }}
+                  >
+                    {item.message.role === "user" ? (
+                      <ContinueInputBox
+                        onEnter={async (editorState, modifiers) => {
+                          streamResponse(
+                            editorState,
+                            modifiers,
+                            ideMessenger,
+                            index,
+                          );
+                        }}
+                        isLastUserInput={isLastUserInput(index)}
+                        isMainInput={false}
+                        editorState={item.editorState}
+                        contextItems={item.contextItems}
+                      />
+                    ) : (
+                      <div className="thread-message">
+                        <TimelineItem
+                          item={item}
+                          iconElement={
+                            <ChatBubbleOvalLeftIcon
+                              width="16px"
+                              height="16px"
+                            />
+                          }
+                          open={
+                            typeof stepsOpen[index] === "undefined"
+                              ? true
+                              : stepsOpen[index]!
+                          }
+                          onToggle={() => {}}
+                        >
+                          <StepContainer
+                            index={index}
+                            isLast={index === sessionState.history.length - 1}
+                            isFirst={index === 0}
+                            open={
+                              typeof stepsOpen[index] === "undefined"
+                                ? true
+                                : stepsOpen[index]!
+                            }
+                            key={index}
+                            onUserInput={(input: string) => {}}
+                            item={item}
+                            onReverse={() => {}}
+                            onRetry={() => {
+                              streamResponse(
+                                state.history[index - 1].editorState,
+                                state.history[index - 1].modifiers ??
+                                  defaultInputModifiers,
+                                ideMessenger,
+                                index - 1,
+                              );
+                            }}
+                            onContinueGeneration={() => {
+                              window.postMessage(
+                                {
+                                  messageType: "userInput",
+                                  data: {
+                                    input: "Keep going.",
+                                  },
+                                },
+                                "*",
+                              );
+                            }}
+                            onDelete={() => {
+                              dispatch(deleteMessage(index));
+                            }}
+                            modelTitle={
+                              item.promptLogs?.[0]?.completionOptions?.model ??
+                              ""
+                            }
+                          />
+                        </TimelineItem>
+                      </div>
+                    )}
+                  </ErrorBoundary>
+                </Fragment>
+              ))}
+            </StepsDiv>
+            <ContinueInputBox
+              onEnter={(editorContent, modifiers) => {
+                sendInput(editorContent, modifiers);
+              }}
+              isLastUserInput={false}
+              isMainInput={true}
+              hidden={active}
+            />
+            {active ? (
+              <>
+                <br />
+                <br />
+              </>
+            ) : state.history.length > 0 ? (
+              <div className="mt-2">
+                <NewSessionButton
+                  onClick={() => {
+                    saveSession();
+                    ideMessenger.post("aiderResetSession", undefined);
+                  }}
+                  className="mr-auto"
+                >
+                  Restart Session
+                </NewSessionButton>
+              </div>
+            ) : null}
+          </div>
+          <ChatScrollAnchor
+            scrollAreaRef={topGuiDivRef}
+            isAtBottom={isAtBottom}
+            trackVisibility={active}
+          />
+        </TopGuiDiv>
+      )}
       {active && (
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"
           onClick={() => {
             dispatch(setInactive());
-            if (state.history[state.history.length - 1]?.message.content.length === 0) {
+            if (
+              state.history[state.history.length - 1]?.message.content
+                .length === 0
+            ) {
               dispatch(clearLastResponse());
             }
-            ideMessenger.post("aiderCtrlC", undefined)
+            ideMessenger.post("aiderCtrlC", undefined);
           }}
         >
           {getMetaKeyLabel()} ⌫ Cancel
         </StopButton>
       )}
-      {isBetaAccess &&
-        <NewSessionButton onClick={() => navigate("/inventory")} style={{marginLeft: "0.8rem", marginBottom: "0rem"}} >
+      {isBetaAccess && (
+        <NewSessionButton
+          onClick={() => navigate("/inventory")}
+          style={{ marginLeft: "0.8rem", marginBottom: "0rem" }}
+        >
           Inventory
         </NewSessionButton>
-      }
+      )}
     </>
   );
 }
