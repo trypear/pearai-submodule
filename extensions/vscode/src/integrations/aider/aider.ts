@@ -15,7 +15,9 @@ let aiderPanel: vscode.WebviewPanel | undefined;
 // Aider process management functions
 export async function startAiderProcess(core: Core) {
   const config = await core.configHandler.loadConfig();
-  const aiderModel = config.models.find(model => model instanceof Aider) as Aider | undefined;
+  const aiderModel = config.models.find((model) => model instanceof Aider) as
+    | Aider
+    | undefined;
 
   if (aiderModel) {
     core.send("aiderProcessStateUpdate", { status: "starting" });
@@ -33,11 +35,13 @@ export async function startAiderProcess(core: Core) {
 
 export async function killAiderProcess(core: Core) {
   const config = await core.configHandler.loadConfig();
-  const aiderModels = config.models.filter(model => model instanceof Aider) as Aider[];
+  const aiderModels = config.models.filter(
+    (model) => model instanceof Aider,
+  ) as Aider[];
 
   try {
     if (aiderModels.length > 0) {
-      aiderModels.forEach(model => {
+      aiderModels.forEach((model) => {
         model.killAiderProcess();
       });
       core.send("aiderProcessStateUpdate", { status: "stopped" });
@@ -49,11 +53,13 @@ export async function killAiderProcess(core: Core) {
 
 export async function aiderCtrlC(core: Core) {
   const config = await core.configHandler.loadConfig();
-  const aiderModels = config.models.filter(model => model instanceof Aider) as Aider[];
+  const aiderModels = config.models.filter(
+    (model) => model instanceof Aider,
+  ) as Aider[];
 
   try {
     if (aiderModels.length > 0) {
-      aiderModels.forEach(model => {
+      aiderModels.forEach((model) => {
         if (model.aiderProcess) {
           model.aiderCtrlC();
         }
@@ -67,11 +73,13 @@ export async function aiderCtrlC(core: Core) {
 
 export async function aiderResetSession(core: Core) {
   const config = await core.configHandler.loadConfig();
-  const aiderModels = config.models.filter(model => model instanceof Aider) as Aider[];
+  const aiderModels = config.models.filter(
+    (model) => model instanceof Aider,
+  ) as Aider[];
 
   try {
     if (aiderModels.length > 0) {
-      aiderModels.forEach(model => {
+      aiderModels.forEach((model) => {
         if (model.aiderProcess) {
           model.aiderResetSession(model.model, model.apiKey);
         }
@@ -87,11 +95,10 @@ export async function handleAiderMode(
   sidebar: ContinueGUIWebviewViewProvider,
   extensionContext: vscode.ExtensionContext,
 ) {
-
   const isPythonInstalled = await checkPythonInstallation();
   const isAiderInstalled = await checkAiderInstallation();
 
-  if (!isPythonInstalled || !isAiderInstalled) { 
+  if (!isPythonInstalled || !isAiderInstalled) {
     await installPythonAider();
     return;
   }
@@ -136,7 +143,11 @@ export async function handleAiderMode(
     "/aiderMode",
   );
 
-  sidebar.webviewProtocol?.request("focusContinueInputWithNewSession", undefined, ["pearai.aiderGUIView"]);
+  sidebar.webviewProtocol?.request(
+    "focusContinueInputWithNewSession",
+    undefined,
+    ["pearai.aiderGUIView"],
+  );
 
   //When panel closes, reset the webview and focus
   panel.onDidDispose(
@@ -173,7 +184,7 @@ async function checkAiderInstallation(): Promise<boolean> {
   const commands = [
     "aider --version",
     "python -m aider --version",
-    "python3 -m aider --version"
+    "python3 -m aider --version",
   ];
 
   for (const cmd of commands) {
@@ -251,7 +262,7 @@ async function installPythonAider() {
     if (IS_WINDOWS) {
       command += "python -m pip install -U aider-chat;";
       command += 'echo "`nAider installation complete."';
-      } else {
+    } else {
       command += "python3 -m pip install -U aider-chat;";
       command += "echo '\nAider installation complete.'";
     }
@@ -298,7 +309,9 @@ async function setupPythonEnvironmentVariables(): Promise<void> {
     return;
   }
 
-  vscode.window.showInformationMessage("Adding Python to PATH. Please restart PearAI after Python is added to PATH successfully.");
+  vscode.window.showInformationMessage(
+    "Adding Python to PATH. Please restart PearAI after Python is added to PATH successfully.",
+  );
   const terminal = vscode.window.createTerminal("Python PATH Setup");
   terminal.show();
 
@@ -360,7 +373,6 @@ if ($currentUserPath -notlike "*$pythonPath*") {
   }
 }
 
-
 // async function installPythonAider() {
 //   const isPythonInstalled = await checkPythonInstallation();
 //   console.log("PYTHON CHECK RESULT :");
@@ -399,7 +411,7 @@ if ($currentUserPath -notlike "*$pythonPath*") {
 
 //     // Add environment setup after installation with a reasonable delay
 //     await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for installation to complete
-    
+
 //     // Check installation and setup environment variables
 //     const pythonInstallVerified = await checkPythonInstallation();
 //     if (pythonInstallVerified) {
@@ -433,4 +445,3 @@ if ($currentUserPath -notlike "*$pythonPath*") {
 //     aiderTerminal.sendText(command);
 //   }
 // }
-
