@@ -201,12 +201,16 @@ async function installPythonAider() {
 
   if (!isPythonInstalled) {
     const installPythonConfirm = await vscode.window.showInformationMessage(
-      "Python was not found in your ENV PATH. Python is required to run Creator (Aider). Choose 'Install' to install Python3.9 or if already installed, add it to PATH",
+      "Python was not found in your ENV PATH. Python is required to run Creator (Aider). Choose 'Install' to install Python3.9 and add it to PATH (if already installed, add it to PATH)",
       "Install",
       "Add python to PATH",
       "Manual Installation Guide",
       "Cancel",
     );
+
+    if (!installPythonConfirm) {
+      return;
+    }
 
     if (installPythonConfirm === "Cancel") {
       return;
@@ -278,40 +282,9 @@ function getPythonInstallCommand(): string {
   }
 }
 
-
-
 async function isPythonInPath(): Promise<boolean> {
   try {
-    switch (PLATFORM) {
-      case "win32": {
-        // Check user PATH environment variable on Windows
-        const userPath = await executeCommand('powershell -Command "[Environment]::GetEnvironmentVariable(\'Path\', \'User\')"');
-        const pythonPath = await executeCommand("where python");
-        const pythonDir = pythonPath.split('\r\n')[0].replace(/\\python\.exe$/, '');
-        return userPath.toLowerCase().includes(pythonDir.toLowerCase());
-      }
-      case "darwin":
-      case "linux": {
-        // Check if python/python3 command is accessible and resolve its real path
-        try {
-          const shellProfile = IS_MAC ? "~/.zshrc" : "~/.bashrc";
-          const command = IS_MAC ? "which python3" : "which python3";
-          const pythonPath = await executeCommand(command);
-          
-          // Check if PATH entry exists in profile
-          const grepCommand = IS_MAC 
-            ? `cat ${shellProfile} | grep -l "export PATH=.*${pythonPath.trim()}.*"` 
-            : `cat ${shellProfile} | grep -l "export PATH=.*${pythonPath.trim()}.*"`;
-          
-          await executeCommand(grepCommand);
-          return true;
-        } catch {
-          return false;
-        }
-      }
-      default:
-        return false;
-    }
+    return checkPythonInstallation();
   } catch (error) {
     console.warn(`Error checking Python in PATH: ${error}`);
     return false;
@@ -319,13 +292,13 @@ async function isPythonInPath(): Promise<boolean> {
 }
 
 async function setupPythonEnvironmentVariables(): Promise<void> {
-  // const pythonAlreadyInPath = await isPythonInPath();
-  // if (pythonAlreadyInPath) {
-  //   console.log("Python is already in PATH, skipping environment setup");
-  //   return;
-  // }
+  const pythonAlreadyInPath = await isPythonInPath();
+  if (pythonAlreadyInPath) {
+    console.log("Python is already in PATH, skipping environment setup");
+    return;
+  }
 
-  vscode.window.showInformationMessage("Adding Python to PATH...");
+  vscode.window.showInformationMessage("Adding Python to PATH. Please restart PearAI after Python is added to PATH successfully.");
   const terminal = vscode.window.createTerminal("Python PATH Setup");
   terminal.show();
 
