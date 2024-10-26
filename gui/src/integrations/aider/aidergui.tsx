@@ -264,7 +264,7 @@ function AiderGUI() {
                             );
                           }}
                           onDelete={() => {
-                            dispatch(deleteMessage(index));
+                            dispatch(deleteMessage({index: index+1, source: 'aider'}));
                           }}
                           modelTitle={item.promptLogs?.[0]?.completionOptions?.model ?? ""}
                         />
@@ -314,7 +314,7 @@ function AiderGUI() {
           onClick={() => {
             dispatch(setInactive());
             if (state.history[state.history.length - 1]?.message.content.length === 0) {
-              dispatch(clearLastResponse());
+              dispatch(clearLastResponse('aider'));
             }
             ideMessenger.post("aiderCtrlC", undefined)
           }}

@@ -28,6 +28,8 @@ import {
   setInactive,
   setMessageAtIndex,
   streamUpdate,
+  streamAiderUpdate,
+  streamPerplexityUpdate
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
 
@@ -51,7 +53,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
     activeRef.current = active;
   }, [active]);
 
-  async function _streamNormalInput(messages: ChatMessage[]) {
+  async function _streamNormalInput(messages: ChatMessage[], source: 'perplexity' | 'aider' | 'continue'='continue') {
     const abortController = new AbortController();
     const cancelToken = abortController.signal;
 
@@ -68,8 +70,9 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
           abortController.abort();
           break;
         }
+        const stream = source === 'perplexity' ? streamPerplexityUpdate : source === 'aider' ? streamAiderUpdate : streamUpdate;
         dispatch(
-          streamUpdate(stripImages((next.value as ChatMessage).content)),
+          stream(stripImages((next.value as ChatMessage).content)),
         );
         next = await gen.next();
       }
@@ -80,7 +83,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
       }
     } catch (e) {
       // If there's an error, we should clear the response so there aren't two input boxes
-      dispatch(clearLastResponse());
+      dispatch(clearLastResponse(source));
     }
   }
 
@@ -157,6 +160,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
     modifiers: InputModifiers,
     ideMessenger: IIdeMessenger,
     index?: number,
+    source: 'perplexity' | 'aider' | 'continue'='continue'
   ) {
     try {
       if (typeof index === "number") {
@@ -239,7 +243,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
       let commandAndInput = getSlashCommandForInput(content);
 
       if (!commandAndInput) {
-        await _streamNormalInput(messages);
+        await _streamNormalInput(messages, source);
       } else {
         const [slashCommand, commandInput] = commandAndInput;
         posthog.capture("step run", {

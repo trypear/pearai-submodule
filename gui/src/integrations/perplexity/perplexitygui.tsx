@@ -18,14 +18,6 @@ import {
   import { ErrorBoundary } from "react-error-boundary";
   import { useDispatch, useSelector } from "react-redux";
   import { useLocation, useNavigate } from "react-router-dom";
-  import styled from "styled-components";
-  import {
-    Button,
-    defaultBorderRadius,
-    lightGray,
-    vscBackground,
-    vscForeground,
-  } from "../../components";
   import { ChatScrollAnchor } from "../../components/ChatScrollAnchor";
   import StepContainer from "../../components/gui/StepContainer";
   import TimelineItem from "../../components/gui/TimelineItem";
@@ -57,7 +49,7 @@ import {
   } from "../../util";
   import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
   import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
-  import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
+  import { isBareChatMode } from '../../util/bareChatMode';
   import { Badge } from "../../components/ui/badge";
   import { TopGuiDiv, StopButton, StepsDiv, NewSessionButton, fallbackRender } from "../../pages/gui";
 
@@ -159,7 +151,7 @@ import {
           }
         }
 
-        streamResponse(editorState, modifiers, ideMessenger);
+        streamResponse(editorState, modifiers, ideMessenger, null,'perplexity');
 
         const currentCount = getLocalStorage("mainTextEntryCounter");
         if (currentCount) {
@@ -169,7 +161,7 @@ import {
         }
       },
       [
-        sessionState.history,
+        sessionState.perplexityHistory,
         sessionState.contextItems,
         defaultModel,
         state,
@@ -201,15 +193,15 @@ import {
     const isLastUserInput = useCallback(
       (index: number): boolean => {
         let foundLaterUserInput = false;
-        for (let i = index + 1; i < state.history.length; i++) {
-          if (state.history[i].message.role === "user") {
+        for (let i = index + 1; i < state.perplexityHistory.length; i++) {
+          if (state.perplexityHistory[i].message.role === "user") {
             foundLaterUserInput = true;
             break;
           }
         }
         return !foundLaterUserInput;
       },
-      [state.history],
+      [state.perplexityHistory],
     );
 
     return (
@@ -228,7 +220,7 @@ import {
                 </p>
               </div>
               <StepsDiv>
-                {state.history.map((item, index: number) => (
+                {state.perplexityHistory.map((item, index: number) => (
                   <Fragment key={index}>
                     <ErrorBoundary
                       FallbackComponent={fallbackRender}
@@ -244,6 +236,7 @@ import {
                               modifiers,
                               ideMessenger,
                               index,
+                              'perplexity'
                             );
                           }}
                           isLastUserInput={isLastUserInput(index)}
@@ -270,7 +263,7 @@ import {
                           >
                             <StepContainer
                               index={index}
-                              isLast={index === sessionState.history.length - 1}
+                              isLast={index === sessionState.perplexityHistory.length - 1}
                               isFirst={index === 0}
                               open={
                                 typeof stepsOpen[index] === "undefined"
@@ -283,11 +276,12 @@ import {
                               onReverse={() => {}}
                               onRetry={() => {
                                 streamResponse(
-                                  state.history[index - 1].editorState,
-                                  state.history[index - 1].modifiers ??
+                                  state.perplexityHistory[index - 1].editorState,
+                                  state.perplexityHistory[index - 1].modifiers ??
                                     defaultInputModifiers,
                                   ideMessenger,
                                   index - 1,
+                                  'perplexity'
                                 );
                               }}
                               onContinueGeneration={() => {
@@ -302,7 +296,7 @@ import {
                                 );
                               }}
                               onDelete={() => {
-                                dispatch(deleteMessage(index));
+                                dispatch(deleteMessage({index: index+1, source: 'perplexity'}));
                               }}
                               modelTitle={
                                 item.promptLogs?.[0]?.completionOptions?.model ??
@@ -329,7 +323,7 @@ import {
                   <br />
                   <br />
                 </>
-              ) : state.history.length > 0 ? (
+              ) : state.perplexityHistory.length > 0 ? (
                 <div className="mt-2">
                   <NewSessionButton
                     onClick={() => {
@@ -376,10 +370,10 @@ import {
             onClick={() => {
               dispatch(setInactive());
               if (
-                state.history[state.history.length - 1]?.message.content
+                state.perplexityHistory[state.perplexityHistory.length - 1]?.message.content
                   .length === 0
               ) {
-                dispatch(clearLastResponse());
+                dispatch(clearLastResponse('perplexity'));
               }
             }}
           >

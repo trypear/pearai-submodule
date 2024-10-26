@@ -77,6 +77,8 @@ function useHistory(dispatch: Dispatch) {
 
     const sessionInfo: PersistedSessionInfo = {
       history: stateCopy.history,
+      perplexityHistory: stateCopy.history,
+      aiderHistory: stateCopy.history,
       title: title,
       sessionId: stateCopy.sessionId,
       workspaceDirectory: window.workspacePaths?.[0] || "",

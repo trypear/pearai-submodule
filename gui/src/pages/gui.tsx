@@ -374,7 +374,7 @@ function GUI() {
                               );
                             }}
                             onDelete={() => {
-                              dispatch(deleteMessage(index));
+                              dispatch(deleteMessage({index: index+1, source: 'continue'}));
                             }}
                             modelTitle={
                               item.promptLogs?.[0]?.completionOptions?.model ??
@@ -452,7 +452,7 @@ function GUI() {
               state.history[state.history.length - 1]?.message.content
                 .length === 0
             ) {
-              dispatch(clearLastResponse());
+              dispatch(clearLastResponse('continue'));
             }
           }}
         >

@@ -97,6 +97,8 @@ fn bubble_sort<T: Ord>(values: &mut[T]) {
 
 type State = {
   history: ChatHistory;
+  perplexityHistory: ChatHistory;
+  aiderHistory: ChatHistory;
   contextItems: ContextItemWithId[];
   active: boolean;
   config: BrowserSerializedContinueConfig;
@@ -110,6 +112,8 @@ type State = {
 
 const initialState: State = {
   history: [],
+  perplexityHistory: [],
+  aiderHistory: [],
   contextItems: [],
   active: false,
   config: {
@@ -174,14 +178,32 @@ export const stateSlice = createSlice({
     setActive: (state) => {
       state.active = true;
     },
-    clearLastResponse: (state) => {
-      if (state.history.length < 2) {
-        return;
+    clearLastResponse: (state, action: PayloadAction<'perplexity' | 'aider' | 'continue'>) => {
+      if (action.payload === 'perplexity') {
+        if (state.perplexityHistory.length < 2) return;
+        state.mainEditorContent = state.perplexityHistory[state.perplexityHistory.length - 2].editorState;
+        state.perplexityHistory = state.perplexityHistory.slice(0, -2);
+      } else if (action.payload === 'aider') {
+        if (state.aiderHistory.length < 2) return;
+        state.mainEditorContent = state.aiderHistory[state.aiderHistory.length - 2].editorState;
+        state.aiderHistory = state.aiderHistory.slice(0, -2);
+      } else {
+        if (state.history.length < 2) {
+          return;
+        }
+        state.mainEditorContent =
+          state.history[state.history.length - 2].editorState;
+        state.history = state.history.slice(0, -2);
       }
-      state.mainEditorContent =
-        state.history[state.history.length - 2].editorState;
-      state.history = state.history.slice(0, -2);
     },
+    // clearLastResponse: (state) => {
+    //   if (state.history.length < 2) {
+    //     return;
+    //   }
+    //   state.mainEditorContent =
+    //     state.history[state.history.length - 2].editorState;
+    //   state.history = state.history.slice(0, -2);
+    // },
     consumeMainEditorContent: (state) => {
       state.mainEditorContent = undefined;
     },
@@ -247,20 +269,37 @@ export const stateSlice = createSlice({
       // state.contextItems = [];
       state.active = true;
     },
-    deleteMessage: (state, action: PayloadAction<number>) => {
-      const index = action.payload + 1;
+    // deleteMessage: (state, action: PayloadAction<number>) => {
+    //   const index = action.payload + 1;
 
-      if (index >= 0 && index < state.history.length) {
-        // Delete the current message
-        state.history.splice(index, 1);
+    //   if (index >= 0 && index < state.history.length) {
+    //     // Delete the current message
+    //     state.history.splice(index, 1);
 
-        // If the next message is an assistant message, delete it too
-        if (
-          index < state.history.length &&
-          state.history[index].message.role === "assistant"
-        ) {
-          state.history.splice(index, 1);
-        }
+    //     // If the next message is an assistant message, delete it too
+    //     if (
+    //       index < state.history.length &&
+    //       state.history[index].message.role === "assistant"
+    //     ) {
+    //       state.history.splice(index, 1);
+    //     }
+    //   }
+    // },
+    deleteMessage: (
+      state, 
+      action: PayloadAction<{index: number, source: 'perplexity' | 'aider' | 'continue'}>
+    ) => {
+      const { index, source } = action.payload;
+      const history = source === 'perplexity' ? state.perplexityHistory : source === 'aider' ? state.aiderHistory : state.history;
+      
+      if (index >= 0 && index < history.length) {
+        history.splice(index, 1);
+          if (
+            index < history.length &&
+            history[index].message.role === "assistant"
+          ) {
+            history.splice(index, 1);
+          }
       }
     },
 
@@ -286,6 +325,50 @@ export const stateSlice = createSlice({
       });
       // https://github.com/continuedev/continue/pull/1021
       // state.contextItems = [];
+      state.active = true;
+    },
+    initNewActivePerplexityMessage: (
+      state,
+      {
+        payload,
+      }: PayloadAction<{
+        editorState: JSONContent;
+      }>,
+    ) => {
+      state.perplexityHistory.push({
+        message: { role: "user", content: "" },
+        contextItems: state.contextItems,
+        editorState: payload.editorState,
+      });
+      state.perplexityHistory.push({
+        message: {
+          role: "assistant",
+          content: "",
+        },
+        contextItems: [],
+      });
+      state.active = true;
+    },
+    initNewActiveAiderMessage: (
+      state,
+      {
+        payload,
+      }: PayloadAction<{
+        editorState: JSONContent;
+      }>,
+    ) => {
+      state.aiderHistory.push({
+        message: { role: "user", content: "" },
+        contextItems: state.contextItems,
+        editorState: payload.editorState,
+      });
+      state.aiderHistory.push({
+        message: {
+          role: "assistant",
+          content: "",
+        },
+        contextItems: [],
+      });
       state.active = true;
     },
     setMessageAtIndex: (
@@ -341,16 +424,32 @@ export const stateSlice = createSlice({
           action.payload;
       }
     },
+    streamPerplexityUpdate: (state, action: PayloadAction<string>) => {
+      if (state.perplexityHistory.length) {
+        state.perplexityHistory[state.perplexityHistory.length - 1].message.content +=
+          action.payload;
+      }
+    },
+    streamAiderUpdate: (state, action: PayloadAction<string>) => {
+      if (state.aiderHistory.length) {
+        state.aiderHistory[state.aiderHistory.length - 1].message.content +=
+          action.payload;
+      }
+    },
     newSession: (
       state,
       { payload }: PayloadAction<PersistedSessionInfo | undefined>,
     ) => {
       if (payload) {
         state.history = payload.history;
+        state.perplexityHistory = payload.perplexityHistory;
+        state.aiderHistory = payload.aiderHistory;
         state.title = payload.title;
         state.sessionId = payload.sessionId;
       } else {
         state.history = [];
+        state.perplexityHistory = [];
+        state.aiderHistory = [];
         state.contextItems = [];
         state.active = false;
         state.title = "New Session";
@@ -509,6 +608,8 @@ export const {
   addContextItemsAtIndex,
   setInactive,
   streamUpdate,
+  streamPerplexityUpdate,
+  streamAiderUpdate,
   newSession,
   deleteContextWithIds,
   resubmitAtIndex,

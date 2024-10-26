@@ -1,6 +1,7 @@
 import InventoryPage from "../inventory/pages/InventoryPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Gui from "./gui";
+import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
+import AiderGUI from "@/integrations/aider/aidergui";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 
@@ -17,12 +18,12 @@ const tabs = [
   {
     id: "aiderMode",
     name: "Creator (aider)",
-    component: <Gui />,
+    component: <AiderGUI />,
   },
   {
     id: "perplexityMode",
     name: "Search (Perplexity)",
-    component: <Gui />,
+    component: <PerplexityGUI />,
   },
 ];
 
