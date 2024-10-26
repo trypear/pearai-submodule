@@ -11,6 +11,7 @@ import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
 import { useMemo } from "react";
 import { isBareChatMode } from "../../util/bareChatMode";
+import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
 
 const gradient = keyframes`
   0% {
@@ -59,26 +60,25 @@ interface ContinueInputBoxProps {
   editorState?: JSONContent;
   contextItems?: ContextItemWithId[];
   hidden?: boolean;
-  source?: 'perplexity' | 'aider' | 'continue';
+  source?: "perplexity" | "aider" | "continue";
 }
 
 function ContinueInputBox({
-    isLastUserInput,
-    isMainInput,
-    onEnter,
-    editorState,
-    contextItems,
-    hidden,
-    source = 'continue',
+  isLastUserInput,
+  isMainInput,
+  onEnter,
+  editorState,
+  contextItems,
+  hidden,
+  source = "continue",
 }: ContinueInputBoxProps) {
   const dispatch = useDispatch();
 
-const active = useSelector((store: RootState) => {
-    console.dir("IN SELECTOR: ", store.state.perplexityActive)
-    switch(source) {
-      case 'perplexity':
+  const active = useSelector((store: RootState) => {
+    switch (source) {
+      case "perplexity":
         return store.state.perplexityActive;
-      case 'aider':
+      case "aider":
         return store.state.aiderActive;
       default:
         return store.state.active;
@@ -86,19 +86,8 @@ const active = useSelector((store: RootState) => {
   });
 
   const availableSlashCommands = useSelector(selectSlashCommands);
-  let availableContextProviders = useSelector(
-    (store: RootState) => store.state.config.contextProviders,
-  );
+  let availableContextProviders = getContextProviders();
   const bareChatMode = isBareChatMode();
-  const filteredContextProviders = useMemo(() => {
-    return bareChatMode
-      ? availableContextProviders.filter(
-          (provider) => provider.title === "relativefilecontext",
-        )
-      : availableContextProviders.filter(
-          (provider) => provider.title !== "relativefilecontext",
-        );
-  }, [bareChatMode, availableContextProviders]);
 
   useWebviewListener(
     "newSessionWithPrompt",
@@ -128,16 +117,14 @@ const active = useSelector((store: RootState) => {
         loading={active && isLastUserInput ? 1 : 0}
         isFirst={false}
         isLast={false}
-        borderColor={
-          active && isLastUserInput ? undefined : vscBackground
-        }
+        borderColor={active && isLastUserInput ? undefined : vscBackground}
         borderRadius={defaultBorderRadius}
       >
         <TipTapEditor
           editorState={editorState}
           onEnter={onEnter}
           isMainInput={isMainInput}
-          availableContextProviders={filteredContextProviders}
+          availableContextProviders={availableContextProviders}
           availableSlashCommands={
             bareChatMode ? undefined : availableSlashCommands
           }
