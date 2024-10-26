@@ -63,9 +63,16 @@ import {
 
 
 function AiderGUI() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const hasSeenOnboarding = getLocalStorage('hasSeenAiderOnboarding');
+    if (!hasSeenOnboarding) {
+      navigate('./aiderOnboarding');
+    }
+  }, [navigate]);
+
   const posthog = usePostHog();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
   const isBetaAccess = useSelector((state: RootState) => state.state.config.isBetaAccess);
 
@@ -177,8 +184,10 @@ function AiderGUI() {
 
   return (
     <>
+
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
+
           <div className="pl-2 mt-8 border-b border-gray-700">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold mb-2">PearAI Creator - Beta</h1>
@@ -197,6 +206,13 @@ function AiderGUI() {
             <p className="text-sm text-gray-400 mt-0">
               Ask for a feature, describe a bug, or ask for a change to your project. We'll take care of everything for you!
             </p>
+            <NewSessionButton
+          onClick={() => {
+            dispatch(newSession()); // Reset the state
+            setLocalStorage('hasSeenAiderOnboarding', false); // Reset onboarding flag
+            navigate("/aiderOnboarding");
+          }}
+        >Return to Onboarding (Remove when in prod)</NewSessionButton>
           </div>
           <StepsDiv>
             {state.history.map((item, index: number) => (
@@ -327,6 +343,8 @@ function AiderGUI() {
           Inventory
         </NewSessionButton>
       }
+
+
     </>
   );
 }
