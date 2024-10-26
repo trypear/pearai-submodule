@@ -20,7 +20,6 @@ export async function startAiderProcess(core: Core) {
   if (aiderModel) {
     core.send("aiderProcessStateUpdate", { status: "starting" });
     try {
-      await setupPythonEnvironmentVariables();
       await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
       core.send("aiderProcessStateUpdate", { status: "ready" });
     } catch (e) {
@@ -88,7 +87,15 @@ export async function handleAiderMode(
   sidebar: ContinueGUIWebviewViewProvider,
   extensionContext: vscode.ExtensionContext,
 ) {
-  await installPythonAider();
+
+  const isPythonInstalled = await checkPythonInstallation();
+  const isAiderInstalled = await checkAiderInstallation();
+
+  if (!isPythonInstalled || !isAiderInstalled) { 
+    await installPythonAider();
+    return;
+  }
+
   // Check if aider is already open by checking open tabs
   const aiderTab = getIntegrationTab("pearai.aiderGUIView");
   core.invoke("llm/startAiderProcess", undefined);
@@ -194,15 +201,23 @@ async function installPythonAider() {
 
   if (!isPythonInstalled) {
     const installPythonConfirm = await vscode.window.showInformationMessage(
-      "Python is required to run Creator (Aider). Choose 'Install' to install Python3.9",
+      "Python was not found in your ENV PATH. Python is required to run Creator (Aider). Choose 'Install' to install Python3.9 or if already installed, add it to PATH",
       "Install",
-      "Cancel",
+      "Add python to PATH",
       "Manual Installation Guide",
+      "Cancel",
     );
 
     if (installPythonConfirm === "Cancel") {
       return;
-    } else if (installPythonConfirm === "Manual Installation Guide") {
+    }
+
+    if (installPythonConfirm === "Add python to PATH") {
+      await setupPythonEnvironmentVariables();
+      return;
+    }
+
+    if (installPythonConfirm === "Manual Installation Guide") {
       vscode.env.openExternal(
         vscode.Uri.parse(
           "https://trypear.ai/blog/how-to-setup-aider-in-pearai",
@@ -217,7 +232,7 @@ async function installPythonAider() {
     terminal.sendText(getPythonInstallCommand());
 
     vscode.window.showInformationMessage(
-      "Please restart PearAI after python installation completes sucessfully, and then run Creator (Aider) again.",
+      "Please restart PearAI after python installation (or adding to PATH) completes sucessfully, and then run Creator (Aider) again.",
       "OK",
     );
 
@@ -304,94 +319,74 @@ async function isPythonInPath(): Promise<boolean> {
 }
 
 async function setupPythonEnvironmentVariables(): Promise<void> {
-  // First check if Python is already in PATH
-  const pythonAlreadyInPath = await isPythonInPath();
-  if (pythonAlreadyInPath) {
-    console.log("Python is already in PATH, skipping environment setup");
-    return;
-  }
+  // const pythonAlreadyInPath = await isPythonInPath();
+  // if (pythonAlreadyInPath) {
+  //   console.log("Python is already in PATH, skipping environment setup");
+  //   return;
+  // }
+
+  vscode.window.showInformationMessage("Adding Python to PATH...");
+  const terminal = vscode.window.createTerminal("Python PATH Setup");
+  terminal.show();
 
   switch (PLATFORM) {
     case "win32":
-      try {
-        // For Windows, modify PATH through PowerShell
-        const pythonPath = await executeCommand("where python");
-        if (pythonPath) {
-          const pythonDir = pythonPath.split('\r\n')[0].replace(/\\python\.exe$/, '');
-          const command = `
-            $currentPath = [Environment]::GetEnvironmentVariable('Path', 'User');
-            if ($currentPath -notlike '*${pythonDir}*') {
-              [Environment]::SetEnvironmentVariable('Path', "$currentPath;${pythonDir}", 'User');
-              [Environment]::SetEnvironmentVariable('Path', "$currentPath;${pythonDir}\\Scripts", 'User');
-              Write-Host "Python paths added to PATH environment variable."
-            }
-          `;
-          await executeCommand(`powershell -Command "${command}"`);
-          vscode.window.showInformationMessage("Python has been added to your PATH environment variable.");
-        }
-      } catch (error) {
-        console.warn(`Error setting up Python PATH on Windows: ${error}`);
-        vscode.window.showErrorMessage("Failed to add Python to PATH. You may need to add it manually.");
-      }
+      terminal.sendText(`
+# PowerShell Script to Add Specific Python Paths to User PATH Variable at the Top
+
+# Get the current username
+$username = [System.Environment]::UserName
+
+# Define Python paths with the current username
+$pythonPath = "C:\\Users\\$username\\AppData\\Local\\Programs\\Python\\Python39"
+$pythonScriptsPath = "C:\\Users\\$username\\AppData\\Local\\Programs\\Python\\Python39\\Scripts"
+
+# Retrieve the current user PATH
+$currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
+
+# Add the new paths at the top if they're not already present
+if ($currentUserPath -notlike "*$pythonPath*") {
+    # Prepend the Python paths to the existing user PATH
+    $newUserPath = "$pythonPath;$pythonScriptsPath;$currentUserPath"
+    [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, [System.EnvironmentVariableTarget]::User)
+    Write-Output "Python paths have been added to user PATH."
+} else {
+    Write-Output "Python paths are already in the user PATH. "
+    Write-Output "Try Running PearAI Creator (Aider) Again."
+}
+        `);
       break;
 
     case "darwin":
-      try {
-        // For macOS, modify PATH in shell profile
-        const homeDir = process.env.HOME;
-        const profilePath = `${homeDir}/.zshrc`;
-        const pythonPath = await executeCommand("which python3");
-        if (pythonPath) {
-          const pythonDir = pythonPath.trim().replace(/\/python3$/, '');
-          
-          // Check if entry already exists
-          const checkCommand = `grep -l "export PATH=.*${pythonDir}.*" ${profilePath}`;
-          try {
-            await executeCommand(checkCommand);
-          } catch {
-            // Entry doesn't exist, add it
-            const exportCommand = `\nexport PATH="${pythonDir}:$PATH"\n`;
-            await executeCommand(`echo '${exportCommand}' >> ${profilePath}`);
-            // Also add to current session
-            process.env.PATH = `${pythonDir}:${process.env.PATH}`;
-            vscode.window.showInformationMessage("Python has been added to your PATH in .zshrc");
-          }
-        }
-      } catch (error) {
-        console.warn(`Error setting up Python PATH on macOS: ${error}`);
-        vscode.window.showErrorMessage("Failed to add Python to PATH. You may need to add it manually.");
-      }
+      terminal.sendText(`
+          PYTHON_PATH=$(which python3)
+          if [ -n "$PYTHON_PATH" ]; then
+            PYTHON_DIR=$(dirname "$PYTHON_PATH")
+            if ! grep -q "export PATH=.*$PYTHON_DIR" ~/.zshrc; then
+              echo "\\nexport PATH=\\"$PYTHON_DIR:\$PATH\\"" >> ~/.zshrc
+              echo "Python path added to .zshrc"
+              source ~/.zshrc
+            fi
+          fi
+        `);
       break;
 
     case "linux":
-      try {
-        // For Linux, modify PATH in bash profile
-        const homeDir = process.env.HOME;
-        const profilePath = `${homeDir}/.bashrc`;
-        const pythonPath = await executeCommand("which python3");
-        if (pythonPath) {
-          const pythonDir = pythonPath.trim().replace(/\/python3$/, '');
-          
-          // Check if entry already exists
-          const checkCommand = `grep -l "export PATH=.*${pythonDir}.*" ${profilePath}`;
-          try {
-            await executeCommand(checkCommand);
-          } catch {
-            // Entry doesn't exist, add it
-            const exportCommand = `\nexport PATH="${pythonDir}:$PATH"\n`;
-            await executeCommand(`echo '${exportCommand}' >> ${profilePath}`);
-            // Also add to current session
-            process.env.PATH = `${pythonDir}:${process.env.PATH}`;
-            vscode.window.showInformationMessage("Python has been added to your PATH in .bashrc");
-          }
-        }
-      } catch (error) {
-        console.warn(`Error setting up Python PATH on Linux: ${error}`);
-        vscode.window.showErrorMessage("Failed to add Python to PATH. You may need to add it manually.");
-      }
+      terminal.sendText(`
+          PYTHON_PATH=$(which python3)
+          if [ -n "$PYTHON_PATH" ]; then
+            PYTHON_DIR=$(dirname "$PYTHON_PATH")
+            if ! grep -q "export PATH=.*$PYTHON_DIR" ~/.bashrc; then
+              echo "\\nexport PATH=\\"$PYTHON_DIR:\$PATH\\"" >> ~/.bashrc
+              echo "Python path added to .bashrc"
+              source ~/.bashrc
+            fi
+          fi
+        `);
       break;
   }
 }
+
 
 // async function installPythonAider() {
 //   const isPythonInstalled = await checkPythonInstallation();
