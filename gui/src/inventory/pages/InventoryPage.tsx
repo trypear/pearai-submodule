@@ -144,7 +144,7 @@ const initialTools: AITool[] = [
   },
   {
     id: "5",
-    name: "Painter (DALL-E)",
+    name: "Painter (Flux)",
     description: <span>AI image generation from textual descriptions</span>,
     icon: "🎨",
     whenToUse: (
