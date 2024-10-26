@@ -181,19 +181,19 @@ function GUI() {
     setIsAtBottom(true);
   }, [active]);
 
-  // useEffect(() => {
-  //   const timeoutId = setTimeout(() => {
-  //     window.scrollTo({
-  //       top: topGuiDivRef.current?.scrollHeight,
-  //       behavior: "instant" as any,
-  //     });
-  //   }, 1);
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      window.scrollTo({
+        top: topGuiDivRef.current?.scrollHeight,
+        behavior: "instant" as any,
+      });
+    }, 1);
 
-  //   return () => {
-  //     clearTimeout(timeoutId)
-  //     window.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, [topGuiDivRef.current]);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, [topGuiDivRef.current]);
 
   useEffect(() => {
     const listener = (e: any) => {
