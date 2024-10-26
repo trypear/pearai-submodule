@@ -1,7 +1,4 @@
-import {
-  ArrowLeftIcon,
-  ChatBubbleOvalLeftIcon,
-} from "@heroicons/react/24/outline";
+import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
 import { usePostHog } from "posthog-js/react";
@@ -205,9 +202,9 @@ function PerplexityGUI() {
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
-          <div className="pl-2 mt-8 border-b border-gray-700">
+          <div className="pl-2 border-b border-gray-700">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>{" "}
+              <h1 className="text-2xl font-bold mb-2">PearAI Search - Beta</h1>{" "}
               <Badge variant="outline" className="pl-0">
                 (Powered by Perplexity)
               </Badge>
@@ -332,26 +329,11 @@ function PerplexityGUI() {
                 }}
                 className="mr-auto"
               >
-                New Session
-                {!bareChatMode &&
-                  ` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
+                Clear chat
               </NewSessionButton>
             </div>
           ) : (
             <>
-              {getLastSessionId() ? (
-                <div className="mt-2">
-                  <NewSessionButton
-                    onClick={async () => {
-                      loadLastSession();
-                    }}
-                    className="mr-auto flex items-center gap-2"
-                  >
-                    <ArrowLeftIcon width="11px" height="11px" />
-                    Last Session
-                  </NewSessionButton>
-                </div>
-              ) : null}
               {!!showTutorialCard && !bareChatMode && (
                 <div className="flex justify-center w-full">
                   <TutorialCard onClose={onCloseTutorialCard} />

@@ -170,7 +170,7 @@ function AiderGUI() {
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
-          <div className="pl-2 mt-8 border-b border-gray-700">
+          <div className="pl-2 border-b border-gray-700">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold mb-2">PearAI Creator - Beta</h1>
               <Badge variant="outline" className="pl-0">
@@ -302,7 +302,7 @@ function AiderGUI() {
                 }}
                 className="mr-auto"
               >
-                Restart Session
+                Clear chat
               </NewSessionButton>
             </div>
           ) : null}
