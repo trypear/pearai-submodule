@@ -218,10 +218,6 @@ function GUI() {
     getLocalStorage("showTutorialCard"),
   );
 
-  // console.dir(window.isPearOverlay)
-  // console.dir(defaultModel.title)
-  // console.dir(location.pathname)
-
   // AIDER HINT BUTTON HIDDEN IN V1.4.0
   const [showAiderHint, setShowAiderHint] = useState<boolean>(false);
 
@@ -487,9 +483,7 @@ function GUI() {
           {perplexityMode && (
             <div className="pl-2 border-gray-700">
               <div className="flex items-center gap-2">
-                <h1 className="text-xl font-bold mb-1">
-                  PearAI Search - Beta
-                </h1>{" "}
+                <h1 className="text-xl font-bold mb-1">PearAI Search - Beta</h1>{" "}
                 <Badge variant="outline" className="pl-0">
                   (Powered by Perplexity)
                 </Badge>
@@ -640,7 +634,8 @@ function GUI() {
                     className="mr-auto"
                   >
                     New Session
-                    {!bareChatMode && !perplexityMode &&
+                    {!bareChatMode &&
+                      !perplexityMode &&
                       ` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
                   </NewSessionButton>
                   {!bareChatMode && !!showAiderHint && <AiderBetaButton />}

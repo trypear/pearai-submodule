@@ -70,7 +70,7 @@ function ContinueInputBox(props: ContinueInputBoxProps) {
   let availableContextProviders = useSelector(
     (store: RootState) => store.state.config.contextProviders,
   );
-  const bareChatMode = isBareChatMode()
+  const bareChatMode = isBareChatMode();
   const filteredContextProviders = useMemo(() => {
     return bareChatMode
       ? availableContextProviders.filter(
