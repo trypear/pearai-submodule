@@ -27,7 +27,7 @@ import {
   clearLastResponse,
   deleteMessage,
   newSession,
-  setInactive,
+  setAiderInactive,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
@@ -98,7 +98,7 @@ function AiderGUI() {
         isMetaEquivalentKeyPressed(e) &&
         !e.shiftKey
       ) {
-        dispatch(setInactive());
+        dispatch(setAiderInactive());
       }
     };
     window.addEventListener("keydown", listener);
@@ -329,7 +329,7 @@ function AiderGUI() {
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"
           onClick={() => {
-            dispatch(setInactive());
+            dispatch(setAiderInactive());
             if (state.aiderHistory[state.aiderHistory.length - 1]?.message.content.length === 0) {
               dispatch(clearLastResponse('aider'));
             }

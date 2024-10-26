@@ -28,7 +28,7 @@ import {
   clearLastResponse,
   deleteMessage,
   newSession,
-  setInactive,
+  setPerplexityInactive,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
@@ -52,7 +52,7 @@ function PerplexityGUI() {
 
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
-  const active = useSelector((state: RootState) => state.state.active);
+  const active = useSelector((state: RootState) => state.state.perplexityActive);
   const [stepsOpen, setStepsOpen] = useState<(boolean | undefined)[]>([]);
   const mainTextInputRef = useRef<HTMLInputElement>(null);
   const topGuiDivRef = useRef<HTMLDivElement>(null);
@@ -112,7 +112,7 @@ function PerplexityGUI() {
         isMetaEquivalentKeyPressed(e) &&
         !e.shiftKey
       ) {
-        dispatch(setInactive());
+        dispatch(setPerplexityInactive());
       }
     };
     window.addEventListener("keydown", listener);
@@ -325,6 +325,7 @@ function PerplexityGUI() {
             isLastUserInput={false}
             isMainInput={true}
             hidden={active}
+            source='perplexity'
           ></ContinueInputBox>
           {active ? (
             <>
@@ -362,7 +363,7 @@ function PerplexityGUI() {
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"
           onClick={() => {
-            dispatch(setInactive());
+            dispatch(setPerplexityInactive());
             if (
               state.perplexityHistory[state.perplexityHistory.length - 1]
                 ?.message.content.length === 0

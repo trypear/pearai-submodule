@@ -101,6 +101,8 @@ type State = {
   aiderHistory: ChatHistory;
   contextItems: ContextItemWithId[];
   active: boolean;
+  perplexityActive: boolean;
+  aiderActive: boolean;
   config: BrowserSerializedContinueConfig;
   title: string;
   sessionId: string;
@@ -116,6 +118,8 @@ const initialState: State = {
   aiderHistory: [],
   contextItems: [],
   active: false,
+  perplexityActive: false,
+  aiderActive: false,
   config: {
     slashCommands: [
       {
@@ -177,6 +181,12 @@ export const stateSlice = createSlice({
     },
     setActive: (state) => {
       state.active = true;
+    },
+    setPerplexityActive: (state) => {
+      state.perplexityActive = true;
+    },
+    setAiderActive: (state) => {
+      state.aiderActive = true;
     },
     clearLastResponse: (state, action: PayloadAction<'perplexity' | 'aider' | 'continue'>) => {
       if (action.payload === 'perplexity') {
@@ -347,7 +357,7 @@ export const stateSlice = createSlice({
         },
         contextItems: [],
       });
-      state.active = true;
+      state.perplexityActive = true;
     },
     initNewActiveAiderMessage: (
       state,
@@ -369,7 +379,7 @@ export const stateSlice = createSlice({
         },
         contextItems: [],
       });
-      state.active = true;
+      state.aiderActive = true;
     },
     setMessageAtIndex: (
       state,
@@ -417,6 +427,12 @@ export const stateSlice = createSlice({
     },
     setInactive: (state) => {
       state.active = false;
+    },
+    setPerplexityInactive: (state) => {
+      state.perplexityActive = false;
+    },
+    setAiderInactive: (state) => {
+      state.aiderActive = false;
     },
     streamUpdate: (state, action: PayloadAction<string>) => {
       if (state.history.length) {
@@ -607,6 +623,8 @@ export const {
   addContextItems,
   addContextItemsAtIndex,
   setInactive,
+  setPerplexityInactive,
+  setAiderInactive,
   streamUpdate,
   streamPerplexityUpdate,
   streamAiderUpdate,
@@ -620,6 +638,8 @@ export const {
   setConfig,
   addPromptCompletionPair,
   setActive,
+  setPerplexityActive,
+  setAiderActive,
   setEditingContextItemAtIndex,
   initNewActiveMessage,
   initNewActivePerplexityMessage,
