@@ -1,12 +1,12 @@
+import { JSONContent } from "@tiptap/react";
+import { InputModifiers } from "core";
+import { usePostHog } from "posthog-js/react";
 import {
   ArrowLeftIcon,
   ChatBubbleOvalLeftIcon,
   CodeBracketSquareIcon,
   ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
-import { JSONContent } from "@tiptap/react";
-import { InputModifiers } from "core";
-import { usePostHog } from "posthog-js/react";
 import {
   Fragment,
   useCallback,
@@ -41,24 +41,13 @@ import {
   clearLastResponse,
   deleteMessage,
   newSession,
-  setInactive,
+  setAiderInactive,
   updateAiderProcessStatus,
 } from "../../redux/slices/stateSlice";
-import {
-  setDialogEntryOn,
-  setDialogMessage,
-  setShowDialog,
-} from "../../redux/slices/uiStateSlice";
 import { RootState } from "../../redux/store";
-import {
-  getFontSize,
-  getMetaKeyLabel,
-  isJetBrains,
-  isMetaEquivalentKeyPressed,
-} from "../../util";
+import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
-import { isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
 import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
@@ -82,7 +71,7 @@ function AiderGUI() {
 
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
-  const active = useSelector((state: RootState) => state.state.active);
+  const active = useSelector((state: RootState) => state.state.aiderActive);
   const [stepsOpen, setStepsOpen] = useState<(boolean | undefined)[]>([]);
 
   const mainTextInputRef = useRef<HTMLInputElement>(null);
@@ -130,14 +119,14 @@ function AiderGUI() {
         isMetaEquivalentKeyPressed(e) &&
         !e.shiftKey
       ) {
-        dispatch(setInactive());
+        dispatch(setAiderInactive());
       }
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
   }, [active]);
 
-  const { streamResponse } = useChatHandler(dispatch, ideMessenger);
+  const { streamResponse } = useChatHandler(dispatch, ideMessenger, 'aider');
 
   const sendInput = useCallback(
     (editorState: JSONContent, modifiers: InputModifiers) => {
@@ -155,7 +144,7 @@ function AiderGUI() {
         }
       }
 
-      streamResponse(editorState, modifiers, ideMessenger);
+      streamResponse(editorState, modifiers, ideMessenger, null, "aider");
 
       const currentCount = getLocalStorage("mainTextEntryCounter");
       if (currentCount) {
@@ -165,7 +154,7 @@ function AiderGUI() {
       }
     },
     [
-      sessionState.history,
+      sessionState.aiderHistory,
       sessionState.contextItems,
       defaultModel,
       state,
@@ -173,7 +162,7 @@ function AiderGUI() {
     ],
   );
 
-  const { saveSession } = useHistory(dispatch);
+  const { saveSession } = useHistory(dispatch, "aider");
 
   useWebviewListener(
     "newSession",
@@ -195,28 +184,28 @@ function AiderGUI() {
   const isLastUserInput = useCallback(
     (index: number): boolean => {
       let foundLaterUserInput = false;
-      for (let i = index + 1; i < state.history.length; i++) {
-        if (state.history[i].message.role === "user") {
+      for (let i = index + 1; i < state.aiderHistory.length; i++) {
+        if (state.aiderHistory[i].message.role === "user") {
           foundLaterUserInput = true;
           break;
         }
       }
       return !foundLaterUserInput;
     },
-    [state.history],
+    [state.aiderHistory],
   );
 
   return (
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
-          <div className="pl-2 mt-8 border-b border-gray-700">
+          <div className="pl-2 border-b border-gray-700">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold mb-2">
                 PearAI Creator - Beta
               </h1>
               <Badge variant="outline" className="pl-0">
-                (Powered by{" "}
+                Beta (Powered by{" "}
                 <a
                   href="https://aider.chat/2024/06/02/main-swe-bench.html"
                   target="_blank"
@@ -227,171 +216,176 @@ function AiderGUI() {
                 </a>
               </Badge>
             </div>
-            <p className="text-sm text-gray-400 mt-0">
-              Ask for a feature, describe a bug, or ask for a change to your
-              project. We'll take care of everything for you!
-            </p>
+            <div className="flex items-center mt-0 justify-between pr-1">
+              <p className="text-sm text-gray-400 m-0">
+                Ask for a feature, describe a bug to fix, or ask for a change to
+                your project. Creator will make and apply the changes to your
+                files directly.
+              </p>
+            </div>
           </div>
-            {aiderProcessStatus.status === "starting" ? (
-              <div className="fixed top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
-                <div className="text-white text-2xl">
-                  <div className="spinner-border text-white" role="status">
-                    <span className="visually-hidden">
-                      Spinning up Aider, please wait...
-                    </span>
-                  </div>
+
+          {aiderProcessStatus.status === "starting" ? (
+            <div className="fixed top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
+              <div className="text-white text-2xl">
+                <div className="spinner-border text-white" role="status">
+                  <span className="visually-hidden">
+                    Spinning up Aider, please wait...
+                  </span>
                 </div>
               </div>
-            ) : (
+            </div>
+          ) : (
             <>
-              <StepsDiv>
-                {state.history.map((item, index: number) => (
-                  <Fragment key={index}>
-                    <ErrorBoundary
-                      FallbackComponent={fallbackRender}
-                      onReset={() => {
-                        dispatch(newSession());
+          <StepsDiv>
+            {state.aiderHistory.map((item, index: number) => (
+              <Fragment key={index}>
+                <ErrorBoundary
+                  FallbackComponent={fallbackRender}
+                  onReset={() => {
+                    dispatch(newSession({session: undefined, source: 'aider'}));
+                  }}
+                >
+                  {item.message.role === "user" ? (
+                    <ContinueInputBox
+                      onEnter={async (editorState, modifiers) => {
+                        streamResponse(
+                          editorState,
+                          modifiers,
+                          ideMessenger,
+                          index,
+                          "aider",
+                        );
                       }}
-                    >
-                      {item.message.role === "user" ? (
-                        <ContinueInputBox
-                          onEnter={async (editorState, modifiers) => {
+                      isLastUserInput={isLastUserInput(index)}
+                      isMainInput={false}
+                      editorState={item.editorState}
+                      contextItems={item.contextItems}
+                      source="aider"
+                    />
+                  ) : (
+                    <div className="thread-message">
+                      <TimelineItem
+                        item={item}
+                        iconElement={
+                          <ChatBubbleOvalLeftIcon width="16px" height="16px" />
+                        }
+                        open={
+                          typeof stepsOpen[index] === "undefined"
+                            ? true
+                            : stepsOpen[index]!
+                        }
+                        onToggle={() => {}}
+                      >
+                        <StepContainer
+                          index={index}
+                          isLast={
+                            index === sessionState.aiderHistory.length - 1
+                          }
+                          isFirst={index === 0}
+                          open={
+                            typeof stepsOpen[index] === "undefined"
+                              ? true
+                              : stepsOpen[index]!
+                          }
+                          key={index}
+                          onUserInput={(input: string) => {}}
+                          item={item}
+                          onReverse={() => {}}
+                          onRetry={() => {
                             streamResponse(
-                              editorState,
-                              modifiers,
+                              state.aiderHistory[index - 1].editorState,
+                              state.aiderHistory[index - 1].modifiers ??
+                                defaultInputModifiers,
                               ideMessenger,
-                              index,
+                              index - 1,
+                              "aider",
                             );
                           }}
-                          isLastUserInput={isLastUserInput(index)}
-                          isMainInput={false}
-                          editorState={item.editorState}
-                          contextItems={item.contextItems}
+                          onContinueGeneration={() => {
+                            window.postMessage(
+                              {
+                                messageType: "userInput",
+                                data: {
+                                  input: "Keep going.",
+                                },
+                              },
+                              "*",
+                            );
+                          }}
+                          onDelete={() => {
+                            dispatch(
+                              deleteMessage({
+                                index: index + 1,
+                                source: "aider",
+                              }),
+                            );
+                          }}
+                          modelTitle={
+                            item.promptLogs?.[0]?.completionOptions?.model ?? ""
+                          }
+                          source="aider"
                         />
-                      ) : (
-                        <div className="thread-message">
-                          <TimelineItem
-                            item={item}
-                            iconElement={
-                              <ChatBubbleOvalLeftIcon
-                                width="16px"
-                                height="16px"
-                              />
-                            }
-                            open={
-                              typeof stepsOpen[index] === "undefined"
-                                ? true
-                                : stepsOpen[index]!
-                            }
-                            onToggle={() => {}}
-                          >
-                            <StepContainer
-                              index={index}
-                              isLast={index === sessionState.history.length - 1}
-                              isFirst={index === 0}
-                              open={
-                                typeof stepsOpen[index] === "undefined"
-                                  ? true
-                                  : stepsOpen[index]!
-                              }
-                              key={index}
-                              onUserInput={(input: string) => {}}
-                              item={item}
-                              onReverse={() => {}}
-                              onRetry={() => {
-                                streamResponse(
-                                  state.history[index - 1].editorState,
-                                  state.history[index - 1].modifiers ??
-                                    defaultInputModifiers,
-                                  ideMessenger,
-                                  index - 1,
-                                );
-                              }}
-                              onContinueGeneration={() => {
-                                window.postMessage(
-                                  {
-                                    messageType: "userInput",
-                                    data: {
-                                      input: "Keep going.",
-                                    },
-                                  },
-                                  "*",
-                                );
-                              }}
-                              onDelete={() => {
-                                dispatch(deleteMessage(index));
-                              }}
-                              modelTitle={
-                                item.promptLogs?.[0]?.completionOptions?.model ??
-                                ""
-                              }
-                            />
-                          </TimelineItem>
-                        </div>
-                      )}
-                    </ErrorBoundary>
-                  </Fragment>
-                ))}
-              </StepsDiv>
-              <ContinueInputBox
-                onEnter={(editorContent, modifiers) => {
-                  sendInput(editorContent, modifiers);
-                }}
-                isLastUserInput={false}
-                isMainInput={true}
-                hidden={active}
-              />
-              {active ? (
-                <>
-                  <br />
-                  <br />
-                </>
-              ) : state.history.length > 0 ? (
-                <div className="mt-2">
-                  <NewSessionButton
-                    onClick={() => {
-                      saveSession();
-                      ideMessenger.post("aiderResetSession", undefined);
-                    }}
-                    className="mr-auto"
-                  >
-                    Restart Session
-                  </NewSessionButton>
-                </div>
-              ) : null}
-            </>
+                      </TimelineItem>
+                    </div>
+                  )}
+                </ErrorBoundary>
+              </Fragment>
+            ))}
+          </StepsDiv>
+          <ContinueInputBox
+            onEnter={(editorContent, modifiers) => {
+              sendInput(editorContent, modifiers);
+            }}
+            isLastUserInput={false}
+            isMainInput={true}
+            hidden={active}
+            source="aider"
+          />
+          </>
           )}
+          {active ? (
+            <>
+              <br />
+              <br />
+            </>
+          ) : state.aiderHistory.length > 0 ? (
+            <div className="mt-2">
+              <NewSessionButton
+                onClick={() => {
+                  saveSession();
+                  ideMessenger.post("aiderResetSession", undefined);
+                }}
+                className="mr-auto"
+              >
+                Clear chat
+              </NewSessionButton>
+            </div>
+          ) : null}
         </div>
         <ChatScrollAnchor
           scrollAreaRef={topGuiDivRef}
           isAtBottom={isAtBottom}
           trackVisibility={active}
         />
+
       </TopGuiDiv>
       {active && (
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"
           onClick={() => {
-            dispatch(setInactive());
+            dispatch(setAiderInactive());
             if (
-              state.history[state.history.length - 1]?.message.content
+              state.aiderHistory[state.aiderHistory.length - 1]?.message.content
                 .length === 0
             ) {
-              dispatch(clearLastResponse());
+              dispatch(clearLastResponse("aider"));
             }
             ideMessenger.post("aiderCtrlC", undefined);
           }}
         >
           {getMetaKeyLabel()} ⌫ Cancel
         </StopButton>
-      )}
-      {isBetaAccess && (
-        <NewSessionButton
-          onClick={() => navigate("/inventory")}
-          style={{ marginLeft: "0.8rem", marginBottom: "0rem" }}
-        >
-          Inventory
-        </NewSessionButton>
       )}
     </>
   );
