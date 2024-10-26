@@ -22,15 +22,16 @@ import {
   quickPickStatusText,
   setupStatusBar,
 } from "./autocomplete/statusBar";
-import { ContinueGUIWebviewViewProvider } from "./ContinueGUIWebviewViewProvider";
+import { ContinueGUIWebviewViewProvider, PEAR_OVERLAY_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
 import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
-import { handleAiderMode } from './integrations/aider/aider';
+import { aiderCtrlC, aiderResetSession, handleAiderMode } from './integrations/aider/aider';
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
+import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -443,9 +444,6 @@ const commandsMap: (
         input: text,
       });
     },
-    "pearai.addPerplexityContext": (msg) => {
-      sidebar.webviewProtocol?.request("addPerplexityContextinChat", msg.data, ["pearai.pearAIChatView"]);
-    },
     "pearai.selectRange": (startLine: number, endLine: number) => {
       if (!vscode.window.activeTextEditor) {
         return;
@@ -480,17 +478,80 @@ const commandsMap: (
         "pearai.pearAIChatView",
       ]);
     },
+    "pearai.toggleFullScreen": () => {
+      // Check if full screen is already open by checking open tabs
+      const fullScreenTab = getFullScreenTab();
+
+      // Check if the active editor is the Continue GUI View
+      if (fullScreenTab && fullScreenTab.isActive) {
+        //Full screen open and focused - close it
+        vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
+        return;
+      }
+
+      if (fullScreenTab && fullScreenPanel) {
+        //Full screen open, but not focused - focus it
+        fullScreenPanel.reveal();
+        return;
+      }
+
+      //Full screen not open - open it
+      captureCommandTelemetry("openFullScreen");
+
+      // Close the sidebar.webviews
+      // vscode.commands.executeCommand("workbench.action.closeSidebar");
+      vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
+      // vscode.commands.executeCommand("workbench.action.toggleZenMode");
+
+      //create the full screen panel
+      let panel = vscode.window.createWebviewPanel(
+        "pearai.pearAIChatViewFullscreen",
+        "PearAI",
+        vscode.ViewColumn.One,
+        {
+          retainContextWhenHidden: true,
+        },
+      );
+      fullScreenPanel = panel;
+
+      //Add content to the panel
+      panel.webview.html = sidebar.getSidebarContent(
+        extensionContext,
+        panel,
+        undefined,
+        undefined,
+        true,
+      );
+
+      //When panel closes, reset the webview and focus
+      panel.onDidDispose(
+        () => {
+          sidebar.resetWebviewProtocolWebview();
+          vscode.commands.executeCommand("pearai.focusContinueInput");
+        },
+        null,
+        extensionContext.subscriptions,
+      );
+    },
     "pearai.aiderMode": async () => {
       await handleAiderMode(core, sidebar, extensionContext);
     },
-    "pearai.aiderCtrlC": () => {
-      core.invoke("llm/aiderCtrlC", undefined);
+    "pearai.aiderCtrlC": async () => {
+      await aiderCtrlC(core);
     },
-    "pearai.aiderResetSession": () => {
-      core.invoke("llm/aiderResetSession", undefined);
+    "pearai.aiderResetSession": async () => {
+      await aiderResetSession(core);
     },
     "pearai.perplexityMode": () => {
       handlePerplexityMode(sidebar, extensionContext);
+    },
+    "pearai.addPerplexityContext": (msg) => {
+      const fullScreenTab = getFullScreenTab();
+      if (!fullScreenTab) {
+        // focus sidebar
+        vscode.commands.executeCommand("pearai.pearAIChatView.focus");
+      }
+      sidebar.webviewProtocol?.request("addPerplexityContextinChat", msg.data, ["pearai.pearAIChatView"]);
     },
     "pearai.openConfigJson": () => {
       ide.openFile(getConfigJsonPath());
@@ -709,7 +770,8 @@ const commandsMap: (
       extensionContext.secrets.store("pearai-token", data.accessToken);
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
       core.invoke("llm/resetPearAICredentials", undefined);
-      sidebar.webviewProtocol?.request("addPearAIModel", undefined, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_OVERLAY_VIEW_ID]);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
     },
     "pearai.closeChat": () => {
