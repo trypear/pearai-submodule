@@ -191,7 +191,7 @@ function AiderGUI() {
                 your project. Creator will make and apply the changes to your
                 files directly.
               </p>
-              {state.perplexityHistory.length > 0 ? (
+              {state.aiderHistory.length > 0 ? (
                 <div className="mt-0">
                   <NewSessionButton
                     onClick={() => {
@@ -230,7 +230,7 @@ function AiderGUI() {
                       isMainInput={false}
                       editorState={item.editorState}
                       contextItems={item.contextItems}
-                      source='aider'
+                      source="aider"
                     />
                   ) : (
                     <div className="thread-message">
@@ -340,8 +340,11 @@ function AiderGUI() {
           className="mt-auto mb-4 sticky bottom-4"
           onClick={() => {
             dispatch(setAiderInactive());
-            if (state.aiderHistory[state.aiderHistory.length - 1]?.message.content.length === 0) {
-              dispatch(clearLastResponse('aider'));
+            if (
+              state.aiderHistory[state.aiderHistory.length - 1]?.message.content
+                .length === 0
+            ) {
+              dispatch(clearLastResponse("aider"));
             }
             ideMessenger.post("aiderCtrlC", undefined);
           }}
