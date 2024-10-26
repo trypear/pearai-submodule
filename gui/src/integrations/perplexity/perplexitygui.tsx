@@ -249,6 +249,7 @@ function PerplexityGUI() {
                       isMainInput={false}
                       editorState={item.editorState}
                       contextItems={item.contextItems}
+                      source="perplexity"
                     ></ContinueInputBox>
                   ) : (
                     <div className="thread-message">

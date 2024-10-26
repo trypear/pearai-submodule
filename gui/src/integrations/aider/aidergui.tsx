@@ -230,6 +230,7 @@ function AiderGUI() {
                       isMainInput={false}
                       editorState={item.editorState}
                       contextItems={item.contextItems}
+                      source='aider'
                     />
                   ) : (
                     <div className="thread-message">
