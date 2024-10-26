@@ -31,11 +31,7 @@ import {
   setInactive,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
-import {
-  getMetaKeyLabel,
-  isJetBrains,
-  isMetaEquivalentKeyPressed,
-} from "../../util";
+import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
 import { isBareChatMode } from "../../util/bareChatMode";
@@ -209,10 +205,24 @@ function PerplexityGUI() {
                 (Powered by Perplexity)
               </Badge>
             </div>
-            <p className="text-sm text-gray-400 mt-0">
-              Ask for anything. We'll retrieve the most up to date information
-              in real-time and summarize it for you.
-            </p>
+            <div className="flex items-center mt-0 justify-between pr-1">
+              <p className="text-sm text-gray-400 m-0">
+                Ask for anything. We'll retrieve the most up to date information
+                in real-time, and summarize it for you.
+              </p>
+              {state.perplexityHistory.length > 0 ? (
+                <div className="mt-0">
+                  <NewSessionButton
+                    onClick={() => {
+                      saveSession();
+                    }}
+                    className="mr-auto"
+                  >
+                    Clear chat
+                  </NewSessionButton>
+                </div>
+              ) : null}
+            </div>
           </div>
           <StepsDiv>
             {state.perplexityHistory.map((item, index: number) => (

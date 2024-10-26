@@ -185,11 +185,27 @@ function AiderGUI() {
                 </a>
               </Badge>
             </div>
-            <p className="text-sm text-gray-400 mt-0">
-              Ask for a feature, describe a bug, or ask for a change to your
-              project. We'll take care of everything for you!
-            </p>
+            <div className="flex items-center mt-0 justify-between pr-1">
+              <p className="text-sm text-gray-400 m-0">
+                Ask for a feature, describe a bug to fix, or ask for a change to
+                your project. Creator will make the changes directly in your
+                code.
+              </p>
+              {state.perplexityHistory.length > 0 ? (
+                <div className="mt-0">
+                  <NewSessionButton
+                    onClick={() => {
+                      saveSession();
+                    }}
+                    className="mr-auto"
+                  >
+                    Clear chat
+                  </NewSessionButton>
+                </div>
+              ) : null}
+            </div>
           </div>
+
           <StepsDiv>
             {state.history.map((item, index: number) => (
               <Fragment key={index}>
