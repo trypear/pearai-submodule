@@ -64,7 +64,8 @@ export async function aiderCtrlC(core: Core) {
           model.aiderCtrlC();
         }
       });
-      core.send("aiderProcessStateUpdate", { status: "stopped" });
+      // This is when we cancelled an onboing request
+      core.send("aiderProcessStateUpdate", { status: "ready" });
     }
   } catch (e) {
     console.warn(`Error sending Ctrl-C to Aider process: ${e}`);
@@ -98,9 +99,12 @@ export async function handleAiderMode(
   const isPythonInstalled = await checkPythonInstallation();
   const isAiderInstalled = await checkAiderInstallation();
 
+
   if (!isPythonInstalled || !isAiderInstalled) {
+    core.send("aiderProcessStateUpdate", { status: "installing" });
     await installPythonAider();
-    return;
+    return
+    // await aiderResetSession(core); // Todo: might need this to reset GUI too?
   }
 
   // Check if aider is already open by checking open tabs

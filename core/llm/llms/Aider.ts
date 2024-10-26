@@ -26,6 +26,10 @@ const IS_LINUX = PLATFORM === "linux";
 export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
 
+export interface AiderStatusUpdate {
+  status: "stopped" | "installing" | "starting" | "ready" | "crashed";
+}
+
 class Aider extends BaseLLM {
   getCurrentDirectory: (() => Promise<string>) | null = null;
   static providerName: ModelProvider = "aider";
@@ -236,74 +240,82 @@ class Aider extends BaseLLM {
       const userPath = this.getUserPath();
       const userShell = this.getUserShell();
 
-      const spawnAiderProcess = async () => {
-        if (IS_WINDOWS) {
-          const envSetCommands = [
-            "setx PYTHONIOENCODING utf-8",
-            "setx AIDER_SIMPLE_OUTPUT 1",
-            "chcp 65001",
-          ];
+  const spawnAiderProcess = async () => {
+    if (IS_WINDOWS) {
+      return spawnAiderProcessWindows();
+    } else {
+      return spawnAiderProcessUnix();
+    }
+  };
 
-          if (model === "claude-3-5-sonnet-20240620") {
-            envSetCommands.push(`setx ANTHROPIC_API_KEY ${apiKey}`);
-          } else if (model === "gpt-4o") {
-            envSetCommands.push(`setx OPENAI_API_KEY ${apiKey}`);
+  const spawnAiderProcessWindows = async () => {
+    const envSetCommands = [
+      "setx PYTHONIOENCODING utf-8",
+      "setx AIDER_SIMPLE_OUTPUT 1",
+      "chcp 65001",
+    ];
+
+    if (model === "claude-3-5-sonnet-20240620") {
+      envSetCommands.push(`setx ANTHROPIC_API_KEY ${apiKey}`);
+    } else if (model === "gpt-4o") {
+      envSetCommands.push(`setx OPENAI_API_KEY ${apiKey}`);
+    } else {
+      // For pearai_model, we're using the access token
+      const accessToken = this.credentials.getAccessToken();
+      envSetCommands.push(`setx OPENAI_API_KEY ${accessToken}`);
+    }
+
+    // Execute setx commands in the background
+    for (const cmd of envSetCommands) {
+      await new Promise((resolve, reject) => {
+        cp.exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
+          if (error) {
+            console.error(`Error executing ${cmd}: ${error}`);
+            reject(error);
           } else {
-            // For pearai_model, we're using the access token
-            const accessToken = this.credentials.getAccessToken();
-            envSetCommands.push(`setx OPENAI_API_KEY ${accessToken}`);
+            console.log(`Executed: ${cmd}`);
+            resolve(stdout);
           }
+        });
+      });
+    }
 
-          // Execute setx commands in the background
-          for (const cmd of envSetCommands) {
-            await new Promise((resolve, reject) => {
-              cp.exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
-                if (error) {
-                  console.error(`Error executing ${cmd}: ${error}`);
-                  reject(error);
-                } else {
-                  console.log(`Executed: ${cmd}`);
-                  resolve(stdout);
-                }
-              });
-            });
-          }
+    // Now spawn Aider in the background
+    return cp.spawn("cmd.exe", ["/c", ...command], {
+      stdio: ["pipe", "pipe", "pipe"],
+      cwd: currentDir,
+      env: {
+        ...process.env,
+        PATH: userPath,
+        PYTHONIOENCODING: "utf-8",
+        AIDER_SIMPLE_OUTPUT: "1",
+      },
+      windowsHide: true,
+    });
+  };
 
-          // Now spawn Aider in the background
-          return cp.spawn("cmd.exe", ["/c", ...command], {
-            stdio: ["pipe", "pipe", "pipe"],
-            cwd: currentDir,
-            env: {
-              ...process.env,
-              PATH: userPath,
-              PYTHONIOENCODING: "utf-8",
-              AIDER_SIMPLE_OUTPUT: "1",
-            },
-            windowsHide: true,
-          });
-        } else {
-          // For non-Windows platforms, keep the existing implementation
-          if (model === "claude-3-5-sonnet-20240620") {
-            command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
-          } else if (model === "gpt-4o") {
-            command.unshift(`export OPENAI_API_KEY=${apiKey};`);
-          } else {
-            // For pearai_model, we're using the access token
-            const accessToken = this.credentials.getAccessToken();
-            command.unshift(`export OPENAI_API_KEY=${accessToken};`);
-          }
-          return cp.spawn(userShell, ["-c", command.join(" ")], {
-            stdio: ["pipe", "pipe", "pipe"],
-            cwd: currentDir,
-            env: {
-              ...process.env,
-              PATH: userPath,
-              PYTHONIOENCODING: "utf-8",
-              AIDER_SIMPLE_OUTPUT: "1",
-            },
-          });
-        }
-      };
+  const spawnAiderProcessUnix = () => {
+    if (model === "claude-3-5-sonnet-20240620") {
+      command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
+    } else if (model === "gpt-4o") {
+      command.unshift(`export OPENAI_API_KEY=${apiKey};`);
+    } else {
+      // For pearai_model, we're using the access token
+      const accessToken = this.credentials.getAccessToken();
+      command.unshift(`export OPENAI_API_KEY=${accessToken};`);
+    }
+
+    return cp.spawn(userShell, ["-c", command.join(" ")], {
+      stdio: ["pipe", "pipe", "pipe"],
+      cwd: currentDir,
+      env: {
+        ...process.env,
+        PATH: userPath,
+        PYTHONIOENCODING: "utf-8",
+        AIDER_SIMPLE_OUTPUT: "1",
+      },
+    });
+  };
 
       const tryStartAider = async () => {
         console.log("Starting Aider...");

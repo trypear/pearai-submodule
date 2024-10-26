@@ -1,7 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { JSONContent } from "@tiptap/react";
 import {
-  AiderStatusUpdate,
   ChatHistory,
   ChatHistoryItem,
   ChatMessage,
@@ -16,6 +15,7 @@ import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
 import { update } from "lodash";
+import { AiderStatusUpdate } from "core/llm/llms/Aider";
 
 export const memoizedContextItemsSelector = createSelector(
   [(state: RootState) => state.state.history],

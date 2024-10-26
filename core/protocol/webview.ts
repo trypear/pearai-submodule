@@ -1,4 +1,5 @@
-import type { AiderStatusUpdate, ContextItemWithId, IndexingProgressUpdate } from "../index.js";
+import type { ContextItemWithId, IndexingProgressUpdate } from "../index.js";
+import type { AiderStatusUpdate } from "../llm/llms/Aider";
 
 export type ToWebviewFromIdeOrCoreProtocol = {
   addPearAIModel: [undefined, void];

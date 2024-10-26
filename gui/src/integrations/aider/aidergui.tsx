@@ -235,12 +235,14 @@ function AiderGUI() {
             </p>
           </div>
 
-          {aiderProcessStatus.status === "starting" ? (
+          {aiderProcessStatus.status === "starting" || aiderProcessStatus.status === "installing" ? (
             <div className="fixed top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
               <div className="text-white text-2xl">
                 <div className="spinner-border text-white" role="status">
                   <span className="visually-hidden">
-                    Spinning up Aider, please wait...
+                    {aiderProcessStatus.status === "installing"
+                      ? "Installing PearAI Creator (Powered By aider), please wait..."
+                      : "Spinning up PearAI Creator (Powered By aider), please wait..."}
                   </span>
                 </div>
               </div>
