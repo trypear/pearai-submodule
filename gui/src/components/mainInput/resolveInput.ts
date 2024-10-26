@@ -108,7 +108,6 @@ async function resolveEditorContent(
       fullInput: stripImages(parts),
       selectedCode,
     };
-    console.log(data)
     const resolvedItems = await ideMessenger.request(
       "context/getContextItems",
       data,

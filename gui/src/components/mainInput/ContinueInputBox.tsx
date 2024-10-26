@@ -79,11 +79,6 @@ function ContinueInputBox(props: ContinueInputBoxProps) {
           (provider) => provider.title !== "relativefilecontext",
         );
 
-  if (bareChatMode) {
-    console.dir("bareChatMode")
-    console.dir(filteredContextProviders)
-  }
-
   useWebviewListener(
     "newSessionWithPrompt",
     async (data) => {

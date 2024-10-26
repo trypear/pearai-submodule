@@ -239,7 +239,7 @@ useEffect(() => {
       }));
     }
   });
-}, [contextProviderDescriptions, loaded]); // Removed location?.pathname from dependencies
+}, [contextProviderDescriptions, loaded]);
 
 
   useWebviewListener("configUpdate", async () => {
