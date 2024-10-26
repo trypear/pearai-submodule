@@ -24,6 +24,8 @@ import {
   addPromptCompletionPair,
   clearLastResponse,
   initNewActiveMessage,
+  initNewActivePerplexityMessage,
+  initNewActiveAiderMessage,
   resubmitAtIndex,
   setInactive,
   setMessageAtIndex,
@@ -56,7 +58,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
   async function _streamNormalInput(messages: ChatMessage[], source: 'perplexity' | 'aider' | 'continue'='continue') {
     const abortController = new AbortController();
     const cancelToken = abortController.signal;
-
+    
     try {
       const gen = ideMessenger.llmStreamChat(
         defaultModel.title,
@@ -166,7 +168,8 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
       if (typeof index === "number") {
         dispatch(resubmitAtIndex({ index, editorState }));
       } else {
-        dispatch(initNewActiveMessage({ editorState }));
+        const init = source === 'perplexity' ? initNewActivePerplexityMessage : source === 'aider' ? initNewActiveAiderMessage : initNewActiveMessage;
+        dispatch(init({ editorState }));
       }
 
       // Resolve context providers and construct new history
