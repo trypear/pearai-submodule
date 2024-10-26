@@ -123,8 +123,6 @@ function AiderGUI() {
     };
   }, [topGuiDivRef.current]);
 
-  // console.dir("Iam from aider gui")
-
   useEffect(() => {
     const listener = (e: any) => {
       if (
@@ -234,20 +232,17 @@ function AiderGUI() {
               project. We'll take care of everything for you!
             </p>
           </div>
-
-          {aiderProcessStatus.status === "starting" || aiderProcessStatus.status === "installing" ? (
-            <div className="fixed top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
-              <div className="text-white text-2xl">
-                <div className="spinner-border text-white" role="status">
-                  <span className="visually-hidden">
-                    {aiderProcessStatus.status === "installing"
-                      ? "Installing PearAI Creator (Powered By aider), please wait..."
-                      : "Spinning up PearAI Creator (Powered By aider), please wait..."}
-                  </span>
+            {aiderProcessStatus.status === "starting" ? (
+              <div className="fixed top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
+                <div className="text-white text-2xl">
+                  <div className="spinner-border text-white" role="status">
+                    <span className="visually-hidden">
+                      Spinning up Aider, please wait...
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
+            ) : (
             <>
               <StepsDiv>
                 {state.history.map((item, index: number) => (

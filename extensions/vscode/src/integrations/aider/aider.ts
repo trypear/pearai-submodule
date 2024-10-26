@@ -101,10 +101,9 @@ export async function handleAiderMode(
 
 
   if (!isPythonInstalled || !isAiderInstalled) {
-    core.send("aiderProcessStateUpdate", { status: "installing" });
     await handlePythonAiderNotInstalled();
     return;
-    // await aiderResetSession(core); // Todo: might need this to reset GUI too?
+    // Todo: We should probably have something open up here saying Python not installed
   }
 
   // Check if aider is already open by checking open tabs
@@ -291,8 +290,6 @@ function getPythonInstallCommand(): string {
   }
 }
 
-
-
 // Commented out as the user must do this themselves
 
 // async function isPythonInPath(): Promise<boolean> {
@@ -373,4 +370,4 @@ function getPythonInstallCommand(): string {
 //         `);
 //       break;
 //   }
-}
+// }

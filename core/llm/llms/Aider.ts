@@ -27,7 +27,7 @@ export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
 
 export interface AiderStatusUpdate {
-  status: "stopped" | "installing" | "starting" | "ready" | "crashed";
+  status: "stopped" | "starting" | "ready" | "crashed";
 }
 
 class Aider extends BaseLLM {
