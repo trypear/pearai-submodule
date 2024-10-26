@@ -123,7 +123,7 @@ function AiderGUI() {
         }
       }
 
-      streamResponse(editorState, modifiers, ideMessenger, null, 'aider');
+      streamResponse(editorState, modifiers, ideMessenger, null, "aider");
 
       const currentCount = getLocalStorage("mainTextEntryCounter");
       if (currentCount) {
@@ -132,7 +132,13 @@ function AiderGUI() {
         setLocalStorage("mainTextEntryCounter", 1);
       }
     },
-    [sessionState.aiderHistory, sessionState.contextItems, defaultModel, state, streamResponse],
+    [
+      sessionState.aiderHistory,
+      sessionState.contextItems,
+      defaultModel,
+      state,
+      streamResponse,
+    ],
   );
 
   const { saveSession } = useHistory(dispatch, "aider");
@@ -166,9 +172,9 @@ function AiderGUI() {
         <div className="mx-2">
           <div className="pl-2 border-b border-gray-700">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold mb-2">PearAI Creator - Beta</h1>
+              <h1 className="text-2xl font-bold mb-2">PearAI Creator</h1>
               <Badge variant="outline" className="pl-0">
-                (Powered by{" "}
+                Beta (Powered by{" "}
                 <a
                   href="https://aider.chat/2024/06/02/main-swe-bench.html"
                   target="_blank"
@@ -182,8 +188,8 @@ function AiderGUI() {
             <div className="flex items-center mt-0 justify-between pr-1">
               <p className="text-sm text-gray-400 m-0">
                 Ask for a feature, describe a bug to fix, or ask for a change to
-                your project. Creator will make the changes directly in your
-                code.
+                your project. Creator will make and apply the changes to your
+                files directly.
               </p>
               {state.perplexityHistory.length > 0 ? (
                 <div className="mt-0">
@@ -217,7 +223,7 @@ function AiderGUI() {
                           modifiers,
                           ideMessenger,
                           index,
-                          'aider'
+                          "aider",
                         );
                       }}
                       isLastUserInput={isLastUserInput(index)}
@@ -241,7 +247,9 @@ function AiderGUI() {
                       >
                         <StepContainer
                           index={index}
-                          isLast={index === sessionState.aiderHistory.length - 1}
+                          isLast={
+                            index === sessionState.aiderHistory.length - 1
+                          }
                           isFirst={index === 0}
                           open={
                             typeof stepsOpen[index] === "undefined"
@@ -255,10 +263,11 @@ function AiderGUI() {
                           onRetry={() => {
                             streamResponse(
                               state.aiderHistory[index - 1].editorState,
-                              state.aiderHistory[index - 1].modifiers ?? defaultInputModifiers,
+                              state.aiderHistory[index - 1].modifiers ??
+                                defaultInputModifiers,
                               ideMessenger,
                               index - 1,
-                              'aider'
+                              "aider",
                             );
                           }}
                           onContinueGeneration={() => {
@@ -298,7 +307,7 @@ function AiderGUI() {
             isLastUserInput={false}
             isMainInput={true}
             hidden={active}
-            source='aider'
+            source="aider"
           />
           {active ? (
             <>

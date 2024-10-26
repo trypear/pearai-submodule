@@ -159,8 +159,8 @@ function PerplexityGUI() {
     ],
   );
 
-    const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
-      useHistory(dispatch, "perplexity");
+  const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
+    useHistory(dispatch, "perplexity");
 
   useWebviewListener(
     "newSession",
@@ -200,15 +200,16 @@ function PerplexityGUI() {
         <div className="mx-2">
           <div className="pl-2 border-b border-gray-700">
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold mb-2">PearAI Search - Beta</h1>{" "}
+              <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>{" "}
               <Badge variant="outline" className="pl-0">
-                (Powered by Perplexity)
+                Beta (Powered by Perplexity)
               </Badge>
             </div>
             <div className="flex items-center mt-0 justify-between pr-1">
               <p className="text-sm text-gray-400 m-0">
-                Ask for anything. We'll retrieve the most up to date information
-                in real-time, and summarize it for you.
+                Ask for anything. We'll retrieve up-to-date information in
+                real-time on the web. Search uses less credits than PearAI Chat,
+                and is perfect for documentation lookups.
               </p>
               {state.perplexityHistory.length > 0 ? (
                 <div className="mt-0">
