@@ -41,7 +41,7 @@ export interface IndexingProgressUpdate {
 }
 
 export interface AiderStatusUpdate {
-  status: "off" | "starting" | "ready" | "crashed" | "stopping"; 
+  status: "stopped" | "starting" | "ready" | "crashed"; 
 }
 
 export type PromptTemplate =

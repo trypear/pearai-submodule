@@ -59,8 +59,9 @@ class Aider extends BaseLLM {
     console.log("Resetting Aider process...");
 
     // Kill the current process if it exists
+    
     this.killAiderProcess();
-
+    this.isAiderUp = false;
     // Reset the output
     this.aiderOutput = "";
 
@@ -139,7 +140,7 @@ class Aider extends BaseLLM {
     this.aiderOutput += cleanOutput;
   }
 
-  public isAiderReady: boolean = false;
+  public isAiderUp: boolean = false;
 
   public async startAiderChat(
     model: string,
@@ -150,7 +151,7 @@ class Aider extends BaseLLM {
       return;
     }
 
-    this.isAiderReady = false;
+    this.isAiderUp = false;
 
     return new Promise(async (resolve, reject) => {
       let currentDir: string;
@@ -320,7 +321,7 @@ class Aider extends BaseLLM {
           console.log("Output: ", output);
           if (output.endsWith("> ")) { // Aider's ready prompt
             console.log("Aider is ready!");
-            this.isAiderReady = true;
+            this.isAiderUp = true;
             clearTimeout(timeout);
             resolve();
           }
@@ -332,7 +333,7 @@ class Aider extends BaseLLM {
 
           this.aiderProcess.on("close", (code: number | null) => {
             console.log(`Aider process exited with code ${code}`);
-            this.isAiderReady = false;
+            this.isAiderUp = false;
             clearTimeout(timeout);
             if (code !== 0) {
               reject(new Error(`Aider process exited with code ${code}`));
@@ -344,7 +345,7 @@ class Aider extends BaseLLM {
 
           this.aiderProcess.on("error", (error: Error) => {
             console.error(`Error starting Aider: ${error.message}`);
-            this.isAiderReady = false;
+            this.isAiderUp = false;
             clearTimeout(timeout);
             reject(error);
               let message = "PearAI Creator (Powered by aider) failed to start. Please contact PearAI support on Discord."

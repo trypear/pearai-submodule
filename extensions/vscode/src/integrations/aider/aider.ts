@@ -18,6 +18,7 @@ export async function startAiderProcess(core: Core) {
   const aiderModel = config.models.find(model => model instanceof Aider) as Aider | undefined;
 
   if (aiderModel) {
+    core.send("aiderProcessStateUpdate", { status: "starting" });
     try {
       await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
       core.send("aiderProcessStateUpdate", { status: "ready" });
@@ -39,6 +40,7 @@ export async function killAiderProcess(core: Core) {
       aiderModels.forEach(model => {
         model.killAiderProcess();
       });
+      core.send("aiderProcessStateUpdate", { status: "stopped" });
     }
   } catch (e) {
     console.warn(`Error killing Aider process: ${e}`);
@@ -56,6 +58,7 @@ export async function aiderCtrlC(core: Core) {
           model.aiderCtrlC();
         }
       });
+      core.send("aiderProcessStateUpdate", { status: "stopped" });
     }
   } catch (e) {
     console.warn(`Error sending Ctrl-C to Aider process: ${e}`);
