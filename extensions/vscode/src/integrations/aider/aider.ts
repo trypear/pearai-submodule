@@ -20,6 +20,7 @@ export async function startAiderProcess(core: Core) {
   if (aiderModel) {
     core.send("aiderProcessStateUpdate", { status: "starting" });
     try {
+      await setupPythonEnvironmentVariables();
       await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
       core.send("aiderProcessStateUpdate", { status: "ready" });
     } catch (e) {
@@ -261,3 +262,207 @@ function getPythonInstallCommand(): string {
       return "sudo apt-get install -y python3";
   }
 }
+
+
+
+async function isPythonInPath(): Promise<boolean> {
+  try {
+    switch (PLATFORM) {
+      case "win32": {
+        // Check user PATH environment variable on Windows
+        const userPath = await executeCommand('powershell -Command "[Environment]::GetEnvironmentVariable(\'Path\', \'User\')"');
+        const pythonPath = await executeCommand("where python");
+        const pythonDir = pythonPath.split('\r\n')[0].replace(/\\python\.exe$/, '');
+        return userPath.toLowerCase().includes(pythonDir.toLowerCase());
+      }
+      case "darwin":
+      case "linux": {
+        // Check if python/python3 command is accessible and resolve its real path
+        try {
+          const shellProfile = IS_MAC ? "~/.zshrc" : "~/.bashrc";
+          const command = IS_MAC ? "which python3" : "which python3";
+          const pythonPath = await executeCommand(command);
+          
+          // Check if PATH entry exists in profile
+          const grepCommand = IS_MAC 
+            ? `cat ${shellProfile} | grep -l "export PATH=.*${pythonPath.trim()}.*"` 
+            : `cat ${shellProfile} | grep -l "export PATH=.*${pythonPath.trim()}.*"`;
+          
+          await executeCommand(grepCommand);
+          return true;
+        } catch {
+          return false;
+        }
+      }
+      default:
+        return false;
+    }
+  } catch (error) {
+    console.warn(`Error checking Python in PATH: ${error}`);
+    return false;
+  }
+}
+
+async function setupPythonEnvironmentVariables(): Promise<void> {
+  // First check if Python is already in PATH
+  const pythonAlreadyInPath = await isPythonInPath();
+  if (pythonAlreadyInPath) {
+    console.log("Python is already in PATH, skipping environment setup");
+    return;
+  }
+
+  switch (PLATFORM) {
+    case "win32":
+      try {
+        // For Windows, modify PATH through PowerShell
+        const pythonPath = await executeCommand("where python");
+        if (pythonPath) {
+          const pythonDir = pythonPath.split('\r\n')[0].replace(/\\python\.exe$/, '');
+          const command = `
+            $currentPath = [Environment]::GetEnvironmentVariable('Path', 'User');
+            if ($currentPath -notlike '*${pythonDir}*') {
+              [Environment]::SetEnvironmentVariable('Path', "$currentPath;${pythonDir}", 'User');
+              [Environment]::SetEnvironmentVariable('Path', "$currentPath;${pythonDir}\\Scripts", 'User');
+              Write-Host "Python paths added to PATH environment variable."
+            }
+          `;
+          await executeCommand(`powershell -Command "${command}"`);
+          vscode.window.showInformationMessage("Python has been added to your PATH environment variable.");
+        }
+      } catch (error) {
+        console.warn(`Error setting up Python PATH on Windows: ${error}`);
+        vscode.window.showErrorMessage("Failed to add Python to PATH. You may need to add it manually.");
+      }
+      break;
+
+    case "darwin":
+      try {
+        // For macOS, modify PATH in shell profile
+        const homeDir = process.env.HOME;
+        const profilePath = `${homeDir}/.zshrc`;
+        const pythonPath = await executeCommand("which python3");
+        if (pythonPath) {
+          const pythonDir = pythonPath.trim().replace(/\/python3$/, '');
+          
+          // Check if entry already exists
+          const checkCommand = `grep -l "export PATH=.*${pythonDir}.*" ${profilePath}`;
+          try {
+            await executeCommand(checkCommand);
+          } catch {
+            // Entry doesn't exist, add it
+            const exportCommand = `\nexport PATH="${pythonDir}:$PATH"\n`;
+            await executeCommand(`echo '${exportCommand}' >> ${profilePath}`);
+            // Also add to current session
+            process.env.PATH = `${pythonDir}:${process.env.PATH}`;
+            vscode.window.showInformationMessage("Python has been added to your PATH in .zshrc");
+          }
+        }
+      } catch (error) {
+        console.warn(`Error setting up Python PATH on macOS: ${error}`);
+        vscode.window.showErrorMessage("Failed to add Python to PATH. You may need to add it manually.");
+      }
+      break;
+
+    case "linux":
+      try {
+        // For Linux, modify PATH in bash profile
+        const homeDir = process.env.HOME;
+        const profilePath = `${homeDir}/.bashrc`;
+        const pythonPath = await executeCommand("which python3");
+        if (pythonPath) {
+          const pythonDir = pythonPath.trim().replace(/\/python3$/, '');
+          
+          // Check if entry already exists
+          const checkCommand = `grep -l "export PATH=.*${pythonDir}.*" ${profilePath}`;
+          try {
+            await executeCommand(checkCommand);
+          } catch {
+            // Entry doesn't exist, add it
+            const exportCommand = `\nexport PATH="${pythonDir}:$PATH"\n`;
+            await executeCommand(`echo '${exportCommand}' >> ${profilePath}`);
+            // Also add to current session
+            process.env.PATH = `${pythonDir}:${process.env.PATH}`;
+            vscode.window.showInformationMessage("Python has been added to your PATH in .bashrc");
+          }
+        }
+      } catch (error) {
+        console.warn(`Error setting up Python PATH on Linux: ${error}`);
+        vscode.window.showErrorMessage("Failed to add Python to PATH. You may need to add it manually.");
+      }
+      break;
+  }
+}
+
+// async function installPythonAider() {
+//   const isPythonInstalled = await checkPythonInstallation();
+//   console.log("PYTHON CHECK RESULT :");
+//   console.dir(isPythonInstalled);
+//   const isAiderInstalled = await checkAiderInstallation();
+//   console.log("AIDER CHECK RESULT :");
+//   console.dir(isAiderInstalled);
+
+//   if (isPythonInstalled && isAiderInstalled) {
+//     return;
+//   }
+
+//   if (!isPythonInstalled) {
+//     const installPythonConfirm = await vscode.window.showInformationMessage(
+//       "Python is required to run Creator (Aider). Choose 'Install' to install Python3.9",
+//       "Install",
+//       "Cancel",
+//       "Manual Installation Guide",
+//     );
+
+//     if (installPythonConfirm === "Cancel") {
+//       return;
+//     } else if (installPythonConfirm === "Manual Installation Guide") {
+//       vscode.env.openExternal(
+//         vscode.Uri.parse(
+//           "https://trypear.ai/blog/how-to-setup-aider-in-pearai",
+//         ),
+//       );
+//       return;
+//     }
+
+//     vscode.window.showInformationMessage("Installing Python 3.9");
+//     const terminal = vscode.window.createTerminal("Python Installer");
+//     terminal.show();
+//     terminal.sendText(getPythonInstallCommand());
+
+//     // Add environment setup after installation with a reasonable delay
+//     await new Promise(resolve => setTimeout(resolve, 5000)); // Wait for installation to complete
+    
+//     // Check installation and setup environment variables
+//     const pythonInstallVerified = await checkPythonInstallation();
+//     if (pythonInstallVerified) {
+//       await setupPythonEnvironmentVariables();
+//       vscode.window.showInformationMessage(
+//         "Python installation completed. Environment variables have been configured.",
+//         "OK"
+//       );
+//     } else {
+//       vscode.window.showErrorMessage(
+//         "Python installation may not have completed successfully. Please verify the installation and try again.",
+//         "OK"
+//       );
+//     }
+
+//     return;
+//   }
+
+//   if (!isAiderInstalled) {
+//     vscode.window.showInformationMessage("Installing Aider");
+//     const aiderTerminal = vscode.window.createTerminal("Aider Installer");
+//     aiderTerminal.show();
+//     let command = "";
+//     if (IS_WINDOWS) {
+//       command += "python -m pip install -U aider-chat;";
+//       command += 'echo "`nAider installation complete."';
+//     } else {
+//       command += "python3 -m pip install -U aider-chat;";
+//       command += "echo '\nAider installation complete.'";
+//     }
+//     aiderTerminal.sendText(command);
+//   }
+// }
+
