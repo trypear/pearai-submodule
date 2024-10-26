@@ -622,6 +622,8 @@ export const {
   setActive,
   setEditingContextItemAtIndex,
   initNewActiveMessage,
+  initNewActivePerplexityMessage,
+  initNewActiveAiderMessage,
   setMessageAtIndex,
   clearLastResponse,
   consumeMainEditorContent,
