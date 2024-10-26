@@ -13,7 +13,7 @@ import { selectContextProviderDescriptions } from "../redux/selectors";
 import { useWebviewListener } from "./useWebviewListener";
 import { store } from '../redux/store';
 
-// Use only relative file paths context instead of any other contexts, includingabsolute file paths context
+// Use only relative file paths context instead of any other contexts, including absolute file paths context
 const ONLY_RELATIVE_FILE_CONTEXT = ["aider"]
 
 const MINISEARCH_OPTIONS = {
