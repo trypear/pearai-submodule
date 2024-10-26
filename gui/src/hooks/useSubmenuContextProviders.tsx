@@ -13,6 +13,8 @@ import { selectContextProviderDescriptions } from "../redux/selectors";
 import { useWebviewListener } from "./useWebviewListener";
 import { store } from '../redux/store';
 
+// Use only relative file paths context instead of any other contexts, includingabsolute file paths context
+const ONLY_RELATIVE_FILE_CONTEXT = ["aider"]
 
 const MINISEARCH_OPTIONS = {
   prefix: true,
@@ -202,14 +204,12 @@ useEffect(() => {
   setLoaded(true);
 
   contextProviderDescriptions.forEach(async (description) => {
-    // Check if we're in aider mode by checking the default model title
+    // Check if we should use relative file paths by checking the default model title
     const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
-    const isAiderMode = defaultModelTitle?.toLowerCase().includes('aider');
-    // Skip if:
-    // 1. In aider mode and not relativefilecontext
-    // 2. Not in aider mode and is relativefilecontext
-    if ((isAiderMode && description.title !== "relativefilecontext") ||
-        (!isAiderMode && description.title === "relativefilecontext")) {
+    const useOnlyRelativeFilePathContext = ONLY_RELATIVE_FILE_CONTEXT.some(model => defaultModelTitle?.toLowerCase().includes(model));
+    // only include relativefilecontext if useOnlyRelativeFilePathContext (Right now this is just used for PearAI Creator)
+    if ((useOnlyRelativeFilePathContext && description.title !== "relativefilecontext") ||
+        (!useOnlyRelativeFilePathContext && description.title === "relativefilecontext")) {
       return;
     }
 
