@@ -401,7 +401,14 @@ class Aider extends BaseLLM {
       this.aiderProcess.stdin.write(`${formattedMessage}\n`);
     } else {
       console.error("Aider process is not running");
-
+      vscode.window.showErrorMessage(
+        "Aider process is not running. Please view PearAI Creator troubleshooting guide.",
+        "View Troubleshooting"
+      ).then(selection => {
+        if (selection === "View Troubleshooting") {
+          vscode.env.openExternal(vscode.Uri.parse("https://trypear.ai/blog/how-to-setup-aider-in-pearai"));
+        }
+      });
     }
   }
 
