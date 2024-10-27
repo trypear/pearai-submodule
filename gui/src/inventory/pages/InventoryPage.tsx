@@ -120,23 +120,23 @@ const initialTools: AITool[] = [
   {
     id: "4",
     name: "Creator (aider)",
-    description: (
-      <span>"No-code" assistant; complete features zero to one directly</span>
-    ),
+    description: <span>"No-code" assistant; complete features directly</span>,
     icon: "🤖",
     whenToUse: (
       <span>
-        When you need a feature or a bug fix completed directly, Creator will
-        find the relevant files, and make changes directly to your code. You can
-        see specific diff changes in your source control tab afterwards.
+        When you need a feature or a bug fix completed, Creator will find the
+        relevant files, and make changes directly to your code. You can see
+        specific diff changes in your source control tab afterwards
       </span>
     ),
     strengths: [
-      <span>Zero to one feature completions</span>,
+      <span>Full feature completions</span>,
       <span>Automated refactoring</span>,
       <span>Lower level of human intervention needed</span>,
     ],
-    weaknesses: [<span>May fail on more complex tasks</span>],
+    weaknesses: [
+      <span>Less control over code changes as they are instantly applied</span>,
+    ],
     enabled: true,
   },
   {
