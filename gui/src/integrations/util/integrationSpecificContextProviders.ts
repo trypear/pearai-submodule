@@ -46,7 +46,6 @@ export function shouldSkipContextProviders(
 export function getContextProviders() {
   let location = useLocation();
   let pathname = location.pathname;
-  const lastPartOfPath = `/${pathname.split("/").pop() ?? pathname}`;
   let availableContextProviders = useSelector(
     (store: RootState) => store.state.config.contextProviders,
   );
