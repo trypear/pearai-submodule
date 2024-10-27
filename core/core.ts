@@ -31,10 +31,7 @@ import { streamDiffLines } from "./util/verticalEdit";
 import PearAIServer from "./llm/llms/PearAIServer";
 import Aider from "./llm/llms/Aider";
 import {
-  startAiderProcess,
-  killAiderProcess,
-  aiderCtrlC,
-  aiderResetSession
+  AiderProcessManager
 } from "../extensions/vscode/src/integrations/aider/aider";
 
 
@@ -80,6 +77,8 @@ export class Core {
     return this.messenger.send(messageType, data);
   }
 
+  private aiderManager: AiderProcessManager;
+
   // TODO: It shouldn't actually need an IDE type, because this can happen
   // through the messenger (it does in the case of any non-VS Code IDEs already)
   constructor(
@@ -93,6 +92,8 @@ export class Core {
     const sessionInfoPromise = messenger.request("getControlPlaneSessionInfo", {
       silent: true,
     });
+
+    this.aiderManager = AiderProcessManager.getInstance();
 
     this.controlPlaneClient = new ControlPlaneClient(sessionInfoPromise);
 
@@ -459,9 +460,9 @@ export class Core {
         return undefined;
       }
     });
-    on("llm/startAiderProcess", () => startAiderProcess(this));
+    // on("llm/startAiderProcess", () => this.aiderManager.startAiderProcess());
 
-    on("llm/killAiderProcess", () => killAiderProcess(this));
+    on("llm/killAiderProcess", () => this.aiderManager.killAiderProcess());
 
     on("llm/listModels", async (msg) => {
       const config = await this.configHandler.loadConfig();
