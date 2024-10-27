@@ -18,6 +18,8 @@ const SPECIFIC_CONTEXT_PROVIDERS_INTEGRATIONS = {
 const SPECIFIC_CONTEXT_PROVIDERS_PATHNAME = {
   "/aiderMode": aiderContextProvidersSpecific,
   "/perplexityMode": perplexityContextProvidersSpecific,
+  "/inventory/aiderMode": aiderContextProvidersSpecific,
+  "/inventory/perplexityMode": perplexityContextProvidersSpecific,
 };
 
 export function shouldSkipContextProviders(
@@ -41,10 +43,10 @@ export function shouldSkipContextProviders(
   // For all other models, only skip if "relativefilecontext"
   return description.title === "relativefilecontext";
 }
-
 export function getContextProviders() {
   let location = useLocation();
   let pathname = location.pathname;
+  const lastPartOfPath = `/${pathname.split("/").pop() ?? pathname}`;
   let availableContextProviders = useSelector(
     (store: RootState) => store.state.config.contextProviders,
   );
