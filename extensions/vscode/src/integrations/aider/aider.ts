@@ -91,6 +91,72 @@ export async function aiderResetSession(core: Core) {
   }
 }
 
+export async function openAiderPanel(
+  core: Core,
+  sidebar: ContinueGUIWebviewViewProvider,
+  extensionContext: vscode.ExtensionContext,
+) {
+  // Check if aider is already open by checking open tabs
+  const aiderTab = getIntegrationTab("pearai.aiderGUIView");
+  console.log("Aider tab found:", aiderTab);
+  console.log("Aider tab active:", aiderTab?.isActive);
+  console.log("Aider panel exists:", !!aiderPanel);
+
+  // Check if the active editor is the Continue GUI View
+  if (aiderTab && aiderTab.isActive) {
+    vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
+    return;
+  }
+
+  if (aiderTab && aiderPanel) {
+    //aider open, but not focused - focus it
+    aiderPanel.reveal();
+    return;
+  }
+
+  //create the full screen panel
+  let panel = vscode.window.createWebviewPanel(
+    "pearai.aiderGUIView",
+    "PearAI Creator (Powered by aider)",
+    vscode.ViewColumn.One,
+    {
+      retainContextWhenHidden: true,
+    },
+  );
+  aiderPanel = panel;
+
+  //Add content to the panel
+  panel.webview.html = sidebar.getSidebarContent(
+    extensionContext,
+    panel,
+    undefined,
+    undefined,
+    true,
+    "/aiderMode",
+  );
+
+  sidebar.webviewProtocol?.request(
+    "focusContinueInputWithNewSession",
+    undefined,
+    ["pearai.aiderGUIView"],
+  );
+
+  //When panel closes, reset the webview and focus
+  panel.onDidDispose(
+    () => {
+      // Kill background process
+      core.invoke("llm/killAiderProcess", undefined);
+
+      // The following order is important as it does not reset the history in chat when closing creator
+      vscode.commands.executeCommand("pearai.focusContinueInput");
+      sidebar.resetWebviewProtocolWebview();
+    },
+    null,
+    extensionContext.subscriptions,
+  );
+}
+
+
 export async function handleAiderMode(
   core: Core,
   sidebar: ContinueGUIWebviewViewProvider,
