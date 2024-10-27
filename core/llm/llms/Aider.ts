@@ -56,6 +56,8 @@ class Aider extends BaseLLM {
       options.setCredentials || (async () => {}),
     );
     console.log("Aider constructor called");
+    this.model = options.model;
+    this.apiKey = options.apiKey;
   }
 
   public async aiderResetSession(
@@ -399,6 +401,7 @@ class Aider extends BaseLLM {
       this.aiderProcess.stdin.write(`${formattedMessage}\n`);
     } else {
       console.error("Aider process is not running");
+
     }
   }
 

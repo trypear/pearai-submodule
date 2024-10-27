@@ -223,21 +223,13 @@ async function handleAiderNotInstalled() {
   const isPythonInstalled = await checkPythonInstallation();
   console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
-  const isBrewInstalled = await checkBrewInstallation();
-  console.log("PYTHON CHECK RESULT :");
-  console.dir(isPythonInstalled);
+  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  console.log("BREW CHECK RESULT :");
+  console.dir(isBrewInstalled);
   const isAiderInstalled = await checkAiderInstallation();
   console.log("AIDER CHECK RESULT :");
   console.dir(isAiderInstalled);
-
   if (isPythonInstalled && isAiderInstalled) {
-    return;
-  }
-
-  if (!isBrewInstalled) {
-    await vscode.window.showErrorMessage(
-      "Homebrew is not installed. Please install Homebrew to proceed with Aider installation.",
-    );
     return;
   }
 
@@ -279,6 +271,26 @@ async function handleAiderNotInstalled() {
     return;
   }
 
+  if (!isBrewInstalled) {
+    const installBrewConfirm = await vscode.window.showErrorMessage(
+      "Homebrew is not installed. Homebrew is required to proceed with Aider installation.",
+      "Install Brew",
+      "Cancel"
+    );
+
+    if (installBrewConfirm === "Install Brew") {
+      const brewTerminal = vscode.window.createTerminal("Brew Installer");
+      brewTerminal.show();
+      brewTerminal.sendText('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"');
+
+      vscode.window.showInformationMessage(
+        "Please restart PearAI after Homebrew installation completes successfully, and then run Creator (Aider) again.",
+        "OK"
+      );
+    }
+    return;
+  }
+
   if (!isAiderInstalled) {
     vscode.window.showInformationMessage("Installing Aider");
     const aiderTerminal = vscode.window.createTerminal("Aider Installer");
@@ -292,6 +304,8 @@ async function handleAiderNotInstalled() {
       command += "echo '\nAider installation complete.'";
     }
     aiderTerminal.sendText(command);
+
+    // Todo: Add add signal to restart the aider process.
   }
 }
 
