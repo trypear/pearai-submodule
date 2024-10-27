@@ -295,9 +295,9 @@ class Aider extends BaseLLM {
   };
 
   const spawnAiderProcessUnix = () => {
-    if (model === "claude-3-5-sonnet-20240620") {
+    if (model.includes("claude")) {
       command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
-    } else if (model === "gpt-4o") {
+    } else if (model.includes("gpt")) {
       command.unshift(`export OPENAI_API_KEY=${apiKey};`);
     } else {
       // For pearai_model, we're using the access token

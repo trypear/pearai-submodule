@@ -162,12 +162,13 @@ export async function handleAiderMode(
   sidebar: ContinueGUIWebviewViewProvider,
   extensionContext: vscode.ExtensionContext,
 ) {
+  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
   const isPythonInstalled = await checkPythonInstallation();
   const isAiderInstalled = await checkAiderInstallation();
 
 
-  if (!isPythonInstalled || !isAiderInstalled) {
-    await handlePythonAiderNotInstalled();
+  if (!isBrewInstalled || !isPythonInstalled || !isAiderInstalled) {
+    await handleAiderNotInstalled();
     return;
     // Todo: We should wait for installation to finish and then try agian
   }
@@ -208,8 +209,21 @@ async function checkAiderInstallation(): Promise<boolean> {
   return false;
 }
 
-async function handlePythonAiderNotInstalled() {
+async function checkBrewInstallation(): Promise<boolean> {
+  try {
+    await executeCommand("brew --version");
+    return true;
+  } catch (error) {
+    console.warn(`Brew is not installed: ${error}`);
+    return false;
+  }
+}
+
+async function handleAiderNotInstalled() {
   const isPythonInstalled = await checkPythonInstallation();
+  console.log("PYTHON CHECK RESULT :");
+  console.dir(isPythonInstalled);
+  const isBrewInstalled = await checkBrewInstallation();
   console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
   const isAiderInstalled = await checkAiderInstallation();
@@ -217,6 +231,13 @@ async function handlePythonAiderNotInstalled() {
   console.dir(isAiderInstalled);
 
   if (isPythonInstalled && isAiderInstalled) {
+    return;
+  }
+
+  if (!isBrewInstalled) {
+    await vscode.window.showErrorMessage(
+      "Homebrew is not installed. Please install Homebrew to proceed with Aider installation.",
+    );
     return;
   }
 
@@ -267,7 +288,7 @@ async function handlePythonAiderNotInstalled() {
       command += "python -m pip install -U aider-chat;";
       command += 'echo "`nAider installation complete."';
     } else {
-      command += "python3 -m pip install -U aider-chat;";
+      command += "brew install aider;";
       command += "echo '\nAider installation complete.'";
     }
     aiderTerminal.sendText(command);
