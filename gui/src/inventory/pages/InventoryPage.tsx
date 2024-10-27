@@ -40,19 +40,16 @@ const initialTools: AITool[] = [
     whenToUse: (
       <span>
         When you need to find information where recency is important. Regular
-        LLMs' knowledge are outdated by several months, PearAI Search will also
-        search the web for the latest data.
+        LLMs' knowledge are outdated by several months, whereas PearAI Search is
+        able to search the web for latest data.
       </span>
     ),
     strengths: [
-      <span>Most up-to-date information</span>,
-      <span>Non coding specific questions are also supported</span>,
-      <span>Provides cited sources</span>,
+      <span>Most up-to-date information, real-time web search.</span>,
+      <span>Also good for non-coding specific questions</span>,
+      <span>Uses less credits than other tools</span>,
     ],
-    weaknesses: [
-      <span>May be wordy and verbose</span>,
-      <span>Not specialized for pure code generation</span>,
-    ],
+    weaknesses: [<span>Not specialized for pure code generation</span>],
     enabled: true,
   },
   {
@@ -178,34 +175,49 @@ function AIToolCard({
   onToggle: () => void;
 }) {
   return (
-    <Card
-      className={`cursor-pointer h-32 transition-all bg-input ${tool.comingSoon ? "opacity-50" : ""}`}
-      onClick={tool.comingSoon ? undefined : onClick}
-    >
-      <CardContent className="p-2 px-4">
-        <div className="flex items-center justify-between">
-          <div className="text-lg bg-primary/10 rounded-full">{tool.icon}</div>
-          <Switch
-            checked={tool.comingSoon ? false : true} // always enabled
-            aria-label={`Toggle ${tool.name}`}
-            disabled={true} // disable toggle for now
-            className={`bg-button text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out ${
-              tool.comingSoon ? "opacity-50" : "opacity-100"
-            }`}
-          />
-        </div>
-        <h3
-          className={`text-sm font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
-        >
-          {tool.name}
-        </h3>
-        <p
-          className={`text-xs ${tool.enabled ? "text-foreground" : "text-muted-foreground"}`}
-        >
-          {tool.comingSoon ? "Coming soon" : tool.description}
-        </p>
-      </CardContent>
-    </Card>
+    <TooltipProvider delayDuration={0}>
+      <Card
+        className={`cursor-pointer h-32 transition-all bg-input ${tool.comingSoon ? "opacity-50" : ""}`}
+        onClick={tool.comingSoon ? undefined : onClick}
+      >
+        <CardContent className="p-2 px-4">
+          <div className="flex items-center justify-between">
+            <div className="text-lg bg-primary/10 rounded-full">
+              {tool.icon}
+            </div>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Switch
+                  checked={tool.comingSoon ? false : true} // always enabled
+                  aria-label={`Toggle ${tool.name}`}
+                  disabled={true} // disable toggle for now
+                  className={`bg-button text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out ${
+                    tool.comingSoon ? "opacity-50" : "opacity-100"
+                  }`}
+                />
+              </TooltipTrigger>
+              {!tool.comingSoon && (
+                <TooltipContent>
+                  <p className="text-xs bg-input p-1 px-2 rounded-xl">
+                    Toggling coming soon
+                  </p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </div>
+          <h3
+            className={`text-sm font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
+          >
+            {tool.name}
+          </h3>
+          <p
+            className={`text-xs ${tool.enabled ? "text-foreground" : "text-muted-foreground"}`}
+          >
+            {tool.comingSoon ? "Coming soon" : tool.description}
+          </p>
+        </CardContent>
+      </Card>
+    </TooltipProvider>
   );
 }
 
@@ -376,7 +388,7 @@ export default function AIToolInventory() {
                       Equip to quick slots
                     </Button>
                     <span className="ml-2 py-0.5 bg-accent text-accent-foreground text-xs rounded-full font-medium">
-                      (Equip functionality coming soon!)
+                      (Equip functionality coming soon)
                     </span>
                     {quickSlots.every((slot) => slot !== null) && (
                       <p className="text-destructive mt-1 text-xs">
