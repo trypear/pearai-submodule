@@ -116,7 +116,8 @@ const HIDE_FOOTER_ON_PAGES = [
   "/apiKeyOnboarding",
   "/aiderMode",
   "/inventory",
-  "/perplexityMode",
+  "/inventory/aiderMode",
+  "/inventory/perplexityMode"
 ];
 
 const SHOW_SHORTCUTS_ON_PAGES = ["/"];
