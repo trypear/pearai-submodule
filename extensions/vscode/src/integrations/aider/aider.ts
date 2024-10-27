@@ -105,66 +105,66 @@ export async function handleAiderMode(
     return;
     // Todo: We should probably have something open up here saying Python not installed
   }
-
-  // Check if aider is already open by checking open tabs
-  const aiderTab = getIntegrationTab("pearai.aiderGUIView");
   core.invoke("llm/startAiderProcess", undefined);
-  console.log("Aider tab found:", aiderTab);
-  console.log("Aider tab active:", aiderTab?.isActive);
-  console.log("Aider panel exists:", !!aiderPanel);
 
-  // Check if the active editor is the Continue GUI View
-  if (aiderTab && aiderTab.isActive) {
-    vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
-    return;
-  }
+  // // Check if aider is already open by checking open tabs
+  // const aiderTab = getIntegrationTab("pearai.aiderGUIView");
+  // console.log("Aider tab found:", aiderTab);
+  // console.log("Aider tab active:", aiderTab?.isActive);
+  // console.log("Aider panel exists:", !!aiderPanel);
 
-  if (aiderTab && aiderPanel) {
-    //aider open, but not focused - focus it
-    aiderPanel.reveal();
-    return;
-  }
+  // // Check if the active editor is the Continue GUI View
+  // if (aiderTab && aiderTab.isActive) {
+  //   vscode.commands.executeCommand("workbench.action.closeActiveEditor"); //this will trigger the onDidDispose listener below
+  //   return;
+  // }
 
-  //create the full screen panel
-  let panel = vscode.window.createWebviewPanel(
-    "pearai.aiderGUIView",
-    "PearAI Creator (Powered by aider)",
-    vscode.ViewColumn.One,
-    {
-      retainContextWhenHidden: true,
-    },
-  );
-  aiderPanel = panel;
+  // if (aiderTab && aiderPanel) {
+  //   //aider open, but not focused - focus it
+  //   aiderPanel.reveal();
+  //   return;
+  // }
 
-  //Add content to the panel
-  panel.webview.html = sidebar.getSidebarContent(
-    extensionContext,
-    panel,
-    undefined,
-    undefined,
-    true,
-    "/aiderMode",
-  );
+  // //create the full screen panel
+  // let panel = vscode.window.createWebviewPanel(
+  //   "pearai.aiderGUIView",
+  //   "PearAI Creator (Powered by aider)",
+  //   vscode.ViewColumn.One,
+  //   {
+  //     retainContextWhenHidden: true,
+  //   },
+  // );
+  // aiderPanel = panel;
 
-  sidebar.webviewProtocol?.request(
-    "focusContinueInputWithNewSession",
-    undefined,
-    ["pearai.aiderGUIView"],
-  );
+  // //Add content to the panel
+  // panel.webview.html = sidebar.getSidebarContent(
+  //   extensionContext,
+  //   panel,
+  //   undefined,
+  //   undefined,
+  //   true,
+  //   "/aiderMode",
+  // );
 
-  //When panel closes, reset the webview and focus
-  panel.onDidDispose(
-    () => {
-      // Kill background process
-      core.invoke("llm/killAiderProcess", undefined);
+  // sidebar.webviewProtocol?.request(
+  //   "focusContinueInputWithNewSession",
+  //   undefined,
+  //   ["pearai.aiderGUIView"],
+  // );
 
-      // The following order is important as it does not reset the history in chat when closing creator
-      vscode.commands.executeCommand("pearai.focusContinueInput");
-      sidebar.resetWebviewProtocolWebview();
-    },
-    null,
-    extensionContext.subscriptions,
-  );
+  // //When panel closes, reset the webview and focus
+  // panel.onDidDispose(
+  //   () => {
+  //     // Kill background process
+  //     core.invoke("llm/killAiderProcess", undefined);
+
+  //     // The following order is important as it does not reset the history in chat when closing creator
+  //     vscode.commands.executeCommand("pearai.focusContinueInput");
+  //     sidebar.resetWebviewProtocolWebview();
+  //   },
+  //   null,
+  //   extensionContext.subscriptions,
+  // );
 }
 
 async function checkPythonInstallation(): Promise<boolean> {
