@@ -4,6 +4,7 @@ import { Core } from "core/core";
 import { ContinueGUIWebviewViewProvider } from "../../ContinueGUIWebviewViewProvider";
 import { getIntegrationTab } from "../../util/integrationUtils";
 import Aider from "core/llm/llms/Aider";
+import { execSync } from "child_process";
 
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
@@ -166,9 +167,8 @@ export async function handleAiderMode(
   const isPythonInstalled = await checkPythonInstallation();
   const isAiderInstalled = await checkAiderInstallation();
 
-
   if (!isBrewInstalled || !isPythonInstalled || !isAiderInstalled) {
-    await handleAiderNotInstalled();
+    await handleAiderNotInstalled(core);
     return;
     // Todo: We should wait for installation to finish and then try agian
   }
@@ -219,7 +219,7 @@ async function checkBrewInstallation(): Promise<boolean> {
   }
 }
 
-async function handleAiderNotInstalled() {
+async function handleAiderNotInstalled(core: Core) {
   const isPythonInstalled = await checkPythonInstallation();
   console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
@@ -235,7 +235,7 @@ async function handleAiderNotInstalled() {
 
   if (!isPythonInstalled) {
     const installPythonConfirm = await vscode.window.showInformationMessage(
-      "Python was not found in your ENV PATH. Python is required to run Creator (Aider). Choose 'Install' to install Python3.9 and add it to PATH (if already installed, add it to PATH)",
+      "Python was not found in your ENV PATH. Python is required to run PearAI Creator (Powered by aider). Choose 'Install' to install Python3.9 and add it to PATH (if already installed, add it to PATH)",
       "Install",
       "Manual Installation Guide",
       "Cancel",
@@ -273,7 +273,7 @@ async function handleAiderNotInstalled() {
 
   if (!isBrewInstalled) {
     const installBrewConfirm = await vscode.window.showErrorMessage(
-      "Homebrew is not installed. Homebrew is required to proceed with Aider installation.",
+      "Homebrew is not installed. Homebrew is required to proceed with PearAI installation.",
       "Install Brew",
       "Cancel"
     );
@@ -292,7 +292,6 @@ async function handleAiderNotInstalled() {
   }
 
   if (!isAiderInstalled) {
-    vscode.window.showInformationMessage("Installing Aider");
     const aiderTerminal = vscode.window.createTerminal("Aider Installer");
     aiderTerminal.show();
     let command = "";
@@ -303,9 +302,9 @@ async function handleAiderNotInstalled() {
       command += "brew install aider;";
       command += "echo '\nAider installation complete.'";
     }
-    aiderTerminal.sendText(command);
 
-    // Todo: Add add signal to restart the aider process.
+    await execSync(command);
+    core.invoke("llm/startAiderProcess", undefined);
   }
 }
 
