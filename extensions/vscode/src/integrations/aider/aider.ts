@@ -48,8 +48,7 @@ export async function refreshAiderProcessStatus(core: Core) {
     core.send("aiderProcessStateUpdate", { status: "ready" });
     return;
   }
-
-  core.send("aiderProcessStateUpdate", { status: "stopped" });
+  // core.send("aiderProcessStateUpdate", { status: "stopped" });
 }
 
 export async function killAiderProcess(core: Core) {
@@ -187,6 +186,7 @@ export async function handleAiderMode(
   const isAiderInstalled = await checkAiderInstallation();
 
   if (isFirstPearAICreatorLaunch && (!isBrewInstalled || !isPythonInstalled)) {
+    core.send("aiderProcessStateUpdate", { status: "uninstalled" });
     return;
   }
 
@@ -287,7 +287,7 @@ async function handleAiderNotInstalled(core: Core) {
       "Please restart PearAI after python installation (or adding to PATH) completes sucessfully, and then run Creator (Aider) again.",
       "OK",
     );
-
+    core.send("aiderProcessStateUpdate", { status: "uninstalled" });
     return;
   }
 
@@ -312,6 +312,7 @@ async function handleAiderNotInstalled(core: Core) {
         "OK"
       );
     }
+    core.send("aiderProcessStateUpdate", { status: "uninstalled" });
     return;
   }
 

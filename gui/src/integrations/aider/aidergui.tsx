@@ -173,7 +173,6 @@ function AiderGUI() {
   );
 
   useEffect(() => {
-    console.dir("this is running");
     ideMessenger.request("refreshAiderProcessStatus", undefined);
   }, []);
 
@@ -203,6 +202,9 @@ function AiderGUI() {
     let msg = "";
     if (aiderProcessStatus.status === "stopped") {
       msg = "PearAI Creator (Powered By aider) process is not running.";
+    }
+    if (aiderProcessStatus.status === "uninstalled") {
+      return <AiderManualInstallation />;
     }
 
     if (aiderProcessStatus.status === "starting") {
@@ -430,3 +432,4 @@ const tutorialContent = {
     copyText: "make a new FAQ page for my website",
   },
 };
+import AiderManualInstallation from "./AiderManualInstallation";
