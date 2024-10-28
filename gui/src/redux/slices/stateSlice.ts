@@ -128,6 +128,11 @@ type State = {
   selectedProfileId: string;
   directoryItems: string;
   aiderProcessStatus: AiderStatusUpdate;
+  indexingState: {
+    status: string;
+    progress: number;
+    desc: string;
+  };
 };
 
 const initialState: State = {
@@ -167,12 +172,23 @@ const initialState: State = {
   defaultModelTitle: "GPT-4",
   selectedProfileId: "local",
   directoryItems: "",
+  indexingState: {
+    status: "loading",
+    progress: 0,
+    desc: "",
+  }
 };
 
 export const stateSlice = createSlice({
   name: "state",
   initialState,
   reducers: {
+    setIndexingState: (
+      state,
+      action: PayloadAction<State["indexingState"]>,
+    ) => {
+      state.indexingState = action.payload;
+    },
     setConfig: (
       state,
       { payload: config }: PayloadAction<BrowserSerializedContinueConfig>,
@@ -683,5 +699,6 @@ export const {
   consumeMainEditorContent,
   setSelectedProfileId,
   deleteMessage,
+  setIndexingState
 } = stateSlice.actions;
 export default stateSlice.reducer;

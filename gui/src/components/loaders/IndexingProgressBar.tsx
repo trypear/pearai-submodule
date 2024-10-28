@@ -2,13 +2,14 @@ import { IndexingProgressUpdate } from "core";
 import TransformersJsEmbeddingsProvider from "core/indexing/embeddings/TransformersJsEmbeddingsProvider";
 import { useContext, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import { StyledTooltip, lightGray, vscForeground } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { RootState } from "../../redux/store";
 import { getFontSize, isJetBrains } from "../../util";
 import StatusDot from "./StatusDot";
+import { setIndexingState } from "@/redux/slices/stateSlice";
 
 const STATUS_COLORS = {
   DISABLED: lightGray, // light gray
@@ -69,16 +70,19 @@ interface ProgressBarProps {
 const IndexingProgressBar = ({
   indexingState: indexingStateProp,
 }: ProgressBarProps) => {
+  const dispatch = useDispatch();
   // If sidebar is opened before extension initiates, define a default indexingState
   const defaultIndexingState: IndexingProgressUpdate = {
     status: "loading",
     progress: 0,
     desc: "",
   };
+
   const indexingState = indexingStateProp || defaultIndexingState;
 
   // If sidebar is opened after extension initializes, retrieve saved states.
   let initialized = false;
+
   useEffect(() => {
     if (!initialized) {
       // Triggers retrieval for possible non-default states set prior to IndexingProgressBar initialization
@@ -108,7 +112,7 @@ const IndexingProgressBar = ({
     ideMessenger.post("index/setPaused", paused);
   }, [paused]);
 
-  function getIndexingErrMsg(msg: string): string {
+  const getIndexingErrMsg = (msg: string): string => {
     if (
       isJetBrains() &&
       embeddingsProvider === TransformersJsEmbeddingsProvider.model
@@ -117,6 +121,25 @@ const IndexingProgressBar = ({
     }
     return msg;
   }
+
+  useEffect(() => {
+    if (paused === undefined) return;
+    ideMessenger.post("index/setPaused", paused);
+  }, [paused]);
+
+  useEffect(() => {
+    if (!initialized) {
+      // Triggers retrieval for possible non-default states set prior to IndexingProgressBar initialization
+      ideMessenger.post("index/indexingProgressBarInitialized", undefined);
+      initialized = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (indexingStateProp) {
+      dispatch(setIndexingState(indexingStateProp));
+    }
+  }, [indexingStateProp, dispatch]);
 
   return (
     <div

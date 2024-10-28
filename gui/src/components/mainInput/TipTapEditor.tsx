@@ -132,7 +132,7 @@ const getPlaceholder = (historyLength: number, location: any) => {
     : "Ask a follow-up";
 };
 
-function getDataUrlForFile(file: File, img): string {
+const getDataUrlForFile = (file: File, img): string => {
   const targetWidth = 512;
   const targetHeight = 512;
   const scaleFactor = Math.min(
@@ -160,14 +160,14 @@ interface TipTapEditorProps {
   source?: 'perplexity' | 'aider' | 'continue';
 }
 
-function TipTapEditor({
+const TipTapEditor = ({
   availableContextProviders,
   availableSlashCommands,
   isMainInput,
   onEnter,
   editorState,
   source = 'continue',
-}: TipTapEditorProps) {
+}: TipTapEditorProps) => {
   const dispatch = useDispatch();
 
   const ideMessenger = useContext(IdeMessengerContext);
@@ -185,6 +185,13 @@ function TipTapEditor({
       }
     }
   );
+
+  const [hasContent, setHasContent] = useState(false);
+  const indexingState = useSelector(
+    (state: RootState) => state.state.indexingState,
+  );
+
+  const indexingStateRef = useUpdatingRef(indexingState);
 
   // Create a unique key for each editor instance
   const editorKey = useMemo(() => `${(source || 'continue')}-editor`, [source]);
@@ -362,6 +369,11 @@ function TipTapEditor({
             },
 
             "Mod-Enter": () => {
+              if (!this.editor.getJSON().content?.some((c) => c.content))
+                return true;
+
+              if (indexingStateRef.current.status !== "done") return true;
+
               onEnterRef.current({
                 useCodebase: true,
                 noContext: !useActiveFile,
@@ -369,6 +381,9 @@ function TipTapEditor({
               return true;
             },
             "Alt-Enter": () => {
+              if (!this.editor.getJSON().content?.some((c) => c.content))
+                return true;
+
               posthog.capture("gui_use_active_file_enter");
 
               onEnterRef.current({
@@ -659,6 +674,20 @@ function TipTapEditor({
     }
   }, [isMainInput, active, editor]);
 
+  useEffect(() => {
+    if (!editor) return;
+
+    const checkContent = () => {
+      const json = editor.getJSON();
+      setHasContent(!!json.content?.some((c) => c.content));
+    };
+
+    editor.on("update", checkContent);
+    return () => {
+      editor.off("update", checkContent);
+    };
+  }, [editor]);
+
   // IDE event listeners
   useWebviewListener(
     "userInput",
@@ -938,8 +967,7 @@ function TipTapEditor({
         showNoContext={optionKeyHeld}
         hidden={!(editorFocusedRef.current || isMainInput)}
         onAddContextItem={() => {
-          if (editor.getText().endsWith("@")) {
-          } else {
+          if (!editor.getText().endsWith("@")) {
             editor.commands.insertContent("@");
           }
         }}
@@ -954,6 +982,7 @@ function TipTapEditor({
             });
           });
         }}
+        editorHasContent={hasContent}
       />
       {showDragOverMsg &&
         modelSupportsImages(
@@ -969,6 +998,6 @@ function TipTapEditor({
         )}
     </InputBoxDiv>
   );
-}
+};
 
 export default TipTapEditor;
