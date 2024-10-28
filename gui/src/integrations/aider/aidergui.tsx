@@ -202,11 +202,11 @@ function AiderGUI() {
   if (aiderProcessStatus.status !== "ready") {
     let msg = "";
     if (aiderProcessStatus.status === "stopped") {
-      msg = "Aider Process is not running.";
+      msg = "PearAI Creator (Powered By aider) process is not running.";
     }
 
     if (aiderProcessStatus.status === "starting") {
-      msg = "Spinning up Aider, please wait...";
+      msg = "Spinning up PearAI Creator (Powered By aider), please give it a second...";
     }
 
     return (

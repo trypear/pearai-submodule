@@ -344,6 +344,8 @@ class Aider extends BaseLLM {
           });
 
           this.aiderProcess.stderr.on("data", (data: Buffer) => {
+          // Scanning repo text ends up here, we can maybe include this in the output in the future.
+          // ie "Scanning repo:  15%|█▍        | 151/1024 [00:00<00:03, 242.84it/s]""
             console.error(`Aider error: ${data.toString()}`);
           });
 
@@ -401,9 +403,9 @@ class Aider extends BaseLLM {
       const formattedMessage = message.replace(/\n+/g, " ");
       this.aiderProcess.stdin.write(`${formattedMessage}\n`);
     } else {
-      console.error("Aider process is not running");
+      console.error("PearAI Creator (Powered by Aider) process is not running");
       vscode.window.showErrorMessage(
-        "Aider process is not running. Please view PearAI Creator troubleshooting guide.",
+        "PearAI Creator (Powered by Aider) process is not running. Please view PearAI Creator troubleshooting guide.",
         "View Troubleshooting"
       ).then(selection => {
         if (selection === "View Troubleshooting") {

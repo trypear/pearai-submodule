@@ -5,7 +5,7 @@ import { ContinueGUIWebviewViewProvider } from "../../ContinueGUIWebviewViewProv
 import { getIntegrationTab } from "../../util/integrationUtils";
 import Aider from "core/llm/llms/Aider";
 import { execSync } from "child_process";
-import { isFirstLaunch } from "../../copySettings";
+import { isFirstPearAICreatorLaunch } from "../../copySettings";
 
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
@@ -181,11 +181,12 @@ export async function handleAiderMode(
   sidebar: ContinueGUIWebviewViewProvider,
   extensionContext: vscode.ExtensionContext,
 ) {
-  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  let isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  isBrewInstalled = false
   const isPythonInstalled = await checkPythonInstallation();
   const isAiderInstalled = await checkAiderInstallation();
 
-  if (isFirstLaunch && (!isBrewInstalled || !isPythonInstalled)) {
+  if (isFirstPearAICreatorLaunch && (!isBrewInstalled || !isPythonInstalled)) {
     return;
   }
 
@@ -245,7 +246,8 @@ async function handleAiderNotInstalled(core: Core) {
   const isPythonInstalled = await checkPythonInstallation();
   console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
-  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  let isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  isBrewInstalled = false // TODO REMOVE
   console.log("BREW CHECK RESULT :");
   console.dir(isBrewInstalled);
   const isAiderInstalled = await checkAiderInstallation();
@@ -289,7 +291,7 @@ async function handleAiderNotInstalled(core: Core) {
     return;
   }
 
-  if (!isBrewInstalled) {
+  if (true || !isBrewInstalled) {
     const installBrewConfirm = await vscode.window.showErrorMessage(
       "Homebrew is not installed. Homebrew is required to proceed with PearAI installation.",
       "Install Brew",
@@ -325,8 +327,18 @@ async function handleAiderNotInstalled(core: Core) {
       command += "echo '\nAider installation complete.'";
     }
 
-    aiderTerminal.sendText(command); 
+    try {
+        await execSync(command);
+        // If execution was successful, start the Aider process
+        core.invoke("llm/startAiderProcess", undefined);
+    } catch (error) {
+        // Handle the error case
+        console.error("Failed to execute Aider command:", error);
+    }
+
     /*
+    aiderTerminal.sendText(command);
+
     dont use execCommand here, we run the command in the vscode terminal so user can see the output and report any errors in the early stages of aider easly.
     this will help us in debugging aider installation issues quicker.
     we won't have to ask users to open there dev tools to see find and repot errors.
