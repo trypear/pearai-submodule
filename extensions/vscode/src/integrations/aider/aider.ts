@@ -169,7 +169,7 @@ export async function handleAiderMode(
 
   if (!isBrewInstalled || !isPythonInstalled || !isAiderInstalled) {
     await handleAiderNotInstalled(core);
-    return;
+    return; // return from here as installation process takes time and only user can tell if installation is successful or not.
     // Todo: We should wait for installation to finish and then try agian
   }
   core.invoke("llm/startAiderProcess", undefined);
@@ -241,11 +241,7 @@ async function handleAiderNotInstalled(core: Core) {
       "Cancel",
     );
 
-    if (!installPythonConfirm) {
-      return;
-    }
-
-    if (installPythonConfirm === "Cancel") {
+    if (!installPythonConfirm || installPythonConfirm === "Cancel") {
       return;
     }
 
@@ -278,6 +274,10 @@ async function handleAiderNotInstalled(core: Core) {
       "Cancel"
     );
 
+    if (!installBrewConfirm || installBrewConfirm === "Cancel") {
+      return;
+    }
+
     if (installBrewConfirm === "Install Brew") {
       const brewTerminal = vscode.window.createTerminal("Brew Installer");
       brewTerminal.show();
@@ -303,8 +303,15 @@ async function handleAiderNotInstalled(core: Core) {
       command += "echo '\nAider installation complete.'";
     }
 
-    await execSync(command);
-    core.invoke("llm/startAiderProcess", undefined);
+    aiderTerminal.sendText(command); 
+    /*
+    dont use execCommand here, we run the command in the vscode terminal so user can see the output and report any errors in the early stages of aider easly.
+    this will help us in debugging aider installation issues quicker.
+    we won't have to ask users to open there dev tools to see find and repot errors.
+
+    do not invoke aider, installation will take time because of network delays, cpu perf, and user env setup can cause it to fail also, so invoking will result in error.
+    instead user opens creator again to run it, this info is shown in info notification before installation happens.
+    */
   }
 }
 
