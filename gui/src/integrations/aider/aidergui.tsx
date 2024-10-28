@@ -63,7 +63,7 @@ function AiderGUI() {
     (state: RootState) => state.state.aiderProcessStatus,
   );
 
-  console.dir(aiderProcessStatus.status);
+  // console.dir(aiderProcessStatus.status);
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
   // many users won't reach onboarding screen due to cache. So set it manually,
@@ -172,6 +172,10 @@ function AiderGUI() {
     [saveSession],
   );
 
+  useEffect(() => {
+    ideMessenger.request("refreshAiderProcessStatus", undefined);
+  }, []);
+
   useWebviewListener(
     "aiderProcessStateUpdate",
     async (data) => {
@@ -193,6 +197,20 @@ function AiderGUI() {
     },
     [state.aiderHistory],
   );
+
+  if (aiderProcessStatus.status === "stopped") {
+    return (
+      <div className="top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
+      <div className="text-white text-2xl">
+        <div className="spinner-border text-white" role="status">
+          <span className="visually-hidden">
+            Aider Process is not running.
+          </span>
+        </div>
+      </div>
+    </div>
+    )
+  }
 
   return (
     <>

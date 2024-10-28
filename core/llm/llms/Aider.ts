@@ -88,6 +88,7 @@ class Aider extends BaseLLM {
       console.log("Killing Aider process...");
       this.aiderProcess.kill();
       this.aiderProcess = null;
+      this.isAiderUp = false;
     }
   }
 

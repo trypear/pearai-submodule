@@ -34,6 +34,23 @@ export async function startAiderProcess(core: Core) {
   }
 }
 
+export async function refreshAiderProcessStatus(core: Core) {
+  const config = await core.configHandler.loadConfig();
+  const aiderModel = config.models.find((model) => model instanceof Aider) as Aider | undefined;
+
+  if (!aiderModel) {
+    core.send("aiderProcessStateUpdate", { status: "stopped" });
+    return;
+  }
+
+  if (aiderModel.isAiderUp) {
+    core.send("aiderProcessStateUpdate", { status: "ready" });
+    return;
+  }
+
+  core.send("aiderProcessStateUpdate", { status: "stopped" });
+}
+
 export async function killAiderProcess(core: Core) {
   const config = await core.configHandler.loadConfig();
   const aiderModels = config.models.filter(
