@@ -149,7 +149,7 @@ function PerplexityGUI() {
         }
       }
 
-      streamResponse(editorState, modifiers, ideMessenger, null, "perplexity");
+      streamResponse(editorState, modifiers, ideMessenger, undefined, "perplexity");
 
       const currentCount = getLocalStorage("mainTextEntryCounter");
       if (currentCount) {
@@ -219,18 +219,6 @@ function PerplexityGUI() {
                 real-time on the web. Search uses less credits than PearAI Chat,
                 and is perfect for documentation lookups.
               </p>
-              {state.perplexityHistory.length > 0 ? (
-                <div className="mt-0">
-                  <NewSessionButton
-                    onClick={() => {
-                      saveSession();
-                    }}
-                    className="mr-auto"
-                  >
-                    Clear chat
-                  </NewSessionButton>
-                </div>
-              ) : null}
             </div>
           </div>
           <StepsDiv>
