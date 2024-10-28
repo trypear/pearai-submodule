@@ -5,6 +5,7 @@ import { ContinueGUIWebviewViewProvider } from "../../ContinueGUIWebviewViewProv
 import { getIntegrationTab } from "../../util/integrationUtils";
 import Aider from "core/llm/llms/Aider";
 import { execSync } from "child_process";
+import { isFirstLaunch } from "../../copySettings";
 
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
@@ -183,6 +184,10 @@ export async function handleAiderMode(
   const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
   const isPythonInstalled = await checkPythonInstallation();
   const isAiderInstalled = await checkAiderInstallation();
+
+  if (isFirstLaunch && (!isBrewInstalled || !isPythonInstalled)) {
+    return;
+  }
 
   if (!isBrewInstalled || !isPythonInstalled || !isAiderInstalled) {
     await handleAiderNotInstalled(core);
