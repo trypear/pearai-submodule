@@ -940,7 +940,7 @@ function TipTapEditor({
         onAddContextItem={() => {
           if (editor.getText().endsWith("@")) {
           } else {
-            editor.commands.insertContent("@");
+            editor.commands.insertContent(" @");
           }
         }}
         onEnter={onEnterRef.current}
