@@ -940,6 +940,7 @@ function TipTapEditor({
         onAddContextItem={() => {
           if (editor.getText().endsWith("@")) {
           } else {
+            // Add space so that if there's text right before, it still activates the dropdown
             editor.commands.insertContent(" @");
           }
         }}
