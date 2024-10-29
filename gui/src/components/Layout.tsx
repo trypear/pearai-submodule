@@ -1,4 +1,4 @@
-import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { QuestionMarkCircleIcon, InboxStackIcon } from "@heroicons/react/24/outline";
 import { IndexingProgressUpdate } from "core";
 import { useContext, useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -118,10 +118,6 @@ const HIDE_FOOTER_ON_PAGES = [
   "/onboarding",
   "/localOnboarding",
   "/apiKeyOnboarding",
-  "/aiderMode",
-  "/inventory",
-  "/inventory/aiderMode",
-  "/inventory/perplexityMode"
 ];
 
 const SHOW_SHORTCUTS_ON_PAGES = ["/"];
@@ -280,9 +276,9 @@ const Layout = () => {
         />
 
         <GridDiv
-          showHeader={!window.isPearOverlay && SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
+          showHeader={SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
         >
-          {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && !window.isPearOverlay && (
+          {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && (
             <Header>
               <ShortcutContainer />
             </Header>
@@ -317,6 +313,19 @@ const Layout = () => {
                 }}
               >
                 <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
+              </HeaderButtonWithText>
+              <HeaderButtonWithText
+                tooltipPlacement="top-end"
+                text="Send Feedback"
+                onClick={() => {
+                  if (location.pathname === "/feedback") {
+                    navigate("/");
+                  } else {
+                    navigate("/feedback");
+                  }
+                }}
+              >
+                <InboxStackIcon width="1.4em" height="1.4em" />
               </HeaderButtonWithText>
             </Footer>
           )}
