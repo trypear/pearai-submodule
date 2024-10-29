@@ -333,6 +333,7 @@ const commandsMap: (
       // console.dir(isOverlayOpen);
       // await vscode.commands.executeCommand('vscode.newWindow');
       await vscode.commands.executeCommand('workbench.action.showOverlayPearAI');
+      await vscode.commands.executeCommand('pearai.isOverlayVisible');
       // const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
       console.dir("IN COMMANDS, GET MSG FROM VSCODE");
       // console.dir(isOverlayVisible);
