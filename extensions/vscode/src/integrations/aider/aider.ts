@@ -21,14 +21,23 @@ export async function startAiderProcess(
   const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
   const isPythonInstalled = await checkPythonInstallation();
   const isAiderInstalled = await checkAiderInstallation();
-
-  if (isFirstPearAICreatorLaunch && !isAiderInstalled && (!isBrewInstalled || !isPythonInstalled)) {
-    return;
-  }
-
-  if (!isAiderInstalled) {
-    await handleAiderNotInstalled(core);
-    return;
+  // If this is the first time running, try to install aider automatically if we can
+  if (isFirstPearAICreatorLaunch) {
+    if (!isAiderInstalled) {
+      // If aider is not installed and prereq's are not installed, then go to manual installation
+      if (!isBrewInstalled || !isPythonInstalled) {
+        return
+      } else { // If prereq's are installed, then try to install aider automatically
+        await handleAiderNotInstalled(core);
+        return
+      }
+    }
+  } else {
+    // If this is not the first time we are running and aider is not installed, give up.
+    // Users will have to manual install
+    if (!isAiderInstalled) {
+      return
+    }
   }
 
   const config = await core.configHandler.loadConfig();

@@ -7,9 +7,10 @@ const pearAISettingsDir = path.join(os.homedir(), '.pearai');
 const pearAIDevExtensionsDir = path.join(os.homedir(), '.pearai', 'extensions');
 
 const firstLaunchFlag = path.join(pearAISettingsDir, 'firstLaunch.flag');
-export const isFirstLaunch = fs.existsSync(firstLaunchFlag);
+export const isFirstLaunch = !fs.existsSync(firstLaunchFlag);
 const firstPearAICreatorLaunchFlag = path.join(pearAISettingsDir, 'firstLaunchCreator.flag');
-export const isFirstPearAICreatorLaunch = fs.existsSync(firstPearAICreatorLaunchFlag);
+export const isFirstPearAICreatorLaunch = !fs.existsSync(firstPearAICreatorLaunchFlag);
+
 
 
 function getPearAISettingsDir() {
