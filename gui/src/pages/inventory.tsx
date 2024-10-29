@@ -48,6 +48,7 @@ export default function Inventory() {
   useWebviewListener(
     "getCurrentTab",
     async () => {
+      const currentTab = location.pathname.split("/").pop() || "inventory";
       console.dir("IN REACT APP.TSX");
       console.dir(currentTab);
       return currentTab;
