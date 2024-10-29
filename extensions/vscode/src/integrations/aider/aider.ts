@@ -37,13 +37,10 @@ export async function startAiderProcess(
     | undefined;
 
   if (aiderModel) {
-    // core.send("aiderProcessStateUpdate", { status: "starting" });
     try {
       await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
-      // core.send("aiderProcessStateUpdate", { status: "ready" });
     } catch (e) {
       console.warn(`Error starting Aider process: ${e}`);
-      // core.send("aiderProcessStateUpdate", { status: "crashed" });
     }
   } else {
     console.warn("No Aider model found in configuration");
