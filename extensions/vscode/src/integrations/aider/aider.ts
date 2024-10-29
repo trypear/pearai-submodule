@@ -15,20 +15,35 @@ const IS_LINUX = PLATFORM === "linux";
 let aiderPanel: vscode.WebviewPanel | undefined;
 
 // Aider process management functions
-export async function startAiderProcess(core: Core) {
+export async function startAiderProcess(
+  core: Core,
+) {
+  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  const isPythonInstalled = await checkPythonInstallation();
+  const isAiderInstalled = await checkAiderInstallation();
+
+  if (isFirstPearAICreatorLaunch && (!isBrewInstalled || !isPythonInstalled)) {
+    return;
+  }
+
+  if (!isBrewInstalled || !isPythonInstalled || !isAiderInstalled) {
+    await handleAiderNotInstalled(core);
+    return;
+  }
+
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as
     | Aider
     | undefined;
 
   if (aiderModel) {
-    core.send("aiderProcessStateUpdate", { status: "starting" });
+    // core.send("aiderProcessStateUpdate", { status: "starting" });
     try {
       await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
-      core.send("aiderProcessStateUpdate", { status: "ready" });
+      // core.send("aiderProcessStateUpdate", { status: "ready" });
     } catch (e) {
       console.warn(`Error starting Aider process: ${e}`);
-      core.send("aiderProcessStateUpdate", { status: "crashed" });
+      // core.send("aiderProcessStateUpdate", { status: "crashed" });
     }
   } else {
     console.warn("No Aider model found in configuration");
@@ -48,7 +63,17 @@ export async function refreshAiderProcessStatus(core: Core) {
     core.send("aiderProcessStateUpdate", { status: "ready" });
     return;
   }
-  // core.send("aiderProcessStateUpdate", { status: "stopped" });
+
+  if (aiderModel.isAiderStarted) {
+    core.send("aiderProcessStateUpdate", { status: "starting" });
+  }
+
+  if (aiderModel.isAiderStopped) {
+    core.send("aiderProcessStateUpdate", { status: "stopped" });
+  }
+
+  // Else, means there was a problem with installation
+  core.send("aiderProcessStateUpdate", { status: "uninstalled" });
 }
 
 export async function killAiderProcess(core: Core) {
@@ -61,8 +86,8 @@ export async function killAiderProcess(core: Core) {
     if (aiderModels.length > 0) {
       aiderModels.forEach((model) => {
         model.killAiderProcess();
+        model.isAiderStopped = true
       });
-      core.send("aiderProcessStateUpdate", { status: "stopped" });
     }
   } catch (e) {
     console.warn(`Error killing Aider process: ${e}`);
@@ -82,8 +107,7 @@ export async function aiderCtrlC(core: Core) {
           model.aiderCtrlC();
         }
       });
-      // This is when we cancelled an onboing request
-      core.send("aiderProcessStateUpdate", { status: "ready" });
+      // This is when we cancelled an ongoing request
     }
   } catch (e) {
     console.warn(`Error sending Ctrl-C to Aider process: ${e}`);
@@ -175,28 +199,6 @@ export async function openAiderPanel(
 }
 
 
-export async function handleAiderMode(
-  core: Core,
-  sidebar: ContinueGUIWebviewViewProvider,
-  extensionContext: vscode.ExtensionContext,
-) {
-  let isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
-  isBrewInstalled = false
-  const isPythonInstalled = await checkPythonInstallation();
-  const isAiderInstalled = await checkAiderInstallation();
-
-  if (isFirstPearAICreatorLaunch && (!isBrewInstalled || !isPythonInstalled)) {
-    core.send("aiderProcessStateUpdate", { status: "uninstalled" });
-    return;
-  }
-
-  if (!isBrewInstalled || !isPythonInstalled || !isAiderInstalled) {
-    await handleAiderNotInstalled(core);
-    return; // return from here as installation process takes time and only user can tell if installation is successful or not.
-    // Todo: We should wait for installation to finish and then try agian
-  }
-  core.invoke("llm/startAiderProcess", undefined);
-}
 
 async function checkPythonInstallation(): Promise<boolean> {
   const commands = ["python3 --version", "python --version"];
@@ -246,79 +248,17 @@ async function handleAiderNotInstalled(core: Core) {
   const isPythonInstalled = await checkPythonInstallation();
   console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
-  let isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
-  isBrewInstalled = false // TODO REMOVE
+  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
   console.log("BREW CHECK RESULT :");
   console.dir(isBrewInstalled);
   const isAiderInstalled = await checkAiderInstallation();
   console.log("AIDER CHECK RESULT :");
   console.dir(isAiderInstalled);
-  if (isPythonInstalled && isAiderInstalled) {
-    return;
-  }
-
-  if (!isPythonInstalled) {
-    const installPythonConfirm = await vscode.window.showInformationMessage(
-      "Python was not found in your ENV PATH. Python is required to run PearAI Creator (Powered by aider). Choose 'Install' to install Python3.9 and add it to PATH (if already installed, add it to PATH)",
-      "Install",
-      "Manual Installation Guide",
-      "Cancel",
-    );
-
-    if (!installPythonConfirm || installPythonConfirm === "Cancel") {
-      return;
-    }
-
-    if (installPythonConfirm === "Manual Installation Guide") {
-      vscode.env.openExternal(
-        vscode.Uri.parse(
-          "https://trypear.ai/blog/how-to-setup-aider-in-pearai",
-        ),
-      );
-      return;
-    }
-
-    vscode.window.showInformationMessage("Installing Python 3.9");
-    const terminal = vscode.window.createTerminal("Python Installer");
-    terminal.show();
-    terminal.sendText(getPythonInstallCommand());
-
-    vscode.window.showInformationMessage(
-      "Please restart PearAI after python installation (or adding to PATH) completes sucessfully, and then run Creator (Aider) again.",
-      "OK",
-    );
-    core.send("aiderProcessStateUpdate", { status: "uninstalled" });
-    return;
-  }
-
-  if (true || !isBrewInstalled) {
-    const installBrewConfirm = await vscode.window.showErrorMessage(
-      "Homebrew is not installed. Homebrew is required to proceed with PearAI installation.",
-      "Install Brew",
-      "Cancel"
-    );
-
-    if (!installBrewConfirm || installBrewConfirm === "Cancel") {
-      return;
-    }
-
-    if (installBrewConfirm === "Install Brew") {
-      const brewTerminal = vscode.window.createTerminal("Brew Installer");
-      brewTerminal.show();
-      brewTerminal.sendText('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"');
-
-      vscode.window.showInformationMessage(
-        "Please restart PearAI after Homebrew installation completes successfully, and then run Creator (Aider) again.",
-        "OK"
-      );
-    }
-    core.send("aiderProcessStateUpdate", { status: "uninstalled" });
+  if (isAiderInstalled) {
     return;
   }
 
   if (!isAiderInstalled) {
-    const aiderTerminal = vscode.window.createTerminal("Aider Installer");
-    aiderTerminal.show();
     let command = "";
     if (IS_WINDOWS) {
       command += "python -m pip install -U aider-chat;";
@@ -329,24 +269,13 @@ async function handleAiderNotInstalled(core: Core) {
     }
 
     try {
-        await execSync(command);
+        execSync(command);
         // If execution was successful, start the Aider process
         core.invoke("llm/startAiderProcess", undefined);
     } catch (error) {
         // Handle the error case
         console.error("Failed to execute Aider command:", error);
     }
-
-    /*
-    aiderTerminal.sendText(command);
-
-    dont use execCommand here, we run the command in the vscode terminal so user can see the output and report any errors in the early stages of aider easly.
-    this will help us in debugging aider installation issues quicker.
-    we won't have to ask users to open there dev tools to see find and repot errors.
-
-    do not invoke aider, installation will take time because of network delays, cpu perf, and user env setup can cause it to fail also, so invoking will result in error.
-    instead user opens creator again to run it, this info is shown in info notification before installation happens.
-    */
   }
 }
 

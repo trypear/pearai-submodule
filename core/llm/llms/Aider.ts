@@ -43,7 +43,6 @@ class Aider extends BaseLLM {
   };
 
   public aiderProcess: cp.ChildProcess | null = null;
-  public state: AiderStatusUpdate["status"] = "uninstalled";
   private aiderOutput: string = "";
   private credentials: PearAICredentials;
 
@@ -71,7 +70,6 @@ class Aider extends BaseLLM {
 
     this.killAiderProcess();
     this.isAiderUp = false;
-   this.state = "uninstalled";
     // Reset the output
     this.aiderOutput = "";
 
@@ -91,7 +89,7 @@ class Aider extends BaseLLM {
       this.aiderProcess.kill();
       this.aiderProcess = null;
       this.isAiderUp = false;
-   this.state = "uninstalled";
+      this.isAiderStopped = true;
     }
   }
 
@@ -152,6 +150,8 @@ class Aider extends BaseLLM {
   }
 
   public isAiderUp: boolean = false;
+  public isAiderStarted: boolean = false;
+  public isAiderStopped: boolean = false
 
   public async startAiderChat(
     model: string,
@@ -163,7 +163,7 @@ class Aider extends BaseLLM {
     }
 
     this.isAiderUp = false;
-   this.state = "uninstalled";
+    this.isAiderStarted = true;
 
     return new Promise(async (resolve, reject) => {
       let currentDir: string;
@@ -356,7 +356,6 @@ class Aider extends BaseLLM {
           this.aiderProcess.on("close", (code: number | null) => {
             console.log(`Aider process exited with code ${code}`);
             this.isAiderUp = false;
-   this.state = "uninstalled";
             clearTimeout(timeout);
             if (code !== 0) {
               reject(new Error(`Aider process exited with code ${code}`));
@@ -369,7 +368,6 @@ class Aider extends BaseLLM {
           this.aiderProcess.on("error", (error: Error) => {
             console.error(`Error starting Aider: ${error.message}`);
             this.isAiderUp = false;
-   this.state = "uninstalled";
             clearTimeout(timeout);
             reject(error);
             let message =
