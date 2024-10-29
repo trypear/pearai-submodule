@@ -71,7 +71,6 @@ function StepContainer({
   modelTitle,
   source = "continue",
 }: StepContainerProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const isUserInput = item.message.role === "user";
   const active =
     source === "continue"
@@ -123,14 +122,7 @@ function StepContainer({
   }, [item.message.content, active]);
 
   return (
-    <div
-      onMouseEnter={() => {
-        setIsHovered(true);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-      }}
-    >
+    <div>
       <div className="relative">
         <ContentDiv
           hidden={!open}
@@ -164,7 +156,7 @@ function StepContainer({
             Add to PearAI chat context
           </HeaderButtonWithText>
         )}
-        {(isHovered || typeof feedback !== "undefined") && !active && (
+        {!active && (
           <div
             className="flex gap-1 absolute -bottom-2 right-0"
             style={{
