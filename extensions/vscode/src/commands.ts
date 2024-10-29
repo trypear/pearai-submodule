@@ -314,16 +314,8 @@ const commandsMap: (
     },
     "pearai.toggleCreator": async () => {
       const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
-      console.dir("IN COMMANDS SUBMODULE, OVERLAY VISIBLE:");
-      console.dir(isOverlayVisible);
-      // const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
-      console.dir("IN COMMANDS, GET CURRENT TAB");
       const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, [PEAR_OVERLAY_VIEW_ID]);
 
-      // console.dir(isOverlayVisible);
-      // // get current tab from inventory gui, if its creator tab, then close the overlay (executeCommand)
-      // const currentTab = "creator";
-      console.dir(currentTab);
       if (isOverlayVisible && currentTab === "aiderMode") {
         // close overlay
         await vscode.commands.executeCommand("pearai.hideOverlay");
@@ -334,24 +326,46 @@ const commandsMap: (
         // If overlay isn't open, open it first
         await vscode.commands.executeCommand("pearai.showOverlay");
       }
-      
 
       // Navigate to creator tab via webview protocol
-      sidebar.webviewProtocol?.request("navigateToCreator", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      await sidebar.webviewProtocol?.request("navigateToCreator", undefined, [PEAR_OVERLAY_VIEW_ID]);
     },
+    "pearai.toggleSearch": async () => {
+      const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
+      const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, [PEAR_OVERLAY_VIEW_ID]);
 
-    // "pearai.toggleSearch": async () => {
-    //   // First check if overlay is open
-    //   // const isOverlayOpen = await sidebar.webviewProtocol.request("isOverlayOpen", undefined, [PEAR_OVERLAY_VIEW_ID]);
-      
-    //   if (!isOverlayOpen) {
-    //     // If overlay isn't open, open it first
-    //     await vscode.commands.executeCommand("workbench.action.togglePearAI"); 
-    //   }
+      if (isOverlayVisible && currentTab === "perplexityMode") {
+        // close overlay
+        await vscode.commands.executeCommand("pearai.hideOverlay");
+        return;
+      }
 
-    //   // Navigate to search tab via webview protocol
-    //   sidebar.webviewProtocol?.request("navigateToSearch", undefined, [PEAR_OVERLAY_VIEW_ID]);
-    // },
+      if (!isOverlayVisible) {
+        // If overlay isn't open, open it first
+        await vscode.commands.executeCommand("pearai.showOverlay");
+      }
+
+      // Navigate to creator tab via webview protocol
+      await sidebar.webviewProtocol?.request("navigateToSearch", undefined, [PEAR_OVERLAY_VIEW_ID]);
+    },
+    "pearai.toggleInventory": async () => {
+      const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
+      const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, [PEAR_OVERLAY_VIEW_ID]);
+
+      if (isOverlayVisible && currentTab === "inventory") {
+        // close overlay
+        await vscode.commands.executeCommand("pearai.hideOverlay");
+        return;
+      }
+
+      if (!isOverlayVisible) {
+        // If overlay isn't open, open it first
+        await vscode.commands.executeCommand("pearai.showOverlay");
+      }
+
+      // Navigate to creator tab via webview protocol
+      await sidebar.webviewProtocol?.request("navigateToInventory", undefined, [PEAR_OVERLAY_VIEW_ID]);
+    },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {

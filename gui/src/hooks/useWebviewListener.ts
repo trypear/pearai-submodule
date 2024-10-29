@@ -19,9 +19,6 @@ export function useWebviewListener<T extends keyof ToWebviewProtocol>(
         listener = async (event: { data: Message }) => {
           if (event.data.messageType === messageType) {
             const result = await handler(event.data.data);
-            console.dir('USE WEBVIEW LISTENER');
-            console.dir(messageType);
-            console.dir(result);
             ideMessenger.respond(messageType, result, event.data.messageId);
           }
         };

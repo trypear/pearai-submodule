@@ -79,5 +79,6 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   addPerplexityContextinChat: [{ text: string, language: string }, void];
   navigateToCreator: [undefined, void];
   navigateToSearch: [undefined, void];
+  navigateToInventory: [undefined, void];
   getCurrentTab: [undefined, string];
 };
