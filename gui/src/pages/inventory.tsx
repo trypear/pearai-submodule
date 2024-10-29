@@ -105,7 +105,7 @@ export default function Inventory() {
                   }`}
                 >
                   {`${tab.name}`}
-                  <kbd className="ml-1">{modifierKey}+{index + 1}</kbd>
+                  <kbd className="ml-1">{modifierKey}</kbd><kbd className="ml-1">{index + 1}</kbd>
                 </TabsTrigger>
               ))}
             </TabsList>
