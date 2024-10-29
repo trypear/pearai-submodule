@@ -323,7 +323,7 @@ const commandsMap: (
       // console.dir(isOverlayVisible);
       // // get current tab from inventory gui, if its creator tab, then close the overlay (executeCommand)
       // const currentTab = "creator";
-
+      console.dir(currentTab);
       if (isOverlayVisible && currentTab === "aiderMode") {
         // close overlay
         await vscode.commands.executeCommand("pearai.hideOverlay");

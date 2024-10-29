@@ -50,6 +50,7 @@ export default function Inventory() {
     async () => {
       const currentTab = location.pathname.split("/").pop() || "inventory";
       console.dir("IN REACT APP.TSX");
+      console.dir(location)
       console.dir(currentTab);
       return currentTab;
     },
