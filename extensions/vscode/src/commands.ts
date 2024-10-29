@@ -312,6 +312,60 @@ const commandsMap: (
     "pearai.docsReIndex": async () => {
       core.invoke("context/indexDocs", { reIndex: true });
     },
+    "pearai.toggleCreator": async () => {
+      // Check if overlay view is visible using VSCode API
+      // const isOverlayVisible = vscode.window.tabGroups.all.some(group => 
+      //   group.tabs.some(tab => 
+      //     (tab.input as any)?.viewType === PEAR_OVERLAY_VIEW_ID && tab.isActive
+      //   )
+      // );
+      // vscode.window.tabGroups.activeTabGroup.tabs.forEach(tab => 
+      //     console.log(tab.label)
+      // );
+      // console.dir("IN COMMANDS");
+      // console.dir(isOverlayVisible);
+      // console.dir(vscode.window.tabGroups.all);
+      // console.dir(vscode.window.tabGroups.activeTabGroup.tabs);
+      // console.log(vscode.window.tabGroups.all);
+      // First check if overlay is open by checking active tab/view
+      // const isOverlayOpen = await sidebar.webviewProtocol.request("isOverlayOpen", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      // console.dir('isOverlayOpen');
+      // console.dir(isOverlayOpen);
+
+      const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
+      console.dir("IN COMMANDS, GET MSG FROM VSCODE");
+      console.dir(isOverlayVisible);
+      // get current tab from inventory gui, if its creator tab, then close the overlay (executeCommand)
+      const currentTab = "creator";
+
+      if (isOverlayVisible && currentTab === "creator") {
+        // close overlay
+        await vscode.commands.executeCommand("workbench.action.togglePearAI");
+        return;
+      }
+
+      if (!isOverlayVisible) {
+        // If overlay isn't open, open it first
+        await vscode.commands.executeCommand("workbench.action.togglePearAI");
+      }
+      
+
+      // Navigate to creator tab via webview protocol
+      sidebar.webviewProtocol?.request("navigateToCreator", undefined, [PEAR_OVERLAY_VIEW_ID]);
+    },
+
+    // "pearai.toggleSearch": async () => {
+    //   // First check if overlay is open
+    //   // const isOverlayOpen = await sidebar.webviewProtocol.request("isOverlayOpen", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      
+    //   if (!isOverlayOpen) {
+    //     // If overlay isn't open, open it first
+    //     await vscode.commands.executeCommand("workbench.action.togglePearAI"); 
+    //   }
+
+    //   // Navigate to search tab via webview protocol
+    //   sidebar.webviewProtocol?.request("navigateToSearch", undefined, [PEAR_OVERLAY_VIEW_ID]);
+    // },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {

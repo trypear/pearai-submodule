@@ -77,4 +77,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   openOnboarding: [undefined, void];
   addPerplexityContext: [{text: string, language: string}, void]
   addPerplexityContextinChat: [{ text: string, language: string }, void];
+  navigateToCreator: [undefined, void];
+  navigateToSearch: [undefined, void];
+  isOverlayOpen: [undefined, boolean];
 };

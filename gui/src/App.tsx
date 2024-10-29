@@ -22,6 +22,7 @@ import Stats from "./pages/stats";
 import Inventory from "./pages/inventory";
 import AiderGUI from "./integrations/aider/aidergui";
 import PerplexityGUI from "./integrations/perplexity/perplexitygui";
+import { useWebviewListener } from "./hooks/useWebviewListener";
 
 
 declare global {
@@ -123,6 +124,17 @@ function App() {
 
   const vscTheme = useVscTheme();
   const submenuContextProvidersMethods = useSubmenuContextProviders();
+
+    // IDE event listeners
+    useWebviewListener(
+      "isOverlayOpen",
+      async () => {
+        console.dir("IN APP");
+        console.dir(window.isPearOverlay);
+        return window.isPearOverlay;
+      },
+      [], // No dependencies needed since we're just checking a window property
+    );
 
   return (
     <VscThemeContext.Provider value={vscTheme}>

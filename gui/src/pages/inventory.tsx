@@ -4,6 +4,8 @@ import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
 import AiderGUI from "@/integrations/aider/aidergui";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { useWebviewListener } from "@/hooks/useWebviewListener";
+
 
 const tabs = [
   { id: "inventory", name: "Inventory", component: <InventoryPage /> },
@@ -24,6 +26,24 @@ export default function Inventory() {
   const navigate = useNavigate();
   const currentTab = location.pathname.split("/").pop() || "inventory";
 
+  // listen for navigation change requests from vscode
+  useWebviewListener(
+    "navigateToCreator",
+    async () => {
+      console.dir("IN INVENTORY")
+      navigate("/inventory/aiderMode");
+    },
+    [],
+  );
+
+  useWebviewListener(
+    "navigateToSearch",
+    async () => {
+      navigate("/inventory/perplexityMode");
+    },  
+    [],
+  )
+
   const handleTabChange = (value: string) => {
     if (value === "inventory") {
       navigate("/inventory");
@@ -32,30 +52,30 @@ export default function Inventory() {
     navigate(`/inventory/${value}`);
   };
 
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      const activeElement = document.activeElement;
-      if (
-        activeElement instanceof HTMLElement &&
-        (activeElement.isContentEditable ||
-          activeElement.tagName === "INPUT" ||
-          activeElement.tagName === "TEXTAREA" ||
-          activeElement.tagName === "SELECT")
-      ) {
-        return;
-      }
-      if (event.key >= "1" && event.key <= "3") {
-        // Convert key to index (0-2)
-        const index = parseInt(event.key) - 1;
-        if (index >= 0 && index < tabs.length) {
-          handleTabChange(tabs[index].id);
-        }
-      }
-    };
+  // useEffect(() => {
+  //   const handleKeyPress = (event: KeyboardEvent) => {
+  //     const activeElement = document.activeElement;
+  //     if (
+  //       activeElement instanceof HTMLElement &&
+  //       (activeElement.isContentEditable ||
+  //         activeElement.tagName === "INPUT" ||
+  //         activeElement.tagName === "TEXTAREA" ||
+  //         activeElement.tagName === "SELECT")
+  //     ) {
+  //       return;
+  //     }
+  //     if (event.key >= "1" && event.key <= "3") {
+  //       // Convert key to index (0-2)
+  //       const index = parseInt(event.key) - 1;
+  //       if (index >= 0 && index < tabs.length) {
+  //         handleTabChange(tabs[index].id);
+  //       }
+  //     }
+  //   };
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, []);
+  //   window.addEventListener("keydown", handleKeyPress);
+  //   return () => window.removeEventListener("keydown", handleKeyPress);
+  // }, []);
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-background">
