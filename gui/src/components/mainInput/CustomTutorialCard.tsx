@@ -90,7 +90,7 @@ export function CustomTutorialCard({
           <div className="flex">
             <div className="flex items-center gap-2 min-w-[120px]">
               <X className="h-4 w-4 text-red-500" />
-              <strong>Not good for</strong>
+              <strong>Less suited for</strong>
             </div>
             <span>{content.notGoodFor}</span>
           </div>

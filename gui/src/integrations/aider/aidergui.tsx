@@ -426,7 +426,7 @@ export default AiderGUI;
 const tutorialContent = {
   goodFor: "direct feature implementations, bug fixes, code refactoring",
   notGoodFor:
-    "anything not requiring actual code changes (use PearAI Chat instead)",
+    "questions unrelated to feature creation and bugs (use PearAI Chat instead)",
   example: {
     text: '"make a new FAQ page for my website"',
     copyText: "make a new FAQ page for my website",
