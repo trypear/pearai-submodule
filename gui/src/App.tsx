@@ -125,17 +125,6 @@ function App() {
   const vscTheme = useVscTheme();
   const submenuContextProvidersMethods = useSubmenuContextProviders();
 
-    // IDE event listeners
-    useWebviewListener(
-      "isOverlayOpen",
-      async () => {
-        console.dir("IN APP");
-        console.dir(window.isPearOverlay);
-        return window.isPearOverlay;
-      },
-      [], // No dependencies needed since we're just checking a window property
-    );
-
   return (
     <VscThemeContext.Provider value={vscTheme}>
       <SubmenuContextProvidersContext.Provider
