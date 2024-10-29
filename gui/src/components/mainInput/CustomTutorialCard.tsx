@@ -80,7 +80,7 @@ export function CustomTutorialCard({
       <ul className="text-gray-300 space-y-4 pl-0">
         <AnimatedListItem>
           <div className="flex">
-            <div className="flex items-center gap-2 min-w-[120px]">
+            <div className="flex items-center gap-2 min-w-[160px]">
               <Check className="h-4 w-4 text-green-500" />
               <strong>Good for</strong>
             </div>
@@ -89,7 +89,7 @@ export function CustomTutorialCard({
         </AnimatedListItem>
         <AnimatedListItem>
           <div className="flex">
-            <div className="flex items-center gap-2 min-w-[120px]">
+            <div className="flex items-center gap-2 min-w-[160px]">
               <X className="h-4 w-4 text-red-500" />
               <strong>Less suited for</strong>
             </div>
@@ -98,7 +98,7 @@ export function CustomTutorialCard({
         </AnimatedListItem>
         <AnimatedListItem>
           <div className="flex">
-            <div className="flex items-center gap-2 min-w-[120px]">
+            <div className="flex items-center gap-2 min-w-[160px]">
               <LightBulbIcon className="h-4 w-4 text-yellow-500" />
               <strong>Try yourself</strong>
             </div>
@@ -108,13 +108,10 @@ export function CustomTutorialCard({
             </span>
           </div>
         </AnimatedListItem>
-      </ul>
-      <ul className="text-gray-300 space-y-4 pl-0 mt-4">
-     <ul className="text-gray-300 space-y-4 pl-0 mt-4">
-        {content.moreInfo.length > 0 && (
+        {content.moreInfo && content.moreInfo.length > 0 && (
           <AnimatedListItem>
             <div className="flex">
-              <div className="flex items-center gap-2 min-w-[120px]">
+              <div className="flex items-center gap-2 min-w-[160px]">
                 <LightBulbIcon className="h-4 w-4 text-blue-500" />
                 <strong>More information</strong>
               </div>
@@ -126,7 +123,6 @@ export function CustomTutorialCard({
             </div>
           </AnimatedListItem>
         )}
-     </ul>
       </ul>
     </CustomTutorialCardDiv>
   );

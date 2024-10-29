@@ -424,12 +424,12 @@ function AiderGUI() {
 export default AiderGUI;
 
 const tutorialContent = {
-  goodFor: "direct feature implementations, bug fixes, code refactoring",
+  goodFor: "Direct feature implementations, bug fixes, code refactoring",
   notGoodFor:
-    "questions unrelated to feature creation and bugs (use PearAI Chat instead)",
+    "Questions unrelated to feature creation and bugs (use PearAI Chat instead)",
   example: {
-    text: '"make a new FAQ page for my website"',
-    copyText: "make a new FAQ page for my website",
+    text: '"Make a new FAQ page for my website"',
+    copyText: "Make a new FAQ page for my website",
   },
   moreInfo: [
     "Type '@' to add file context to your request.",
