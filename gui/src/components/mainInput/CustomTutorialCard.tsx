@@ -54,6 +54,9 @@ const AnimatedListItem = styled.li`
   &:nth-child(3) {
     animation-delay: 0.3s;
   }
+  &:nth-child(4) {
+    animation-delay: 0.4s;
+  }
   list-style: none;
 `;
 
