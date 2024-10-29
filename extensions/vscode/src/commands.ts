@@ -326,13 +326,13 @@ const commandsMap: (
 
       if (isOverlayVisible && currentTab === "aiderMode") {
         // close overlay
-        await vscode.commands.executeCommand("workbench.action.closePearAI");
+        await vscode.commands.executeCommand("pearai.hideOverlay");
         return;
       }
 
       if (!isOverlayVisible) {
         // If overlay isn't open, open it first
-        await vscode.commands.executeCommand("workbench.action.showOverlayPearAI");
+        await vscode.commands.executeCommand("pearai.showOverlay");
       }
       
 
