@@ -332,7 +332,7 @@ const commandsMap: (
       // console.dir('isOverlayOpen');
       // console.dir(isOverlayOpen);
       // await vscode.commands.executeCommand('vscode.newWindow');
-      await vscode.commands.executeCommand('pearai.showOverlay');
+      await vscode.commands.executeCommand('workbench.action.showOverlay');
       const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
       console.dir("IN COMMANDS, GET MSG FROM VSCODE");
       console.dir(isOverlayVisible);
