@@ -191,7 +191,7 @@ function TipTapEditor({
 
   const useActiveFile = useSelector(selectUseActiveFile);
 
-  const { saveSession } = useHistory(dispatch);
+  const { saveSession } = useHistory(dispatch, source);
 
   const posthog = usePostHog();
   const [isEditorFocused, setIsEditorFocused] = useState(false);
@@ -940,7 +940,8 @@ function TipTapEditor({
         onAddContextItem={() => {
           if (editor.getText().endsWith("@")) {
           } else {
-            editor.commands.insertContent("@");
+            // Add space so that if there's text right before, it still activates the dropdown
+            editor.commands.insertContent(" @");
           }
         }}
         onEnter={onEnterRef.current}

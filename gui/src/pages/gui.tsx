@@ -250,7 +250,7 @@ function GUI() {
   );
 
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
-    useHistory(dispatch);
+    useHistory(dispatch, 'continue');
 
   useWebviewListener(
     "newSession",
@@ -366,7 +366,7 @@ function GUI() {
                             onDelete={() => {
                               dispatch(
                                 deleteMessage({
-                                  index: index + 1,
+                                  index: index,
                                   source: "continue",
                                 }),
                               );

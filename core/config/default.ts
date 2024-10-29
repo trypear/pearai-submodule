@@ -120,7 +120,7 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       model: "claude-3-5-sonnet",
       contextLength: 3000000,
-      title: "Claude 3.5 Sonnet (PearAI)",
+      title: "Claude 3.5 Sonnet - New (PearAI)",
       systemMessage:
         "You are an expert software developer. You give helpful and concise responses.",
       provider: "pearai_server",
@@ -129,7 +129,7 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       model: "perplexity",
       title: "PearAI Search (Powered by Perplexity)",
-      systemMessage: "You are an expert software developer. You give helpful and concise responses based on the latest software engineering practices and documentation.",
+      systemMessage: "You are an expert documentation and information gatherer. You give succinct responses based on the latest software engineering practices and documentation. Always go to the web to get the latest information and data.",
       provider: "pearai_server",
       isDefault: true,
     },
@@ -155,6 +155,18 @@ export const defaultConfig: SerializedContinueConfig = {
       provider: "aider",
       isDefault: true,
     },
+    {
+      model: "o1-mini",
+      title: "GPTo1 Mini (PearAI annual only)",
+      provider: "pearai_server",
+      isDefault: true
+    },
+    {
+      model: "o1-preview",
+      title: "GPTo1 Preview (PearAI annual only)",
+      provider: "pearai_server",
+      isDefault: true
+    }
   ],
   customCommands: [
     {
