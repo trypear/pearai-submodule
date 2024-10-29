@@ -332,23 +332,23 @@ const commandsMap: (
       // console.dir('isOverlayOpen');
       // console.dir(isOverlayOpen);
       // await vscode.commands.executeCommand('vscode.newWindow');
-      await vscode.commands.executeCommand('vscode.showOverlay');
-      const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
+      await vscode.commands.executeCommand('workbench.action.showOverlayPearAI');
+      // const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
       console.dir("IN COMMANDS, GET MSG FROM VSCODE");
-      console.dir(isOverlayVisible);
-      // get current tab from inventory gui, if its creator tab, then close the overlay (executeCommand)
-      const currentTab = "creator";
+      // console.dir(isOverlayVisible);
+      // // get current tab from inventory gui, if its creator tab, then close the overlay (executeCommand)
+      // const currentTab = "creator";
 
-      if (isOverlayVisible && currentTab === "creator") {
-        // close overlay
-        await vscode.commands.executeCommand("workbench.action.togglePearAI");
-        return;
-      }
+      // if (isOverlayVisible && currentTab === "creator") {
+      //   // close overlay
+      //   await vscode.commands.executeCommand("workbench.action.togglePearAI");
+      //   return;
+      // }
 
-      if (!isOverlayVisible) {
-        // If overlay isn't open, open it first
-        await vscode.commands.executeCommand("workbench.action.togglePearAI");
-      }
+      // if (!isOverlayVisible) {
+      //   // If overlay isn't open, open it first
+      //   await vscode.commands.executeCommand("workbench.action.togglePearAI");
+      // }
       
 
       // Navigate to creator tab via webview protocol
