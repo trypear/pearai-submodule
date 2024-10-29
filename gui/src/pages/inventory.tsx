@@ -44,6 +44,17 @@ export default function Inventory() {
     [],
   )
 
+  // IDE event listeners
+  useWebviewListener(
+    "getCurrentTab",
+    async () => {
+      console.dir("IN REACT APP.TSX");
+      console.dir(currentTab);
+      return currentTab;
+    },
+    [], // No dependencies needed since we're just checking a window property
+  );
+
   const handleTabChange = (value: string) => {
     if (value === "inventory") {
       navigate("/inventory");

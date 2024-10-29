@@ -313,36 +313,18 @@ const commandsMap: (
       core.invoke("context/indexDocs", { reIndex: true });
     },
     "pearai.toggleCreator": async () => {
-      // Check if overlay view is visible using VSCode API
-      // const isOverlayVisible = vscode.window.tabGroups.all.some(group => 
-      //   group.tabs.some(tab => 
-      //     (tab.input as any)?.viewType === PEAR_OVERLAY_VIEW_ID && tab.isActive
-      //   )
-      // );
-      // vscode.window.tabGroups.activeTabGroup.tabs.forEach(tab => 
-      //     console.log(tab.label)
-      // );
-      // console.dir("IN COMMANDS");
-      // console.dir(isOverlayVisible);
-      // console.dir(vscode.window.tabGroups.all);
-      // console.dir(vscode.window.tabGroups.activeTabGroup.tabs);
-      // console.log(vscode.window.tabGroups.all);
-      // First check if overlay is open by checking active tab/view
-      // const isOverlayOpen = await sidebar.webviewProtocol.request("isOverlayOpen", undefined, [PEAR_OVERLAY_VIEW_ID]);
-      // console.dir('isOverlayOpen');
-      // console.dir(isOverlayOpen);
-      // await vscode.commands.executeCommand('vscode.newWindow');
-      // await vscode.commands.executeCommand('workbench.action.showOverlayPearAI');
       const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
       console.dir("IN COMMANDS SUBMODULE, OVERLAY VISIBLE:");
       console.dir(isOverlayVisible);
       // const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
-      console.dir("IN COMMANDS, GET MSG FROM VSCODE");
+      console.dir("IN COMMANDS, GET CURRENT TAB");
+      const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, [PEAR_OVERLAY_VIEW_ID]);
+
       // console.dir(isOverlayVisible);
       // // get current tab from inventory gui, if its creator tab, then close the overlay (executeCommand)
       // const currentTab = "creator";
 
-      if (isOverlayVisible) {
+      if (isOverlayVisible && currentTab === "aiderMode") {
         // close overlay
         await vscode.commands.executeCommand("workbench.action.closePearAI");
         return;
