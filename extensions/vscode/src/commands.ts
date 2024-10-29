@@ -331,7 +331,7 @@ const commandsMap: (
       // const isOverlayOpen = await sidebar.webviewProtocol.request("isOverlayOpen", undefined, [PEAR_OVERLAY_VIEW_ID]);
       // console.dir('isOverlayOpen');
       // console.dir(isOverlayOpen);
-      await vscode.commands.executeCommand('vscode.newWindow');
+      // await vscode.commands.executeCommand('vscode.newWindow');
       await vscode.commands.executeCommand('pearai.showOverlay');
       const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
       console.dir("IN COMMANDS, GET MSG FROM VSCODE");
