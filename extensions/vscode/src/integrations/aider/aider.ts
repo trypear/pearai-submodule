@@ -22,11 +22,11 @@ export async function startAiderProcess(
   const isPythonInstalled = await checkPythonInstallation();
   const isAiderInstalled = await checkAiderInstallation();
 
-  if (isFirstPearAICreatorLaunch && (!isBrewInstalled || !isPythonInstalled)) {
+  if (isFirstPearAICreatorLaunch && !isAiderInstalled && (!isBrewInstalled || !isPythonInstalled)) {
     return;
   }
 
-  if (!isBrewInstalled || !isPythonInstalled || !isAiderInstalled) {
+  if (!isAiderInstalled) {
     await handleAiderNotInstalled(core);
     return;
   }

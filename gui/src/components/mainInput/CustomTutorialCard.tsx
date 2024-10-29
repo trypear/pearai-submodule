@@ -15,6 +15,7 @@ export interface TutorialContent {
     text: string;
     copyText: string;
   };
+  moreInfo: string[];
 }
 
 const fadeIn = keyframes`
@@ -107,6 +108,25 @@ export function CustomTutorialCard({
             </span>
           </div>
         </AnimatedListItem>
+      </ul>
+      <ul className="text-gray-300 space-y-4 pl-0 mt-4">
+     <ul className="text-gray-300 space-y-4 pl-0 mt-4">
+        {content.moreInfo.length > 0 && (
+          <AnimatedListItem>
+            <div className="flex">
+              <div className="flex items-center gap-2 min-w-[120px]">
+                <LightBulbIcon className="h-4 w-4 text-blue-500" />
+                <strong>More information</strong>
+              </div>
+              <div>
+                {content.moreInfo.map((info, index) => (
+                  <div key={index}>{info}</div>
+                ))}
+              </div>
+            </div>
+          </AnimatedListItem>
+        )}
+     </ul>
       </ul>
     </CustomTutorialCardDiv>
   );

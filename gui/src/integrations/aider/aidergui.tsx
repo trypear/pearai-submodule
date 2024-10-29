@@ -431,5 +431,10 @@ const tutorialContent = {
     text: '"make a new FAQ page for my website"',
     copyText: "make a new FAQ page for my website",
   },
+  moreInfo: [
+    "Type '@' to add file context to your request.",
+    "Note that PearAI Creator will create files and make in-line changes for you automatically."
+  ]
 };
 import AiderManualInstallation from "./AiderManualInstallation";
+
