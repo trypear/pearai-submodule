@@ -3,13 +3,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+const FIRST_LAUNCH_KEY = 'pearai.firstLaunch';
 const pearAISettingsDir = path.join(os.homedir(), '.pearai');
 const pearAIDevExtensionsDir = path.join(os.homedir(), '.pearai', 'extensions');
 
 const firstLaunchFlag = path.join(pearAISettingsDir, 'firstLaunch.flag');
-export const isFirstLaunch = !fs.existsSync(firstLaunchFlag);
 const firstPearAICreatorLaunchFlag = path.join(pearAISettingsDir, 'firstLaunchCreator.flag');
 export const isFirstPearAICreatorLaunch = !fs.existsSync(firstPearAICreatorLaunchFlag);
+// export const isFirstLaunch = !fs.existsSync(firstLaunchFlag);
+
+// Checks both file system and global state for backward compatibility
+export function isFirstLaunch(context: vscode.ExtensionContext): boolean {
+    const fileExists = fs.existsSync(firstLaunchFlag);
+    const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
+    
+    // If either file exists or state is set, it's not first launch
+    return !fileExists && !stateExists;
+}
 
 
 
@@ -101,17 +111,50 @@ function copyDirectoryRecursiveSync(source: string, destination: string, exclusi
     });
 }
 
-export function importUserSettingsFromVSCode() {
+// TEMPORARY new function to migrate file-based flag to state-based
+async function migrateFirstLaunchFlag(context: vscode.ExtensionContext) {
+    const fileExists = fs.existsSync(firstLaunchFlag);
+    const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
+
+    if (fileExists && !stateExists) {
+        // If file exists but state doesn't, migrate by setting the state
+        await context.globalState.update(FIRST_LAUNCH_KEY, true);
+    }
+}
+
+export async function importUserSettingsFromVSCode(context: vscode.ExtensionContext) {
+    // First, ensure migration of existing file-based flags
+    await migrateFirstLaunchFlag(context);
+    
+    const isFirstTime = isFirstLaunch(context);
+
     // this function is synchronous and copying files takes time
     // thats why run it after 3 seconds, until which extension activates.
-    setTimeout(() => {
-        if (!fs.existsSync(firstLaunchFlag)) {
-            vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
-            copyVSCodeSettingsToPearAIDir();
-            fs.writeFileSync(firstLaunchFlag, 'This is the first launch flag file');
-            vscode.window.showInformationMessage('Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.', 'Ok');
-        }
-    }, 3000);
+    if (isFirstTime) {
+        vscode.commands.executeCommand("pearai.showOverlay");
+        // todo: route to onboarding hello page
+        setTimeout(() => {
+            try {
+                if (isFirstTime) {
+                    // TODO: THIS MSG SHOULD BE IN OVERLAY
+                    vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
+                    copyVSCodeSettingsToPearAIDir();
+                    // No longer write flag to a file, just set state
+                    // fs.writeFileSync(firstLaunchFlag, 'This is the first launch flag file');
+        
+                    // TODO: THIS MSG SHOULD BE IN OVERLAY
+                    vscode.window.showInformationMessage('Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.', 'Ok');
+                }
+            } catch (error) {
+                // TODO: DISPLAY ERROR MSG IN OVERLAY
+                vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
+            }
+            
+        }, 3000);
+    }
+
+    await context.globalState.update(FIRST_LAUNCH_KEY, true);
+
 
     setTimeout(() => {
         const flagFile = firstPearAICreatorLaunchFlag;
