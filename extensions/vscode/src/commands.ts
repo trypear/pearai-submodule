@@ -32,6 +32,7 @@ import { getExtensionUri } from "./util/vscode";
 import { aiderCtrlC, aiderResetSession, openAiderPanel } from './integrations/aider/aider';
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
+import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -313,58 +314,13 @@ const commandsMap: (
       core.invoke("context/indexDocs", { reIndex: true });
     },
     "pearai.toggleCreator": async () => {
-      const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
-      const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, [PEAR_OVERLAY_VIEW_ID]);
-
-      if (isOverlayVisible && currentTab === "aiderMode") {
-        // close overlay
-        await vscode.commands.executeCommand("pearai.hideOverlay");
-        return;
-      }
-
-      if (!isOverlayVisible) {
-        // If overlay isn't open, open it first
-        await vscode.commands.executeCommand("pearai.showOverlay");
-      }
-
-      // Navigate to creator tab via webview protocol
-      await sidebar.webviewProtocol?.request("navigateToCreator", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
     "pearai.toggleSearch": async () => {
-      const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
-      const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, [PEAR_OVERLAY_VIEW_ID]);
-
-      if (isOverlayVisible && currentTab === "perplexityMode") {
-        // close overlay
-        await vscode.commands.executeCommand("pearai.hideOverlay");
-        return;
-      }
-
-      if (!isOverlayVisible) {
-        // If overlay isn't open, open it first
-        await vscode.commands.executeCommand("pearai.showOverlay");
-      }
-
-      // Navigate to creator tab via webview protocol
-      await sidebar.webviewProtocol?.request("navigateToSearch", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
     "pearai.toggleInventory": async () => {
-      const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
-      const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, [PEAR_OVERLAY_VIEW_ID]);
-
-      if (isOverlayVisible && currentTab === "inventory") {
-        // close overlay
-        await vscode.commands.executeCommand("pearai.hideOverlay");
-        return;
-      }
-
-      if (!isOverlayVisible) {
-        // If overlay isn't open, open it first
-        await vscode.commands.executeCommand("pearai.showOverlay");
-      }
-
-      // Navigate to creator tab via webview protocol
-      await sidebar.webviewProtocol?.request("navigateToInventory", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
