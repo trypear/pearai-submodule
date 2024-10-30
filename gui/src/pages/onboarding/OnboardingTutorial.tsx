@@ -15,6 +15,12 @@ const TutorialCardDiv = styled.div`
   position: relative;
 `;
 
+const PageNumbers = styled.div`
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+`;
+
 const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose }) => {
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -63,6 +69,9 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose }) => {
           <Button size="sm" className="w-16" onClick={nextPage} disabled={currentPage === pages.length - 1}>Next</Button>
         </div>
       </div>
+      <PageNumbers className="text-xs">
+        {currentPage + 1} / {pages.length}
+      </PageNumbers>
     </TutorialCardDiv>
   );
 };
