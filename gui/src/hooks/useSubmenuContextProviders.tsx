@@ -201,9 +201,12 @@ useEffect(() => {
   }
   setLoaded(true);
 
+  console.dir("DDDD IM HERE 8888")
+  const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
+  console.dir(defaultModelTitle?.toLowerCase());
+
   contextProviderDescriptions.forEach(async (description) => {
     // Check if we should use relative file paths by checking the default model title
-    const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
     if (shouldSkipContextProviders(defaultModelTitle, description))
       return;
 

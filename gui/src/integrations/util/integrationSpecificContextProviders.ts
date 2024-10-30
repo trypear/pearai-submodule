@@ -26,6 +26,8 @@ export function shouldSkipContextProviders(
   defaultModelTitle: string | undefined,
   description: { title: string },
 ): boolean {
+  console.dir("BBBBB IM HERE 8888")
+  console.dir(defaultModelTitle?.toLowerCase());
   // For integrations with specific context providers
   const matchingIntegrationKey = Object.keys(
     SPECIFIC_CONTEXT_PROVIDERS_INTEGRATIONS,
@@ -52,6 +54,8 @@ export function getContextProviders() {
 
   return useMemo(() => {
     // Check if pathname has specific context providers
+    console.dir("AAAAA IM HERE 8888")
+    console.dir(pathname)
     if (pathname in SPECIFIC_CONTEXT_PROVIDERS_PATHNAME) {
       const specificProviders = SPECIFIC_CONTEXT_PROVIDERS_PATHNAME[pathname];
       return availableContextProviders.filter((provider) =>

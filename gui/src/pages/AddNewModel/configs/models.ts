@@ -51,7 +51,7 @@ export const models: { [key: string]: ModelPackage } = {
     description:
       "An AI-powered coding assistant that helps developers write, edit, and understand code more efficiently.",
     params: {
-      model: "aider",
+      model: "pearai_aider",
       contextLength: 300_000,
       title: "Aider",
       systemMessage:
