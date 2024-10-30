@@ -90,44 +90,42 @@ interface StyledMarkdownPreviewProps {
   className?: string;
   showCodeBorder?: boolean;
   scrollLocked?: boolean;
+  isStreaming?: boolean;
   integrationSource?: "perplexity" | "aider" | "continue";
 }
 
 const FadeInWords: React.FC = (props: any) => {
   const { children, ...otherProps } = props;
-
   const active = useSelector((store: RootState) => store.state.active);
-
-  const [textWhenActiveStarted, setTextWhenActiveStarted] = useState(
-    props.children,
-  );
-
+  const [hasStarted, setHasStarted] = useState(false);
+  
   useEffect(() => {
-    if (active) {
-      setTextWhenActiveStarted(children);
+    if (active && !hasStarted) {
+      setHasStarted(true);
+    } else if (!active) {
+      setHasStarted(false);
     }
   }, [active]);
 
-  // Split the text into words
+  // Only apply animation after initial render
   const words = children
     .map((child) => {
       if (typeof child === "string") {
-        return child.split(" ").map((word, index) => (
-          <span className="fade-in-span" key={index}>
-            {word}{" "}
+        return child.split(/(\s+)/).map((word, index) => (
+          <span 
+            className={word.trim() && hasStarted ? "fade-in-span" : undefined} 
+            key={index}
+          >
+            {word}
           </span>
         ));
       } else {
-        return <span className="fade-in-span">{child}</span>;
+        return <span className={hasStarted ? "fade-in-span" : undefined}>{child}</span>;
       }
     })
     .flat();
 
-  return active && children !== textWhenActiveStarted ? (
-    <p {...otherProps}>{words}</p>
-  ) : (
-    <p>{children}</p>
-  );
+  return <p {...otherProps}>{words}</p>;
 };
 
 const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
@@ -204,9 +202,9 @@ const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
         //       <SyntaxHighlightedPre {...preProps}></SyntaxHighlightedPre>
         //     );
         //   },
-        // p: ({ node, ...props }) => {
-        //   return <FadeInWords {...props}></FadeInWords>;
-        // },
+        p: ({ node, ...props }) => {
+          return <FadeInWords {...props}></FadeInWords>;
+        },
       },
     },
   });
