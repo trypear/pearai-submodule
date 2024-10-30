@@ -135,7 +135,6 @@ export class QuickEdit {
     const config = await this.configHandler.loadConfig();
 
     // If there's a currently selected model and it's not blocked, use it
-    console.dir(this._curModelTitle);
     if (this._curModelTitle && !this.BLOCKED_MODELS.some(blocked => 
             blocked.toLowerCase().includes(this._curModelTitle!.toLowerCase()))
           ) {
