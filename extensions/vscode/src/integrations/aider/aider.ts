@@ -29,8 +29,7 @@ export async function startAiderProcess(
       if (!isBrewInstalled || !isPythonInstalled) {
         setAiderUninstalled = true;
       } else { // If prereq's are installed, then try to install aider automatically
-        await handleAiderNotInstalled(core);
-        setAiderUninstalled = true;
+        setAiderUninstalled = (await handleAiderNotInstalled(core)) || true;
       }
     }
   } else {
@@ -241,6 +240,8 @@ async function checkBrewInstallation(): Promise<boolean> {
   }
 }
 
+
+// Return whether or not automatic install worked or not
 async function handleAiderNotInstalled(core: Core) {
   const isPythonInstalled = await checkPythonInstallation();
   console.log("PYTHON CHECK RESULT :");
@@ -252,7 +253,7 @@ async function handleAiderNotInstalled(core: Core) {
   console.log("AIDER CHECK RESULT :");
   console.dir(isAiderInstalled);
   if (isAiderInstalled) {
-    return;
+    return false;
   }
 
   if (!isAiderInstalled) {
@@ -269,9 +270,11 @@ async function handleAiderNotInstalled(core: Core) {
         execSync(command);
         // If execution was successful, start the Aider process
         core.invoke("llm/startAiderProcess", undefined);
+        return false;
     } catch (error) {
         // Handle the error case
         console.error("Failed to execute Aider command:", error);
+        return true;
     }
   }
 }
