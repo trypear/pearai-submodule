@@ -50,6 +50,7 @@ import {
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
+import OnboardingTutorial from "./onboarding/OnboardingTutorial";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
@@ -287,6 +288,7 @@ function GUI() {
   return (
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+        <OnboardingTutorial onClose={() => {}}/>
         <div className="mx-2">
           <StepsDiv>
             {state.history.map((item, index: number) => {
