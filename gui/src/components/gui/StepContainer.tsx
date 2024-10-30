@@ -141,6 +141,7 @@ function StepContainer({
               source={stripImages(item.message.content)}
               showCodeBorder={true}
               isStreaming={active}
+              integrationSource={source}
             />
           )}
         </ContentDiv>

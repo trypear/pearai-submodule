@@ -94,9 +94,17 @@ interface StyledMarkdownPreviewProps {
   integrationSource?: "perplexity" | "aider" | "continue";
 }
 
-const FadeInWords: React.FC = (props: any) => {
-  const { children, ...otherProps } = props;
-  const active = useSelector((store: RootState) => store.state.active);
+interface FadeInWordsProps extends StyledMarkdownPreviewProps {
+  children: any;
+}
+
+const FadeInWords: React.FC<FadeInWordsProps> = (props: FadeInWordsProps) => {
+  const { children, integrationSource, ...otherProps } = props;
+  const active = props.integrationSource === "continue"
+    ? useSelector((store: RootState) => store.state.active)
+    : props.integrationSource === "perplexity"
+      ? useSelector((store: RootState) => store.state.perplexityActive)
+      : useSelector((store: RootState) => store.state.aiderActive);
   const [hasStarted, setHasStarted] = useState(false);
   
   useEffect(() => {
@@ -202,8 +210,10 @@ const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
         //       <SyntaxHighlightedPre {...preProps}></SyntaxHighlightedPre>
         //     );
         //   },
-        p: ({ node, ...props }) => {
-          return <FadeInWords {...props}></FadeInWords>;
+        p: ({ node, ...pProps }) => {
+          // pProps is the props of the paragraph node from rehypeReact
+          // props is the actual props of StyledMarkdownPreview
+          return <FadeInWords {...pProps} {...props}>{pProps.children}</FadeInWords>;
         },
       },
     },
