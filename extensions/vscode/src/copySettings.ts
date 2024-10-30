@@ -155,7 +155,7 @@ export async function importUserSettingsFromVSCode(context: vscode.ExtensionCont
 
     await context.globalState.update(FIRST_LAUNCH_KEY, true);
 
-
+    // todo: use global state for this as well
     setTimeout(() => {
         const flagFile = firstPearAICreatorLaunchFlag;
         const productName ='PearAI Creator';
