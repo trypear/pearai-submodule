@@ -15,7 +15,7 @@ import {
 import { modelSupportsImages } from "core/llm/autodetect";
 import { getBasename, getRelativePath } from "core/util";
 import { usePostHog } from "posthog-js/react";
-import { useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -24,7 +24,6 @@ import {
   vscBadgeBackground,
   vscForeground,
   vscInputBackground,
-  vscInputBorder,
   vscInputBorderFocus,
 } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
@@ -37,6 +36,7 @@ import { selectUseActiveFile } from "../../redux/selectors";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import {
   consumeMainEditorContent,
+  setContextItems,
   setEditingContextItemAtIndex,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
@@ -45,6 +45,7 @@ import {
   isJetBrains,
   isMetaEquivalentKeyPressed,
   isWebEnvironment,
+  isValidFilePath
 } from "../../util";
 import CodeBlockExtension from "./CodeBlockExtension";
 import { SlashCommand } from "./CommandsExtension";
@@ -58,10 +59,8 @@ import {
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
 
-
 const InputBoxDiv = styled.div`
   resize: none;
-
   padding: 8px 12px;
   padding-bottom: 4px;
   font-family: inherit;
@@ -74,9 +73,9 @@ const InputBoxDiv = styled.div`
   z-index: 1;
   outline: none;
   font-size: ${getFontSize()}px;
+
   &:focus {
     outline: none;
-
     border: 0.5px solid ${vscInputBorderFocus};
   }
 
@@ -122,8 +121,7 @@ const getPlaceholder = (historyLength: number, location: any) => {
     return historyLength === 0
       ? "Ask me to create, change, or fix anything..."
       : "Send a follow-up";
-  }
-  else if (location?.pathname === "/perplexityMode" || location?.pathname === "/inventory/perplexityMode") {
+  } else if (location?.pathname === "/perplexityMode" || location?.pathname === "/inventory/perplexityMode") {
     return historyLength === 0 ? "Ask for any information" : "Ask a follow-up";
   }
 
@@ -132,7 +130,7 @@ const getPlaceholder = (historyLength: number, location: any) => {
     : "Ask a follow-up";
 };
 
-function getDataUrlForFile(file: File, img): string {
+const getDataUrlForFile = (file: File, img): string => {
   const targetWidth = 512;
   const targetHeight = 512;
   const scaleFactor = Math.min(
@@ -141,15 +139,20 @@ function getDataUrlForFile(file: File, img): string {
   );
 
   const canvas = document.createElement("canvas");
+
   canvas.width = img.width * scaleFactor;
   canvas.height = img.height * scaleFactor;
 
   const ctx = canvas.getContext("2d");
+
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
   const downsizedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
+
   return downsizedDataUrl;
 }
+
+interface ShowFileEvent extends CustomEvent<{ filepath: string }> {}
 
 interface TipTapEditorProps {
   availableContextProviders: ContextProviderDescription[];
@@ -158,16 +161,17 @@ interface TipTapEditorProps {
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
+  onContentChange?: (isEmpty: boolean) => void;
 }
-
-function TipTapEditor({
+const TipTapEditor = ({
   availableContextProviders,
   availableSlashCommands,
   isMainInput,
   onEnter,
   editorState,
   source = 'continue',
-}: TipTapEditorProps) {
+  onContentChange,
+}: TipTapEditorProps) => {
   const dispatch = useDispatch();
 
   const ideMessenger = useContext(IdeMessengerContext);
@@ -480,13 +484,16 @@ function TipTapEditor({
     onBlur: () => setIsEditorFocused(false),
     onUpdate: ({ editor, transaction }) => {
       // If /edit is typed and no context items are selected, select the first
-
       if (contextItems.length > 0) {
         return;
       }
 
       const json = editor.getJSON();
       const codeBlock = json.content?.find((el) => el.type === "codeBlock");
+      const textContent = editor.getText().replace(/@[^\s]+/g, '').trim();
+
+      onContentChange?.(textContent.length === 0);
+
       if (!codeBlock) {
         return;
       }
@@ -500,15 +507,16 @@ function TipTapEditor({
         ) {
           continue;
         }
+
         for (const node of p.content) {
           if (
             node.type === "slashcommand" &&
             ["/edit", "/comment"].includes(node.attrs.label)
           ) {
-            // Update context items
             dispatch(
               setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
             );
+
             return;
           }
         }
@@ -516,19 +524,98 @@ function TipTapEditor({
     },
   }, [historyLength]);
 
+  const handleShowFile = useCallback((event: ShowFileEvent) => {
+    if (!ideMessenger) return;
+    
+    try {
+      const { filepath } = event.detail;
+      if (!isValidFilePath(filepath)) {
+        console.warn('Invalid file path received:', filepath);
+        
+        return;
+      }
+      
+      ideMessenger.post("showFile", { filepath });
+    } catch (error) {
+      console.error('Error handling show file event:', error);
+    }
+  }, [ideMessenger]);
+
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
 
-  useEffect(() => {
-    const handleShowFile = (event: CustomEvent) => {
-      const filepath = event.detail.filepath;
-      ideMessenger.post("showFile", { filepath });
-    };
+  const isEditorEmpty = useCallback((editor: Editor) => {
+    const content = editor.getJSON();
+    
+    return !content.content?.some(node => 
+      node.type === "paragraph" && 
+      node.content?.some(child => child.type === "text" && child.text.trim().length > 0)
+    );
+  }, []);
 
-    window.addEventListener('showFile', handleShowFile as EventListener);
-    return () => {
-      window.removeEventListener('showFile', handleShowFile as EventListener);
+  const createContextItem = useCallback((filepath: string): ContextItemWithId => ({
+    name: `@${filepath.split(/[\\/]/).pop()}`,
+    description: filepath,
+    id: {
+      providerTitle: "file",
+      itemId: filepath,
+    },
+    content: "",
+    editable: false,
+  }), []);
+
+  const updateEditorContent = useCallback((editor: Editor, contextItem: ContextItemWithId) => {
+    editor.commands.clearContent();
+    editor.commands.setContent({
+      type: 'doc',
+      content: [{
+        type: 'paragraph',
+        content: [{
+          type: 'mention',
+          attrs: {
+            id: contextItem.id.itemId,
+            label: contextItem.name.replace(/^@/, ''),
+          }
+        }]
+      }]
+    });
+  }, []);
+
+  const handleEditorChange = useCallback(async (data: { filepath: string | null }) => {
+    if (!isMainInput || !editor || !data.filepath || !isValidFilePath(data.filepath)) {
+      return;
+    }
+
+    if (isEditorEmpty(editor)) {
+      const newContextItem = createContextItem(data.filepath);
+
+      dispatch(setContextItems([newContextItem]));
+      updateEditorContent(editor, newContextItem);
+    }
+  }, [editor, isMainInput, dispatch, isEditorEmpty, createContextItem, updateEditorContent]);
+
+  useWebviewListener(
+    "activeEditorChange",
+    handleEditorChange,
+    [handleEditorChange]
+  );
+
+  useEffect(() => {
+    if (!ideMessenger) return;
+  
+    const listener = (event: ShowFileEvent) => {
+      try {
+        handleShowFile(event);
+      } catch (error) {
+        console.error('Error in show file handler:', error);
+      }
     };
-  }, [ideMessenger]);
+  
+    window.addEventListener('showFile', listener as EventListener);
+    
+    return () => {
+      window.removeEventListener('showFile', listener as EventListener);
+    };
+  }, [handleShowFile, ideMessenger]);
 
   useEffect(() => {
     if (isJetBrains()) {
@@ -610,14 +697,39 @@ function TipTapEditor({
   const onEnterRef = useUpdatingRef(
     (modifiers: InputModifiers) => {
       const json = editor.getJSON();
-
+  
       // Don't do anything if input box is empty
       if (!json.content?.some((c) => c.content)) {
         return;
       }
+  
+      // Remove context items before sending
+      editor.commands.command(({ tr, dispatch }) => {
+        if (dispatch) {
+          // Find all mention nodes
+          const mentions: { pos: number, nodeSize: number }[] = [];
+          
+          tr.doc.descendants((node, pos) => {
+            if (node.type.name === 'mention') {
+              mentions.push({ pos, nodeSize: node.nodeSize });
+            }
+          });
 
-      onEnter(json, modifiers);
+          // Delete mentions from last to first to maintain positions
+          mentions.reverse().forEach(({ pos, nodeSize }) => {
+            tr.delete(pos, pos + nodeSize);
+          });
 
+          dispatch(tr);
+        }
+        return true;
+      });
+  
+      // Get the cleaned content
+      const cleanedJson = editor.getJSON();
+      
+      onEnter(cleanedJson, modifiers);
+  
       if (isMainInput) {
         const content = editor.state.toJSON().doc;
         addRef.current(content);

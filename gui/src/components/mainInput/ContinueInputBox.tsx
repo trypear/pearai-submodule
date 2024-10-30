@@ -1,5 +1,5 @@
 import { JSONContent } from "@tiptap/react";
-import { ContextItemWithId, InputModifiers } from "core";
+import { InputModifiers } from "core";
 import { useDispatch, useSelector } from "react-redux";
 import styled, { keyframes } from "styled-components";
 import { defaultBorderRadius, vscBackground } from "..";
@@ -9,9 +9,9 @@ import { newSession, setMessageAtIndex } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
-import { useMemo } from "react";
 import { isBareChatMode } from "../../util/bareChatMode";
 import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
+import { useCallback, useState } from "react";
 
 const gradient = keyframes`
   0% {
@@ -58,22 +58,23 @@ interface ContinueInputBoxProps {
   isMainInput?: boolean;
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
-  contextItems?: ContextItemWithId[];
   hidden?: boolean;
   source?: "perplexity" | "aider" | "continue";
 }
 
-function ContinueInputBox({
+const ContinueInputBox = ({
   isLastUserInput,
   isMainInput,
   onEnter,
   editorState,
-  contextItems,
   hidden,
   source = "continue",
-}: ContinueInputBoxProps) {
+}: ContinueInputBoxProps) => {
   const dispatch = useDispatch();
 
+  const [isEmpty, setIsEmpty] = useState(true);
+
+  const availableSlashCommands = useSelector(selectSlashCommands);
   const active = useSelector((store: RootState) => {
     switch (source) {
       case "perplexity":
@@ -85,9 +86,13 @@ function ContinueInputBox({
     }
   });
 
-  const availableSlashCommands = useSelector(selectSlashCommands);
-  let availableContextProviders = getContextProviders();
+  const contextItems = useSelector((state: RootState) => state.state.contextItems);
+  const availableContextProviders = getContextProviders();
   const bareChatMode = isBareChatMode();
+
+  const handleEditorChange = useCallback((isEmpty: boolean) => {
+    setIsEmpty(isEmpty);
+  }, []);
 
   useWebviewListener(
     "newSessionWithPrompt",
@@ -131,6 +136,7 @@ function ContinueInputBox({
             bareChatMode ? undefined : availableSlashCommands
           }
           source={source}
+          onContentChange={handleEditorChange}
         ></TipTapEditor>
       </GradientBorder>
       <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>

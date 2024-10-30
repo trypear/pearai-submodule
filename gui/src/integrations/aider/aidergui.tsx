@@ -287,7 +287,6 @@ function AiderGUI() {
                         isLastUserInput={isLastUserInput(index)}
                         isMainInput={false}
                         editorState={item.editorState}
-                        contextItems={item.contextItems}
                         source="aider"
                       />
                     ) : (
@@ -449,4 +448,3 @@ const tutorialContent = {
   ]
 };
 import AiderManualInstallation from "./AiderManualInstallation";
-

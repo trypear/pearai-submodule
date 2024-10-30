@@ -311,7 +311,6 @@ function GUI() {
                         isLastUserInput={isLastUserInput(index)}
                         isMainInput={false}
                         editorState={item.editorState}
-                        contextItems={item.contextItems}
                       ></ContinueInputBox>
                     ) : (
                       <div className="thread-message">

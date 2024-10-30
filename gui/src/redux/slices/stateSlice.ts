@@ -14,7 +14,6 @@ import { stripImages } from "core/llm/images";
 import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
-import { update } from "lodash";
 import { AiderStatusUpdate } from "core/llm/llms/Aider";
 
 export const memoizedContextItemsSelector = createSelector(
@@ -173,6 +172,9 @@ export const stateSlice = createSlice({
   name: "state",
   initialState,
   reducers: {
+    setContextItems: (state, action: PayloadAction<ContextItemWithId[]>) => {
+      state.contextItems = action.payload;
+    },
     setConfig: (
       state,
       { payload: config }: PayloadAction<BrowserSerializedContinueConfig>,
@@ -683,5 +685,6 @@ export const {
   consumeMainEditorContent,
   setSelectedProfileId,
   deleteMessage,
+  setContextItems,
 } = stateSlice.actions;
 export default stateSlice.reducer;

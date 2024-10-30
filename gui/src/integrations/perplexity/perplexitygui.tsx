@@ -258,7 +258,6 @@ function PerplexityGUI() {
                       isLastUserInput={isLastUserInput(index)}
                       isMainInput={false}
                       editorState={item.editorState}
-                      contextItems={item.contextItems}
                       source="perplexity"
                     ></ContinueInputBox>
                   ) : (
