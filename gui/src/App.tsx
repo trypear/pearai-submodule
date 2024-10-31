@@ -22,8 +22,7 @@ import Stats from "./pages/stats";
 import Inventory from "./pages/inventory";
 import AiderGUI from "./integrations/aider/aidergui";
 import PerplexityGUI from "./integrations/perplexity/perplexitygui";
-import { useWebviewListener } from "./hooks/useWebviewListener";
-
+import Welcome from "./pages/welcomeGUI";
 
 declare global {
   interface Window {
@@ -110,11 +109,16 @@ const router = createMemoryRouter(
           path: "/inventory/*",
           element: <Inventory />,
         },
+        {
+          path: "/welcome",
+          element: <Welcome/>
+        }
       ],
     },
   ],
+  // TODO: Remove replace /welcome with /inventory when done testing
   {
-    initialEntries: [window.isPearOverlay ? "/inventory" : window.initialRoute], 
+    initialEntries: [window.isPearOverlay ? "/welcome" : window.initialRoute], 
   },
 );
 
