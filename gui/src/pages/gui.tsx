@@ -288,7 +288,6 @@ function GUI() {
   return (
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-        <OnboardingTutorial onClose={() => {}}/>
         <div className="mx-2">
           <StepsDiv>
             {state.history.map((item, index: number) => {
@@ -434,6 +433,7 @@ function GUI() {
             </>
           )}
         </div>
+        <OnboardingTutorial onClose={() => {}}/>
         <ChatScrollAnchor
           scrollAreaRef={topGuiDivRef}
           isAtBottom={isAtBottom}
