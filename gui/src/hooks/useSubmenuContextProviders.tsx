@@ -210,9 +210,6 @@ useEffect(() => {
 
 
   contextProviderDescriptions.forEach(async (description) => {
-    console.dir("DDDD IM HERE 8888")
-    console.dir(defaultModel);
-
     // Check if we should use relative file paths by checking the default model title
     if (shouldSkipContextProviders(defaultModel.title, description))
       return;
