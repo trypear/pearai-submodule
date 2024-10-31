@@ -56,7 +56,6 @@ function useSubmenuContextProviders() {
 
   useWebviewListener("refreshSubmenuItems", async (data) => {
     setLoaded(false);
-    console.dir("UPDATED IN REFRESH UPDATE")
   });
 
   useWebviewListener("updateSubmenuItems", async (data) => {
@@ -247,7 +246,6 @@ useEffect(() => {
     // When config is updated (for example switching to a different workspace)
     // we need to reload the context providers.
     setLoaded(false);
-    console.dir("UPDATED IN CONFIG UPDATE")
   });
 
   return {

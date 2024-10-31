@@ -531,7 +531,7 @@ class Aider extends BaseLLM {
   }
 
   async listModels(): Promise<string[]> {
-    return ["pearai_model", "claude-3-5-sonnet-20240620", "gpt-4o"];
+    return ["aider", "pearai_model", "claude-3-5-sonnet-20240620", "gpt-4o"];
   }
 
   supportsFim(): boolean {
