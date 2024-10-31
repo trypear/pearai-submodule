@@ -64,6 +64,10 @@ function copyVSCodeSettingsToPearAIDir() {
         exclusions.push('vscode-pylance');
     }
 
+    // EXCLUDE CONFLICTING EXTENSIONS
+    exclusions.push('codium');
+    exclusions.push('copilot');
+
     copyDirectoryRecursiveSync(vscodeExtensionsDir, pearAIDevExtensionsDir, exclusions);
 }
 
