@@ -14,7 +14,7 @@ import { stripImages } from "core/llm/images";
 import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
-import { AiderStatusUpdate } from "core/llm/llms/Aider";
+import { AiderState } from "core/llm/llms/Aider";
 
 export const memoizedContextItemsSelector = createSelector(
   [(state: RootState) => state.state.history],
@@ -272,10 +272,9 @@ export const stateSlice = createSlice({
           : [{ ...item, editing: true }];
         return;
       }
-      // TODO
     },
     addContextItems: (state, action: PayloadAction<ContextItemWithId[]>) => {
-      state.contextItems = state.contextItems.concat(action.payload);
+      state.contextItems.push(...action.payload);
     },
     resubmitAtIndex: (
       state,

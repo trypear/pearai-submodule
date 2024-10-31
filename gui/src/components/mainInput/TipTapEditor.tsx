@@ -557,7 +557,6 @@ const TipTapEditor = ({
       node.content?.some(child => child.type === "text" && child.text.trim().length > 0)
     );
   }, []);
-  
 
   const createContextItem = useCallback((filepath: string): ContextItemWithId => ({
     name: `@${filepath.split(/[\\/]/).pop()}`,
@@ -581,6 +580,9 @@ const TipTapEditor = ({
           attrs: {
             id: contextItem.id.itemId,
             label: contextItem.name.replace(/^@/, ''),
+            renderInlineAs: null,
+            query: contextItem.id.itemId,
+            itemType: "file"
           }
         },
         {
@@ -595,14 +597,12 @@ const TipTapEditor = ({
     if (!isMainInput || !editor || !data.filepath || !isValidFilePath(data.filepath)) {
       return;
     }
-
+  
     if (isEditorEmpty(editor)) {
       const newContextItem = createContextItem(data.filepath);
-
-      dispatch(setContextItems([newContextItem]));
       updateEditorContent(editor, newContextItem);
     }
-  }, [editor, isMainInput, dispatch, isEditorEmpty, createContextItem, updateEditorContent]);
+  }, [editor, isMainInput, createContextItem, updateEditorContent, isEditorEmpty]);
 
   useWebviewListener(
     "activeEditorChange",
@@ -645,6 +645,7 @@ const TipTapEditor = ({
             editor.state.selection.from,
             editor.state.selection.to,
           );
+
           navigator.clipboard.writeText(selectedText);
           editor.commands.deleteSelection();
           event.preventDefault();
@@ -654,12 +655,15 @@ const TipTapEditor = ({
             editor.state.selection.from,
             editor.state.selection.to,
           );
+
           navigator.clipboard.writeText(selectedText);
           event.preventDefault();
         } else if ((event.metaKey || event.ctrlKey) && event.key === "v") {
           // Paste
           event.preventDefault(); // Prevent default paste behavior
+
           const clipboardText = await navigator.clipboard.readText();
+
           editor.commands.insertContent(clipboardText);
         }
       };
@@ -704,50 +708,48 @@ const TipTapEditor = ({
       dispatch(consumeMainEditorContent());
     }
   }, [mainEditorContent, editor]);
-
+  
   const onEnterRef = useUpdatingRef(
     (modifiers: InputModifiers) => {
       const json = editor.getJSON();
   
-      // Don't do anything if input box is empty
       if (!json.content?.some((c) => c.content)) {
         return;
       }
   
-      // Remove context items before sending
-      editor.commands.command(({ tr, dispatch }) => {
-        if (dispatch) {
-          // Find all mention nodes
-          const mentions: { pos: number, nodeSize: number }[] = [];
-          
-          tr.doc.descendants((node, pos) => {
-            if (node.type.name === 'mention') {
-              mentions.push({ pos, nodeSize: node.nodeSize });
-            }
-          });
+      const mentions = json.content?.reduce((acc, node) => {
+        if (node.content) {
+          const mentionNodes = node.content.filter(child => child.type === "mention");
 
-          // Delete mentions from last to first to maintain positions
-          mentions.reverse().forEach(({ pos, nodeSize }) => {
-            tr.delete(pos, pos + nodeSize);
-          });
-
-          dispatch(tr);
+          acc.push(...mentionNodes);
         }
-        return true;
+        return acc;
+      }, []);
+  
+      const newContextItems = mentions.map(mention => ({
+        name: mention.attrs.label || mention.attrs.id,
+        description: mention.attrs.id,
+        id: {
+          providerTitle: "file",
+          itemId: mention.attrs.id
+        },
+        content: "",
+        editable: false
+      }));
+  
+      requestAnimationFrame(() => {
+        dispatch(setContextItems(newContextItems));
+        
+        if (isMainInput) {
+          const content = editor.state.toJSON().doc;
+          
+          addRef.current(content);
+        }
       });
   
-      // Get the cleaned content
-      const cleanedJson = editor.getJSON();
-      
-      onEnter(cleanedJson, modifiers);
-  
-      if (isMainInput) {
-        const content = editor.state.toJSON().doc;
-        addRef.current(content);
-        editor.commands.clearContent(true);
-      }
+      onEnter(json, modifiers);
     },
-    [onEnter, editor, isMainInput],
+    [onEnter, editor, isMainInput]
   );
 
   // This is a mechanism for overriding the IDE keyboard shortcut when inside of the webview

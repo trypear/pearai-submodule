@@ -1,5 +1,5 @@
 import { JSONContent } from "@tiptap/react";
-import { InputModifiers } from "core";
+import { ContextItemWithId, InputModifiers } from "core";
 import { useDispatch, useSelector } from "react-redux";
 import styled, { keyframes } from "styled-components";
 import { defaultBorderRadius, vscBackground } from "..";
@@ -60,6 +60,7 @@ interface ContinueInputBoxProps {
   editorState?: JSONContent;
   hidden?: boolean;
   source?: "perplexity" | "aider" | "continue";
+  contextItems?: ContextItemWithId[];
 }
 
 const ContinueInputBox = ({
@@ -69,9 +70,9 @@ const ContinueInputBox = ({
   editorState,
   hidden,
   source = "continue",
+  contextItems = [],
 }: ContinueInputBoxProps) => {
   const dispatch = useDispatch();
-
   const [isEmpty, setIsEmpty] = useState(true);
 
   const availableSlashCommands = useSelector(selectSlashCommands);
@@ -86,7 +87,6 @@ const ContinueInputBox = ({
     }
   });
 
-  const contextItems = useSelector((state: RootState) => state.state.contextItems);
   const availableContextProviders = getContextProviders();
   const bareChatMode = isBareChatMode();
 
@@ -139,7 +139,7 @@ const ContinueInputBox = ({
           onContentChange={handleEditorChange}
         ></TipTapEditor>
       </GradientBorder>
-      <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>
+      <ContextItemsPeek contextItems={contextItems} />
     </div>
   );
 }
