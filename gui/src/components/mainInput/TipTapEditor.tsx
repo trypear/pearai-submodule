@@ -454,7 +454,7 @@ const TipTapEditor = ({
           ideMessenger,
         ),
         renderHTML: (props) => {
-          return `@${props.node.attrs.label || props.node.attrs.id}`;
+          return `@${props.node.attrs.label || props.node.attrs.id} `;
         },
       }),
       SlashCommand.configure({
@@ -546,11 +546,18 @@ const TipTapEditor = ({
   const isEditorEmpty = useCallback((editor: Editor) => {
     const content = editor.getJSON();
     
+    const mentionCount = content.content?.reduce((count, node) => {
+      return count + (node.content?.filter(child => child.type === "mention").length || 0);
+    }, 0) || 0;
+  
+    if (mentionCount > 1) return false;
+  
     return !content.content?.some(node => 
       node.type === "paragraph" && 
       node.content?.some(child => child.type === "text" && child.text.trim().length > 0)
     );
   }, []);
+  
 
   const createContextItem = useCallback((filepath: string): ContextItemWithId => ({
     name: `@${filepath.split(/[\\/]/).pop()}`,
@@ -575,6 +582,10 @@ const TipTapEditor = ({
             id: contextItem.id.itemId,
             label: contextItem.name.replace(/^@/, ''),
           }
+        },
+        {
+          type: 'text',
+          text: ' '
         }]
       }]
     });
