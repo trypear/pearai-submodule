@@ -91,6 +91,8 @@ interface StyledMarkdownPreviewProps {
   showCodeBorder?: boolean;
   scrollLocked?: boolean;
   isStreaming?: boolean;
+  isLast?: boolean;
+  messageIndex?: number;
   integrationSource?: "perplexity" | "aider" | "continue";
 }
 
@@ -99,36 +101,42 @@ interface FadeInWordsProps extends StyledMarkdownPreviewProps {
 }
 
 const FadeInWords: React.FC<FadeInWordsProps> = (props: FadeInWordsProps) => {
-  const { children, integrationSource, ...otherProps } = props;
+  const { children, integrationSource, isStreaming, messageIndex, ...otherProps } = props;
   const active = props.integrationSource === "continue"
     ? useSelector((store: RootState) => store.state.active)
     : props.integrationSource === "perplexity"
       ? useSelector((store: RootState) => store.state.perplexityActive)
       : useSelector((store: RootState) => store.state.aiderActive);
-  const [hasStarted, setHasStarted] = useState(false);
   
-  useEffect(() => {
-    if (active && !hasStarted) {
-      setHasStarted(true);
-    } else if (!active) {
-      setHasStarted(false);
+  // Get the appropriate history based on the source
+  const history = useSelector((store: RootState) => {
+    switch (integrationSource) {
+      case "perplexity":
+        return store.state.perplexityHistory;
+      case "aider":
+        return store.state.aiderHistory;
+      default:
+        return store.state.history;
     }
-  }, [active]);
+  });
 
+  // The last message in the history array is the one being streamed
   // Only apply animation after initial render
+  const isStreamingMessage = active && messageIndex === history.length - 1;
+
   const words = children
     .map((child) => {
       if (typeof child === "string") {
         return child.split(/(\s+)/).map((word, index) => (
           <span 
-            className={word.trim() && hasStarted ? "fade-in-span" : undefined} 
+            className={word.trim() && isStreamingMessage ? "fade-in-span" : undefined} 
             key={index}
           >
             {word}
           </span>
         ));
       } else {
-        return <span className={hasStarted ? "fade-in-span" : undefined}>{child}</span>;
+        return <span className={isStreamingMessage ? "fade-in-span" : undefined}>{child}</span>;
       }
     })
     .flat();
@@ -213,7 +221,14 @@ const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
         p: ({ node, ...pProps }) => {
           // pProps is the props of the paragraph node from rehypeReact
           // props is the actual props of StyledMarkdownPreview
-          return <FadeInWords {...pProps} {...props}>{pProps.children}</FadeInWords>;
+          if (props.isLast) {
+            return (
+              <FadeInWords {...pProps} {...props}>
+                {pProps.children}
+              </FadeInWords>
+            );
+          }
+          return <p {...pProps}>{pProps.children}</p>;
         },
       },
     },
