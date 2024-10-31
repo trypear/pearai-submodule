@@ -34,10 +34,10 @@ class Aider extends BaseLLM {
   getCurrentDirectory: (() => Promise<string>) | null = null;
   static providerName: ModelProvider = "aider";
   static defaultOptions: Partial<LLMOptions> = {
-    model: "pearai_aider",
+    model: "pearai_model",
     contextLength: 8192,
     completionOptions: {
-      model: "pearai_aider",
+      model: "pearai_model",
       maxTokens: 2048,
     },
   };
@@ -531,7 +531,7 @@ class Aider extends BaseLLM {
   }
 
   async listModels(): Promise<string[]> {
-    return ["pearai_aider", "claude-3-5-sonnet-20240620", "gpt-4o"];
+    return ["pearai_model", "claude-3-5-sonnet-20240620", "gpt-4o"];
   }
 
   supportsFim(): boolean {

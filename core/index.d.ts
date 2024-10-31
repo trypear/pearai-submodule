@@ -716,7 +716,7 @@ export type ModelName =
   | "stable-code-3b"
   // PearAI
   | "pearai_model"
-  | "pearai_aider"
+  | "pearai_model"
   | "perplexity";
 
 export interface RequestOptions {
