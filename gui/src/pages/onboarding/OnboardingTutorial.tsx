@@ -1,4 +1,5 @@
 import { vscBackground, vscForeground, vscInputBorderFocus } from '@/components';
+import CopyButtonWithText from '@/components/markdown/CopyButtonWithText';
 import { Button } from '@/components/ui/button';
 import { getMetaKeyAndShortcutLabel } from '@/util';
 import { ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react';
@@ -175,20 +176,17 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
                       <Lightbulb size={13} />
                       <span>Try these examples</span>
                     </ExamplesHeader>
-                    <div className="flex flex-wrap gap-1">
-                      {currentPageData.examples.map((example, index) => (
-                        <Button
-                          key={index}
-                          onClick={() => onExampleClick?.(example)}
-                          variant="animated"
-                          className=""
-                          size="sm"
-                          style={{ '--index': index } as React.CSSProperties}
-                        >
-                          {example}
-                        </Button>
-                      ))}
-                    </div>
+                      <div className="flex flex-wrap gap-1">
+                        {currentPageData.examples.map((example) => (
+                          <CopyButtonWithText
+                            key={example}
+                            text={example}
+                            side="bottom"
+                            variant="animated"
+                            onTextClick={onExampleClick}
+                          />
+                        ))}
+                      </div>
                   </ExamplesSection>
                 )}
               </ContentWrapper>
