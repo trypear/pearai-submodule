@@ -67,6 +67,7 @@ function copyVSCodeSettingsToPearAIDir() {
     // EXCLUDE CONFLICTING EXTENSIONS
     exclusions.push('codium');
     exclusions.push('copilot');
+    exclusions.push('continue');
 
     copyDirectoryRecursiveSync(vscodeExtensionsDir, pearAIDevExtensionsDir, exclusions);
 }
