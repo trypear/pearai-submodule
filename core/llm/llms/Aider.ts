@@ -26,8 +26,8 @@ const IS_LINUX = PLATFORM === "linux";
 export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
 
-export interface AiderStatusUpdate {
-  status: "uninstalled" | "stopped" | "starting" | "ready" | "crashed";
+export interface AiderState {
+  state: "starting" | "uninstalled" | "ready" |  "stopped" |"crashed";
 }
 
 class Aider extends BaseLLM {
@@ -45,6 +45,19 @@ class Aider extends BaseLLM {
   public aiderProcess: cp.ChildProcess | null = null;
   private aiderOutput: string = "";
   private credentials: PearAICredentials;
+
+  public aiderState: AiderState["state"] = "starting";
+
+  public getAiderState(): AiderState["state"] {
+    return this.aiderState;
+  }
+
+  public setAiderState(state: AiderState["state"]): void {
+    this.aiderState = state;
+    // Send an update to the UI
+    vscode.commands.executeCommand("pearai.refreshAiderProcessState");
+  }
+
 
   constructor(options: LLMOptions) {
     super(options);
@@ -69,7 +82,6 @@ class Aider extends BaseLLM {
     // Kill the current process if it exists
 
     this.killAiderProcess();
-    this.isAiderUp = false;
     // Reset the output
     this.aiderOutput = "";
 
@@ -88,8 +100,7 @@ class Aider extends BaseLLM {
       console.log("Killing Aider process...");
       this.aiderProcess.kill();
       this.aiderProcess = null;
-      this.isAiderUp = false;
-      this.isAiderStopped = true;
+      this.setAiderState("stopped");
     }
   }
 
@@ -149,9 +160,7 @@ class Aider extends BaseLLM {
     this.aiderOutput += cleanOutput;
   }
 
-  public isAiderUp: boolean = false;
-  public isAiderStarted: boolean = false;
-  public isAiderStopped: boolean = false
+
 
   public async startAiderChat(
     model: string,
@@ -159,11 +168,9 @@ class Aider extends BaseLLM {
   ): Promise<void> {
     if (this.aiderProcess && !this.aiderProcess.killed) {
       console.log("Aider process already running");
+      this.setAiderState("ready");
       return;
     }
-
-    this.isAiderUp = false;
-    this.isAiderStarted = true;
 
     return new Promise(async (resolve, reject) => {
       let currentDir: string;
@@ -190,13 +197,14 @@ class Aider extends BaseLLM {
           commandFound = true;
 
           switch (model) {
-            case model.includes("claude") && model:
+            case model && model.includes("claude"):
               command = [`${aiderCommand} --model ${model}`];
               break;
             case "gpt-4o":
               command = [`${aiderCommand} --model gpt-4o`];
               break;
-            case "pearai_model":
+            case model && model.includes("pearai"):
+            case model && model.includes("aider"):
             default:
               await this.credentials.checkAndUpdateCredentials();
               const accessToken = this.credentials.getAccessToken();
@@ -341,7 +349,7 @@ class Aider extends BaseLLM {
             if (output.endsWith("udiff> ")) {
               // Aider's ready prompt
               console.log("Aider is ready!");
-              this.isAiderUp = true;
+              this.setAiderState("ready");
               clearTimeout(timeout);
               resolve();
             }
@@ -355,7 +363,7 @@ class Aider extends BaseLLM {
 
           this.aiderProcess.on("close", (code: number | null) => {
             console.log(`Aider process exited with code ${code}`);
-            this.isAiderUp = false;
+            this.setAiderState("stopped");
             clearTimeout(timeout);
             if (code !== 0) {
               reject(new Error(`Aider process exited with code ${code}`));
@@ -367,7 +375,7 @@ class Aider extends BaseLLM {
 
           this.aiderProcess.on("error", (error: Error) => {
             console.error(`Error starting Aider: ${error.message}`);
-            this.isAiderUp = false;
+            this.setAiderState("crashed");
             clearTimeout(timeout);
             reject(error);
             let message =
@@ -484,7 +492,7 @@ class Aider extends BaseLLM {
     const END_MARKER = IS_WINDOWS ? "\r\nudiff> " : "\nudiff> ";
 
     const escapeDollarSigns = (text: string | undefined) => {
-      if (!text) return "Aider response over";
+      if (!text) {return "Aider response over";}
       return text.replace(/([\\$])/g, "\\$1");
     };
 
@@ -523,7 +531,7 @@ class Aider extends BaseLLM {
   }
 
   async listModels(): Promise<string[]> {
-    return ["claude-3-5-sonnet-20240620", "pearai_model", "gpt-4o"];
+    return ["aider", "pearai_model", "claude-3-5-sonnet-20240620", "gpt-4o"];
   }
 
   supportsFim(): boolean {
