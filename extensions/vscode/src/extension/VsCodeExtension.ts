@@ -361,13 +361,13 @@ export class VsCodeExtension {
         return uri.query;
       }
     })();
+
     context.subscriptions.push(
       vscode.workspace.registerTextDocumentContentProvider(
         VsCodeExtension.continueVirtualDocumentScheme,
         documentContentProvider,
       ),
     );
-
 
     context.subscriptions.push(
       vscode.window.onDidChangeTextEditorSelection((event) => {

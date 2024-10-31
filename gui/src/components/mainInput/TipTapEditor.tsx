@@ -483,7 +483,6 @@ const TipTapEditor = ({
     onFocus: () => setIsEditorFocused(true),
     onBlur: () => setIsEditorFocused(false),
     onUpdate: ({ editor, transaction }) => {
-      // If /edit is typed and no context items are selected, select the first
       if (contextItems.length > 0) {
         return;
       }
@@ -742,7 +741,7 @@ const TipTapEditor = ({
         
         if (isMainInput) {
           const content = editor.state.toJSON().doc;
-          
+
           addRef.current(content);
         }
       });
