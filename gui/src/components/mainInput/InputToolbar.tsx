@@ -108,12 +108,9 @@ function InputToolbar(props: InputToolbarProps) {
 
   useEffect(() => {
     if (location.pathname.split("/").pop() === "aiderMode") {
-      console.dir("IM IN HERE CCCCC")
       const aider = allModels.find((model) =>
         model?.title?.toLowerCase().includes("aider"),
       );
-      console.dir(allModels)
-      console.dir(aider?.title)
       dispatch(setDefaultModel({ title: aider?.title }));
     } else if (location.pathname.split("/").pop() === "perplexityMode") {
       const perplexity = allModels.find((model) =>

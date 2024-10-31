@@ -26,7 +26,6 @@ export function shouldSkipContextProviders(
   defaultModelTitle: string | undefined,
   description: { title: string },
 ): boolean {
-  console.dir("BBBBB IM HERE 8888")
   console.dir(defaultModelTitle?.toLowerCase()); // This is fucked, becuase ... idek .
   // 1. the overlay and the chat share the same context providers?!
   // We need a way to get the location here, or something more tied to the truth
