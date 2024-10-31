@@ -380,6 +380,7 @@ export class VsCodeExtension {
   private PREVIOUS_BRANCH_FOR_WORKSPACE_DIR: { [dir: string]: string } = {};
 
   private async refreshContextProviders() {
+    console.dir("REFRESHED FROM refreshContextProviders DOCS")
     this.sidebar.webviewProtocol.request("refreshSubmenuItems", undefined); // Refresh all context providers
   }
 

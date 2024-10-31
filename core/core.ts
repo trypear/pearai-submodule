@@ -278,17 +278,22 @@ export class Core {
         this.ide.infoPopup(`Failed to index ${msg.data.startUrl}`);
       } else {
         this.ide.infoPopup(`Successfully indexed ${msg.data.startUrl}`);
+        console.dir("REFRESHED FROM ADD DOCS")
         this.messenger.send("refreshSubmenuItems", undefined);
       }
     });
 
     on("context/removeDocs", async (msg) => {
       await this.docsService.delete(msg.data.startUrl);
+      console.dir("REFRESHED FROM REMOVE DOCS")
       this.messenger.send("refreshSubmenuItems", undefined);
+
     });
 
     on("context/indexDocs", async (msg) => {
       await this.docsService.indexAllDocs(msg.data.reIndex);
+      console.dir("REFRESHED FROM INDEX DOCS")
+
       this.messenger.send("refreshSubmenuItems", undefined);
     });
 
@@ -754,6 +759,8 @@ export class Core {
         );
       }
     }
+    console.dir("REFRESHED FROM CODEBASE INDEXC DOCS")
+
     this.messenger.send("refreshSubmenuItems", undefined);
   }
 }

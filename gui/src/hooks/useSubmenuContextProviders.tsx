@@ -53,6 +53,7 @@ function useSubmenuContextProviders() {
 
   useWebviewListener("refreshSubmenuItems", async (data) => {
     setLoaded(false);
+    console.dir("UPDATED IN REFRESH UPDATE")
   });
 
   useWebviewListener("updateSubmenuItems", async (data) => {
@@ -199,13 +200,18 @@ useEffect(() => {
   if (contextProviderDescriptions.length === 0 || loaded) {
     return;
   }
+  setMinisearches({});
+  setFallbackResults({});
   setLoaded(true);
 
-  console.dir("DDDD IM HERE 8888")
-  const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
-  console.dir(defaultModelTitle?.toLowerCase());
+
 
   contextProviderDescriptions.forEach(async (description) => {
+    console.dir("DDDD IM HERE 8888")
+    let defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
+    console.dir(defaultModelTitle);
+    console.dir(contextProviderDescriptions)
+
     // Check if we should use relative file paths by checking the default model title
     if (shouldSkipContextProviders(defaultModelTitle, description))
       return;
@@ -243,6 +249,7 @@ useEffect(() => {
     // When config is updated (for example switching to a different workspace)
     // we need to reload the context providers.
     setLoaded(false);
+    console.dir("UPDATED IN CONFIG UPDATE")
   });
 
   return {

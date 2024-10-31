@@ -127,6 +127,8 @@ export default class DocsService {
     this.deleteFromConfig(startUrl);
 
     if (this.messenger) {
+      console.dir("REFRESHED FROM canUsePreindexedDocs DOCS")
+
       this.messenger.send("refreshSubmenuItems", undefined);
     }
   }
@@ -317,6 +319,7 @@ export default class DocsService {
     console.log(`Successfully indexed: ${siteIndexingConfig.startUrl}`);
 
     if (this.messenger) {
+      console.dir("REFRESHED FROM indexAndAdd DOCS")
       this.messenger.send("refreshSubmenuItems", undefined);
     }
   }

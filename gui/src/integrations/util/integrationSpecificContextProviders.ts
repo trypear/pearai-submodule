@@ -27,7 +27,10 @@ export function shouldSkipContextProviders(
   description: { title: string },
 ): boolean {
   console.dir("BBBBB IM HERE 8888")
-  console.dir(defaultModelTitle?.toLowerCase());
+  console.dir(defaultModelTitle?.toLowerCase()); // This is fucked, becuase ... idek .
+  // 1. the overlay and the chat share the same context providers?!
+  // We need a way to get the location here, or something more tied to the truth
+
   // For integrations with specific context providers
   const matchingIntegrationKey = Object.keys(
     SPECIFIC_CONTEXT_PROVIDERS_INTEGRATIONS,
@@ -45,6 +48,8 @@ export function shouldSkipContextProviders(
   // For all other models, only skip if "relativefilecontext"
   return description.title === "relativefilecontext";
 }
+
+// This is for the frontend, which context providers are provided
 export function getContextProviders() {
   let location = useLocation();
   let pathname = location.pathname;
@@ -54,8 +59,6 @@ export function getContextProviders() {
 
   return useMemo(() => {
     // Check if pathname has specific context providers
-    console.dir("AAAAA IM HERE 8888")
-    console.dir(pathname)
     if (pathname in SPECIFIC_CONTEXT_PROVIDERS_PATHNAME) {
       const specificProviders = SPECIFIC_CONTEXT_PROVIDERS_PATHNAME[pathname];
       return availableContextProviders.filter((provider) =>
