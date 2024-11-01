@@ -158,7 +158,7 @@ interface TipTapEditorProps {
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
-  onChange?: (newState: JSONContent) => void;
+  onContentChange?: (newState: JSONContent) => void;
 }
 
 const TipTapEditor = ({
@@ -169,7 +169,7 @@ const TipTapEditor = ({
   editorState,
   source = 'continue',
   onContentChange,
-}: TipTapEditorProps) {
+}: TipTapEditorProps) => {
   const dispatch = useDispatch();
 
   const ideMessenger = useContext(IdeMessengerContext);
@@ -889,7 +889,7 @@ const TipTapEditor = ({
       editor.on('transaction', () => {
         const newContent = editor.getJSON();
         lastContentRef.current = newContent;
-        onChange?.(newContent);
+        onContentChange?.(newContent);
   
         // If /edit is typed and no context items are selected, select the first
         
@@ -926,7 +926,7 @@ const TipTapEditor = ({
         }
       });
     }
-  }, [editor, onChange, contextItems, dispatch]);
+  }, [editor, onContentChange, contextItems, dispatch]);
 
   // Prevent content flash during streaming
   useEffect(() => {
