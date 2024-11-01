@@ -60,13 +60,16 @@ function copyVSCodeSettingsToPearAIDir() {
     const platform = process.platform;
     const arch = process.arch;
 
+     // Built-in extensions
+    exclusions.push('supermaven');
     if (platform === "darwin" && arch === "arm64") {
-        exclusions.push('vscode-pylance');
+        exclusions.push('ms-python.vscode-pylance');
+        exclusions.push('ms-python.python');
     }
 
     // EXCLUDE CONFLICTING EXTENSIONS
     exclusions.push('codium');
-    exclusions.push('copilot');
+    exclusions.push('github.copilot');
     exclusions.push('continue');
 
     copyDirectoryRecursiveSync(vscodeExtensionsDir, pearAIDevExtensionsDir, exclusions);
