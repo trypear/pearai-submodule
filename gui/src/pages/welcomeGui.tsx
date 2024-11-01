@@ -24,7 +24,8 @@ export default function Welcome() {
   const [currentFeature, setCurrentFeature] = useState(0)
   const [progress, setProgress] = useState(0)
   const progressInterval = useRef<NodeJS.Timeout>()
-  const [videoSrc, setVideoSrc] = useState(''); // State to handle dynamic GIF src
+  const [isLoading, setIsLoading] = useState(true)
+  const [timestamp, setTimestamp] = useState(Date.now())
 
   const FEATURE_DURATION = 5000 // TODO: 5 seconds per feature, to be changed individually when have final demo gifs
   const AUTO_PROGRESS = false // Flag to control auto-progression
@@ -50,11 +51,18 @@ export default function Welcome() {
     }
   ]
 
-    // Update video src with timestamp to reset GIF
-    useEffect(() => {
-      const newVideoSrc = `${features[currentFeature].video}?timestamp=${Date.now()}`;
-      setVideoSrc(newVideoSrc);
-    }, [currentFeature]);
+  const [videoSrc, setVideoSrc] = useState(features[0].video)
+
+  // Preload the next GIF before transition
+  useEffect(() => {
+    setIsLoading(true)
+    const img = new Image()
+    img.onload = () => {
+      setIsLoading(false)
+      setVideoSrc(features[currentFeature].video)
+    }
+    img.src = features[currentFeature].video
+  }, [currentFeature])
 
   useEffect(() => {
     if (!AUTO_PROGRESS) return; // Skip if auto-progress is disabled
@@ -87,13 +95,17 @@ export default function Welcome() {
     setProgress(0)
   }
 
+  const handleFeatureChange = (index: number) => {
+    setCurrentFeature(index)
+    setProgress(0)
+    setTimestamp(Date.now())
+  }
+
   const handleNextClick = () => {
     if (currentFeature < features.length - 1) {
-      setCurrentFeature(current => current + 1);
-      setProgress(0);
+      handleFeatureChange(currentFeature + 1);
     } else {
-      // Handle completion - you might want to navigate away or show a completion state
-      startWalkthrough();
+      handleFeatureChange(0);
     }
   }
 
@@ -121,19 +133,20 @@ export default function Welcome() {
               {features.map((feature, index) => (
                 <Card 
                   key={index}
-                  className={`border-none p-3 md:p-4 transition-colors ${
+                  className={`border-none p-3 md:p-4 transition-all duration-200 hover:scale-[1.02] ${
                     currentFeature === index 
-                      ? 'bg-input text-foreground' 
-                      : 'bg-input text-foreground opacity-50'
+                      ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]' 
+                      : 'bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60 hover:opacity-80'
                   }`}
-                  onClick={() => {
-                    setCurrentFeature(index)
-                    setProgress(0)
-                  }}
+                  onClick={() => handleFeatureChange(index)}
                   style={{ cursor: 'pointer' }}
                 >
                   <div className="flex items-center gap-2 md:gap-3">
-                    <div className="text-foreground shrink-0">
+                    <div className={`p-2 rounded-lg ${
+                      currentFeature === index 
+                        ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]' 
+                        : 'bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60'
+                    }`}>
                       {feature.icon}
                     </div>
                     <div className="min-w-0">
@@ -170,19 +183,26 @@ export default function Welcome() {
         {features.map((feature, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-opacity duration-500 ${
-              currentFeature === index ? 'opacity-100' : 'opacity-0 pointer-events-none'
+            className={`absolute inset-0 transition-all duration-700 ${
+              currentFeature === index 
+                ? 'opacity-100 z-10' 
+                : 'opacity-0 z-0'
             }`}
           >
-            <img
-              src={currentFeature === index ? videoSrc : ''}
-              alt={`${feature.title} demonstration`}
-              className="w-full h-full object-cover"
-              loading={currentFeature === index ? "eager" : "lazy"}
-              style={{
-                display: currentFeature === index ? 'block' : 'none'
-              }}
-            />
+            {currentFeature === index && (
+              <img
+                key={`${feature.title}-${timestamp}`}
+                src={`${feature.video}?t=${timestamp}`}
+                alt={`${feature.title} demonstration`}
+                className={`w-full h-full object-cover transition-opacity duration-300 ${
+                  isLoading ? 'opacity-0' : 'opacity-100'
+                }`}
+                loading="eager"
+                style={{
+                  willChange: 'transform, opacity',
+                }}
+              />
+            )}
           </div>
         ))}
       </div>
