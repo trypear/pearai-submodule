@@ -29,9 +29,10 @@ import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
-import { aiderCtrlC, aiderResetSession, openAiderPanel } from './integrations/aider/aider';
+import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessState } from './integrations/aider/aider';
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
+import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -312,6 +313,15 @@ const commandsMap: (
     "pearai.docsReIndex": async () => {
       core.invoke("context/indexDocs", { reIndex: true });
     },
+    "pearai.toggleCreator": async () => {
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+    },
+    "pearai.toggleSearch": async () => {
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+    },
+    "pearai.toggleInventory": async () => {
+      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID)
+    },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
@@ -541,6 +551,9 @@ const commandsMap: (
     },
     "pearai.aiderResetSession": async () => {
       await aiderResetSession(core);
+    },
+    "pearai.refreshAiderProcessState": async () => {
+      await refreshAiderProcessState(core);
     },
     "pearai.perplexityMode": () => {
       handlePerplexityMode(sidebar, extensionContext);

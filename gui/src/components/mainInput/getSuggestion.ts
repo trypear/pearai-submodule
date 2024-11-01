@@ -5,6 +5,7 @@ import tippy from "tippy.js";
 import { IIdeMessenger } from "../../context/IdeMessenger";
 import MentionList from "./MentionList";
 import { ComboBoxItem, ComboBoxItemType, ComboBoxSubAction } from "./types";
+import { isAiderMode, isPerplexityMode } from "@/util/bareChatMode";
 
 function getSuggestion(
   items: (props: { query: string }) => Promise<ComboBoxItem[]>,
@@ -112,6 +113,10 @@ export function getContextProviderDropdownOptions(
   inSubmenu: MutableRefObject<string | undefined>,
   ideMessenger: IIdeMessenger,
 ) {
+
+  const isPerplexity = isPerplexityMode();
+  const aiderMode = isAiderMode();
+  
   const items = async ({ query }) => {
     if (inSubmenu.current) {
       const results = getSubmenuContextItemsRef.current(
@@ -160,6 +165,8 @@ export function getContextProviderDropdownOptions(
         };
       });
     } else if (
+      !isPerplexity &&
+      !aiderMode &&
       mainResults.length === availableContextProvidersRef.current.length
     ) {
       mainResults.push({

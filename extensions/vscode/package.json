@@ -3,7 +3,7 @@
   "name": "pearai",
   "publisher": "pearai",
   "icon": "media/icon.png",
-  "version": "1.4.1",
+  "version": "1.4.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/trypear/pearai-submodule"
@@ -156,6 +156,24 @@
         "command": "pearai.quickEdit",
         "category": "PearAI",
         "title": "Generate Code",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.toggleCreator",
+        "category": "PearAI",
+        "title": "Toggle PearAI Creator",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.toggleSearch",
+        "category": "PearAI",
+        "title": "Toggle PearAI Search",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.toggleInventory",
+        "category": "PearAI",
+        "title": "Toggle PearAI Inventory",
         "group": "PearAI"
       },
       {
@@ -326,6 +344,21 @@
     ],
     "keybindings": [
       {
+        "command": "pearai.toggleInventory",
+        "mac": "cmd+1",
+        "key": "ctrl+1"
+      },
+      {
+        "command": "pearai.toggleCreator",
+        "mac": "cmd+2",
+        "key": "ctrl+2"
+      },
+      {
+        "command": "pearai.toggleSearch",
+        "mac": "cmd+3",
+        "key": "ctrl+3"
+      },
+      {
         "command": "pearai.focusContinueInput",
         "mac": "cmd+l",
         "key": "ctrl+l"
@@ -426,6 +459,15 @@
       "commandPalette": [
         {
           "command": "pearai.quickEdit"
+        },
+        {
+          "command": "pearai.toggleCreator"
+        },
+        {
+          "command": "pearai.toggleSearch"
+        },
+        {
+          "command": "pearai.toggleInventory"
         },
         {
           "command": "pearai.focusContinueInput"

@@ -26,6 +26,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   aiderMode: [undefined, void];
   aiderCtrlC: [undefined, void];
   aiderResetSession: [undefined, void];
+  refreshAiderProcessState: [undefined, void];
   toggleDevTools: [undefined, void];
   reloadWindow: [undefined, void];
   focusEditor: [undefined, void];
@@ -77,4 +78,8 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   openOnboarding: [undefined, void];
   addPerplexityContext: [{text: string, language: string}, void]
   addPerplexityContextinChat: [{ text: string, language: string }, void];
+  navigateToCreator: [undefined, void];
+  navigateToSearch: [undefined, void];
+  navigateToInventory: [undefined, void];
+  getCurrentTab: [undefined, string];
 };

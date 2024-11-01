@@ -28,7 +28,7 @@ import {
   deleteMessage,
   newSession,
   setAiderInactive,
-  updateAiderProcessStatus,
+  updateAiderProcessState,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
@@ -59,6 +59,11 @@ function AiderGUI() {
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
+  const aiderProcessState = useSelector(
+    (state: RootState) => state.state.aiderProcessState,
+  );
+
+  // console.dir(aiderProcessState.state);
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
   // many users won't reach onboarding screen due to cache. So set it manually,
@@ -167,10 +172,14 @@ function AiderGUI() {
     [saveSession],
   );
 
+  useEffect(() => {
+    ideMessenger.request("refreshAiderProcessState", undefined);
+  }, []);
+
   useWebviewListener(
     "aiderProcessStateUpdate",
     async (data) => {
-      dispatch(updateAiderProcessStatus({ status: data.status }));
+      dispatch(updateAiderProcessState({ state: data.state }));
     },
     [],
   );
@@ -188,6 +197,42 @@ function AiderGUI() {
     },
     [state.aiderHistory],
   );
+
+  if (aiderProcessState.state !== "ready") {
+    let msg = "";
+    if (aiderProcessState.state === "stopped") {
+      msg = "PearAI Creator (Powered By aider) process is not running.";
+    }
+    if (aiderProcessState.state === "crashed") {
+      msg = "PearAI Creator (Powered By aider) process has crashed.";
+    }
+    if (aiderProcessState.state === "uninstalled") {
+      return <AiderManualInstallation />;
+    }
+    if (aiderProcessState.state === "starting") {
+      msg = "Spinning up PearAI Creator (Powered By aider), please give it a second...";
+    }
+
+    return (
+      <div className="top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
+        <div className="text-white text-2xl">
+          <div className="spinner-border text-white" role="status">
+            <span className="visually-hidden">{msg}</span>
+          </div>
+          {(aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") && (
+            <div className="flex justify-center">
+              <button
+                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                onClick={() => ideMessenger.post("aiderResetSession", undefined)}
+              >
+                Restart
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -214,6 +259,18 @@ function AiderGUI() {
                 your project. Creator will make and apply the changes to your
                 files directly.
               </p>
+              {state.aiderHistory.length > 0 && (
+                <div className="mt-2">
+                  <NewSessionButton
+                    onClick={() => {
+                      saveSession();
+                    }}
+                    className="mr-auto"
+                  >
+                    Clear chat
+                  </NewSessionButton>
+                </div>
+              )}
             </div>
           </div>
           <>
@@ -301,7 +358,7 @@ function AiderGUI() {
                             onDelete={() => {
                               dispatch(
                                 deleteMessage({
-                                  index: index + 1,
+                                  index: index,
                                   source: "aider",
                                 }),
                               );
@@ -391,11 +448,17 @@ function AiderGUI() {
 export default AiderGUI;
 
 const tutorialContent = {
-  goodFor: "direct feature implementations, bug fixes, code refactoring",
+  goodFor: "Direct feature implementations, bug fixes, code refactoring",
   notGoodFor:
-    "anything not requiring actual code changes (use PearAI Chat instead)",
+    "Questions unrelated to feature creation and bugs (use PearAI Chat instead)",
   example: {
-    text: '"make a new FAQ page for my website"',
-    copyText: "make a new FAQ page for my website",
+    text: '"Make a new FAQ page for my website"',
+    copyText: "Make a new FAQ page for my website",
   },
+  moreInfo: [
+    "Type '@' to add file context to your request.",
+    "Note that PearAI Creator will create files and make in-line changes for you automatically."
+  ]
 };
+import AiderManualInstallation from "./AiderManualInstallation";
+

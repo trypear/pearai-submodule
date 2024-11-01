@@ -22,6 +22,7 @@ import Stats from "./pages/stats";
 import Inventory from "./pages/inventory";
 import AiderGUI from "./integrations/aider/aidergui";
 import PerplexityGUI from "./integrations/perplexity/perplexitygui";
+import { useWebviewListener } from "./hooks/useWebviewListener";
 
 
 declare global {
@@ -113,7 +114,7 @@ const router = createMemoryRouter(
     },
   ],
   {
-    initialEntries: [window.isPearOverlay ? "/inventory" : window.initialRoute], 
+    initialEntries: [window.isPearOverlay ? "/inventory" : window.initialRoute],
   },
 );
 
