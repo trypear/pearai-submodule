@@ -72,19 +72,21 @@ class Aider extends BaseLLM {
     console.log("Aider constructor called");
     this.model = options.model;
     this.apiKey = options.apiKey;
+    this.command = []
   }
 
   public async aiderResetSession(
     model: string,
     apiKey: string | undefined,
   ): Promise<void> {
+
     console.log("Resetting Aider process...");
 
     // Kill the current process if it exists
-
     this.killAiderProcess();
     // Reset the output
     this.aiderOutput = "";
+    this.setAiderState("ready");
 
     // Restart the Aider chat with the provided model and API key
     try {
@@ -343,7 +345,7 @@ class Aider extends BaseLLM {
             if (output.endsWith("udiff> ")) {
               // Aider's ready prompt
               console.log("Aider is ready!");
-              this.setAiderState("ready");
+              this.setAiderState("stopped");
               clearTimeout(timeout);
               resolve();
             }
