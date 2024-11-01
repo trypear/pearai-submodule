@@ -26,6 +26,7 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
+import { importUserSettingsFromVSCode } from "../copySettings";
 
 /**
  * A shared messenger class between Core and Webview
@@ -79,6 +80,12 @@ export class VsCodeMessenger {
     private readonly workOsAuthProvider: WorkOsAuthProvider,
   ) {
     /** WEBVIEW ONLY LISTENERS **/
+    this.onWebview("importUserSettingsFromVSCode", (msg) => {
+      vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
+    });
+    this.onWebview("pearWelcomeOpenFolder", (msg) => {
+      vscode.commands.executeCommand("workbench.action.files.openFolder");
+    });
     this.onWebview("showFile", (msg) => {
       this.ide.openFile(msg.data.filepath);
     });

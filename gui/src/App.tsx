@@ -22,7 +22,7 @@ import Stats from "./pages/stats";
 import Inventory from "./pages/inventory";
 import AiderGUI from "./integrations/aider/aidergui";
 import PerplexityGUI from "./integrations/perplexity/perplexitygui";
-import Welcome from "./pages/welcomeGUI";
+import Welcome from "./pages/welcomeGui";
 
 declare global {
   interface Window {
