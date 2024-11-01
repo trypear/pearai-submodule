@@ -5,7 +5,7 @@ import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 
 export default function AddToPath({ onBack, onNext }: { onBack: () => void, onNext: () => void }) {
   return (
-    <div className="flex w-full overflow-hidden bg-background text-foreground">
+    <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-full flex flex-col h-screen">
         <div
           onClick={onBack}

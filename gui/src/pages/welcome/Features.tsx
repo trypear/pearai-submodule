@@ -92,12 +92,6 @@ export default function Features({ onNext }: { onNext: () => void }) {
     setTimestamp(Date.now());
   }
 
-  const getButtonText = () => {
-    if (currentFeature === features.length - 1) {
-      return "Next";
-    }
-    return "Next";
-  }
 
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
@@ -159,7 +153,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
             className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer"
             onClick={onNext}
           >
-            {getButtonText()}
+            Next
           </Button>
         </div>
       </div>

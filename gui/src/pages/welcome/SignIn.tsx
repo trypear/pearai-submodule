@@ -9,7 +9,7 @@ export default function SignIn({ onBack }: { onBack: () => void }) {
   const ideMessenger = useContext(IdeMessengerContext);
 
   return (
-    <div className="flex w-full overflow-hidden bg-background text-foreground">
+    <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-full flex flex-col h-screen">
         <div
           onClick={onBack}

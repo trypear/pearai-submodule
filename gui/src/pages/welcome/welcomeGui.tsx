@@ -1,80 +1,28 @@
 'use client'
 
-import { useState, useContext, useMemo } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import Features from './Features';
 import ImportExtensions from './ImportExtensions';
 import AddToPath from './AddToPath';
 import FinalStep from './FinalStep';
+import SignIn from './SignIn';
 import { IdeMessengerContext } from '@/context/IdeMessenger';
 
 export default function Welcome() {
   const [step, setStep] = useState<'features' | 'import-extensions' | 'add-to-path' | 'final'>('features');
+  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
+  const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
 
   const ideMessenger = useContext(IdeMessengerContext);
 
+  useEffect(() => {
+    const checkUserSignedIn = async () => {
+      const res = await ideMessenger.request("getPearAuth", undefined);
+      setIsSignedIn(res?.accessToken ? true : false);
+    };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  const isUserSignedIn = useMemo(() => {
-    return ideMessenger.request("getPearAuth", undefined).then((res) => {
-      return res?.accessToken ? true : false;
-    });
+    checkUserSignedIn();
   }, [ideMessenger]);
-
-  const handleNextStep = () => {
-    if (step === 'features') {
-      setStep('import-extensions');
-    } else if (step === 'import-extensions') {
-      setStep('add-to-path');
-    } else if (step === 'add-to-path') {
-      setStep('final');
-    }
-  };
 
   const handlePreviousStep = () => {
     if (step === 'import-extensions') {
@@ -86,6 +34,16 @@ export default function Welcome() {
     }
   };
 
+  const handleNextStep = () => {
+    if (step === 'features') {
+      setStep('import-extensions');
+    } else if (step === 'import-extensions') {
+      setStep('add-to-path');
+    } else if (step === 'add-to-path') {
+      setStep('final');
+    }
+  };
+
   switch (step) {
     case 'features':
       return <Features onNext={handleNextStep} />;
@@ -94,7 +52,7 @@ export default function Welcome() {
     case 'add-to-path':
       return <AddToPath onBack={handlePreviousStep} onNext={handleNextStep} />;
     case 'final':
-      return <FinalStep onBack={handlePreviousStep} isUserSignedIn={isUserSignedIn} />;
+      return <FinalStep onBack={handlePreviousStep} isUserSignedIn={isSignedIn} />;
     default:
       return null;
   }
