@@ -1,48 +1,55 @@
-'use client'
-
-import { useState, useContext, useEffect } from 'react';
-import { Collapse } from 'react-collapse';
+import { useContext, useEffect, useState } from 'react';
 import Features from './Features';
 import ImportExtensions from './ImportExtensions';
 import AddToPath from './AddToPath';
 import FinalStep from './FinalStep';
-import SignIn from './SignIn';
 import { IdeMessengerContext } from '@/context/IdeMessenger';
 
 export default function Welcome() {
-  const [step, setStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState<string[]>([]);
-  const [isSignedIn, setIsSignedIn] = useState<boolean>(false);
-
   const ideMessenger = useContext(IdeMessengerContext);
+  const [isUserSignedIn, setIsUserSignedIn] = useState(false);
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
-    const checkUserSignedIn = async () => {
-      const res = await ideMessenger.request("getPearAuth", undefined);
-      setIsSignedIn(res?.accessToken ? true : false);
+    const checkAuthStatus = async () => {
+      try {
+        const res = await ideMessenger.request("getPearAuth", undefined);
+        setIsUserSignedIn(!!res?.accessToken);
+      } catch (error) {
+        console.error("Failed to get auth status:", error);
+        setIsUserSignedIn(false);
+      }
     };
 
-    checkUserSignedIn();
+    checkAuthStatus();
   }, [ideMessenger]);
 
   const handleNextStep = () => {
-    setStep((prevStep) => prevStep + 1);
+    setStep((prevStep) => Math.min(prevStep + 1, 3));
+  };
+
+  const handleBackStep = () => {
+    setStep((prevStep) => Math.max(prevStep - 1, 0));
+  };
+
+  const renderStep = () => {
+    switch (step) {
+      case 0:
+        return <Features onNext={handleNextStep} />;
+      case 1:
+        return <ImportExtensions onNext={handleNextStep} onBack={handleBackStep} />;
+      case 2:
+        return <AddToPath onNext={handleNextStep} onBack={handleBackStep} />;
+      case 3:
+        return <FinalStep isUserSignedIn={isUserSignedIn} onBack={handleBackStep} />;
+      default:
+        return null;
+    }
   };
 
   return (
     <div className="flex flex-col space-y-4">
-      <Collapse isOpened={step === 0}>
-        <Features onNext={handleNextStep} />
-      </Collapse>
-      <Collapse isOpened={step === 1}>
-        <ImportExtensions onNext={handleNextStep} />
-      </Collapse>
-      <Collapse isOpened={step === 2}>
-        <AddToPath onNext={handleNextStep} />
-      </Collapse>
-      <Collapse isOpened={step === 3}>
-        <FinalStep isUserSignedIn={isSignedIn} />
-      </Collapse>
+      {renderStep()}
     </div>
   );
 }
