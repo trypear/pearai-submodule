@@ -28,7 +28,7 @@ export default function Welcome() {
   const [isLoading, setIsLoading] = useState(true)
   const [timestamp, setTimestamp] = useState(Date.now())
   const navigate = useNavigate();
-  const [step, setStep] = useState<'features' | 'import-extensions' | 'add-to-path'>('features');
+  const [step, setStep] = useState<'features' | 'import-extensions' | 'add-to-path' | 'final'>('features');
 
   const FEATURE_DURATION = 5000 // TODO: 5 seconds per feature, to be changed individually when have final demo gifs
   const AUTO_PROGRESS = false // Flag to control auto-progression
@@ -247,11 +247,60 @@ export default function Welcome() {
               </Button>
   
               <div
-                onClick={() => setStep('add-to-path')}
+                onClick={() => setStep('final')}
                 className="text-sm text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] underline cursor-pointer transition-colors"
               >
                 Skip adding to PATH
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (step === 'final') {
+    return (
+      <div className="flex w-full overflow-hidden bg-background text-foreground">
+        <div className="w-full flex flex-col h-screen">
+          <div 
+            onClick={() => setStep('add-to-path')}
+            className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] cursor-pointer transition-colors group"
+          >
+            <ArrowLongRightIcon className="w-4 h-4 rotate-180" />
+            <span className="text-sm">Back</span>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
+              Sign in to your account
+            </h2>
+            
+            <p className="text-muted-foreground text-base md:text-md max-w-[500px] text-center mb-16">
+              Sign up to start using PearAI and supercharge your development workflow
+            </p>
+
+            <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-12">
+              <Button 
+                className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover p-5 md:p-6 text-base md:text-lg cursor-pointer"
+                onClick={() => window.open('https://trypear.ai/signin', '_blank')}
+              >
+                Sign in
+              </Button>
+
+              <Button
+                className="w-[250px] md:w-[280px] bg-input text-foreground hover:text-button-foreground border border-input p-5 md:p-6 text-base md:text-lg cursor-pointer"
+                onClick={() => window.open('https://trypear.ai/signup', '_blank')}
+              >
+                Sign up
+              </Button>
+            </div>
+
+            <div
+              onClick={() => {/* Close functionality */}}
+              className="text-sm underline cursor-pointer text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] transition-colors"
+            >
+              Close
             </div>
           </div>
         </div>
