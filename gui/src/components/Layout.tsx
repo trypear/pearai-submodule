@@ -31,6 +31,7 @@ import ProgressBar from "./loaders/ProgressBar";
 import PostHogPageView from "./PosthogPageView";
 import ProfileSwitcher from "./ProfileSwitcher";
 import ShortcutContainer from "./ShortcutContainer";
+import UsageWarning from "./usagesWarning";
 
 // check mac or window
 const platform = navigator.userAgent.toLowerCase();
@@ -291,6 +292,7 @@ const Layout = () => {
           <Outlet />
           <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
           <ProfileDropdownPortalDiv id="profile-select-top-div"></ProfileDropdownPortalDiv>
+          <UsageWarning />
           {HIDE_FOOTER_ON_PAGES.includes(location.pathname) || (
             <Footer>
               <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
