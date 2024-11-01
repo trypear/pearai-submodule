@@ -9,9 +9,9 @@ import { newSession, setMessageAtIndex } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
+import { useState, useEffect, useCallback } from "react";
 import { isBareChatMode } from "../../util/bareChatMode";
 import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
-import { useCallback, useState } from "react";
 
 const gradient = keyframes`
   0% {
@@ -73,7 +73,6 @@ const ContinueInputBox = ({
   contextItems = [],
 }: ContinueInputBoxProps) => {
   const dispatch = useDispatch();
-  const [isEmpty, setIsEmpty] = useState(true);
 
   const availableSlashCommands = useSelector(selectSlashCommands);
   const active = useSelector((store: RootState) => {
@@ -90,8 +89,8 @@ const ContinueInputBox = ({
   const availableContextProviders = getContextProviders();
   const bareChatMode = isBareChatMode();
 
-  const handleEditorChange = useCallback((isEmpty: boolean) => {
-    setIsEmpty(isEmpty);
+  const handleEditorChange = useCallback((newState: JSONContent) => {
+    setPreservedState(newState);
   }, []);
 
   useWebviewListener(
@@ -114,6 +113,15 @@ const ContinueInputBox = ({
 
   // check if lastActiveIntegration === source, if so, activate gradient border and tiptap editor
   // actually can get history here and check if last message of passed in source was a lastUserInput
+  // Preserve editor state between renders
+  const [preservedState, setPreservedState] = useState(editorState);
+  
+  useEffect(() => {
+    if (editorState) {
+      setPreservedState(editorState);
+    }
+  }, [editorState]);
+
   return (
     <div
       style={{
@@ -128,7 +136,7 @@ const ContinueInputBox = ({
         borderRadius={defaultBorderRadius}
       >
         <TipTapEditor
-          editorState={editorState}
+          editorState={preservedState}
           onEnter={onEnter}
           isMainInput={isMainInput}
           availableContextProviders={availableContextProviders}
@@ -142,6 +150,6 @@ const ContinueInputBox = ({
       <ContextItemsPeek contextItems={contextItems} />
     </div>
   );
-}
+};
 
 export default ContinueInputBox;

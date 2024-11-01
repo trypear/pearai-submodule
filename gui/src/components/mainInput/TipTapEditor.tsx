@@ -161,7 +161,7 @@ interface TipTapEditorProps {
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
-  onContentChange?: (isEmpty: boolean) => void;
+  onContentChange?: (newState: JSONContent) => void;
 }
 const TipTapEditor = ({
   availableContextProviders,
@@ -305,6 +305,15 @@ const TipTapEditor = ({
 
   const { prevRef, nextRef, addRef } = useInputHistory();
   const location = useLocation();
+
+  // Keep track of the last valid content
+  const lastContentRef = useRef(editorState);
+  
+  useEffect(() => {
+    if (editorState) {
+      lastContentRef.current = editorState;
+    }
+  }, [editorState]);
 
   const editor: Editor = useEditor({
     extensions: [
@@ -479,20 +488,19 @@ const TipTapEditor = ({
         style: `font-size: ${getFontSize()}px;`,
       },
     },
-    content: editorState || mainEditorContent || "",
+    content: lastContentRef.current,
+    editable: true,
     onFocus: () => setIsEditorFocused(true),
     onBlur: () => setIsEditorFocused(false),
     onUpdate: ({ editor, transaction }) => {
+      // If /edit is typed and no context items are selected, select the first
+
       if (contextItems.length > 0) {
         return;
       }
 
       const json = editor.getJSON();
       const codeBlock = json.content?.find((el) => el.type === "codeBlock");
-      const textContent = editor.getText().replace(/@[^\s]+/g, '').trim();
-
-      onContentChange?.(textContent.length === 0);
-
       if (!codeBlock) {
         return;
       }
@@ -506,21 +514,25 @@ const TipTapEditor = ({
         ) {
           continue;
         }
-
         for (const node of p.content) {
           if (
             node.type === "slashcommand" &&
             ["/edit", "/comment"].includes(node.attrs.label)
           ) {
+            // Update context items
             dispatch(
               setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
             );
-
             return;
           }
         }
       }
     },
+    onCreate({ editor }) {
+      if (lastContentRef.current) {
+        editor.commands.setContent(lastContentRef.current);
+      }
+    }
   }, [historyLength]);
 
   const handleShowFile = useCallback((event: ShowFileEvent) => {
@@ -552,8 +564,13 @@ const TipTapEditor = ({
     if (mentionCount > 1) return false;
   
     return !content.content?.some(node => 
-      node.type === "paragraph" && 
-      node.content?.some(child => child.type === "text" && child.text.trim().length > 0)
+      (node.type === "paragraph" && 
+        node.content?.some(child => 
+          (child.type === "text" && child.text.trim().length > 0)
+        )
+      ) ||
+      node.type === "slashcommand" ||
+      node.type === "codeBlock"
     );
   }, []);
 
@@ -997,6 +1014,62 @@ const TipTapEditor = ({
 
   const [optionKeyHeld, setOptionKeyHeld] = useState(false);
 
+  // Use onTransaction to track content changes
+  useEffect(() => {
+    if (editor) {
+      editor.on('transaction', () => {
+        const newContent = editor.getJSON();
+
+        lastContentRef.current = newContent;
+        onContentChange?.(newContent);
+  
+        // If /edit is typed and no context items are selected, select the first
+        
+        if (contextItems.length > 0) {
+          return;
+        }
+  
+        const codeBlock = newContent.content?.find((el) => el.type === "codeBlock");
+        if (!codeBlock) {
+          return;
+        }
+  
+        // Search for slashcommand type
+        for (const p of newContent.content) {
+          if (
+            p.type !== "paragraph" ||
+            !p.content ||
+            typeof p.content === "string"
+          ) {
+            continue;
+          }
+          for (const node of p.content) {
+            if (
+              node.type === "slashcommand" &&
+              ["/edit", "/comment"].includes(node.attrs.label)
+            ) {
+              // Update context items
+              dispatch(
+                setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
+              );
+              return;
+            }
+          }
+        }
+      });
+    }
+  }, [editor, onContentChange, contextItems, dispatch]);
+
+  // Prevent content flash during streaming
+  useEffect(() => {
+    if (editor && lastContentRef.current) {
+      const currentContent = editor.getJSON();
+      if (JSON.stringify(currentContent) !== JSON.stringify(lastContentRef.current)) {
+        editor.commands.setContent(lastContentRef.current);
+      }
+    }
+  }, [editor, source]);
+
   return (
     <InputBoxDiv
       onKeyDown={(e) => {
@@ -1094,6 +1167,6 @@ const TipTapEditor = ({
         )}
     </InputBoxDiv>
   );
-}
+};
 
 export default TipTapEditor;

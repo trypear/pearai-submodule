@@ -45,6 +45,7 @@ class Aider extends BaseLLM {
   public aiderProcess: cp.ChildProcess | null = null;
   private aiderOutput: string = "";
   private credentials: PearAICredentials;
+  private command: string[];
 
   public aiderState: AiderState["state"] = "starting";
 
@@ -71,19 +72,21 @@ class Aider extends BaseLLM {
     console.log("Aider constructor called");
     this.model = options.model;
     this.apiKey = options.apiKey;
+    this.command = []
   }
 
   public async aiderResetSession(
     model: string,
     apiKey: string | undefined,
   ): Promise<void> {
+
     console.log("Resetting Aider process...");
 
     // Kill the current process if it exists
-
     this.killAiderProcess();
     // Reset the output
     this.aiderOutput = "";
+    this.setAiderState("ready");
 
     // Restart the Aider chat with the provided model and API key
     try {
@@ -130,19 +133,19 @@ class Aider extends BaseLLM {
 
   private getUserPath(): string {
     try {
-      let command: string;
+      let pathCommand: string;
       const shell = this.getUserShell();
 
       if (os.platform() === "win32") {
         // For Windows, we'll use a PowerShell command
-        command =
+        pathCommand =
           "powershell -Command \"[Environment]::GetEnvironmentVariable('Path', 'User') + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine')\"";
       } else {
         // For Unix-like systems (macOS, Linux)
-        command = `${shell} -ilc 'echo $PATH'`;
+        pathCommand = `${shell} -ilc 'echo $PATH'`;
       }
 
-      return execSync(command, { encoding: "utf8" }).trim();
+      return execSync(pathCommand, { encoding: "utf8" }).trim();
     } catch (error) {
       console.error("Error getting user PATH:", error);
       return process.env.PATH || "";
@@ -180,8 +183,6 @@ class Aider extends BaseLLM {
         currentDir = "";
       }
 
-      let command: string[];
-
       const aiderFlags =
         "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands --no-auto-lint --map-tokens 2048 --edit-format udiff";
       const aiderCommands = [
@@ -196,15 +197,11 @@ class Aider extends BaseLLM {
           await execSync(`${aiderCommand} --version`, { stdio: "ignore" });
           commandFound = true;
 
-          switch (model) {
-            case model.includes("claude") && model:
-              command = [`${aiderCommand} --model ${model}`];
-              break;
-            case "gpt-4o":
-              command = [`${aiderCommand} --model gpt-4o`];
-              break;
-            case "pearai_model":
-            default:
+          if (model.includes("claude")) {
+            this.command = [`${aiderCommand} --model ${model}`];
+          } else if (model.includes("gpt")) {
+            this.command = [`${aiderCommand} --model ${model}`];
+          } else {  // handles pearai, aider, and default cases
               await this.credentials.checkAndUpdateCredentials();
               const accessToken = this.credentials.getAccessToken();
               if (!accessToken) {
@@ -228,7 +225,7 @@ class Aider extends BaseLLM {
                   });
                 throw new Error("User not logged in to PearAI.");
               }
-              command = [
+              this.command = [
                 aiderCommand,
                 "--openai-api-key",
                 accessToken,
@@ -295,7 +292,7 @@ class Aider extends BaseLLM {
     }
 
     // Now spawn Aider in the background
-    return cp.spawn("cmd.exe", ["/c", ...command], {
+    return cp.spawn("cmd.exe", ["/c", ...this.command], {
       stdio: ["pipe", "pipe", "pipe"],
       cwd: currentDir,
       env: {
@@ -310,16 +307,16 @@ class Aider extends BaseLLM {
 
   const spawnAiderProcessUnix = () => {
     if (model.includes("claude")) {
-      command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
+      this.command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
     } else if (model.includes("gpt")) {
-      command.unshift(`export OPENAI_API_KEY=${apiKey};`);
+      this.command.unshift(`export OPENAI_API_KEY=${apiKey};`);
     } else {
       // For pearai_model, we're using the access token
       const accessToken = this.credentials.getAccessToken();
-      command.unshift(`export OPENAI_API_KEY=${accessToken};`);
+      this.command.unshift(`export OPENAI_API_KEY=${accessToken};`);
     }
 
-    return cp.spawn(userShell, ["-c", command.join(" ")], {
+    return cp.spawn(userShell, ["-c", this.command.join(" ")], {
       stdio: ["pipe", "pipe", "pipe"],
       cwd: currentDir,
       env: {
@@ -530,7 +527,7 @@ class Aider extends BaseLLM {
   }
 
   async listModels(): Promise<string[]> {
-    return ["claude-3-5-sonnet-20240620", "pearai_model", "gpt-4o"];
+    return ["aider", "pearai_model", "claude-3-5-sonnet-20240620", "gpt-4o"];
   }
 
   supportsFim(): boolean {
