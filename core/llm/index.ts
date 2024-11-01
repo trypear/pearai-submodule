@@ -538,9 +538,7 @@ ${prompt}`;
     // You can opt-out of this by setting sendAnonymousTelemetry to false in your config.json in ~/.pearai
     try {
       if (Telemetry.allow) {
-        let provider = this.providerName;
-        const telemetryOptions = { ...completionOptions, provider };
-        await anonymousTelemetryLog("streamChat", telemetryOptions);
+        await anonymousTelemetryLog("streamChat", completionOptions);
       }
       } catch (error) {
         console.error("Error logging anonymous telemetry:", error);

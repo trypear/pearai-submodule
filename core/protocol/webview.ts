@@ -1,5 +1,5 @@
 import type { ContextItemWithId, IndexingProgressUpdate } from "../index.js";
-import type { AiderState } from "../llm/llms/Aider";
+import type { AiderStatusUpdate } from "../llm/llms/Aider";
 
 export type ToWebviewFromIdeOrCoreProtocol = {
   addPearAIModel: [undefined, void];
@@ -7,7 +7,7 @@ export type ToWebviewFromIdeOrCoreProtocol = {
   getDefaultModelTitle: [undefined, string];
   loadMostRecentChat: [undefined, void];
   indexProgress: [IndexingProgressUpdate, void];
-  aiderProcessStateUpdate: [AiderState, void];
+  aiderProcessStateUpdate: [AiderStatusUpdate, void];
   refreshSubmenuItems: [undefined, void];
   isContinueInputFocused: [undefined, boolean];
   addContextItem: [

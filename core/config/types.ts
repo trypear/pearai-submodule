@@ -653,7 +653,7 @@ declare global {
     | "starcoder2-3b"
     | "stable-code-3b"
     | "pearai_model"
-    | "pearai_model"
+    | "aider"
     | "perplexity";
 
   export interface RequestOptions {

@@ -140,10 +140,6 @@ function StepContainer({
             <StyledMarkdownPreview
               source={stripImages(item.message.content)}
               showCodeBorder={true}
-              isStreaming={active}
-              isLast={isLast}
-              messageIndex={index}
-              integrationSource={source}
             />
           )}
         </ContentDiv>

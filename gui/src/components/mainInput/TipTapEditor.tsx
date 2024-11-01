@@ -15,7 +15,7 @@ import {
 import { modelSupportsImages } from "core/llm/autodetect";
 import { getBasename, getRelativePath } from "core/util";
 import { usePostHog } from "posthog-js/react";
-import { useContext, useEffect, useMemo, useRef, useState, memo } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -158,17 +158,15 @@ interface TipTapEditorProps {
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
-  onChange?: (newState: JSONContent) => void;
 }
 
-const TipTapEditor = memo(function TipTapEditor({
+function TipTapEditor({
   availableContextProviders,
   availableSlashCommands,
   isMainInput,
   onEnter,
   editorState,
   source = 'continue',
-  onChange,
 }: TipTapEditorProps) {
   const dispatch = useDispatch();
 
@@ -303,15 +301,6 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const { prevRef, nextRef, addRef } = useInputHistory();
   const location = useLocation();
-
-  // Keep track of the last valid content
-  const lastContentRef = useRef(editorState);
-  
-  useEffect(() => {
-    if (editorState) {
-      lastContentRef.current = editorState;
-    }
-  }, [editorState]);
 
   const editor: Editor = useEditor({
     extensions: [
@@ -486,16 +475,46 @@ const TipTapEditor = memo(function TipTapEditor({
         style: `font-size: ${getFontSize()}px;`,
       },
     },
-    content: lastContentRef.current,
-    editable: true,
+    content: editorState || mainEditorContent || "",
     onFocus: () => setIsEditorFocused(true),
     onBlur: () => setIsEditorFocused(false),
-    onCreate({ editor }) {
-      if (lastContentRef.current) {
-        editor.commands.setContent(lastContentRef.current);
+    onUpdate: ({ editor, transaction }) => {
+      // If /edit is typed and no context items are selected, select the first
+
+      if (contextItems.length > 0) {
+        return;
       }
-    }
-  }, []);  // Remove dependencies to prevent recreation
+
+      const json = editor.getJSON();
+      const codeBlock = json.content?.find((el) => el.type === "codeBlock");
+      if (!codeBlock) {
+        return;
+      }
+
+      // Search for slashcommand type
+      for (const p of json.content) {
+        if (
+          p.type !== "paragraph" ||
+          !p.content ||
+          typeof p.content === "string"
+        ) {
+          continue;
+        }
+        for (const node of p.content) {
+          if (
+            node.type === "slashcommand" &&
+            ["/edit", "/comment"].includes(node.attrs.label)
+          ) {
+            // Update context items
+            dispatch(
+              setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
+            );
+            return;
+          }
+        }
+      }
+    },
+  }, [historyLength]);
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
 
@@ -854,61 +873,6 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const [optionKeyHeld, setOptionKeyHeld] = useState(false);
 
-  // Use onTransaction to track content changes
-  useEffect(() => {
-    if (editor) {
-      editor.on('transaction', () => {
-        const newContent = editor.getJSON();
-        lastContentRef.current = newContent;
-        onChange?.(newContent);
-  
-        // If /edit is typed and no context items are selected, select the first
-        
-        if (contextItems.length > 0) {
-          return;
-        }
-  
-        const codeBlock = newContent.content?.find((el) => el.type === "codeBlock");
-        if (!codeBlock) {
-          return;
-        }
-  
-        // Search for slashcommand type
-        for (const p of newContent.content) {
-          if (
-            p.type !== "paragraph" ||
-            !p.content ||
-            typeof p.content === "string"
-          ) {
-            continue;
-          }
-          for (const node of p.content) {
-            if (
-              node.type === "slashcommand" &&
-              ["/edit", "/comment"].includes(node.attrs.label)
-            ) {
-              // Update context items
-              dispatch(
-                setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
-              );
-              return;
-            }
-          }
-        }
-      });
-    }
-  }, [editor, onChange, contextItems, dispatch]);
-
-  // Prevent content flash during streaming
-  useEffect(() => {
-    if (editor && lastContentRef.current) {
-      const currentContent = editor.getJSON();
-      if (JSON.stringify(currentContent) !== JSON.stringify(lastContentRef.current)) {
-        editor.commands.setContent(lastContentRef.current);
-      }
-    }
-  }, [editor, source]);
-
   return (
     <InputBoxDiv
       onKeyDown={(e) => {
@@ -1006,6 +970,6 @@ const TipTapEditor = memo(function TipTapEditor({
         )}
     </InputBoxDiv>
   );
-});
+}
 
 export default TipTapEditor;

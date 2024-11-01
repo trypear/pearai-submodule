@@ -28,7 +28,7 @@ import {
   deleteMessage,
   newSession,
   setAiderInactive,
-  updateAiderProcessState,
+  updateAiderProcessStatus,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
@@ -59,11 +59,11 @@ function AiderGUI() {
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
-  const aiderProcessState = useSelector(
-    (state: RootState) => state.state.aiderProcessState,
+  const aiderProcessStatus = useSelector(
+    (state: RootState) => state.state.aiderProcessStatus,
   );
 
-  // console.dir(aiderProcessState.state);
+  // console.dir(aiderProcessStatus.status);
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
   // many users won't reach onboarding screen due to cache. So set it manually,
@@ -173,13 +173,13 @@ function AiderGUI() {
   );
 
   useEffect(() => {
-    ideMessenger.request("refreshAiderProcessState", undefined);
+    ideMessenger.request("refreshAiderProcessStatus", undefined);
   }, []);
 
   useWebviewListener(
     "aiderProcessStateUpdate",
     async (data) => {
-      dispatch(updateAiderProcessState({ state: data.state }));
+      dispatch(updateAiderProcessStatus({ status: data.status }));
     },
     [],
   );
@@ -198,18 +198,16 @@ function AiderGUI() {
     [state.aiderHistory],
   );
 
-  if (aiderProcessState.state !== "ready") {
+  if (aiderProcessStatus.status !== "ready") {
     let msg = "";
-    if (aiderProcessState.state === "stopped") {
+    if (aiderProcessStatus.status === "stopped") {
       msg = "PearAI Creator (Powered By aider) process is not running.";
     }
-    if (aiderProcessState.state === "crashed") {
-      msg = "PearAI Creator (Powered By aider) process has crashed.";
-    }
-    if (aiderProcessState.state === "uninstalled") {
+    if (aiderProcessStatus.status === "uninstalled") {
       return <AiderManualInstallation />;
     }
-    if (aiderProcessState.state === "starting") {
+
+    if (aiderProcessStatus.status === "starting") {
       msg = "Spinning up PearAI Creator (Powered By aider), please give it a second...";
     }
 
@@ -219,16 +217,6 @@ function AiderGUI() {
           <div className="spinner-border text-white" role="status">
             <span className="visually-hidden">{msg}</span>
           </div>
-          {(aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") && (
-            <div className="flex justify-center">
-              <button
-                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
-                onClick={() => ideMessenger.post("aiderResetSession", undefined)}
-              >
-                Restart
-              </button>
-            </div>
-          )}
         </div>
       </div>
     );

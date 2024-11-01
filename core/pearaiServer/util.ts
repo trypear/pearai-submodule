@@ -13,7 +13,6 @@ export async function anonymousTelemetryLog(event: string, options: any) {
         ...baseHeaders,
         "Content-Type": "application/json",
         model: options.model || "unknown",
-        provider: options.provider || "unknown",
         event: event,
       },
     });
