@@ -118,7 +118,7 @@ const router = createMemoryRouter(
   ],
   // TODO: Remove replace /welcome with /inventory when done testing
   {
-    initialEntries: [window.isPearOverlay ? "/welcome" : window.initialRoute], 
+    initialEntries: [window.isPearOverlay ? "/inventory" : window.initialRoute],
   },
 );
 
