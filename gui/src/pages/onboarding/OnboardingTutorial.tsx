@@ -1,9 +1,12 @@
 import { vscBackground, vscForeground, vscInputBorderFocus } from '@/components';
 import CopyButtonWithText from '@/components/markdown/CopyButtonWithText';
+import VSCodeFileLink from '@/components/markdown/VSCodeFileLink';
 import { Button } from '@/components/ui/button';
+import { IdeMessengerContext } from '@/context/IdeMessenger';
+import { useWebviewListener } from '@/hooks/useWebviewListener';
 import { getMetaKeyAndShortcutLabel } from '@/util';
 import { ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 
 interface OnboardingTutorialProps {
@@ -111,6 +114,52 @@ const ExamplesHeader = styled.div`
 const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExampleClick }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
+  const ideMessenger = useContext(IdeMessengerContext);
+
+  const pages = [
+    {
+      title: <h3>Select Code and Chat (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>L</kbd>)</h3>,
+      description: <p>Highlight a portion of code, and press <kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd className="text-base">L</kbd> to add it to the chat context.<br/><br/>
+      <em>Don't have a file open? Use <kbd className="underline decoration-current hover:no-underline cursor-pointer" onClick={() => ideMessenger.post("showTutorial", undefined)}>pearai_tutorial.py</kbd>.</em></p>,
+    },
+    {
+      description: <p>Ask a question about the code you just highlighted!</p>,
+      examples: [
+        "Explain what this code does",
+        "What could be improved here?",
+      ]
+    },
+    {
+      title: <h3>Inline Code Editing (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>)</h3>,
+      description: <p>Now let's try inline editing... Highlight a function in full, and press <kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>.</p>,
+    },
+    {
+      title: <h3>Inline Code Editing (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>)</h3>,
+  description: <p>Ask it to edit your code. Then after the changes appear, you can:<ul className="list-disc marker:text-foreground" >
+                                                                  <li>accept all changes with <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+ENTER</kbd>,</li>
+                                                                  <li>or reject all changes with <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+BACKSPACE</kbd></li>
+                                                                </ul></p>,
+      examples: [
+        "Add error handling",
+        "Add comments",
+        "Add print statements",
+        "Improve this code"
+      ]
+    },
+    {
+      title: <h3>Codebase Context (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>ENTER</kbd>)</h3>,
+      description: <p >Almost done! Try asking anything about your general codebase by prompting then pressing <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>ENTER</kbd>.<br/><br/> Note: codebase indexing must finish before you can run this!</p>,
+      examples: [
+        "What does my codebase do",
+        "Generate me documentation for my codebase",
+        "Where can I find functions about X"
+      ]
+    },
+    {
+      title: <h3>Toggle PearAI Inventory</h3>,
+      description: <p>Lastly, press <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>E</kbd> to toggle <b>PearAI Inventory</b>, try out <strong>Creator</strong> and <strong>Search</strong> directly in there! <br/><br/>Enjoy PearAI! If you have questions, feel free to ask us in our <a href="https://discord.gg/7QMraJUsQt">Discord</a> or through <a href="mailto:pear@trypear.ai">email</a>.</p>,
+    },
+  ]
 
   const nextPage = () => {
     setSlideDirection('right');
@@ -125,22 +174,39 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
   const currentPageData = pages[currentPage];
   const hasExamples = Boolean(currentPageData.examples);
 
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'ArrowRight') {
-        nextPage();
-      } else if (event.key === 'ArrowLeft') {
-        prevPage();
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key === 'ArrowRight') {
+      nextPage();
+    } else if (event.key === 'ArrowLeft') {
+      prevPage();
+    }
+  }, [setCurrentPage, setSlideDirection]);
+
+  useWebviewListener(
+    "focusContinueInput",
+    async () => {
+      if (currentPage === 0) {
+        nextPage()
       }
-    };
+    },
+    [currentPage],
+  );
 
+  useWebviewListener(
+    "quickEdit",
+    async () => {
+      if (currentPage === 2) {
+        nextPage()
+      }
+    },
+    [currentPage],
+  );
 
+  useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [currentPage]);
-
   
-
   return (
     <TutorialCardDiv className="flex flex-col p-2 justify-between bg-background">
       <div className="mb-3">
@@ -181,8 +247,8 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
                           <CopyButtonWithText
                             key={example}
                             text={example}
-                            side="bottom"
-                            variant="animated"
+                            side="top"
+                            variant="ghost"
                             onTextClick={onExampleClick}
                           />
                         ))}
@@ -204,49 +270,5 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
     </TutorialCardDiv>
   );
 };
-
-const pages = [
-  {
-    title: <h3>Select Code and Chat (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>L</kbd>)</h3>,
-    description: <p>Highlight a portion of code, and press <kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd className="text-base">L</kbd> to add it as chat context.<br/><br/><em>Hint: you can also use <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>L</kbd> to start new chats!</em></p>,
-  },
-  {
-    description: <p>Ask a question about the code you just highlighted!</p>,
-    examples: [
-      "Explain what this code does",
-      "What could be improved here?",
-    ]
-  },
-  {
-    title: <h3>Inline Code Editing (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>)</h3>,
-    description: <p>Now let's try inline editing... Highlight a function in full, and press <kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>.</p>,
-  },
-  {
-    title: <h3>Inline Code Editing (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>)</h3>,
-description: <p>Ask it to edit your code. Then after the changes appear, you can:<ul className="list-disc marker:text-foreground" >
-                                                                <li>accept all changes with <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+ENTER</kbd>,</li>
-                                                                <li>or reject all changes with <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+BACKSPACE</kbd></li>
-                                                              </ul></p>,
-    examples: [
-      "Add error handling",
-      "Add comments",
-      "Add print statements",
-      "Improve this code"
-    ]
-  },
-  {
-    title: <h3>Codebase Context (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>ENTER</kbd>)</h3>,
-    description: <p >Almost done! Try asking something about your codebase, then press <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>ENTER</kbd> to perform a prompt with codebase context.<br/><br/> Note: codebase indexing must finish before you can run this!</p>,
-    examples: [
-      "What does my codebase do",
-      "Generate me documentation for my codebase",
-      "Where can I find functions about X"
-    ]
-  },
-  {
-    title: <h3>Toggle PearAI Inventory</h3>,
-    description: <p>Lastly, press <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>E</kbd> to toggle <b>PearAI inventory</b>, try out <strong>Creator</strong> and <strong>Search</strong> directly in there! <br/><br/>Enjoy PearAI! If you have questions, feel free to ask us in our <a href="https://discord.gg/7QMraJUsQt">Discord</a> or through <a href="mailto:pear@trypear.ai">email</a>.</p>,
-  },
-];
 
 export default OnboardingTutorial;

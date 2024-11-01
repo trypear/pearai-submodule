@@ -370,6 +370,7 @@ const commandsMap: (
     "pearai.quickEdit": async (args: QuickEditShowParams) => {
       captureCommandTelemetry("quickEdit");
       quickEdit.show(args);
+      sidebar.webviewProtocol?.request("quickEdit", undefined, ["pearai.pearAIChatView"]);
     },
     "pearai.writeCommentsForCode": async () => {
       captureCommandTelemetry("writeCommentsForCode");

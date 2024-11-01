@@ -68,6 +68,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   openSettings: [undefined, void];
   viewHistory: [undefined, void];
   newSession: [undefined, void];
+  quickEdit: [undefined, void];
   setTheme: [{ theme: any }, void];
   setThemeType: [{ themeType: string }, void];
   setColors: [{ [key: string]: string }, void];
