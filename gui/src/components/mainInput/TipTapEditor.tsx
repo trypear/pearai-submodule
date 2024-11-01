@@ -556,7 +556,11 @@ const TipTapEditor = ({
 
   const isEditorEmpty = useCallback((editor: Editor) => {
     const content = editor.getJSON();
-    
+  
+    // Counting number of "@" mentions, if more than 1 return false
+    // Else, check if there's also text, if so, then is not empty.
+    // If only one "@" mention with no text, then switch the mention
+    // With new current file's mention.
     const mentionCount = content.content?.reduce((count, node) => {
       return count + (node.content?.filter(child => child.type === "mention").length || 0);
     }, 0) || 0;

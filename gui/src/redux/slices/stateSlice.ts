@@ -274,7 +274,7 @@ export const stateSlice = createSlice({
       }
     },
     addContextItems: (state, action: PayloadAction<ContextItemWithId[]>) => {
-      state.contextItems.push(...action.payload);
+      state.contextItems = state.contextItems.concat(action.payload);
     },
     resubmitAtIndex: (
       state,

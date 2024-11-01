@@ -68,8 +68,8 @@ class VsCodeIde implements IDE {
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (editor) {
         const filepath = editor.document.uri.fsPath;
-        
-        callback(filepath);      }
+        callback(filepath);      
+      }
     });
   }
 
