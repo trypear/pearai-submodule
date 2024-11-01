@@ -196,11 +196,16 @@ class Aider extends BaseLLM {
           await execSync(`${aiderCommand} --version`, { stdio: "ignore" });
           commandFound = true;
 
-          if (model.includes("claude")) {
-            command = [`${aiderCommand} --model ${model}`];
-          } else if (model.includes("gpt")) {
-            command = [`${aiderCommand} --model ${model}`];
-          } else {  // handles pearai, aider, and default cases
+          switch (true) {
+            case model.includes("claude"):
+              command = [`${aiderCommand} --model ${model}`];
+              break;
+            case model.includes("gpt"):
+              command = [`${aiderCommand} --model ${model}`];
+              break;
+            case model.includes("pearai"):
+            case model.includes("aider"):
+            default:
               await this.credentials.checkAndUpdateCredentials();
               const accessToken = this.credentials.getAccessToken();
               if (!accessToken) {
