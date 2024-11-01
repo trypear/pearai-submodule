@@ -14,12 +14,12 @@ declare global {
       vscMediaUrl: string;
     }
   }
-  
+
   // Function to get correct asset path (FOR GIFs)
   const getAssetPath = (assetName: string) => {
     return `${window.vscMediaUrl}/assets/${assetName}`;
   }
-  
+
   console.dir(window.vscMediaUrl);
 
 export default function Welcome() {
@@ -137,7 +137,7 @@ export default function Welcome() {
     return (
       <div className="flex w-full overflow-hidden bg-background text-foreground">
         <div className="w-full flex flex-col h-screen">
-          <div 
+          <div
             onClick={() => setStep('features')}
             className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] cursor-pointer transition-colors group"
           >
@@ -149,15 +149,15 @@ export default function Welcome() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               Import Extensions and Settings
             </h2>
-            
+
             <p className="text-muted-foreground text-sm md:text-base mb-12">
               Import your VS Code extensions and settings to PearAI
             </p>
 
             <div className="flex items-center justify-center gap-12 mb-12">
               <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
-                <img 
-                  src={`${window.vscMediaUrl}/assets/vscode-icon.svg`} 
+                <img
+                  src={`${window.vscMediaUrl}/assets/vscode-icon.svg`}
                   alt="VS Code"
                   className="w-full h-full object-contain"
                 />
@@ -166,7 +166,7 @@ export default function Welcome() {
               <ArrowLongRightIcon className="w-12 h-12 ml-6 md:w-20 md:h-20 text-muted-foreground" />
 
               <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
-                <img 
+                <img
                   src={`${window.vscMediaUrl}/assets/pear-icon.svg`}
                   alt="PearAI"
                   className="w-full h-full object-contain"
@@ -175,7 +175,7 @@ export default function Welcome() {
             </div>
 
             <div className="flex flex-col items-center gap-4">
-              <Button 
+              <Button
                 className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"
                 onClick={() => {ideMessenger.post("importUserSettingsFromVSCode", undefined)}}
               >
@@ -199,23 +199,23 @@ export default function Welcome() {
     return (
       <div className="flex w-full overflow-hidden bg-background text-foreground">
         <div className="w-full flex flex-col h-screen">
-          <div 
+          <div
             onClick={() => setStep('import-extensions')}
             className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] cursor-pointer transition-colors group"
           >
             <ArrowLongRightIcon className="w-4 h-4 rotate-180" />
             <span className="text-sm">Back</span>
           </div>
-  
+
           <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               Add Pear to PATH
             </h2>
-            
+
             <p className="text-muted-foreground text-sm md:text-base mb-12">
               Access Pear directly from your terminal
             </p>
-  
+
             {/* Terminal UI */}
             <div className="w-full max-w-2xl mb-12 rounded-lg overflow-hidden border border-solid border-input shadow-sm">
               {/* Terminal Header */}
@@ -227,7 +227,7 @@ export default function Welcome() {
                 </div>
                 <span className="text-xs text-muted-foreground">Terminal</span>
               </div>
-              
+
               {/* Terminal Content */}
               <div className="bg-[var(--vscode-terminal-background)] p-4 border border-input m-1 rounded-sm">
                 <div className="font-mono text-sm">
@@ -240,21 +240,21 @@ export default function Welcome() {
                 </div>
               </div>
             </div>
-  
+
             <div className="flex flex-col items-center gap-4">
-              <Button 
+              <Button
                 className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"
                 onClick={() => {
                   // First handle the import functionality
                   /* Import functionality will go here */
-                  
+
                   // Then navigate to add-to-path step
                   setStep('add-to-path');
                 }}
               >
                 Add to PATH
               </Button>
-  
+
               <div
                 onClick={() => setStep('final')}
                 className="text-sm text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] underline cursor-pointer transition-colors"
@@ -272,7 +272,7 @@ export default function Welcome() {
     return (
       <div className="flex w-full overflow-hidden bg-background text-foreground">
         <div className="w-full flex flex-col h-screen">
-          <div 
+          <div
             onClick={() => setStep('add-to-path')}
             className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] cursor-pointer transition-colors group"
           >
@@ -284,13 +284,13 @@ export default function Welcome() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               Sign in to your account
             </h2>
-            
+
             <p className="text-muted-foreground text-base md:text-md max-w-[500px] text-center mb-16">
               Sign up to start using PearAI and supercharge your development workflow
             </p>
 
             <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-12">
-              <Button 
+              <Button
                 className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover p-5 md:p-6 text-base md:text-lg cursor-pointer"
                 onClick={() => ideMessenger.post("pearaiLogin", undefined)}
               >
@@ -320,7 +320,7 @@ export default function Welcome() {
     return (
       <div className="flex w-full overflow-hidden bg-background text-foreground">
         <div className="w-full flex flex-col h-screen">
-          <div 
+          <div
             onClick={() => setStep('add-to-path')}
             className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] cursor-pointer transition-colors group"
           >
@@ -330,7 +330,7 @@ export default function Welcome() {
 
           <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
             <div className="w-24 h-24 md:w-32 md:h-32 mb-8 flex items-center justify-center">
-              <img 
+              <img
                 src={`${window.vscMediaUrl}/assets/pear-icon.svg`}
                 alt="PearAI"
                 className="w-full h-full object-contain"
@@ -340,17 +340,17 @@ export default function Welcome() {
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
               You are all set!
             </h2>
-            
+
             <p className="text-muted-foreground text-base md:text-lg max-w-[500px] text-center mb-12">
               Start using PearAI by opening a folder and remember CMD/CTRL + L
             </p>
 
             <div className="flex flex-col items-center gap-3">
-              <Button 
+              <Button
                 className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover p-5 md:p-6 text-base md:text-lg cursor-pointer"
                 onClick={() => {ideMessenger.post("pearWelcomeOpenFolder", undefined)}}
               >
-                Open a folder 
+                Open a folder
               </Button>
 
               <p className="text-sm md:text-base text-muted-foreground text-center max-w-[400px] mt-4 mb-6">
@@ -358,28 +358,28 @@ export default function Welcome() {
               </p>
 
               <div className="flex flex-col md:flex-row items-center gap-4">
-                <a 
-                  href="https://twitter.com/pearai" 
-                  target="_blank" 
+                <a
+                  href="https://twitter.com/pearai"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-[250px] md:w-[200px] flex text-foreground hover:text-button-foreground no-underline items-center justify-center gap-2 p-4 text-white bg-[#000000] transition-colors rounded-md text-sm md:text-base cursor-pointer"
                 >
-                  <img 
-                    src={`${window.vscMediaUrl}/assets/twitter-x.svg`} 
+                  <img
+                    src={`${window.vscMediaUrl}/assets/twitter-x.svg`}
                     alt="Twitter"
                     className="w-5 h-5"
                     style={{filter: 'brightness(0) invert(1)'}}
                   />
                   Follow us
                 </a>
-                <a 
-                  href="https://discord.gg/pearai" 
-                  target="_blank" 
+                <a
+                  href="https://discord.gg/pearai"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="w-[250px] md:w-[200px] flex text-button-foreground hover:text-button-foreground no-underline items-center justify-center gap-2 p-4 text-white bg-[#5865F2] hover:bg-[#4752C4] transition-colors rounded-md text-sm md:text-base cursor-pointer"
                 >
-                  <img 
-                    src={`${window.vscMediaUrl}/assets/discord.svg`} 
+                  <img
+                    src={`${window.vscMediaUrl}/assets/discord.svg`}
                     alt="Discord"
                     className="w-5 h-5"
                     style={{filter: 'brightness(0) invert(1)'}}
@@ -413,11 +413,11 @@ export default function Welcome() {
             </div>
             <div className="space-y-3">
               {features.map((feature, index) => (
-                <Card 
+                <Card
                   key={index}
                   className={`border-none p-3 transition-all duration-200 hover:scale-[1.02] ${
-                    currentFeature === index 
-                      ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]' 
+                    currentFeature === index
+                      ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]'
                       : 'bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60 hover:opacity-80'
                   }`}
                   onClick={() => handleFeatureChange(index)}
@@ -425,8 +425,8 @@ export default function Welcome() {
                 >
                   <div className="flex items-center gap-3">
                     <div className={`p-1.5 rounded-lg ${
-                      currentFeature === index 
-                        ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]' 
+                      currentFeature === index
+                        ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]'
                         : 'bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60'
                     }`}>
                       {feature.icon}
@@ -435,13 +435,13 @@ export default function Welcome() {
                       <h3 className="font-semibold text-foreground text-sm">
                         {feature.title}
                       </h3>
-                      {currentFeature === index && 
+                      {currentFeature === index &&
                       <p className="text-xs text-muted-foreground mt-1">
                         {feature.description}
                       </p>}
                       {currentFeature === index && (
-                        <Progress 
-                          value={progress} 
+                        <Progress
+                          value={progress}
                           className="mt-2 h-0.5 bg-input [&>div]:bg-button"
                         />
                       )}
@@ -455,7 +455,7 @@ export default function Welcome() {
 
         {/* Button section at bottom */}
         <div className="p-6 border-t border-input shrink-0">
-          <Button 
+          <Button
             className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer"
             onClick={handleNextClick}
           >
@@ -470,8 +470,8 @@ export default function Welcome() {
           <div
             key={index}
             className={`absolute inset-0 transition-all duration-700 ${
-              currentFeature === index 
-                ? 'opacity-100 z-10' 
+              currentFeature === index
+                ? 'opacity-100 z-10'
                 : 'opacity-0 z-0'
             }`}
           >
@@ -492,6 +492,6 @@ export default function Welcome() {
           </div>
         ))}
       </div>
-    </div>    
-  )  
+    </div>
+  )
 }
