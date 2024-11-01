@@ -63,7 +63,7 @@ interface ContinueInputBoxProps {
   contextItems?: ContextItemWithId[];
 }
 
-const ContinueInputBox = ({
+function ContinueInputBox({
   isLastUserInput,
   isMainInput,
   onEnter,
@@ -71,7 +71,7 @@ const ContinueInputBox = ({
   hidden,
   source = "continue",
   contextItems = [],
-}: ContinueInputBoxProps) => {
+}: ContinueInputBoxProps) {
   const dispatch = useDispatch();
   const [isEmpty, setIsEmpty] = useState(true);
 
