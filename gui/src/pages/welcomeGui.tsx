@@ -262,21 +262,23 @@ export default function Welcome() {
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
       {/* Left side - Content */}
-      <div className="w-[30%] min-w-[300px] max-w-[400px] flex flex-col h-screen">
+      <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
         {/* Content section scrollable if user's screen small */}
         <div className="flex-1 overflow-y-auto">
-          <div className="p-4 md:p-6 lg:p-10 space-y-6 md:space-y-8 lg:space-y-10">
+          <div className="p-6 space-y-6">
             <div>
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2">Welcome to PearAI.</h2>
-              <p className="text-muted-foreground text-sm md:text-base">
+              <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
+                Welcome to PearAI.
+              </h2>
+              <p className="text-sm text-muted-foreground">
                 Speed up your development process by seamlessly integrating AI into your workflow.
               </p>
             </div>
-            <div className="space-y-3 md:space-y-4 lg:space-y-5">
+            <div className="space-y-3">
               {features.map((feature, index) => (
                 <Card 
                   key={index}
-                  className={`border-none p-3 md:p-4 transition-all duration-200 hover:scale-[1.02] ${
+                  className={`border-none p-3 transition-all duration-200 hover:scale-[1.02] ${
                     currentFeature === index 
                       ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]' 
                       : 'bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60 hover:opacity-80'
@@ -284,8 +286,8 @@ export default function Welcome() {
                   onClick={() => handleFeatureChange(index)}
                   style={{ cursor: 'pointer' }}
                 >
-                  <div className="flex items-center gap-2 md:gap-3">
-                    <div className={`p-2 rounded-lg ${
+                  <div className="flex items-center gap-3">
+                    <div className={`p-1.5 rounded-lg ${
                       currentFeature === index 
                         ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]' 
                         : 'bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60'
@@ -293,13 +295,17 @@ export default function Welcome() {
                       {feature.icon}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-foreground text-sm md:text-base">{feature.title}</h3>
+                      <h3 className="font-semibold text-foreground text-sm">
+                        {feature.title}
+                      </h3>
                       {currentFeature === index && 
-                      <p className="text-xs md:text-sm text-muted-foreground mt-1">{feature.description}</p>}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {feature.description}
+                      </p>}
                       {currentFeature === index && (
                         <Progress 
                           value={progress} 
-                          className="mt-2 md:mt-3 h-1 bg-input [&>div]:bg-button"
+                          className="mt-2 h-0.5 bg-input [&>div]:bg-button"
                         />
                       )}
                     </div>
@@ -309,20 +315,20 @@ export default function Welcome() {
             </div>
           </div>
         </div>
-  
-        {/* Button section at bottom - ALWAYS Fixed position */}
-        <div className="p-4 md:p-6 lg:p-10 border-t border-input shrink-0">
+
+        {/* Button section at bottom */}
+        <div className="p-6 border-t border-input shrink-0">
           <Button 
-            className="w-full text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"
+            className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer"
             onClick={handleNextClick}
           >
-            Next
+            {getButtonText()}
           </Button>
         </div>
       </div>
-  
+
       {/* Right side - Video/Demo */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative bg-[var(--vscode-input-background)]">
         {features.map((feature, index) => (
           <div
             key={index}
@@ -349,7 +355,6 @@ export default function Welcome() {
           </div>
         ))}
       </div>
-
     </div>    
   )  
 }
