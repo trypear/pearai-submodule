@@ -24,7 +24,10 @@ export default function Welcome() {
   const [currentFeature, setCurrentFeature] = useState(0)
   const [progress, setProgress] = useState(0)
   const progressInterval = useRef<NodeJS.Timeout>()
+  const [videoSrc, setVideoSrc] = useState(''); // State to handle dynamic GIF src
+
   const FEATURE_DURATION = 5000 // TODO: 5 seconds per feature, to be changed individually when have final demo gifs
+  const AUTO_PROGRESS = false // Flag to control auto-progression
 
   const features = [
     {
@@ -47,7 +50,15 @@ export default function Welcome() {
     }
   ]
 
+    // Update video src with timestamp to reset GIF
+    useEffect(() => {
+      const newVideoSrc = `${features[currentFeature].video}?timestamp=${Date.now()}`;
+      setVideoSrc(newVideoSrc);
+    }, [currentFeature]);
+
   useEffect(() => {
+    if (!AUTO_PROGRESS) return; // Skip if auto-progress is disabled
+
     // Start progress animation
     const startTime = Date.now()
     progressInterval.current = setInterval(() => {
@@ -75,15 +86,33 @@ export default function Welcome() {
     setCurrentFeature(0)
     setProgress(0)
   }
+
+  const handleNextClick = () => {
+    if (currentFeature < features.length - 1) {
+      setCurrentFeature(current => current + 1);
+      setProgress(0);
+    } else {
+      // Handle completion - you might want to navigate away or show a completion state
+      startWalkthrough();
+    }
+  }
+
+  const getButtonText = () => {
+    if (currentFeature === features.length - 1) {
+      return "Complete";
+    }
+    return "Next";
+  }
+
   return (
-    <div className="flex w-full overflow-hidden bg-primary text-foreground">
+    <div className="flex w-full overflow-hidden bg-background text-foreground">
       {/* Left side - Content */}
       <div className="w-[30%] min-w-[300px] max-w-[400px] flex flex-col h-screen">
         {/* Content section scrollable if user's screen small */}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 md:p-6 lg:p-10 space-y-6 md:space-y-8 lg:space-y-10">
             <div>
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-button-foreground mb-2">Welcome to PearAI.</h2>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-2">Welcome to PearAI.</h2>
               <p className="text-muted-foreground text-sm md:text-base">
                 Speed up your development process by seamlessly integrating AI into your workflow.
               </p>
@@ -92,20 +121,25 @@ export default function Welcome() {
               {features.map((feature, index) => (
                 <Card 
                   key={index}
-                  className={`bg-input border-none p-3 md:p-4 transition-colors ${
+                  className={`border-none p-3 md:p-4 transition-colors ${
                     currentFeature === index 
-                      ? 'bg-input' 
-                      : 'bg-input opacity-50'
+                      ? 'bg-input text-foreground' 
+                      : 'bg-input text-foreground opacity-50'
                   }`}
+                  onClick={() => {
+                    setCurrentFeature(index)
+                    setProgress(0)
+                  }}
+                  style={{ cursor: 'pointer' }}
                 >
                   <div className="flex items-center gap-2 md:gap-3">
                     <div className="text-foreground shrink-0">
                       {feature.icon}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="font-semibold text-button-foreground text-sm md:text-base">{feature.title}</h3>
+                      <h3 className="font-semibold text-foreground text-sm md:text-base">{feature.title}</h3>
                       {currentFeature === index && 
-                      <p className="text-xs md:text-sm text-foreground mt-1">{feature.description}</p>}
+                      <p className="text-xs md:text-sm text-muted-foreground mt-1">{feature.description}</p>}
                       {currentFeature === index && (
                         <Progress 
                           value={progress} 
@@ -123,10 +157,10 @@ export default function Welcome() {
         {/* Button section at bottom - ALWAYS Fixed position */}
         <div className="p-4 md:p-6 lg:p-10 border-t border-input shrink-0">
           <Button 
-            className="w-full text-button-foreground p-4 md:p-5 lg:p-6 text-sm md:text-base"
-            onClick={startWalkthrough}
+            className="w-full text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"
+            onClick={handleNextClick}
           >
-            Start walkthrough (2 minutes)
+            {getButtonText()}
           </Button>
         </div>
       </div>
@@ -141,13 +175,18 @@ export default function Welcome() {
             }`}
           >
             <img
-              src={feature.video}
+              src={currentFeature === index ? videoSrc : ''}
               alt={`${feature.title} demonstration`}
               className="w-full h-full object-cover"
+              loading={currentFeature === index ? "eager" : "lazy"}
+              style={{
+                display: currentFeature === index ? 'block' : 'none'
+              }}
             />
           </div>
         ))}
       </div>
+
     </div>    
   )  
 }
