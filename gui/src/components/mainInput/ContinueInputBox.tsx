@@ -9,7 +9,7 @@ import { newSession, setMessageAtIndex } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
-import { useMemo, memo, useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { isBareChatMode } from "../../util/bareChatMode";
 import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
 
@@ -63,7 +63,7 @@ interface ContinueInputBoxProps {
   source?: "perplexity" | "aider" | "continue";
 }
 
-const ContinueInputBox = memo(function ContinueInputBox({
+const ContinueInputBox = ({
   isLastUserInput,
   isMainInput,
   onEnter,
@@ -71,7 +71,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
   contextItems,
   hidden,
   source = "continue",
-}: ContinueInputBoxProps) {
+}: ContinueInputBoxProps) => {
   const dispatch = useDispatch();
 
   const active = useSelector((store: RootState) => {
@@ -144,12 +144,12 @@ const ContinueInputBox = memo(function ContinueInputBox({
             bareChatMode ? undefined : availableSlashCommands
           }
           source={source}
-          onChange={handleEditorChange}
+          onContentChange={handleEditorChange}
         />
       </GradientBorder>
       <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>
     </div>
   );
-});
+};
 
 export default ContinueInputBox;

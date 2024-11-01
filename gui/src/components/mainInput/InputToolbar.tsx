@@ -29,13 +29,11 @@ import { isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useLocation } from "react-router-dom";
-import { Editor } from "@tiptap/core";
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
   padding: 4px 0;
   display: flex;
-  justify-content: space-between;
-  gap: 1px;
+  gap: 4px;
   background-color: ${vscInputBackground};
   align-items: center;
   z-index: 50;
@@ -43,29 +41,74 @@ const StyledDiv = styled.div<{ isHidden: boolean }>`
   cursor: ${(props) => (props.isHidden ? "default" : "text")};
   opacity: ${(props) => (props.isHidden ? 0 : 1)};
   pointer-events: ${(props) => (props.isHidden ? "none" : "auto")};
+  width: 100%;
 
-  & > * {
+  /* Left side - keep compact */
+  & > span:first-child {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     flex: 0 0 auto;
+    white-space: nowrap;
+    min-width: fit-content;
   }
 
-  /* Add a media query to hide the right-hand set of components */
-  @media (max-width: 400px) {
-    & > span:last-child {
-      display: none;
+  /* Right side container - only wrap when truly needed */
+  & > span:last-child {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    margin-left: auto;
+    flex: 0 1 auto;
+    
+    @media (max-width: 440px) {
+      width: 100%;
+      justify-content: flex-start; // Change from flex-end to flex-start
+      margin-top: 4px;
     }
+  }
+
+  @media (max-width: 440px) {
+    flex-wrap: wrap;
+  }
+`;
+
+const ActionButtonsContainer = styled.span`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: nowrap;
+  min-width: fit-content;
+`;
+
+const ModelSelectContainer = styled.span`
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  min-width: fit-content;
+  max-width: 150px;
+
+  /* Only truncate the text, not the whole dropdown */
+  & > div > button > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 `;
 
 const StyledSpan = styled.span`
   font-size: ${() => `${getFontSize() - 2}px`};
   color: ${lightGray};
+  white-space: nowrap;
+  flex-shrink: 0;
 `;
 
 const EnterButton = styled.div<{ offFocus: boolean }>`
   padding: 2px 4px;
   display: flex;
   align-items: center;
-
+  white-space: nowrap;
+  flex-shrink: 0;
   background-color: ${(props) =>
     props.offFocus ? undefined : lightGray + "33"};
   border-radius: ${defaultBorderRadius};
@@ -88,7 +131,6 @@ interface InputToolbarProps {
   hidden?: boolean;
   showNoContext: boolean;
   editorHasContent: boolean;
-
 }
 
 const InputToolbar = (props: InputToolbarProps) => {
@@ -105,12 +147,10 @@ const InputToolbar = (props: InputToolbarProps) => {
 
   const dispatch = useDispatch();
   const location = useLocation();
-
   
   const indexingState = useSelector(
     (state: RootState) => state.state.indexingState,
   );
-  const editor = useRef<Editor>(null);
 
   const isCodebaseButtonEnabled = useMemo(() => {
     return props.editorHasContent && indexingState.status === "done";
@@ -159,15 +199,20 @@ const InputToolbar = (props: InputToolbarProps) => {
         <span className="flex gap-2 items-center whitespace-nowrap">
           {!bareChatMode && (
             <>
-              {!perplexityMode && <ModelSelect />}
+              {!perplexityMode && (
+                <ModelSelectContainer>
+                  <ModelSelect />
+                </ModelSelectContainer>
+              )}
               <StyledSpan
                 onClick={(e) => {
                   props.onAddContextItem();
                 }}
                 className="hover:underline cursor-pointer"
+                title="Add Context"
+                style={{ transform: "translateY(2px)" }}
               >
-                Add Context{" "}
-                <PlusIcon className="h-2.5 w-2.5" aria-hidden="true" />
+                <PlusIcon className="h-4 w-4" aria-hidden="true" />
               </StyledSpan>
             </>
           )}
@@ -199,6 +244,7 @@ const InputToolbar = (props: InputToolbarProps) => {
                     width="1.4em"
                     height="1.4em"
                     color={lightGray}
+                    title="Add Image"
                     onClick={(e) => {
                       fileInputRef.current?.click();
                     }}
@@ -208,6 +254,7 @@ const InputToolbar = (props: InputToolbarProps) => {
                     width="1.4em"
                     height="1.4em"
                     color={lightGray}
+                    title="Add Image"
                     onClick={(e) => {
                       fileInputRef.current?.click();
                     }}
@@ -216,7 +263,7 @@ const InputToolbar = (props: InputToolbarProps) => {
               </span>
             )}
         </span>
-        <span className="flex items-center gap-2 whitespace-nowrap">
+        <ActionButtonsContainer>
           {props.showNoContext ? (
             <span
               style={{
@@ -252,6 +299,11 @@ const InputToolbar = (props: InputToolbarProps) => {
                   ? "hover:underline cursor-pointer float-right"
                   : ""
               }
+              title={
+                indexingState.status === "done"
+                  ? `indexing complete!`
+                  : `Indexing not complete: ${indexingState.status}`
+              }
             >
               {getMetaKeyLabel()} ⏎ Use codebase
             </StyledSpan>
@@ -267,7 +319,7 @@ const InputToolbar = (props: InputToolbarProps) => {
           >
             ⏎ Enter
           </EnterButton>
-        </span>
+        </ActionButtonsContainer>
       </StyledDiv>
     </>
   );

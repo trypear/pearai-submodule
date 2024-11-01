@@ -29,15 +29,43 @@ const StyledListboxButton = styled(Listbox.Button)`
   font-family: inherit;
   display: flex;
   align-items: center;
-  gap: 2px;
   border: none;
   cursor: pointer;
   font-size: ${getFontSize() - 2}px;
   background: transparent;
   color: ${lightGray};
+  max-width: 175px;
+  padding: 0;
+  position: relative;
+
   &:focus {
     outline: none;
   }
+
+  &:hover::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background-color: ${lightGray};
+    width: 100%;
+  }
+`;
+
+const ModelText = styled.span`
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+`;
+
+const StyledChevron = styled(ChevronDownIcon)`
+  height: 10px;
+  width: 10px;
+  flex-shrink: 0;
+  margin-left: -1px;
 `;
 
 const StyledListboxOptions = styled(Listbox.Options)`
@@ -221,10 +249,8 @@ function ModelSelect() {
           className="h-[18px] overflow-hidden"
           style={{ padding: 0 }}
         >
-          <span className="hover:underline">
-            {modelSelectTitle(defaultModel) || "Select model"}{" "}
-            <ChevronDownIcon className="h-2.5 w-2.5" aria-hidden="true" />
-          </span>
+          <ModelText>{modelSelectTitle(defaultModel) || "Select model"}</ModelText>
+          <StyledChevron aria-hidden="true" />
         </StyledListboxButton>
         <StyledListboxOptions>
           {options.filter((option) => option.isDefault).map((option, idx) => (
