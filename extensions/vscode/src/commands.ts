@@ -253,6 +253,9 @@ const commandsMap: (
       vscode.window.showInformationMessage("Marking New onboarding complete");
       // await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
     },
+    "pearai.showInteractiveContinueTutorial": async () => {
+      sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
+    },
     "pearai.acceptDiff": async (newFilepath?: string | vscode.Uri) => {
       captureCommandTelemetry("acceptDiff");
 
@@ -389,6 +392,7 @@ const commandsMap: (
     "pearai.quickEdit": async (args: QuickEditShowParams) => {
       captureCommandTelemetry("quickEdit");
       quickEdit.show(args);
+      sidebar.webviewProtocol?.request("quickEdit", undefined, [PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.writeCommentsForCode": async () => {
       captureCommandTelemetry("writeCommentsForCode");
