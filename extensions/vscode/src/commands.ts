@@ -799,8 +799,7 @@ const commandsMap: (
       extensionContext.secrets.store("pearai-token", data.accessToken);
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
       core.invoke("llm/setPearAICredentials", { accessToken: data.accessToken, refreshToken: data.refreshToken });
-      // sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_CONTINUE_VIEW_ID]);
-      // sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
     },
     "pearai.closeChat": () => {

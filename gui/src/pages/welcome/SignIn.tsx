@@ -4,9 +4,18 @@ import { Button } from "@/components/ui/button";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useContext } from 'react';
 import { IdeMessengerContext } from '@/context/IdeMessenger';
+import { useWebviewListener } from "@/hooks/useWebviewListener";
 
 export default function SignIn({ onNext, onBack }: { onNext: () => void, onBack: () => void }) {
   const ideMessenger = useContext(IdeMessengerContext);
+
+  useWebviewListener(
+    "pearAISignedIn",
+    async () => {
+      onNext();
+      return Promise.resolve();
+    }
+  );
 
   return (
     <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
