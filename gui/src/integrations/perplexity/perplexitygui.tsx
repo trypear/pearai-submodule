@@ -258,9 +258,9 @@ function PerplexityGUI() {
                       isLastUserInput={isLastUserInput(index)}
                       isMainInput={false}
                       editorState={item.editorState}
-                      source="perplexity"
                       contextItems={item.contextItems}
-                    />
+                      source="perplexity"
+                    ></ContinueInputBox>
                   ) : (
                     <div className="thread-message">
                       <TimelineItem
@@ -339,7 +339,7 @@ function PerplexityGUI() {
             isMainInput={true}
             hidden={active}
             source="perplexity"
-          />
+          ></ContinueInputBox>
           {active ? (
             <>
               <br />

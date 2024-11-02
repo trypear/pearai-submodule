@@ -299,8 +299,8 @@ function AiderGUI() {
                         isLastUserInput={isLastUserInput(index)}
                         isMainInput={false}
                         editorState={item.editorState}
-                        source="aider"
                         contextItems={item.contextItems}
+                        source="aider"
                       />
                     ) : (
                       <div className="thread-message">
@@ -461,3 +461,4 @@ const tutorialContent = {
   ]
 };
 import AiderManualInstallation from "./AiderManualInstallation";
+

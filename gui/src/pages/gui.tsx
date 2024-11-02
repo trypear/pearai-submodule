@@ -341,7 +341,7 @@ function GUI() {
                         isMainInput={false}
                         editorState={item.editorState}
                         contextItems={item.contextItems}
-                      />
+                      ></ContinueInputBox>
                     ) : (
                       <div className="thread-message">
                         <TimelineItem
@@ -420,7 +420,7 @@ function GUI() {
             isLastUserInput={false}
             isMainInput={true}
             hidden={active}
-          />
+          ></ContinueInputBox>
           {active ? (
             <>
               <br />
