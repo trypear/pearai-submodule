@@ -580,7 +580,7 @@
       "activitybar": [
         {
           "id": "PearAI",
-          "title": "PearAI Chat (powered by Continue)",
+          "title": "PearAI Chat",
           "icon": "media/sidebar-icon.png",
           "description": "Powered by Continue"
         }
