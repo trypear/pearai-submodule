@@ -92,6 +92,18 @@ export default function Features({ onNext }: { onNext: () => void }) {
     setTimestamp(Date.now());
   }
 
+  const handleNextClick = () => {
+    if (currentFeature < features.length - 1) {
+      // Increment the feature index if not the last one
+      setCurrentFeature(currentFeature + 1);
+      setProgress(0);
+      setTimestamp(Date.now());
+    } else {
+      // Proceed to the next step if the last feature
+      onNext();
+    }
+  };
+
 
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
@@ -151,7 +163,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
         <div className="p-6 border-t border-input shrink-0">
           <Button
             className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer"
-            onClick={onNext}
+            onClick={handleNextClick}
           >
             Next
           </Button>
