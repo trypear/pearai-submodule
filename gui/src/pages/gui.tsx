@@ -285,6 +285,15 @@ function GUI() {
     [loadMostRecentChat],
   );
 
+  useWebviewListener(
+    "showInteractiveContinueTutorial",
+    async () => {
+      setLocalStorage("showTutorialCard", true);
+      dispatch(setShowInteractiveContinueTutorial(true));
+    },
+    [],
+  );
+
   const isLastUserInput = useCallback(
     (index: number): boolean => {
       let foundLaterUserInput = false;

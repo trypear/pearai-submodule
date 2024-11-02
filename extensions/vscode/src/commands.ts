@@ -240,6 +240,9 @@ const commandsMap: (
         ),
       );
     },
+    "pearai.showInteractiveContinueTutorial": async () => {
+      sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
+    },
     "pearai.acceptDiff": async (newFilepath?: string | vscode.Uri) => {
       captureCommandTelemetry("acceptDiff");
 

@@ -340,6 +340,12 @@
         "category": "PearAI",
         "title": "Open PearAI Search",
         "group": "PearAI"
+      },
+      {
+        "command": "pearai.showInteractiveContinueTutorial",
+        "category": "PearAI",
+        "title": "Show Chat Tutorial",
+        "group": "PearAI"
       }
     ],
     "keybindings": [
@@ -483,6 +489,9 @@
         },
         {
           "command": "pearai.newSession"
+        },
+        {
+          "command": "pearai.showInteractiveContinueTutorial"
         }
       ],
       "editor/context": [
