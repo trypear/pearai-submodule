@@ -17,13 +17,14 @@ export default function AddToPath({
   return (
     <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-full flex flex-col h-screen">
-        <div
+        {/* dont show back button, otherwise user will try to import extensions twice*/}
+        {/* <div
           onClick={onBack}
           className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] cursor-pointer transition-colors group"
         >
           <ArrowLongRightIcon className="w-4 h-4 rotate-180" />
           <span className="text-sm">Back</span>
-        </div>
+        </div> */}
 
         <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">

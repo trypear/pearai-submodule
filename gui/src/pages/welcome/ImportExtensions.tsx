@@ -39,6 +39,7 @@ export default function ImportExtensions({
               className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"
               onClick={() => {
                 ideMessenger.post("importUserSettingsFromVSCode", undefined);
+                onNext();
               }}
             >
               Import Extensions
