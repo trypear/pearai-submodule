@@ -202,7 +202,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
               <Dot key={i} delay={i * 0.2} />
             ))}
           </DotsContainer>
-          <span>Generating...</span>
+          <span>Responding...</span>
         </LoadingContainer>
       )}
       <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>
