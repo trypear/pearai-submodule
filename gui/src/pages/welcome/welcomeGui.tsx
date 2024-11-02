@@ -9,6 +9,22 @@ export default function Welcome() {
   const ideMessenger = useContext(IdeMessengerContext);
   const [step, setStep] = useState(0);
 
+  useEffect(() => {
+    // Lock the overlay when welcome page mounts
+    ideMessenger.post("lockOverlay", undefined);
+
+    // Cleanup - unlock when component unmounts
+    return () => {
+      ideMessenger.post("unlockOverlay", undefined);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (step === 4) {
+      ideMessenger.post("unlockOverlay", undefined);
+    }
+  }, [step]);
+
   const [isUserSignedIn, setIsUserSignedIn] = useState(false);
 
   useEffect(() => {

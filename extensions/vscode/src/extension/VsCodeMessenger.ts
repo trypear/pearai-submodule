@@ -80,6 +80,12 @@ export class VsCodeMessenger {
     private readonly workOsAuthProvider: WorkOsAuthProvider,
   ) {
     /** WEBVIEW ONLY LISTENERS **/
+    this.onWebview("lockOverlay", (msg) => {
+      vscode.commands.executeCommand("pearai.lockOverlay");
+    });
+    this.onWebview("unlockOverlay", (msg) => {
+      vscode.commands.executeCommand("pearai.unlockOverlay");
+    });
     this.onWebview("importUserSettingsFromVSCode", (msg) => {
       vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
     });
