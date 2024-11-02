@@ -210,7 +210,7 @@
       {
         "command": "pearai.openPearAiWelcome",
         "category": "PearAI",
-        "title": "Open Welcome Page for PearAI",
+        "title": "Open Welcome page for PearAI",
         "group": "PearAI"
       },
       {

@@ -151,6 +151,15 @@ function GUI() {
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
+  const [showTutorialCard, setShowTutorialCard] = useState<boolean>(
+    getLocalStorage("showTutorialCard"),
+  );
+
+  const onCloseTutorialCard = () => {
+    posthog.capture("closedTutorialCard");
+    setLocalStorage("showTutorialCard", false);
+    setShowTutorialCard(false);
+  };
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -416,6 +425,11 @@ function GUI() {
                   </NewSessionButton>
                 </div>
               ) : null}
+              {!!showTutorialCard && (
+                <div className="flex justify-center w-full">
+                  <TutorialCard onClose={onCloseTutorialCard} />
+                </div>
+              )}
             </>
           )}
         </div>
