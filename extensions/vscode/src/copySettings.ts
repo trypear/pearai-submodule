@@ -132,7 +132,7 @@ export async function importUserSettingsFromVSCode(context: vscode.ExtensionCont
         // todo: route to onboarding hello page
         setTimeout(() => {
             try {
-                vscode.commands.executeCommand("pearai.showOverlay");
+                vscode.commands.executeCommand("pearai.toggleFirstLaunch");
 
                 // TODO: THIS MSG SHOULD BE IN OVERLAY
                 vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
