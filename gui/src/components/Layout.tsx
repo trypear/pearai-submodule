@@ -1,6 +1,6 @@
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { IndexingProgressUpdate } from "core";
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
@@ -32,6 +32,7 @@ import PostHogPageView from "./PosthogPageView";
 import ProfileSwitcher from "./ProfileSwitcher";
 import ShortcutContainer from "./ShortcutContainer";
 import OnboardingTutorial from "@/pages/onboarding/OnboardingTutorial";
+import posthog from "posthog-js";
 
 // check mac or window
 const platform = navigator.userAgent.toLowerCase();
@@ -149,6 +150,13 @@ const Layout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const ideMessenger = useContext(IdeMessengerContext);
+  const [showTutorialCard, setShowTutorialCard] = useState<boolean>(getLocalStorage("showTutorialCard"));
+
+  const onCloseTutorialCard = useCallback(() => {
+      posthog.capture("closedTutorialCard");
+      setLocalStorage("showTutorialCard", false);
+      setShowTutorialCard(false);
+  }, []);
 
   const dialogMessage = useSelector(
     (state: RootState) => state.uiState.dialogMessage,
@@ -299,16 +307,16 @@ const Layout = () => {
 
         <GridDiv
           showHeader={!window.isPearOverlay && SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
-          showTutorial={true}
+          showTutorial={!!showTutorialCard}
         >
           {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && !window.isPearOverlay && (
             <Header>
               <ShortcutContainer />
             </Header>
           )}
-          {!window.isPearOverlay && 
+          {!window.isPearOverlay && !!showTutorialCard &&
             <TutorialCard >
-              <OnboardingTutorial onClose={() => {}}/>
+              <OnboardingTutorial onClose={onCloseTutorialCard}/>
             </TutorialCard>
           }
           <PostHogPageView />
