@@ -14,9 +14,8 @@ import { stripImages } from "core/llm/images";
 import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
-import { update } from "lodash";
-import { AiderStatusUpdate } from "core/llm/llms/Aider";
 import { getLocalStorage } from "@/util/localStorage";
+import { AiderState } from "core/llm/llms/Aider";
 
 export const memoizedContextItemsSelector = createSelector(
   [(state: RootState) => state.state.history],
@@ -128,8 +127,8 @@ type State = {
   mainEditorContent?: JSONContent;
   selectedProfileId: string;
   directoryItems: string;
-  aiderProcessStatus: AiderStatusUpdate;
   showInteractiveContinueTutorial: boolean;
+  aiderProcessState: AiderState;
 };
 
 const initialState: State = {
@@ -138,7 +137,7 @@ const initialState: State = {
   aiderHistory: [],
   contextItems: [],
   active: false,
-  aiderProcessStatus: { status: "starting" },
+  aiderProcessState: { state: "starting" },
   perplexityActive: false,
   aiderActive: false,
   config: {
@@ -207,8 +206,8 @@ export const stateSlice = createSlice({
     setActive: (state) => {
       state.active = true;
     },
-    updateAiderProcessStatus: (state, action: PayloadAction<AiderStatusUpdate>) => {
-      state.aiderProcessStatus = action.payload;
+    updateAiderProcessState: (state, action: PayloadAction<AiderState>) => {
+      state.aiderProcessState = action.payload;
     },
     setPerplexityActive: (state) => {
       state.perplexityActive = true;
@@ -291,7 +290,7 @@ export const stateSlice = createSlice({
       const source = payload.source || 'continue';
       const { history: historyKey } = integrationStatesMap[source];
       const currentHistory = state[historyKey];
-      
+
       // Early return if invalid index
       const historyItem = currentHistory[payload.index];
       if (!historyItem) return;
@@ -424,7 +423,7 @@ export const stateSlice = createSlice({
       }>,
     ) => {
       const { history: historyKey } = integrationStatesMap[payload.source];
-      const currentHistory = state[historyKey];      
+      const currentHistory = state[historyKey];
       if (payload.index >= currentHistory.length) {
         currentHistory.push({
           message: payload.message,
@@ -677,7 +676,7 @@ export const {
   setConfig,
   addPromptCompletionPair,
   setActive,
-  updateAiderProcessStatus,
+  updateAiderProcessState,
   setPerplexityActive,
   setAiderActive,
   setEditingContextItemAtIndex,
