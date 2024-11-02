@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useMemo, useState } from 'react';
 import Features from './Features';
 import ImportExtensions from './ImportExtensions';
 import AddToPath from './AddToPath';
@@ -7,25 +7,26 @@ import { IdeMessengerContext } from '@/context/IdeMessenger';
 
 export default function Welcome() {
   const ideMessenger = useContext(IdeMessengerContext);
-  const [isUserSignedIn, setIsUserSignedIn] = useState(false);
   const [step, setStep] = useState(0);
 
+  const [isUserSignedIn, setIsUserSignedIn] = useState(false);
+
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const checkUserSignInStatus = async () => {
       try {
         const res = await ideMessenger.request("getPearAuth", undefined);
-        setIsUserSignedIn(!!res?.accessToken);
+        setIsUserSignedIn(res?.accessToken ? true : false);
       } catch (error) {
-        console.error("Failed to get auth status:", error);
-        setIsUserSignedIn(false);
+        console.error("Error checking user sign-in status:", error);
       }
     };
 
-    checkAuthStatus();
+    checkUserSignInStatus();
   }, [ideMessenger]);
 
+
   const handleNextStep = () => {
-    setStep((prevStep) => Math.min(prevStep + 1, 3));
+    setStep((prevStep) => Math.min(prevStep + 1, 4));
   };
 
   const handleBackStep = () => {
@@ -41,7 +42,12 @@ export default function Welcome() {
       case 2:
         return <AddToPath onNext={handleNextStep} onBack={handleBackStep} />;
       case 3:
-        return <FinalStep isUserSignedIn={isUserSignedIn} onBack={handleBackStep} />;
+        if (!isUserSignedIn) {
+          return <SignIn onNext={handleNextStep} onBack={handleBackStep} />;
+        }
+        return <FinalStep onBack={handleBackStep} />;
+      case 4:
+        return <FinalStep onBack={handleBackStep} />;
       default:
         return null;
     }
@@ -53,3 +59,4 @@ export default function Welcome() {
     </div>
   );
 }
+import SignIn from './SignIn';

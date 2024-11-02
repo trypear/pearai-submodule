@@ -28,26 +28,6 @@ export default function ImportExtensions({ onBack, onNext }: { onBack: () => voi
             Import your VS Code extensions and settings to PearAI
           </p>
 
-          <div className="flex items-center justify-center gap-12 mb-12">
-            <div className="w-24 h-24 md:w-28 md:h-28 flex items-center justify-center">
-              <img
-                src={`${window.vscMediaUrl}/assets/vscode-icon.svg`}
-                alt="VS Code"
-                className="w-full h-full object-contain"
-              />
-            </div>
-
-            <ArrowLongRightIcon className="w-12 h-12 ml-6 md:w-20 md:h-20 text-muted-foreground" />
-
-            <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
-              <img
-                src={`${window.vscMediaUrl}/assets/pear-icon.svg`}
-                alt="PearAI"
-                className="w-full h-full object-contain"
-              />
-            </div>
-          </div>
-
           <div className="flex flex-col items-center gap-4">
             <Button
               className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"

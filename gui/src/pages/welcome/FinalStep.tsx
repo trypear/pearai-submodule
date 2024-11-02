@@ -3,13 +3,11 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useContext } from 'react';
-import SignIn from './SignIn';
+import { IdeMessengerContext } from '@/context/IdeMessenger';
 
-export default function FinalStep({ onBack, isUserSignedIn }: { onBack: () => void, isUserSignedIn: boolean }) {
-  if (!isUserSignedIn) {
-    return <SignIn onBack={onBack} />;
-  }
 
+export default function FinalStep({ onBack }: { onBack: () => void}) {
+  const ideMessenger = useContext(IdeMessengerContext);
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-full flex flex-col h-screen">
@@ -41,7 +39,7 @@ export default function FinalStep({ onBack, isUserSignedIn }: { onBack: () => vo
           <div className="flex flex-col items-center gap-3">
             <Button
               className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover p-5 md:p-6 text-base md:text-lg cursor-pointer"
-              onClick={() => {ideMessenger.post("pearWelcomeOpenFolder", undefined)}}
+              onClick={() => ideMessenger.post("pearWelcomeOpenFolder", undefined)}
             >
               Open a folder
             </Button>

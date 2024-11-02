@@ -5,7 +5,7 @@ import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useContext } from 'react';
 import { IdeMessengerContext } from '@/context/IdeMessenger';
 
-export default function SignIn({ onBack }: { onBack: () => void }) {
+export default function SignIn({ onNext, onBack }: { onNext: () => void, onBack: () => void }) {
   const ideMessenger = useContext(IdeMessengerContext);
 
   return (
@@ -44,10 +44,12 @@ export default function SignIn({ onBack }: { onBack: () => void }) {
           </div>
 
           <div
-            onClick={() => {/* Close functionality */}}
+            onClick={() => {
+              onNext();
+            }}
             className="text-sm underline cursor-pointer text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] transition-colors"
           >
-            Close
+            Skip Sign In
           </div>
         </div>
       </div>
