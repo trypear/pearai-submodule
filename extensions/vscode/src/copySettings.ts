@@ -13,7 +13,11 @@ export const isFirstPearAICreatorLaunch = !fs.existsSync(firstPearAICreatorLaunc
 
 // Removed file based flag migration, we show new onboarding to old users
 export function isFirstLaunch(context: vscode.ExtensionContext): boolean {
-    return context.globalState.get<boolean>(FIRST_LAUNCH_KEY) ?? false;
+    const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
+    console.log("isFirstLaunch");
+    console.log(!stateExists);
+    // If state is set, it's not first launch
+    return !stateExists;
 }
 
 

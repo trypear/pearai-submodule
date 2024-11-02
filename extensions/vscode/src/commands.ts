@@ -251,7 +251,7 @@ const commandsMap: (
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
       vscode.window.showInformationMessage("Marking New onboarding complete");
-      // await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
+      await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
     },
     "pearai.showInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
