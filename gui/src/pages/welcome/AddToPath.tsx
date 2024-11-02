@@ -1,9 +1,12 @@
 'use client'
 
 import { Button } from "@/components/ui/button";
+import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
+import { useContext } from "react";
 
 export default function AddToPath({ onBack, onNext }: { onBack: () => void, onNext: () => void }) {
+  const ideMessenger = useContext(IdeMessengerContext);
   return (
     <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-full flex flex-col h-screen">
@@ -49,7 +52,8 @@ export default function AddToPath({ onBack, onNext }: { onBack: () => void, onNe
           <div className="flex flex-col items-center gap-4">
             <Button
               className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"
-              onClick={onNext}
+              /* Import functionality will go here */
+              onClick={() => ideMessenger.post("pearInstallCommandLine", undefined)}
             >
               Add to PATH
             </Button>

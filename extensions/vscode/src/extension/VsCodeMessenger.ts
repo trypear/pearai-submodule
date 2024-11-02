@@ -86,6 +86,9 @@ export class VsCodeMessenger {
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");
     });
+    this.onWebview("pearInstallCommandLine", (msg) => {
+      vscode.commands.executeCommand("workbench.action.installCommandLine");
+    });
     this.onWebview("showFile", (msg) => {
       this.ide.openFile(msg.data.filepath);
     });
