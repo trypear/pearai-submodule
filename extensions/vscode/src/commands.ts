@@ -247,7 +247,7 @@ const commandsMap: (
         console.dir("Extension launch detected as a subsequent launch. Skipping user settings import.");
         return;
       }
-      importUserSettingsFromVSCode(extensionContext);
+      importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
       vscode.window.showInformationMessage("Marking New onboarding complete");
@@ -338,11 +338,19 @@ const commandsMap: (
     "pearai.toggleInventory": async () => {
       await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
-    "pearai.toggleFirstLaunch": async () => {
+    "pearai.startOnboarding": async () => {
       console.log("FIRST PEARAI LAUNCH");
       await vscode.commands.executeCommand("pearai.showOverlay");
-      // navigate to hello page
-      await sidebar.webviewProtocol?.request("startOnboarding", undefined, [PEAR_OVERLAY_VIEW_ID]);
+    },
+    "pearai.developer.restFirstLaunch": async () => {
+      extensionContext.globalState.update(FIRST_LAUNCH_KEY, false);
+      vscode.window.showInformationMessage("Successfully reset PearAI first launch flag, RELOAD WINDOW TO SEE WELCOME PAGE", 'Reload Window')
+        .then(selection => {
+          if (selection === 'Reload Window') {
+            vscode.commands.executeCommand('workbench.action.reloadWindow');
+          }
+        });
+      console.log("FIRST PEARAI LAUNCH FLAG RESET");
     },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();

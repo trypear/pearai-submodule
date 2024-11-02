@@ -34,8 +34,14 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   //   vscode.commands.executeCommand("pearai.focusContinueInput");
   // });
 
-  if (true || isFirstLaunch(context)) {
-    vscode.commands.executeCommand("pearai.toggleFirstLaunch");
+
+  // for DEV'ing welcome page
+  // if (true || isFirstLaunch(context)) {
+  //   vscode.commands.executeCommand("pearai.startOnboarding");
+  // }
+  
+  if (isFirstLaunch(context)) {
+    vscode.commands.executeCommand("pearai.startOnboarding");
   }
   
   // vscode.commands.executeCommand("pearai.focusContinueInput");

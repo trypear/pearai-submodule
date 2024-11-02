@@ -16,7 +16,7 @@ export function isFirstLaunch(context: vscode.ExtensionContext): boolean {
     const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
     console.log("isFirstLaunch");
     console.log(!stateExists);
-    // If state is set, it's not first launch
+    // If state is set and is true, it's not first launch
     return !stateExists;
 }
 
@@ -118,30 +118,26 @@ function copyDirectoryRecursiveSync(source: string, destination: string, exclusi
 }
 
 
-export async function importUserSettingsFromVSCode(context: vscode.ExtensionContext) {
+export async function importUserSettingsFromVSCode() {
     // this function is synchronous and copying files takes time
     // thats why run it after 3 seconds, until which extension activates.
-    if (isFirstLaunch(context)) {
-        // todo: route to onboarding hello page
-        setTimeout(() => {
-            try {
-                vscode.commands.executeCommand("pearai.toggleFirstLaunch");
+    // todo: route to onboarding hello page
+    setTimeout(() => {
+        try {
+            // TODO: THIS MSG SHOULD BE IN OVERLAY
+            vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
+            copyVSCodeSettingsToPearAIDir();
+            // No longer write flag to a file, just set state
+            // fs.writeFileSync(firstLaunchFlag, 'This is the first launch flag file');
 
-                // TODO: THIS MSG SHOULD BE IN OVERLAY
-                vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
-                copyVSCodeSettingsToPearAIDir();
-                // No longer write flag to a file, just set state
-                // fs.writeFileSync(firstLaunchFlag, 'This is the first launch flag file');
+            // TODO: THIS MSG SHOULD BE IN OVERLAY
+            vscode.window.showInformationMessage('Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.', 'Ok');
+        } catch (error) {
+            // TODO: DISPLAY ERROR MSG IN OVERLAY
+            vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
+        }
 
-                // TODO: THIS MSG SHOULD BE IN OVERLAY
-                vscode.window.showInformationMessage('Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.', 'Ok');
-            } catch (error) {
-                // TODO: DISPLAY ERROR MSG IN OVERLAY
-                vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
-            }
-
-        }, 3000);
-    }
+    }, 3000);
 }
 
 export async function markCreatorOnboardingCompleteFileBased() {

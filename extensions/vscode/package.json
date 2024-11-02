@@ -177,9 +177,9 @@
         "group": "PearAI"
       },
       {
-        "command": "pearai.toggleFirstLaunch",
-        "category": "PearAI",
-        "title": "Toggle PearAI Onboarding",
+        "command": "pearai.developer.restFirstLaunch",
+        "category": "PearAI Developer",
+        "title": "Reset PearAI Onboarding",
         "group": "PearAI"
       },
       {
