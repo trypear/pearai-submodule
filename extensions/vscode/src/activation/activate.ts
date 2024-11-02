@@ -8,7 +8,7 @@ import { getExtensionVersion } from "../util/util";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
-import { isFirstLaunch, importUserSettingsFromVSCode } from "../copySettings";
+import { isFirstLaunch, migrateFirstLaunchFlag } from "../copySettings";
 
 export async function activateExtension(context: vscode.ExtensionContext) {
   // Add necessary files
@@ -31,11 +31,17 @@ export async function activateExtension(context: vscode.ExtensionContext) {
       ),
     );
 
-    vscode.commands.executeCommand("pearai.focusContinueInput");
+    // vscode.commands.executeCommand("pearai.focusContinueInput");
   });
 
-  vscode.commands.executeCommand("pearai.focusContinueInput");
-  importUserSettingsFromVSCode(context);
+  // First, ensure migration of existing file-based flags
+  // Probably should remove this, we wanna show new welcome to old users too
+  await migrateFirstLaunchFlag(context);
+  if (true || isFirstLaunch(context)) {
+    vscode.commands.executeCommand("pearai.showOverlay");
+  }
+  
+  // vscode.commands.executeCommand("pearai.focusContinueInput");
 
   // Load PearAI configuration
   if (!context.globalState.get("hasBeenInstalled")) {

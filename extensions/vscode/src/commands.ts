@@ -33,6 +33,7 @@ import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessStatu
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
+import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -239,6 +240,18 @@ const commandsMap: (
           path.join(getExtensionUri().fsPath, "media", "welcome.md"),
         ),
       );
+    },
+    "pearai.welcome.importUserSettingsFromVSCode": async () => {
+      if (!isFirstLaunch(extensionContext)) {
+        vscode.window.showInformationMessage("Not first launch");
+        console.dir("Not first launch");
+        return;
+      }
+      importUserSettingsFromVSCode(extensionContext);
+    },
+    "pearai.welcome.markNewOnboardingComplete": async () => {
+      vscode.window.showInformationMessage("Marking New onboarding complete");
+      // await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
     },
     "pearai.acceptDiff": async (newFilepath?: string | vscode.Uri) => {
       captureCommandTelemetry("acceptDiff");
@@ -778,6 +791,7 @@ const commandsMap: (
       accessToken: string;
       refreshToken: string;
     }) => {
+      vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
       // Ensure that refreshToken and accessToken are both present
       if (!data || !(data.refreshToken && data.accessToken)) {
         vscode.window.showWarningMessage(

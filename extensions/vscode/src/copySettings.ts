@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
-const FIRST_LAUNCH_KEY = 'pearai.firstLaunch';
+export const FIRST_LAUNCH_KEY = 'pearai.firstLaunch';
 const pearAISettingsDir = path.join(os.homedir(), '.pearai');
 const pearAIDevExtensionsDir = path.join(os.homedir(), '.pearai', 'extensions');
 
@@ -110,8 +110,11 @@ function copyDirectoryRecursiveSync(source: string, destination: string, exclusi
     });
 }
 
+
+// TODO: @Himanshu-Singh-Chauhan or @jpan8866 remove file based completely, we show new welcome to old users also.
+
 // TEMPORARY new function to migrate file-based flag to state-based
-async function migrateFirstLaunchFlag(context: vscode.ExtensionContext) {
+export async function migrateFirstLaunchFlag(context: vscode.ExtensionContext) {
     const fileExists = fs.existsSync(firstLaunchFlag);
     const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
 
@@ -121,11 +124,7 @@ async function migrateFirstLaunchFlag(context: vscode.ExtensionContext) {
     }
 }
 
-export async function importUserSettingsFromVSCode(context: vscode.ExtensionContext) {
-    // First, ensure migration of existing file-based flags
-    await migrateFirstLaunchFlag(context);
-    
-    const isFirstTime = isFirstLaunch(context);
+export async function importUserSettingsFromVSCode(context: vscode.ExtensionContext) {    
     // this function is synchronous and copying files takes time
     // thats why run it after 3 seconds, until which extension activates.
     if (isFirstTime) {
@@ -150,8 +149,7 @@ export async function importUserSettingsFromVSCode(context: vscode.ExtensionCont
         }, 3000);
     }
 
-    await context.globalState.update(FIRST_LAUNCH_KEY, true);
-
+export async function markCreatorOnboardingCompleteFileBased() {
     // todo: use global state for this as well
     setTimeout(() => {
         const flagFile = firstPearAICreatorLaunchFlag;
