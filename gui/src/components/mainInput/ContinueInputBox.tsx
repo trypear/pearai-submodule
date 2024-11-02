@@ -58,9 +58,9 @@ interface ContinueInputBoxProps {
   isMainInput?: boolean;
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
+  contextItems?: ContextItemWithId[];
   hidden?: boolean;
   source?: "perplexity" | "aider" | "continue";
-  contextItems?: ContextItemWithId[];
 }
 
 function ContinueInputBox({
@@ -74,7 +74,6 @@ function ContinueInputBox({
 }: ContinueInputBoxProps) {
   const dispatch = useDispatch();
 
-  const availableSlashCommands = useSelector(selectSlashCommands);
   const active = useSelector((store: RootState) => {
     switch (source) {
       case "perplexity":
@@ -86,12 +85,9 @@ function ContinueInputBox({
     }
   });
 
-  const availableContextProviders = getContextProviders();
+  const availableSlashCommands = useSelector(selectSlashCommands);
+  let availableContextProviders = getContextProviders();
   const bareChatMode = isBareChatMode();
-
-  const handleEditorChange = useCallback((newState: JSONContent) => {
-    setPreservedState(newState);
-  }, []);
 
   useWebviewListener(
     "newSessionWithPrompt",
@@ -122,6 +118,10 @@ function ContinueInputBox({
     }
   }, [editorState]);
 
+  const handleEditorChange = useCallback((newState: JSONContent) => {
+    setPreservedState(newState);
+  }, []);
+
   return (
     <div
       style={{
@@ -147,7 +147,7 @@ function ContinueInputBox({
           onContentChange={handleEditorChange}
         ></TipTapEditor>
       </GradientBorder>
-      <ContextItemsPeek contextItems={contextItems} />
+      <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>
     </div>
   );
 };

@@ -121,7 +121,8 @@ const getPlaceholder = (historyLength: number, location: any) => {
     return historyLength === 0
       ? "Ask me to create, change, or fix anything..."
       : "Send a follow-up";
-  } else if (location?.pathname === "/perplexityMode" || location?.pathname === "/inventory/perplexityMode") {
+  }
+  else if (location?.pathname === "/perplexityMode" || location?.pathname === "/inventory/perplexityMode") {
     return historyLength === 0 ? "Ask for any information" : "Ask a follow-up";
   }
 
@@ -130,7 +131,7 @@ const getPlaceholder = (historyLength: number, location: any) => {
     : "Ask a follow-up";
 };
 
-const getDataUrlForFile = (file: File, img): string => {
+function getDataUrlForFile(file: File, img): string {
   const targetWidth = 512;
   const targetHeight = 512;
   const scaleFactor = Math.min(
@@ -139,16 +140,13 @@ const getDataUrlForFile = (file: File, img): string => {
   );
 
   const canvas = document.createElement("canvas");
-
   canvas.width = img.width * scaleFactor;
   canvas.height = img.height * scaleFactor;
 
   const ctx = canvas.getContext("2d");
-
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
   const downsizedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
-
   return downsizedDataUrl;
 }
 
@@ -732,7 +730,8 @@ const TipTapEditor = ({
   const onEnterRef = useUpdatingRef(
     (modifiers: InputModifiers) => {
       const json = editor.getJSON();
-  
+
+      // Don't do anything if input box is empty
       if (!json.content?.some((c) => c.content)) {
         return;
       }
@@ -1018,51 +1017,52 @@ const TipTapEditor = ({
 
   const [optionKeyHeld, setOptionKeyHeld] = useState(false);
 
+  // TODO: @Himanshu-Singh-Chauhan Test and remove this useEffect
   // Use onTransaction to track content changes
-  useEffect(() => {
-    if (editor) {
-      editor.on('transaction', () => {
-        const newContent = editor.getJSON();
+  // useEffect(() => {
+  //   if (editor) {
+  //     editor.on('transaction', () => {
+  //       const newContent = editor.getJSON();
 
-        lastContentRef.current = newContent;
-        onContentChange?.(newContent);
+  //       lastContentRef.current = newContent;
+  //       onContentChange?.(newContent);
   
-        // If /edit is typed and no context items are selected, select the first
+  //       // If /edit is typed and no context items are selected, select the first
         
-        if (contextItems.length > 0) {
-          return;
-        }
+  //       if (contextItems.length > 0) {
+  //         return;
+  //       }
   
-        const codeBlock = newContent.content?.find((el) => el.type === "codeBlock");
-        if (!codeBlock) {
-          return;
-        }
+  //       const codeBlock = newContent.content?.find((el) => el.type === "codeBlock");
+  //       if (!codeBlock) {
+  //         return;
+  //       }
   
-        // Search for slashcommand type
-        for (const p of newContent.content) {
-          if (
-            p.type !== "paragraph" ||
-            !p.content ||
-            typeof p.content === "string"
-          ) {
-            continue;
-          }
-          for (const node of p.content) {
-            if (
-              node.type === "slashcommand" &&
-              ["/edit", "/comment"].includes(node.attrs.label)
-            ) {
-              // Update context items
-              dispatch(
-                setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
-              );
-              return;
-            }
-          }
-        }
-      });
-    }
-  }, [editor, onContentChange, contextItems, dispatch]);
+  //       // Search for slashcommand type
+  //       for (const p of newContent.content) {
+  //         if (
+  //           p.type !== "paragraph" ||
+  //           !p.content ||
+  //           typeof p.content === "string"
+  //         ) {
+  //           continue;
+  //         }
+  //         for (const node of p.content) {
+  //           if (
+  //             node.type === "slashcommand" &&
+  //             ["/edit", "/comment"].includes(node.attrs.label)
+  //           ) {
+  //             // Update context items
+  //             dispatch(
+  //               setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
+  //             );
+  //             return;
+  //           }
+  //         }
+  //       }
+  //     });
+  //   }
+  // }, [editor, onContentChange, contextItems, dispatch]);
 
   // Prevent content flash during streaming
   useEffect(() => {
@@ -1074,7 +1074,7 @@ const TipTapEditor = ({
     }
   }, [editor, source]);
 
-  // Add this new effect to clear editor content after response
+  // clear editor content after response
   useEffect(() => {
     if (isMainInput && !active && editor) {
       editor.commands.clearContent();
