@@ -16,6 +16,7 @@ import { v4 } from "uuid";
 import { RootState } from "../store";
 import { update } from "lodash";
 import { AiderStatusUpdate } from "core/llm/llms/Aider";
+import { getLocalStorage } from "@/util/localStorage";
 
 export const memoizedContextItemsSelector = createSelector(
   [(state: RootState) => state.state.history],
@@ -128,6 +129,7 @@ type State = {
   selectedProfileId: string;
   directoryItems: string;
   aiderProcessStatus: AiderStatusUpdate;
+  showInteractiveContinueTutorial: boolean;
 };
 
 const initialState: State = {
@@ -167,6 +169,7 @@ const initialState: State = {
   defaultModelTitle: "GPT-4",
   selectedProfileId: "local",
   directoryItems: "",
+  showInteractiveContinueTutorial: getLocalStorage("showTutorialCard") ?? false,
 };
 
 export const stateSlice = createSlice({
@@ -648,6 +651,9 @@ export const stateSlice = createSlice({
         selectedProfileId: payload,
       };
     },
+    setShowInteractiveContinueTutorial: (state, action: PayloadAction<boolean>) => {
+      state.showInteractiveContinueTutorial = action.payload;
+    },
   },
 });
 
@@ -683,5 +689,6 @@ export const {
   consumeMainEditorContent,
   setSelectedProfileId,
   deleteMessage,
+  setShowInteractiveContinueTutorial,
 } = stateSlice.actions;
 export default stateSlice.reducer;

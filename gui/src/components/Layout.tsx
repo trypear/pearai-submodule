@@ -150,13 +150,6 @@ const Layout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const ideMessenger = useContext(IdeMessengerContext);
-  const [showTutorialCard, setShowTutorialCard] = useState<boolean>(getLocalStorage("showTutorialCard"));
-
-  const onCloseTutorialCard = useCallback(() => {
-      posthog.capture("closedTutorialCard");
-      setLocalStorage("showTutorialCard", false);
-      setShowTutorialCard(false);
-  }, []);
 
   const dialogMessage = useSelector(
     (state: RootState) => state.uiState.dialogMessage,
@@ -174,6 +167,8 @@ const Layout = () => {
   const displayBottomMessageOnBottom = useSelector(
     (state: RootState) => state.uiState.displayBottomMessageOnBottom,
   );
+
+  const showInteractiveContinueTutorial = useSelector((state: RootState) => state.state.showInteractiveContinueTutorial);
 
   const timeline = useSelector((state: RootState) => state.state.history);
 
@@ -307,18 +302,13 @@ const Layout = () => {
 
         <GridDiv
           showHeader={!window.isPearOverlay && SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
-          showTutorial={!!showTutorialCard}
+          showTutorial={!!showInteractiveContinueTutorial}
         >
           {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && !window.isPearOverlay && (
             <Header>
               <ShortcutContainer />
             </Header>
           )}
-          {!window.isPearOverlay && !!showTutorialCard &&
-            <TutorialCard >
-              <OnboardingTutorial onClose={onCloseTutorialCard}/>
-            </TutorialCard>
-          }
           <PostHogPageView />
           <Outlet />
           <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
