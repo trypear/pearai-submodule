@@ -127,24 +127,27 @@ export async function migrateFirstLaunchFlag(context: vscode.ExtensionContext) {
 export async function importUserSettingsFromVSCode(context: vscode.ExtensionContext) {    
     // this function is synchronous and copying files takes time
     // thats why run it after 3 seconds, until which extension activates.
-    // todo: route to onboarding hello page
-    setTimeout(() => {
-        try {
-            // TODO: THIS MSG SHOULD BE IN OVERLAY
-            vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
-            copyVSCodeSettingsToPearAIDir();
-            // No longer write flag to a file, just set state
-            // fs.writeFileSync(firstLaunchFlag, 'This is the first launch flag file');
+    if (isFirstTime) {
+        // todo: route to onboarding hello page
+        setTimeout(() => {
+            try {
+                vscode.commands.executeCommand("pearai.toggleFirstLaunch");
 
-            // TODO: THIS MSG SHOULD BE IN OVERLAY
-            vscode.window.showInformationMessage('Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.', 'Ok');
-        } catch (error) {
-            // TODO: DISPLAY ERROR MSG IN OVERLAY
-            vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
-        }
-        
-    }, 3000);
-}
+                // TODO: THIS MSG SHOULD BE IN OVERLAY
+                vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
+                copyVSCodeSettingsToPearAIDir();
+                // No longer write flag to a file, just set state
+                // fs.writeFileSync(firstLaunchFlag, 'This is the first launch flag file');
+    
+                // TODO: THIS MSG SHOULD BE IN OVERLAY
+                vscode.window.showInformationMessage('Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.', 'Ok');
+            } catch (error) {
+                // TODO: DISPLAY ERROR MSG IN OVERLAY
+                vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
+            }
+            
+        }, 3000);
+    }
 
 export async function markCreatorOnboardingCompleteFileBased() {
     // todo: use global state for this as well

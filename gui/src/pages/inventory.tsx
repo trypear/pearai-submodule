@@ -34,6 +34,15 @@ export default function Inventory() {
     setActiveTab(tab);
   }, [location]);
 
+  // listen for onboarding toggle
+  useWebviewListener(
+    "startOnboarding",
+    async () => {
+      navigate("/welcome");
+    },
+    [],
+  );
+
   // listen for navigation change requests from vscode
   useWebviewListener(
     "navigateToCreator",

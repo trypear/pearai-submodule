@@ -335,6 +335,12 @@ const commandsMap: (
     "pearai.toggleInventory": async () => {
       await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
+    "pearai.toggleFirstLaunch": async () => {
+      // toggle overlay
+      await vscode.commands.executeCommand("pearai.showOverlay");
+      // navigate to hello page
+      await sidebar.webviewProtocol?.request("startOnboarding", undefined, [PEAR_OVERLAY_VIEW_ID])
+    },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {

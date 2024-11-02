@@ -177,6 +177,12 @@
         "group": "PearAI"
       },
       {
+        "command": "pearai.toggleFirstLaunch",
+        "category": "PearAI",
+        "title": "Toggle PearAI Onboarding",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.focusContinueInput",
         "category": "PearAI",
         "title": "Add Highlighted Code to Context",
