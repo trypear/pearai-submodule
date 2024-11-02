@@ -138,6 +138,7 @@ export class VsCodeExtension {
     );
 
     // handleURI
+    // This is the entry point when user signs in from web app
     context.subscriptions.push(
       vscode.window.registerUriHandler({
         handleUri(uri: vscode.Uri) {
@@ -154,7 +155,6 @@ export class VsCodeExtension {
                 accessToken: queryParams.get("accessToken"),
                 refreshToken: queryParams.get("refreshToken"),
               };
-
               vscode.commands.executeCommand("pearai.updateUserAuth", data);
             }
           }
