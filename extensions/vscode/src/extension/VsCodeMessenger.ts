@@ -80,6 +80,10 @@ export class VsCodeMessenger {
     private readonly workOsAuthProvider: WorkOsAuthProvider,
   ) {
     /** WEBVIEW ONLY LISTENERS **/
+    // welcome stuff
+    this.onWebview("markNewOnboardingComplete", (msg) => {
+      vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
+    });
     this.onWebview("lockOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.lockOverlay");
     });
@@ -95,6 +99,7 @@ export class VsCodeMessenger {
     this.onWebview("pearInstallCommandLine", (msg) => {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
     });
+    // END welcome stuff
     this.onWebview("showFile", (msg) => {
       this.ide.openFile(msg.data.filepath);
     });

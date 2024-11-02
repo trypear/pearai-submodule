@@ -8,7 +8,7 @@ import { getExtensionVersion } from "../util/util";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
-import { isFirstLaunch, migrateFirstLaunchFlag } from "../copySettings";
+import { isFirstLaunch } from "../copySettings";
 
 export async function activateExtension(context: vscode.ExtensionContext) {
   // Add necessary files
@@ -23,22 +23,19 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
   setupPearAPPLayout(context);
 
-  migrate("showWelcome_1", () => {
-    vscode.commands.executeCommand(
-      "markdown.showPreview",
-      vscode.Uri.file(
-        path.join(getExtensionUri().fsPath, "media", "welcome.md"),
-      ),
-    );
+  // migrate("showWelcome_1", () => {
+  //   vscode.commands.executeCommand(
+  //     "markdown.showPreview",
+  //     vscode.Uri.file(
+  //       path.join(getExtensionUri().fsPath, "media", "welcome.md"),
+  //     ),
+  //   );
 
-    // vscode.commands.executeCommand("pearai.focusContinueInput");
-  });
+  //   vscode.commands.executeCommand("pearai.focusContinueInput");
+  // });
 
-  // First, ensure migration of existing file-based flags
-  // Probably should remove this, we wanna show new welcome to old users too
-  await migrateFirstLaunchFlag(context);
   if (true || isFirstLaunch(context)) {
-    vscode.commands.executeCommand("pearai.showOverlay");
+    vscode.commands.executeCommand("pearai.toggleFirstLaunch");
   }
   
   // vscode.commands.executeCommand("pearai.focusContinueInput");

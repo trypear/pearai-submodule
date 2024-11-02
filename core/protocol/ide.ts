@@ -90,6 +90,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   getCurrentDirectory: [undefined, string];
 
   // new welcome page
+  markNewOnboardingComplete: [undefined, void];
   importUserSettingsFromVSCode: [undefined, void];
   pearWelcomeOpenFolder: [undefined, void];
   pearInstallCommandLine: [undefined, void];

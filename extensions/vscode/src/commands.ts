@@ -336,10 +336,10 @@ const commandsMap: (
       await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
     "pearai.toggleFirstLaunch": async () => {
-      // toggle overlay
+      console.log("FIRST PEARAI LAUNCH");
       await vscode.commands.executeCommand("pearai.showOverlay");
       // navigate to hello page
-      await sidebar.webviewProtocol?.request("startOnboarding", undefined, [PEAR_OVERLAY_VIEW_ID])
+      await sidebar.webviewProtocol?.request("startOnboarding", undefined, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
@@ -804,6 +804,9 @@ const commandsMap: (
       core.invoke("llm/setPearAICredentials", { accessToken: data.accessToken, refreshToken: data.refreshToken });
       sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
+      if (isFirstLaunch(extensionContext)) {
+        vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
+      }
     },
     "pearai.closeChat": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");

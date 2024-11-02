@@ -54,6 +54,7 @@ export default function SignIn({ onNext, onBack }: { onNext: () => void, onBack:
 
           <div
             onClick={() => {
+              ideMessenger.post("markNewOnboardingComplete", undefined);
               onNext();
             }}
             className="text-sm underline cursor-pointer text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] transition-colors"

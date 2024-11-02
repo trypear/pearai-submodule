@@ -10,15 +10,10 @@ const pearAIDevExtensionsDir = path.join(os.homedir(), '.pearai', 'extensions');
 const firstLaunchFlag = path.join(pearAISettingsDir, 'firstLaunch.flag');
 const firstPearAICreatorLaunchFlag = path.join(pearAISettingsDir, 'firstLaunchCreator.flag');
 export const isFirstPearAICreatorLaunch = !fs.existsSync(firstPearAICreatorLaunchFlag);
-// export const isFirstLaunch = !fs.existsSync(firstLaunchFlag);
 
-// Checks both file system and global state for backward compatibility
+// Removed file based flag migration, we show new onboarding to old users
 export function isFirstLaunch(context: vscode.ExtensionContext): boolean {
-    const fileExists = fs.existsSync(firstLaunchFlag);
-    const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
-
-    // If either file exists or state is set, it's not first launch
-    return !fileExists && !stateExists;
+    return context.globalState.get<boolean>(FIRST_LAUNCH_KEY) ?? false;
 }
 
 
@@ -118,19 +113,6 @@ function copyDirectoryRecursiveSync(source: string, destination: string, exclusi
     });
 }
 
-
-// TODO: @Himanshu-Singh-Chauhan or @jpan8866 remove file based completely, we show new welcome to old users also.
-
-// TEMPORARY new function to migrate file-based flag to state-based
-export async function migrateFirstLaunchFlag(context: vscode.ExtensionContext) {
-    const fileExists = fs.existsSync(firstLaunchFlag);
-    const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
-
-    if (fileExists && !stateExists) {
-        // If file exists but state doesn't, migrate by setting the state
-        await context.globalState.update(FIRST_LAUNCH_KEY, true);
-    }
-}
 
 export async function importUserSettingsFromVSCode(context: vscode.ExtensionContext) {
     // this function is synchronous and copying files takes time
