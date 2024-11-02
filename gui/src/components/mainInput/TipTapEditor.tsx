@@ -1074,6 +1074,13 @@ const TipTapEditor = ({
     }
   }, [editor, source]);
 
+  // Add this new effect to clear editor content after response
+  useEffect(() => {
+    if (isMainInput && !active && editor) {
+      editor.commands.clearContent();
+    }
+  }, [isMainInput, active, editor]);
+
   return (
     <InputBoxDiv
       onKeyDown={(e) => {
