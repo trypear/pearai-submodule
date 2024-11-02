@@ -785,7 +785,6 @@ const commandsMap: (
       accessToken: string;
       refreshToken: string;
     }) => {
-      // vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
       // Ensure that refreshToken and accessToken are both present
       if (!data || !(data.refreshToken && data.accessToken)) {
         vscode.window.showWarningMessage(
@@ -793,8 +792,6 @@ const commandsMap: (
         );
         return;
       }
-
-      console.dir("SETING TOKENS: ", data);
 
       extensionContext.secrets.store("pearai-token", data.accessToken);
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
