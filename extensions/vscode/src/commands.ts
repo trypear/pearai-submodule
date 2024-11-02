@@ -243,8 +243,8 @@ const commandsMap: (
     },
     "pearai.welcome.importUserSettingsFromVSCode": async () => {
       if (!isFirstLaunch(extensionContext)) {
-        vscode.window.showInformationMessage("Not first launch");
-        console.dir("Not first launch");
+        vscode.window.showInformationMessage("Welcome back! User settings import is skipped as this is not the first launch.");
+        console.dir("Extension launch detected as a subsequent launch. Skipping user settings import.");
         return;
       }
       importUserSettingsFromVSCode(extensionContext);
@@ -784,14 +784,13 @@ const commandsMap: (
     "pearai.logout": async () => {
       await extensionContext.secrets.delete("pearai-token");
       await extensionContext.secrets.delete("pearai-refresh");
-      core.invoke("llm/resetPearAICredentials", undefined);
+      core.invoke("llm/setPearAICredentials", { accessToken: undefined, refreshToken: undefined });
       vscode.window.showInformationMessage("PearAI: Successfully logged out!");
     },
     "pearai.updateUserAuth": async (data: {
       accessToken: string;
       refreshToken: string;
     }) => {
-      vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
       // Ensure that refreshToken and accessToken are both present
       if (!data || !(data.refreshToken && data.accessToken)) {
         vscode.window.showWarningMessage(
@@ -802,9 +801,8 @@ const commandsMap: (
 
       extensionContext.secrets.store("pearai-token", data.accessToken);
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
-      core.invoke("llm/resetPearAICredentials", undefined);
-      sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_CONTINUE_VIEW_ID]);
-      sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      core.invoke("llm/setPearAICredentials", { accessToken: data.accessToken, refreshToken: data.refreshToken });
+      sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
     },
     "pearai.closeChat": () => {

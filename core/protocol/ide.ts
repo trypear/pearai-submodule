@@ -92,6 +92,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   // new welcome page
   importUserSettingsFromVSCode: [undefined, void];
   pearWelcomeOpenFolder: [undefined, void];
+  pearInstallCommandLine: [undefined, void];
 };
 
 export type ToWebviewOrCoreFromIdeProtocol = {
