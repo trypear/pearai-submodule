@@ -15,14 +15,18 @@ export default function Welcome() {
     const checkUserSignInStatus = async () => {
       try {
         const res = await ideMessenger.request("getPearAuth", undefined);
-        setIsUserSignedIn(res?.accessToken ? true : false);
+        const signedIn = res?.accessToken ? true : false;
+        setIsUserSignedIn(signedIn);
+        console.dir("User signed in:");
+        console.dir(signedIn);
       } catch (error) {
         console.error("Error checking user sign-in status:", error);
       }
     };
 
     checkUserSignInStatus();
-  }, [ideMessenger]);
+  }, [ideMessenger]); // Dependency array ensures this runs once when the component mounts
+
 
 
   const handleNextStep = () => {

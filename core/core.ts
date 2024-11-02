@@ -442,7 +442,8 @@ export class Core {
       return completion;
     });
 
-    on("llm/resetPearAICredentials", async (msg) => {
+    on("llm/setPearAICredentials", async (msg) => {
+      const { accessToken, refreshToken } = msg.data || {};
       const config = await this.configHandler.loadConfig();
       const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
       const aiderModels = config.models.filter(model => model instanceof Aider) as Aider[];
@@ -450,8 +451,8 @@ export class Core {
       try {
         if (pearAIModels.length > 0) {
           pearAIModels.forEach(model => {
-            model.setPearAIAccessToken(undefined);
-            model.setPearAIRefreshToken(undefined);
+            model.setPearAIAccessToken(accessToken);
+            model.setPearAIRefreshToken(refreshToken);
           });
         }
       } catch (e) {
@@ -462,8 +463,8 @@ export class Core {
       try {
         if (aiderModels.length > 0) {
           aiderModels.forEach(model => {
-            model.setPearAIAccessToken(undefined);
-            model.setPearAIRefreshToken(undefined);
+            model.setPearAIAccessToken(accessToken);
+            model.setPearAIRefreshToken(refreshToken);
           });
         }
       } catch (e) {

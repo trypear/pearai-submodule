@@ -154,6 +154,8 @@ export class VsCodeExtension {
                 accessToken: queryParams.get("accessToken"),
                 refreshToken: queryParams.get("refreshToken"),
               };
+              console.log("Received auth data:");
+              console.dir(data, { depth: null });
 
               vscode.commands.executeCommand("pearai.updateUserAuth", data);
             }
