@@ -243,8 +243,8 @@ const commandsMap: (
     },
     "pearai.welcome.importUserSettingsFromVSCode": async () => {
       if (!isFirstLaunch(extensionContext)) {
-        vscode.window.showInformationMessage("Not first launch");
-        console.dir("Not first launch");
+        vscode.window.showInformationMessage("Welcome back! User settings import is skipped as this is not the first launch.");
+        console.dir("Extension launch detected as a subsequent launch. Skipping user settings import.");
         return;
       }
       importUserSettingsFromVSCode(extensionContext);
