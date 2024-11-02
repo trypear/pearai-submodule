@@ -34,7 +34,7 @@ export default function CopyButtonWithText({
         setTimeout(() => {
           setCopied(false);
         }, 100);
-      }, 2000);
+      }, 600);
     }
     return () => clearTimeout(timeout);
   }, [forceShow]);

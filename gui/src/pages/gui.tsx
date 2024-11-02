@@ -290,7 +290,6 @@ function GUI() {
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
           <StepsDiv>
-          <OnboardingTutorial onClose={() => {}}/>
             {state.history.map((item, index: number) => {
               return (
                 <Fragment key={index}>

@@ -69,6 +69,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   viewHistory: [undefined, void];
   newSession: [undefined, void];
   quickEdit: [undefined, void];
+  acceptedOrRejectedDiff: [undefined, void]
   setTheme: [{ theme: any }, void];
   setThemeType: [{ themeType: string }, void];
   setColors: [{ [key: string]: string }, void];

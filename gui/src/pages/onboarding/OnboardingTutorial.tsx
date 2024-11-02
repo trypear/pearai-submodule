@@ -1,12 +1,14 @@
 import { vscBackground, vscForeground, vscInputBorderFocus } from '@/components';
+import DelayedMessage from '@/components/DelayedMessage';
 import CopyButtonWithText from '@/components/markdown/CopyButtonWithText';
-import VSCodeFileLink from '@/components/markdown/VSCodeFileLink';
 import { Button } from '@/components/ui/button';
 import { IdeMessengerContext } from '@/context/IdeMessenger';
+import useHistory from '@/hooks/useHistory';
 import { useWebviewListener } from '@/hooks/useWebviewListener';
 import { getMetaKeyAndShortcutLabel } from '@/util';
 import { ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import styled from 'styled-components';
 
 interface OnboardingTutorialProps {
@@ -17,10 +19,13 @@ interface OnboardingTutorialProps {
 const TutorialCardDiv = styled.div`
   border-radius: 8px;
   margin: 1rem;
+  width: 100%;
   position: relative;
+  max-height: 30rem;
+  border: 1px solid ${vscForeground};
   box-shadow: 
-    0 10px 20px rgba(0, 0, 0, 0.2),
-    0 6px 6px rgba(0, 0, 0, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    0 4px 4px rgba(0, 0, 0, 0.15),
     0 0 1px rgba(255, 255, 255, 0.1) inset;
   animation: float 2s ease-in-out infinite;
 
@@ -115,15 +120,25 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
   const [currentPage, setCurrentPage] = useState(0);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const ideMessenger = useContext(IdeMessengerContext);
+  const dispatch = useDispatch();
+  const { saveSession } = useHistory(dispatch, "continue");
 
   const pages = [
     {
       title: <h3>Select Code and Chat (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>L</kbd>)</h3>,
-      description: <p>Highlight a portion of code, and press <kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd className="text-base">L</kbd> to add it to the chat context.<br/><br/>
-      <em>Don't have a file open? Use <kbd className="underline decoration-current hover:no-underline cursor-pointer" onClick={() => ideMessenger.post("showTutorial", undefined)}>pearai_tutorial.py</kbd>.</em></p>,
+      description: <p>Highlight a portion of code, and press <b><kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd className="text-base">L</kbd></b> to add it to the chat context.<br/><br/>
+      <em>Don't have a file open? Use <kbd className="underline decoration-current hover:no-underline cursor-pointer font-bold" onClick={() => ideMessenger.post("showTutorial", undefined)}>pearai_tutorial.py</kbd>.</em></p>,
     },
     {
-      description: <p>Ask a question about the code you just highlighted!</p>,
+      description: (
+        <>
+          <p>Ask a question about the code you just highlighted in the chat below!</p>
+          <DelayedMessage 
+            message="Press the right arrow below for the next step." 
+            delay={10000} 
+          />
+        </>
+      ),
       examples: [
         "Explain what this code does",
         "What could be improved here?",
@@ -131,39 +146,40 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
     },
     {
       title: <h3>Inline Code Editing (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>)</h3>,
-      description: <p>Now let's try inline editing... Highlight a function in full, and press <kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>.</p>,
+      description: <p>Now let's try inline editing... Highlight a function in full, and press <b><kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd></b>.</p>,
     },
     {
       title: <h3>Inline Code Editing (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>I</kbd>)</h3>,
   description: <p>Ask it to edit your code. Then after the changes appear, you can:<ul className="list-disc marker:text-foreground" >
-                                                                  <li>accept all changes with <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+ENTER</kbd>,</li>
-                                                                  <li>or reject all changes with <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+BACKSPACE</kbd></li>
+                                                                  <li><b>accept all changes with <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+ENTER</kbd></b>,</li>
+                                                                  <li>or <b>reject all changes with <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+BACKSPACE</kbd></b></li>
                                                                 </ul></p>,
       examples: [
         "Add error handling",
-        "Add comments",
-        "Add print statements",
-        "Improve this code"
+        "Improve this code",
       ]
     },
     {
       title: <h3>Codebase Context (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>ENTER</kbd>)</h3>,
-      description: <p >Almost done! Try asking anything about your general codebase by prompting then pressing <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>ENTER</kbd>.<br/><br/> Note: codebase indexing must finish before you can run this!</p>,
+      description: <p >Almost done! Try asking anything about your general codebase by prompting then pressing <b><kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>ENTER</kbd></b>.<br/><br/> Note: codebase indexing must finish before you can run this!</p>,
       examples: [
         "What does my codebase do",
-        "Generate me documentation for my codebase",
-        "Where can I find functions about X"
+        "Where should I start to implement a feature about X"
       ]
     },
     {
       title: <h3>Toggle PearAI Inventory</h3>,
-      description: <p>Lastly, press <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>E</kbd> to toggle <b>PearAI Inventory</b>, try out <strong>Creator</strong> and <strong>Search</strong> directly in there! <br/><br/>Enjoy PearAI! If you have questions, feel free to ask us in our <a href="https://discord.gg/7QMraJUsQt">Discord</a> or through <a href="mailto:pear@trypear.ai">email</a>.</p>,
+      description: <p>Lastly, press <b><kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>E</kbd></b> to toggle <b>PearAI Inventory</b>, and try out <strong>Creator</strong> and <strong>Search</strong> directly in there! <br/><br/>Enjoy PearAI! If you have questions, feel free to ask us in our <a href="https://discord.gg/7QMraJUsQt">Discord</a>, or through <a href="mailto:pear@trypear.ai">email</a>.</p>,
     },
   ]
 
   const nextPage = () => {
     setSlideDirection('right');
     setCurrentPage((prev) => Math.min(prev + 1, pages.length - 1));
+    if (currentPage === 1) {
+      // clear chat
+      saveSession()
+    }
   };
 
   const prevPage = () => {
@@ -180,7 +196,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
     } else if (event.key === 'ArrowLeft') {
       prevPage();
     }
-  }, [setCurrentPage, setSlideDirection]);
+  }, [currentPage, nextPage, prevPage]);
 
   useWebviewListener(
     "focusContinueInput",
@@ -202,6 +218,15 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
     [currentPage],
   );
 
+  useWebviewListener("acceptedOrRejectedDiff",
+    async () => {
+      if (currentPage === 3) {
+        nextPage()
+      }
+    },
+    [currentPage],
+  )
+
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
@@ -210,34 +235,23 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
   return (
     <TutorialCardDiv className="flex flex-col p-2 justify-between bg-background">
       <div className="mb-3">
+      <div
+          onClick={onClose}
+          className="absolute underline top-2 right-2 p-1 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-full cursor-pointer shadow-sm"
+          role="button"
+          aria-label="Close"
+        >
+          Close
+      </div>
           <div className="flex flex-col justify-between mt-1">
             <div>
               <div className="flex justify-between items-center text-muted">
-              Quick Walkthrough (1 min)
-                <div className="pl-1 justify-end items-center gap-2 inline-flex">
-                  <Button 
-                    size="icon" 
-                    onClick={prevPage} 
-                    disabled={currentPage === 0}
-                    className="h-6 w-6"
-                  >
-                    <ChevronLeft color="background"/>
-                  </Button>
-                  <span className="text-xs">{currentPage + 1} / {pages.length}</span>
-                  <Button 
-                    size="icon" 
-                    onClick={nextPage} 
-                    disabled={currentPage === pages.length - 1}
-                    className="h-6 w-6"
-                  >
-                    <ChevronRight color="background"/>
-                  </Button>
-                </div>
+              Quick Tutorial (1 min)
               </div>
               <ContentWrapper direction={slideDirection} key={currentPage} className="pl-1">
                 <ShimmeredText className="text-sm">{currentPageData.description}</ShimmeredText>
                 {hasExamples && (
-                  <ExamplesSection className="mb-3">
+                  <ExamplesSection >
                     <ExamplesHeader >
                       <Lightbulb size={13} />
                       <span>Try these examples</span>
@@ -259,13 +273,24 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
             </div>
           </div>
       </div>
-      <div
-          onClick={onClose}
-          className="absolute underline bottom-1 right-2 p-1 text-gray-400 hover:text-gray-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-full cursor-pointer shadow-sm"
-          role="button"
-          aria-label="Close"
+      <div className="pl-1 justify-end items-center gap-2 inline-flex">
+        <Button 
+          size="icon" 
+          onClick={prevPage} 
+          disabled={currentPage === 0}
+          className="h-6 w-6"
         >
-          Close
+          <ChevronLeft color="background"/>
+        </Button>
+        <span className="text-xs">{currentPage + 1} / {pages.length}</span>
+        <Button 
+          size="icon" 
+          onClick={nextPage} 
+          disabled={currentPage === pages.length - 1}
+          className="h-6 w-6"
+        >
+          <ChevronRight color="background"/>
+        </Button>
       </div>
     </TutorialCardDiv>
   );

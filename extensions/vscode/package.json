@@ -571,9 +571,9 @@
       "activitybar": [
         {
           "id": "PearAI",
-          "title": "PearAI Chat",
+          "title": "PearAI Chat (powered by Continue)",
           "icon": "media/sidebar-icon.png",
-          "description": "Fork of Continue"
+          "description": "Powered by Continue"
         }
       ]
     },

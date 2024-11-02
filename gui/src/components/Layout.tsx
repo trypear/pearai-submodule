@@ -31,6 +31,7 @@ import ProgressBar from "./loaders/ProgressBar";
 import PostHogPageView from "./PosthogPageView";
 import ProfileSwitcher from "./ProfileSwitcher";
 import ShortcutContainer from "./ShortcutContainer";
+import OnboardingTutorial from "@/pages/onboarding/OnboardingTutorial";
 
 // check mac or window
 const platform = navigator.userAgent.toLowerCase();
@@ -88,10 +89,27 @@ const Header = styled.header`
   overflow: hidden;
 `;
 
-const GridDiv = styled.div<{ showHeader: boolean }>`
+const TutorialCard = styled.header`
+  position: sticky;
+  top: 0px;
+  z-index: 500;
+  background-color: ${vscBackground}ee; // Added 'ee' for slight transparency
+  display: flex;
+
+  width: 100%;
+`
+
+const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean }>`
   display: grid;
-  grid-template-rows: ${(props) =>
-    props.showHeader ? "auto 1fr auto" : "1fr auto"};
+  grid-template-rows: ${(props) => {
+    if (props.showHeader && props.showTutorial) {
+      return "auto auto 1fr auto";
+    } else if (props.showHeader || props.showTutorial) {
+      return "auto 1fr auto";
+    } else {
+      return "1fr auto";
+    }
+  }};
   min-height: 100vh;
   overflow-x: visible;
 `;
@@ -281,12 +299,18 @@ const Layout = () => {
 
         <GridDiv
           showHeader={!window.isPearOverlay && SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
+          showTutorial={true}
         >
           {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && !window.isPearOverlay && (
             <Header>
               <ShortcutContainer />
             </Header>
           )}
+          {!window.isPearOverlay && 
+            <TutorialCard >
+              <OnboardingTutorial onClose={() => {}}/>
+            </TutorialCard>
+          }
           <PostHogPageView />
           <Outlet />
           <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
