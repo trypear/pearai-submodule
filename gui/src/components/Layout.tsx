@@ -90,16 +90,6 @@ const Header = styled.header`
   overflow: hidden;
 `;
 
-const TutorialCard = styled.header`
-  position: sticky;
-  top: 0px;
-  z-index: 500;
-  background-color: ${vscBackground}ee; // Added 'ee' for slight transparency
-  display: flex;
-
-  width: 100%;
-`
-
 const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean }>`
   display: grid;
   grid-template-rows: ${(props) => {
