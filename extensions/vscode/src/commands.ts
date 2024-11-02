@@ -785,7 +785,7 @@ const commandsMap: (
       accessToken: string;
       refreshToken: string;
     }) => {
-      vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
+      // vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
       // Ensure that refreshToken and accessToken are both present
       if (!data || !(data.refreshToken && data.accessToken)) {
         vscode.window.showWarningMessage(
@@ -797,8 +797,8 @@ const commandsMap: (
       extensionContext.secrets.store("pearai-token", data.accessToken);
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
       core.invoke("llm/resetPearAICredentials", undefined);
-      sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_CONTINUE_VIEW_ID]);
-      sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_OVERLAY_VIEW_ID]);
+      // sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      // sidebar.webviewProtocol?.request("addPearAIModel", undefined, [PEAR_OVERLAY_VIEW_ID]);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
     },
     "pearai.closeChat": () => {

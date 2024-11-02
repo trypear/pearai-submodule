@@ -137,6 +137,7 @@ export class VsCodeExtension {
     );
 
     // handleURI
+    // This is the entry point when user signs in from web app
     context.subscriptions.push(
       vscode.window.registerUriHandler({
         handleUri(uri: vscode.Uri) {
