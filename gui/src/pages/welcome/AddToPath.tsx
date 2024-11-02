@@ -63,6 +63,14 @@ export default function AddToPath({
             </div>
           </div>
 
+          {pathAdded && (
+            <div className="text-sm text-muted-foreground text-center mb-10">
+              <span className="font-bold">
+                Added to PATH
+              </span>
+            </div>
+          )}
+
           <div className="flex flex-col items-center gap-4">
             <Button
               className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"

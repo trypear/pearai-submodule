@@ -52,7 +52,7 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
 
             <div className="flex flex-col md:flex-row items-center gap-4">
               <a
-                href="https://twitter.com/pearai"
+                href="https://x.com/trypearai"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-[250px] md:w-[200px] flex text-foreground hover:text-button-foreground no-underline items-center justify-center gap-2 p-4 text-white bg-[#000000] transition-colors rounded-md text-sm md:text-base cursor-pointer"
@@ -66,7 +66,7 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
                 Follow us
               </a>
               <a
-                href="https://discord.gg/pearai"
+                href="https://discord.gg/7QMraJUsQt"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-[250px] md:w-[200px] flex text-button-foreground hover:text-button-foreground no-underline items-center justify-center gap-2 p-4 text-white bg-[#5865F2] hover:bg-[#4752C4] transition-colors rounded-md text-sm md:text-base cursor-pointer"
