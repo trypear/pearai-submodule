@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef, useContext, useMemo } from 'react';
+import { useState, useEffect, useRef, useContext, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, Bot, Search } from "lucide-react";
-import { IdeMessengerContext } from '@/context/IdeMessenger';
+import { IdeMessengerContext } from "@/context/IdeMessenger";
 
 const getAssetPath = (assetName: string) => {
   return `${window.vscMediaUrl}/assets/${assetName}`;
-}
+};
 
 export default function Features({ onNext }: { onNext: () => void }) {
   const [currentFeature, setCurrentFeature] = useState(0);
@@ -25,21 +25,22 @@ export default function Features({ onNext }: { onNext: () => void }) {
     {
       icon: <Sparkles className="h-6 w-6" />,
       title: "PearAI Assistant",
-      description: "Ask Assistant to help you understand code and make changes, powered by Continue.",
-      video: getAssetPath('high-def.png'),
+      description:
+        "Ask Assistant to help you understand code and make changes, powered by Continue.",
+      video: getAssetPath("high-def.png"),
     },
     {
       icon: <Bot className="h-6 w-6" />,
       title: "PearAI Create",
       description: "Generate code and solutions with AI assistance.",
-      video: getAssetPath('pearai-@file.gif')
+      video: getAssetPath("pearai-@file.gif"),
     },
     {
       icon: <Search className="h-6 w-6" />,
       title: "PearAI Search",
       description: "Search through your codebase intelligently.",
-      video: getAssetPath('pearai-CMD+I.gif')
-    }
+      video: getAssetPath("pearai-CMD+I.gif"),
+    },
   ];
 
   const ideMessenger = useContext(IdeMessengerContext);
@@ -58,7 +59,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
     img.onload = () => {
       setIsLoading(false);
       setVideoSrc(features[currentFeature].video);
-    }
+    };
     img.src = features[currentFeature].video;
   }, [currentFeature]);
 
@@ -71,7 +72,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
       const newProgress = (elapsed / FEATURE_DURATION) * 100;
 
       if (newProgress >= 100) {
-        setCurrentFeature(current => (current + 1) % features.length);
+        setCurrentFeature((current) => (current + 1) % features.length);
         setProgress(0);
         clearInterval(progressInterval.current);
       } else {
@@ -83,14 +84,14 @@ export default function Features({ onNext }: { onNext: () => void }) {
       if (progressInterval.current) {
         clearInterval(progressInterval.current);
       }
-    }
+    };
   }, [currentFeature]);
 
   const handleFeatureChange = (index: number) => {
     setCurrentFeature(index);
     setProgress(0);
     setTimestamp(Date.now());
-  }
+  };
 
   const handleNextClick = () => {
     if (currentFeature < features.length - 1) {
@@ -104,7 +105,6 @@ export default function Features({ onNext }: { onNext: () => void }) {
     }
   };
 
-
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
@@ -115,7 +115,8 @@ export default function Features({ onNext }: { onNext: () => void }) {
                 Welcome to PearAI.
               </h2>
               <p className="text-sm text-muted-foreground">
-                Speed up your development process by seamlessly integrating AI into your workflow.
+                Speed up your development process by seamlessly integrating AI
+                into your workflow.
               </p>
             </div>
             <div className="space-y-3">
@@ -124,28 +125,31 @@ export default function Features({ onNext }: { onNext: () => void }) {
                   key={index}
                   className={`border-none p-3 transition-all duration-200 hover:scale-[1.02] ${
                     currentFeature === index
-                      ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]'
-                      : 'bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60 hover:opacity-80'
+                      ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]"
+                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60 hover:opacity-80"
                   }`}
                   onClick={() => handleFeatureChange(index)}
-                  style={{ cursor: 'pointer' }}
+                  style={{ cursor: "pointer" }}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`p-1.5 rounded-lg ${
-                      currentFeature === index
-                        ? 'bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]'
-                        : 'bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60'
-                    }`}>
+                    <div
+                      className={`p-1.5 rounded-lg ${
+                        currentFeature === index
+                          ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]"
+                          : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
+                      }`}
+                    >
                       {feature.icon}
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-semibold text-foreground text-sm">
                         {feature.title}
                       </h3>
-                      {currentFeature === index &&
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {feature.description}
-                      </p>}
+                      {currentFeature === index && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {feature.description}
+                        </p>
+                      )}
                       {currentFeature === index && (
                         <Progress
                           value={progress}
@@ -175,9 +179,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
           <div
             key={index}
             className={`absolute inset-0 transition-all duration-700 ${
-              currentFeature === index
-                ? 'opacity-100 z-10'
-                : 'opacity-0 z-0'
+              currentFeature === index ? "opacity-100 z-10" : "opacity-0 z-0"
             }`}
           >
             {currentFeature === index && (
@@ -186,11 +188,11 @@ export default function Features({ onNext }: { onNext: () => void }) {
                 src={`${feature.video}?t=${timestamp}`}
                 alt={`${feature.title} demonstration`}
                 className={`w-full h-full object-cover transition-opacity duration-300 ${
-                  isLoading ? 'opacity-0' : 'opacity-100'
+                  isLoading ? "opacity-0" : "opacity-100"
                 }`}
                 loading="eager"
                 style={{
-                  willChange: 'transform, opacity',
+                  willChange: "transform, opacity",
                 }}
               />
             )}

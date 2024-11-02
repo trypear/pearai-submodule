@@ -1,21 +1,24 @@
-'use client'
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
-import { useContext } from 'react';
-import { IdeMessengerContext } from '@/context/IdeMessenger';
+import { useContext } from "react";
+import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 
-export default function SignIn({ onNext, onBack }: { onNext: () => void, onBack: () => void }) {
+export default function SignIn({
+  onNext,
+  onBack,
+}: {
+  onNext: () => void;
+  onBack: () => void;
+}) {
   const ideMessenger = useContext(IdeMessengerContext);
 
-  useWebviewListener(
-    "pearAISignedIn",
-    async () => {
-      onNext();
-      return Promise.resolve();
-    }
-  );
+  useWebviewListener("pearAISignedIn", async () => {
+    onNext();
+    return Promise.resolve();
+  });
 
   return (
     <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
@@ -34,7 +37,8 @@ export default function SignIn({ onNext, onBack }: { onNext: () => void, onBack:
           </h2>
 
           <p className="text-muted-foreground text-base md:text-md max-w-[500px] text-center mb-16">
-            Sign up to start using PearAI and supercharge your development workflow
+            Sign up to start using PearAI and supercharge your development
+            workflow
           </p>
 
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-12">
@@ -45,10 +49,14 @@ export default function SignIn({ onNext, onBack }: { onNext: () => void, onBack:
               Sign in
             </Button>
 
-            <Button
-              className="w-[250px] md:w-[280px] bg-input  border border-input p-5 md:p-6 text-base md:text-lg cursor-pointer"
-            >
-              <a href="https://trypear.ai/signup" target="_blank" className='text-foreground hover:text-button-foreground no-underline'>Sign up</a>
+            <Button className="w-[250px] md:w-[280px] bg-input  border border-input p-5 md:p-6 text-base md:text-lg cursor-pointer">
+              <a
+                href="https://trypear.ai/signup"
+                target="_blank"
+                className="text-foreground hover:text-button-foreground no-underline"
+              >
+                Sign up
+              </a>
             </Button>
           </div>
 

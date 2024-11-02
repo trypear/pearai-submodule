@@ -1,11 +1,17 @@
-'use client'
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
-import { useContext } from 'react';
-import { IdeMessengerContext } from '@/context/IdeMessenger';
+import { useContext } from "react";
+import { IdeMessengerContext } from "@/context/IdeMessenger";
 
-export default function ImportExtensions({ onBack, onNext }: { onBack: () => void, onNext: () => void }) {
+export default function ImportExtensions({
+  onBack,
+  onNext,
+}: {
+  onBack: () => void;
+  onNext: () => void;
+}) {
   const ideMessenger = useContext(IdeMessengerContext);
 
   return (
@@ -31,7 +37,9 @@ export default function ImportExtensions({ onBack, onNext }: { onBack: () => voi
           <div className="flex flex-col items-center gap-4">
             <Button
               className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"
-              onClick={() => {ideMessenger.post("importUserSettingsFromVSCode", undefined)}}
+              onClick={() => {
+                ideMessenger.post("importUserSettingsFromVSCode", undefined);
+              }}
             >
               Import Extensions
             </Button>

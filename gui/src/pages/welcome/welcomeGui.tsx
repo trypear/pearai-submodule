@@ -1,9 +1,9 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
-import Features from './Features';
-import ImportExtensions from './ImportExtensions';
-import AddToPath from './AddToPath';
-import FinalStep from './FinalStep';
-import { IdeMessengerContext } from '@/context/IdeMessenger';
+import { useContext, useEffect, useMemo, useState } from "react";
+import Features from "./Features";
+import ImportExtensions from "./ImportExtensions";
+import AddToPath from "./AddToPath";
+import FinalStep from "./FinalStep";
+import { IdeMessengerContext } from "@/context/IdeMessenger";
 
 export default function Welcome() {
   const ideMessenger = useContext(IdeMessengerContext);
@@ -43,8 +43,6 @@ export default function Welcome() {
     checkUserSignInStatus();
   }, [ideMessenger]); // Dependency array ensures this runs once when the component mounts
 
-
-
   const handleNextStep = () => {
     setStep((prevStep) => Math.min(prevStep + 1, 4));
   };
@@ -58,7 +56,9 @@ export default function Welcome() {
       case 0:
         return <Features onNext={handleNextStep} />;
       case 1:
-        return <ImportExtensions onNext={handleNextStep} onBack={handleBackStep} />;
+        return (
+          <ImportExtensions onNext={handleNextStep} onBack={handleBackStep} />
+        );
       case 2:
         return <AddToPath onNext={handleNextStep} onBack={handleBackStep} />;
       case 3:
@@ -73,10 +73,6 @@ export default function Welcome() {
     }
   };
 
-  return (
-    <div className="flex flex-col space-y-4">
-      {renderStep()}
-    </div>
-  );
+  return <div className="flex flex-col space-y-4">{renderStep()}</div>;
 }
-import SignIn from './SignIn';
+import SignIn from "./SignIn";

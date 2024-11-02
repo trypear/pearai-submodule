@@ -1,11 +1,17 @@
-'use client'
+"use client";
 
 import { Button } from "@/components/ui/button";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useContext, useState } from "react";
 
-export default function AddToPath({ onBack, onNext }: { onBack: () => void, onNext: () => void }) {
+export default function AddToPath({
+  onBack,
+  onNext,
+}: {
+  onBack: () => void;
+  onNext: () => void;
+}) {
   const ideMessenger = useContext(IdeMessengerContext);
   const [pathAdded, setPathAdded] = useState(false);
   return (
@@ -40,11 +46,17 @@ export default function AddToPath({ onBack, onNext }: { onBack: () => void, onNe
 
             <div className="bg-[var(--vscode-terminal-background)] p-4 border border-input m-1 rounded-sm">
               <div className="font-mono text-sm">
-                <span className="text-[var(--vscode-terminal-foreground)]">$ cd /path/to/your/project</span>
+                <span className="text-[var(--vscode-terminal-foreground)]">
+                  $ cd /path/to/your/project
+                </span>
               </div>
               <div className="font-mono text-sm mt-2 flex items-center">
-                <span className="text-[var(--vscode-terminal-foreground)]">$&nbsp;</span>
-                <span className="text-[var(--vscode-terminal-ansiCyan)]">pear .</span>
+                <span className="text-[var(--vscode-terminal-foreground)]">
+                  $&nbsp;
+                </span>
+                <span className="text-[var(--vscode-terminal-ansiCyan)]">
+                  pear .
+                </span>
                 <span className="ml-1 animate-pulse">▋</span>
               </div>
             </div>
