@@ -21,9 +21,9 @@ async function attemptInstallExtension(extensionId: string): Promise<void> {
 
   try {
       await vscode.commands.executeCommand('workbench.extensions.installExtension', extensionId);
-      vscode.window.showInformationMessage(`Successfully installed extension: ${extensionId}`);
+      // vscode.window.showInformationMessage(`Successfully installed extension: ${extensionId}`);
   } catch (error) {
-      vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
+      // vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
       console.error(error);
   }
 }
