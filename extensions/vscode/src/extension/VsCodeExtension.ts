@@ -34,6 +34,7 @@ import type { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { VsCodeMessenger } from "./VsCodeMessenger";
 import { startAiderProcess } from "../integrations/aider/aider";
 import { debounce } from "lodash";
+import { isValidFilePath } from "../../../../core/util";
 
 export class VsCodeExtension {
   // Currently some of these are public so they can be used in testing (test/test-suites)
@@ -198,6 +199,7 @@ export class VsCodeExtension {
     setupStatusBar(
       enabled ? StatusBarStatus.Enabled : StatusBarStatus.Disabled,
     );
+
     context.subscriptions.push(
       vscode.languages.registerInlineCompletionItemProvider(
         [{ pattern: "**" }],
@@ -379,6 +381,20 @@ export class VsCodeExtension {
     this.ide.onDidChangeActiveTextEditor((filepath) => {
       this.debouncedNotifyEditorChange(filepath || null);
     });
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand("pearai.newSession", async () => {
+        const currentFile = await this.ide.getCurrentFile();
+        
+        await this.sidebar.webviewProtocol?.request("newSession", undefined);
+    
+        if (currentFile) {
+          if (currentFile && isValidFilePath(currentFile)) {
+            this.sidebar.webviewProtocol?.request("activeEditorChange", { filepath: currentFile });
+          }
+        }
+      })
+    );
 
     startAiderProcess(this.core);
   }
