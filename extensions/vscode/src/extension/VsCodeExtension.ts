@@ -371,8 +371,11 @@ export class VsCodeExtension {
     );
 
     context.subscriptions.push(
-      vscode.window.onDidChangeTextEditorSelection((event) => {
-        const filepath = event.textEditor?.document?.uri.fsPath || null;
+      vscode.window.onDidChangeActiveTextEditor((event) => {
+        if (!event) {
+          return;
+        }
+        const filepath = event.document.uri.fsPath;
         this.debouncedNotifyEditorChange(filepath);
       })
     );
