@@ -41,8 +41,8 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       icon: <Sparkles className="h-6 w-6" />,
       title: "Import VSCode Extensions",
       description:
-        "Automatically import your extensions from VSCode.",
-      component: <ImportExtensions onNext={handleNextClick} />, 
+        "Automatically import your extensions from VSCode to feel at home.",
+      component: <ImportExtensions onNext={handleNextClick} />,
     },
     {
       icon: <Bot className="h-6 w-6" />,
@@ -53,7 +53,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     {
       icon: <Search className="h-6 w-6" />,
       title: "Sign in",
-      description: "Use PearAI's free trial by signing in.",
+      description: "Have PearAI work for free out oof the box by signing in.",
       component: <SignIn onNext={handleNextClick} />,
     },
   ];
@@ -119,14 +119,14 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
             </Button>
             </div>
         </div>
-      
+
         <div className="flex-1 relative bg-[var(--vscode-input-background)]">
             {setupSteps.map((setupStep, index) => (
                 <div
                 key={index}
                 className={`absolute inset-0 transition-opacity duration-300 ease-in-out ${
-                    currentFeature === index 
-                    ? "opacity-100 z-10" 
+                    currentFeature === index
+                    ? "opacity-100 z-10"
                     : "opacity-0 z-0"
                 }`}
                 >

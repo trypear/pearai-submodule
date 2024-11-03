@@ -24,21 +24,21 @@ export default function Features({ onNext }: { onNext: () => void }) {
   const features = [
     {
       icon: <Sparkles className="h-6 w-6" />,
-      title: "PearAI Assistant",
+      title: "PearAI Chat",
       description:
-        "Ask Assistant to help you understand code and make changes, powered by Continue.",
+        "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue.",
       video: getAssetPath("high-def.png"),
     },
     {
       icon: <Bot className="h-6 w-6" />,
-      title: "PearAI Create",
-      description: "Generate code and solutions with AI assistance.",
+      title: "PearAI Creator",
+      description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider.",
       video: getAssetPath("pearai-@file.gif"),
     },
     {
       icon: <Search className="h-6 w-6" />,
       title: "PearAI Search",
-      description: "Search through your codebase intelligently.",
+      description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity.",
       video: getAssetPath("pearai-CMD+I.gif"),
     },
   ];
