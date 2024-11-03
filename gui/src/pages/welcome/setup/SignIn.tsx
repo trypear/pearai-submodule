@@ -19,10 +19,26 @@ export default function SignIn({
     return Promise.resolve();
   });
 
+  const handleSignIn = () => {
+    ideMessenger.post("pearaiLogin", undefined);
+  };
+
+  const handleSignUp = () => {
+    ideMessenger.post("openUrl", "https://trypear.ai/signup");
+  };
+
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'ArrowRight') {
-        e.preventDefault();
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !event.ctrlKey && !event.metaKey) {
+        // Regular Enter for Sign In
+        handleSignIn();
+      } else if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+        // Ctrl/Cmd + Enter for Sign Up
+        event.preventDefault();
+        handleSignUp();
+      } else if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowRight') {
+        // Ctrl/Cmd + ArrowRight for Skip
+        event.preventDefault();
         ideMessenger.post("markNewOnboardingComplete", undefined);
         onNext();
       }
@@ -47,20 +63,28 @@ export default function SignIn({
 
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6 mb-12">
             <Button
-              className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover p-5 md:p-6 text-base md:text-lg cursor-pointer"
-              onClick={() => ideMessenger.post("pearaiLogin", undefined)}
+              className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative"
+              onClick={handleSignIn}
             >
-              Sign in
+              <div className="flex items-center justify-between w-full gap-2">
+                <div className="w-8" />
+                <span>Sign in</span>
+                <kbd className="flex items-center font-mono text-sm justify-center bg-[var(--vscode-input-background)] min-w-[4rem]">Enter</kbd>
+              </div>
             </Button>
 
-            <Button className="w-[250px] md:w-[280px] bg-input  border border-input p-5 md:p-6 text-base md:text-lg cursor-pointer">
-              <a
-                href="https://trypear.ai/signup"
-                target="_blank"
-                className="text-foreground hover:text-button-foreground no-underline"
-              >
-                Sign up
-              </a>
+            <Button 
+              className="w-[250px] md:w-[280px] bg-input text-foreground border border-input py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative"
+              onClick={handleSignUp}
+            >
+              <div className="flex items-center justify-between w-full gap-2">
+                <div className="w-8" />
+                <span>Sign up</span>
+                <span className="flex items-center gap-1">
+                  <kbd className="flex items-center font-mono text-sm justify-center bg-background min-w-[1rem]">{getMetaKeyLabel()}</kbd>
+                  <kbd className="flex items-center font-mono text-sm justify-center bg-background min-w-[3rem]">Enter</kbd>
+                </span>
+              </div>
             </Button>
           </div>
 
@@ -71,7 +95,7 @@ export default function SignIn({
             }}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <kbd className="flex text-xs cursor-pointer items-center font-mono bg-[var(--vscode-input-background)] min-w-[1rem]">Skip</kbd>
+            <kbd className="flex cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Skip</kbd>
             <kbd className="flex items-start justify-center w-4 h-4 text-base cursor-pointer bg-[var(--vscode-input-background)] min-w-[1rem]">{getMetaKeyLabel()}</kbd>
             <kbd className="flex justify-center w-4 h-4 text-base cursor-pointer items-center font-mono bg-[var(--vscode-input-background)] min-w-[1rem]"><ArrowRightIcon className="w-3 h-3" /></kbd>
           </div>
