@@ -1,11 +1,26 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { FolderOpen } from "lucide-react";
 
 export default function FinalStep({ onBack }: { onBack: () => void }) {
+
+  const handleOpenFolder = () => {
+    ideMessenger.post("pearWelcomeOpenFolder", undefined);
+  };
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        handleOpenFolder();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
   const ideMessenger = useContext(IdeMessengerContext);
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
@@ -25,13 +40,17 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
 
           <div className="flex flex-col items-center gap-3 mb-24">
             <Button
-              className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover p-5 md:p-6 text-base md:text-lg cursor-pointer mb-16"
-              onClick={() =>
-                ideMessenger.post("pearWelcomeOpenFolder", undefined)
-              }
+              className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative"
+              onClick={handleOpenFolder}
             >
-              <FolderOpen className="w-5 h-5 pr-2" />
-              Open a folder
+              <div className="flex items-center justify-between w-full gap-2">
+                <div className="w-8" />
+                <div className="flex items-center gap-2">
+                  <FolderOpen className="w-5 h-5" />
+                  <span>Open a folder</span>
+                </div>
+                <kbd className="flex items-center font-mono text-sm justify-center bg-[var(--vscode-input-background)] min-w-[1rem]">Enter</kbd>
+              </div>
             </Button>
           </div>
         </div>
