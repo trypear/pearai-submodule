@@ -34,6 +34,7 @@ import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
+import { isValidFilePath } from "core/util";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -511,8 +512,14 @@ const commandsMap: (
       captureCommandTelemetry("sendToTerminal");
       ide.runCommand(text);
     },
-    "pearai.newSession": () => {
+    "pearai.newSession": async () => {
+      const currentFile = await ide.getCurrentFile();
       sidebar.webviewProtocol?.request("newSession", undefined);
+      if (currentFile) {
+        if (currentFile && isValidFilePath(currentFile)) {
+          sidebar.webviewProtocol?.request("activeEditorChange", { filepath: currentFile });
+        }
+      }
     },
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, [
