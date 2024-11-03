@@ -31,6 +31,9 @@ export default function ImportExtensions({
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !isImporting) {
         handleImport();
+      } else if (event.key === ' ' && !isImporting) {
+        event.preventDefault();
+        onNext();
       }
     };
 
@@ -43,7 +46,7 @@ export default function ImportExtensions({
       <div className="w-full flex flex-col h-screen">
         <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
           <h2 className="text-xl md:text-2xl lg:text-3xl font-bold text-foreground mb-6 text-center">
-            Import your extensions <br/> and user settings from VSCode
+            Import your extensions <br /> and user settings from VSCode
           </h2>
           <div className="flex items-center justify-center gap-8 mb-8">
             <img src={getLogoPath("vscode.svg")} className="w-[100px] h-[100px]" alt="VS Code" />
@@ -55,7 +58,7 @@ export default function ImportExtensions({
             <Button
               disabled={isImporting}
               className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer transition-all duration-300"
-              onClick={handleImport} 
+              onClick={handleImport}
             >
               <div className="flex items-center justify-between w-full gap-2">
                 {isImporting ? (
@@ -92,13 +95,10 @@ export default function ImportExtensions({
             </Button>
 
             {!isImporting ? (
-              <div
+              <kbd
                 onClick={onNext}
-                className="text-sm text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] underline cursor-pointer transition-colors"
-              >
-                Skip
-              </div>
-            ): (
+               className="flex mt-2 cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Space to Skip</kbd>
+            ) : (
               <div>Import in progress! You can leave this page</div>
             )
             }

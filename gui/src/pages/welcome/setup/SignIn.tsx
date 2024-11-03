@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 
@@ -17,6 +17,19 @@ export default function SignIn({
     onNext();
     return Promise.resolve();
   });
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === ' ') {
+        event.preventDefault();
+        ideMessenger.post("markNewOnboardingComplete", undefined);
+        onNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
 
   return (
     <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
@@ -55,9 +68,8 @@ export default function SignIn({
               ideMessenger.post("markNewOnboardingComplete", undefined);
               onNext();
             }}
-            className="text-sm underline cursor-pointer text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] transition-colors"
           >
-            Skip
+            <kbd className="flex cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Space to Skip</kbd>
           </div>
         </div>
       </div>

@@ -58,11 +58,6 @@ export default function Welcome() {
       case 1:
           return <SetupPage onNext={handleNextStep} />;
       case 2:
-        if (!isUserSignedIn) {
-          return <SignIn onNext={handleNextStep} />;
-        }
-        return <FinalStep onBack={handleBackStep} />;
-      case 2:
         return <FinalStep onBack={handleBackStep} />;
       default:
         return null;

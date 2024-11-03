@@ -250,7 +250,7 @@ const commandsMap: (
       importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
-      // vscode.window.showInformationMessage("Marking New onboarding complete");
+      vscode.window.showInformationMessage("Marking New onboarding complete");
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
     },
     "pearai.showInteractiveContinueTutorial": async () => {

@@ -29,6 +29,9 @@ export default function AddToPath({
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !isAdding) {
         handleAddToPath();
+      } else if (event.key === ' ') {
+        event.preventDefault();
+        onNext();
       }
     };
 
@@ -116,12 +119,9 @@ export default function AddToPath({
             </Button>
 
             {!pathAdded ? (
-              <div
+              <kbd
                 onClick={onNext}
-                className="text-sm hover:text-[var(--vscode-foreground)] underline cursor-pointer transition-colors"
-              >
-                Skip
-              </div>
+                className="flex mt-2 cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Space to Skip</kbd>
             ):
             (
               <div className="text-sm text-muted-foreground text-center">
