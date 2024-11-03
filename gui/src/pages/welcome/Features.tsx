@@ -106,13 +106,13 @@ export default function Features({ onNext }: { onNext: () => void }) {
   };
 
   return (
-    <div className="flex w-full overflow-hidden bg-background text-foreground">
+    <div className="flex w-full overflow-hidden text-foreground">
       <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
         <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6">
+          <div className="p-6 space-y-6 pt-8">
             <div>
               <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
-                Welcome to PearAI.
+                Welcome to PearAI
               </h2>
               <p className="text-sm text-muted-foreground">
                 Speed up your development process by seamlessly integrating AI

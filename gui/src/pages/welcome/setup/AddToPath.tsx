@@ -6,10 +6,8 @@ import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useContext, useState } from "react";
 
 export default function AddToPath({
-  onBack,
   onNext,
 }: {
-  onBack: () => void;
   onNext: () => void;
 }) {
   const ideMessenger = useContext(IdeMessengerContext);
@@ -17,25 +15,16 @@ export default function AddToPath({
   return (
     <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-full flex flex-col h-screen">
-        {/* dont show back button, otherwise user will try to import extensions twice*/}
-        {/* <div
-          onClick={onBack}
-          className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] cursor-pointer transition-colors group"
-        >
-          <ArrowLongRightIcon className="w-4 h-4 rotate-180" />
-          <span className="text-sm">Back</span>
-        </div> */}
-
-        <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
+        <div className="flex-1 flex flex-col items-center justify-center">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-            Add Pear to PATH
+            Add PearAI to PATH
           </h2>
 
-          <p className="text-muted-foreground text-sm md:text-base mb-12">
-            Access Pear directly from your terminal
+          <p className="text-muted-foreground text-sm md:text-base">
+            Access PearAI directly from your terminal
           </p>
 
-          <div className="w-full max-w-2xl mb-12 rounded-lg overflow-hidden border border-solid border-input shadow-sm">
+          <div className="w-full max-w-2xl mb-8 rounded-lg overflow-hidden border border-solid border-input shadow-sm">
             <div className="bg-input p-2 border-b border-input flex items-center gap-2">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-[var(--vscode-terminal-ansiRed)]"></div>
@@ -56,20 +45,12 @@ export default function AddToPath({
                   $&nbsp;
                 </span>
                 <span className="text-[var(--vscode-terminal-ansiCyan)]">
-                  pear .
+                  pearai .
                 </span>
                 <span className="ml-1 animate-pulse">▋</span>
               </div>
             </div>
           </div>
-
-          {pathAdded && (
-            <div className="text-sm text-muted-foreground text-center mb-10">
-              <span className="font-bold">
-                Added to PATH
-              </span>
-            </div>
-          )}
 
           <div className="flex flex-col items-center gap-4">
             <Button
@@ -86,12 +67,19 @@ export default function AddToPath({
               {pathAdded ? "Next" : "Add to PATH"}
             </Button>
 
-            {!pathAdded && (
+            {!pathAdded ? (
               <div
                 onClick={onNext}
-                className="text-sm text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] underline cursor-pointer transition-colors"
+                className="text-sm hover:text-[var(--vscode-foreground)] underline cursor-pointer transition-colors"
               >
-                Skip adding to PATH
+                Skip
+              </div>
+            ):
+            (
+              <div className="text-sm text-muted-foreground text-center">
+                <span>
+                  PearAI added to PATH
+                </span>
               </div>
             )}
           </div>
