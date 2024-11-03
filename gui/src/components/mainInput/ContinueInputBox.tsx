@@ -67,7 +67,7 @@ const pulse = keyframes`
 const LoadingContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   margin-top: 8px;
   color: ${lightGray};
   font-size: ${getFontSize() - 3}px;
@@ -79,6 +79,7 @@ const DotsContainer = styled.div`
   display: flex;
   gap: 4px;
   align-items: center;
+  margin-top 8px;
 `;
 
 const Dot = styled.div<{ delay: number }>`
@@ -88,7 +89,7 @@ const Dot = styled.div<{ delay: number }>`
   border-radius: 50%;
   animation: ${wave} 1.5s ease-in-out infinite;
   animation-delay: ${props => props.delay}s;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -202,7 +203,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
               <Dot key={i} delay={i * 0.2} />
             ))}
           </DotsContainer>
-          <span>Responding...</span>
+          <span style={{ marginTop: "4px" }}>Responding...</span>
         </LoadingContainer>
       )}
       <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>
