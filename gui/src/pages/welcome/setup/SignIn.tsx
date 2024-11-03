@@ -8,10 +8,8 @@ import { useWebviewListener } from "@/hooks/useWebviewListener";
 
 export default function SignIn({
   onNext,
-  onBack,
 }: {
   onNext: () => void;
-  onBack: () => void;
 }) {
   const ideMessenger = useContext(IdeMessengerContext);
 
