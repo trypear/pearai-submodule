@@ -10,14 +10,6 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-full flex flex-col h-screen">
-        <div
-          onClick={onBack}
-          className="absolute top-4 left-4 md:top-6 md:left-6 lg:top-8 lg:left-8 flex items-center gap-2 text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] cursor-pointer transition-colors group"
-        >
-          <ArrowLongRightIcon className="w-4 h-4 rotate-180" />
-          <span className="text-sm">Back</span>
-        </div>
-
         <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
           <div className="w-24 h-24 md:w-32 md:h-32 mb-8 flex items-center justify-center">
             <img
@@ -28,11 +20,11 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
           </div>
 
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
-            You are all set!
+            You're all set!
           </h2>
 
-          <p className="text-muted-foreground text-base md:text-lg max-w-[500px] text-center mb-12">
-            Start using PearAI by opening a folder and remember CMD/CTRL + L
+          <p className="text-muted-foreground text-base md:text-lg max-w-[500px] text-center mb-4">
+            Start using PearAI by opening a folder:
           </p>
 
           <div className="flex flex-col items-center gap-3">
@@ -55,7 +47,7 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
                 href="https://x.com/trypearai"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-[250px] md:w-[200px] flex text-foreground hover:text-button-foreground no-underline items-center justify-center gap-2 p-4 text-white bg-[#000000] transition-colors rounded-md text-sm md:text-base cursor-pointer"
+                className="text-sm text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] underline cursor-pointer transition-colors"
               >
                 <img
                   src={`${window.vscMediaUrl}/assets/twitter-x.svg`}
@@ -69,7 +61,7 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
                 href="https://discord.gg/7QMraJUsQt"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-[250px] md:w-[200px] flex text-button-foreground hover:text-button-foreground no-underline items-center justify-center gap-2 p-4 text-white bg-[#5865F2] hover:bg-[#4752C4] transition-colors rounded-md text-sm md:text-base cursor-pointer"
+                className="text-sm text-[var(--vscode-descriptionForeground)] hover:text-[var(--vscode-foreground)] underline cursor-pointer transition-colors"
               >
                 <img
                   src={`${window.vscMediaUrl}/assets/discord.svg`}
