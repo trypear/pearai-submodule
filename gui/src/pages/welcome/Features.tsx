@@ -105,6 +105,17 @@ export default function Features({ onNext }: { onNext: () => void }) {
     }
   };
 
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        handleNextClick();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentFeature]);
+
   return (
     <div className="flex w-full overflow-hidden text-foreground">
       <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
@@ -166,10 +177,11 @@ export default function Features({ onNext }: { onNext: () => void }) {
 
         <div className="p-6 border-t border-input shrink-0">
           <Button
-            className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer"
+            className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer relative"
             onClick={handleNextClick}
           >
-            Next
+            <span className="absolute left-1/2 -translate-x-1/2">Next</span>
+            <span className="ml-auto"><kbd className="flex items-center font-mono px-2 text-sm justify-center bg-[var(--vscode-input-background)]">Enter</kbd></span>
           </Button>
         </div>
       </div>

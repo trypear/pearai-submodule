@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 
 export default function AddToPath({
   onNext,
@@ -12,7 +12,30 @@ export default function AddToPath({
 }) {
   const ideMessenger = useContext(IdeMessengerContext);
   const [pathAdded, setPathAdded] = useState(false);
- const [isAdding, setIsAdding] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAddToPath = () => {
+    if (!isAdding) {
+      setIsAdding(true);
+      ideMessenger.post("pearInstallCommandLine", undefined);
+      setTimeout(() => {
+        setPathAdded(true);
+        onNext();
+      }, 2000);
+    }
+  };
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !isAdding) {
+        handleAddToPath();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isAdding]);
+
   return (
     <div className="step-content flex w-full overflow-hidden bg-background text-foreground">
       <div className="w-full flex flex-col h-screen">
@@ -55,21 +78,12 @@ export default function AddToPath({
 
           <div className="flex flex-col items-center gap-4">
             <Button
-              className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer"
-              onClick={() => {
-                if (!isAdding) {
-                  setIsAdding(true);
-                  ideMessenger.post("pearInstallCommandLine", undefined);
-                  setTimeout(() => {
-                    setPathAdded(true);
-                    onNext();
-                  }, 2000);
-                }
-              }}
+              className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
+              onClick={handleAddToPath}
             >
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-between w-full gap-2">
                 {isAdding ? (
-                  <>
+                  <div className="flex items-center justify-center w-full gap-2">
                     <svg
                       className="animate-spin h-5 w-5 text-button-foreground"
                       fill="none"
@@ -90,9 +104,13 @@ export default function AddToPath({
                       />
                     </svg>
                     <span>Adding...</span>
-                  </>
+                  </div>
                 ) : (
-                  "Add to PATH"
+                  <>
+                    <div className="w-8" /> {/* Spacer to balance the button */}
+                    <span>Add to PATH</span>
+                    <kbd className="flex items-center font-mono px-2 text-sm justify-center bg-[var(--vscode-input-background)] min-w-[2rem]">Enter</kbd>
+                  </>
                 )}
               </div>
             </Button>

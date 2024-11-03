@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 
 const getLogoPath = (assetName: string) => {
@@ -24,8 +24,19 @@ export default function ImportExtensions({
     // Wait 2 seconds before proceeding
     setTimeout(() => {
       onNext();
-    }, 2000);
+    }, 3000);
   };
+
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !isImporting) {
+        handleImport();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isImporting]); // Include isImporting in dependencies to prevent import when already in progress
 
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
@@ -43,12 +54,12 @@ export default function ImportExtensions({
           <div className="flex flex-col items-center gap-4">
             <Button
               disabled={isImporting}
-              className="w-[200px] text-button-foreground bg-button hover:bg-button-hover p-4 md:p-5 lg:p-6 text-sm md:text-base cursor-pointer transition-all duration-300"
-              onClick={handleImport}
+              className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer transition-all duration-300"
+              onClick={handleImport} 
             >
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-between w-full gap-2">
                 {isImporting ? (
-                  <>
+                  <div className="flex items-center justify-center w-full gap-2">
                     <svg
                       className="animate-spin h-5 w-5 text-button-foreground"
                       fill="none"
@@ -69,9 +80,13 @@ export default function ImportExtensions({
                       />
                     </svg>
                     <span>Importing...</span>
-                  </>
+                  </div>
                 ) : (
-                  "Import"
+                  <>
+                    <div className="w-8" /> {/* Spacer to balance the button */}
+                    <span>Import</span>
+                    <kbd className="flex items-center font-mono text-sm justify-center bg-[var(--vscode-input-background)] min-w-[1rem]">Enter</kbd>
+                  </>
                 )}
               </div>
             </Button>
