@@ -339,7 +339,6 @@ const commandsMap: (
       await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
     "pearai.startOnboarding": async () => {
-      console.log("FIRST PEARAI LAUNCH");
       await vscode.commands.executeCommand("pearai.showOverlay");
     },
     "pearai.developer.restFirstLaunch": async () => {
@@ -575,7 +574,8 @@ const commandsMap: (
       );
     },
     "pearai.aiderMode": async () => {
-      await openAiderPanel(core, sidebar, extensionContext);
+      //await openAiderPanel(core, sidebar, extensionContext);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
     "pearai.aiderCtrlC": async () => {
       await aiderCtrlC(core);
@@ -586,8 +586,9 @@ const commandsMap: (
     "pearai.refreshAiderProcessState": async () => {
       await refreshAiderProcessState(core);
     },
-    "pearai.perplexityMode": () => {
-      handlePerplexityMode(sidebar, extensionContext);
+    "pearai.perplexityMode": async () => {
+      // handlePerplexityMode(sidebar, extensionContext);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID)
     },
     "pearai.addPerplexityContext": (msg) => {
       const fullScreenTab = getFullScreenTab();
