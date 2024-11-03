@@ -285,6 +285,11 @@ function GUI() {
     [loadMostRecentChat],
   );
 
+  useWebviewListener("resetInteractiveContinueTutorial", async () => {
+    setLocalStorage("showTutorialCard", true);
+    dispatch(setShowInteractiveContinueTutorial(true));
+  });
+
   useWebviewListener(
     "showInteractiveContinueTutorial",
     async () => {
