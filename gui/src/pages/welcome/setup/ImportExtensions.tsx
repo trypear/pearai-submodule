@@ -1,9 +1,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
+import { ArrowLongRightIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { useContext, useState, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { getMetaKeyLabel } from "@/util";
 
 const getLogoPath = (assetName: string) => {
   return `${window.vscMediaUrl}/logos/${assetName}`;
@@ -31,7 +32,7 @@ export default function ImportExtensions({
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !isImporting) {
         handleImport();
-      } else if (event.key === ' ' && !isImporting) {
+      } else if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowRight' && !isImporting) {
         event.preventDefault();
         onNext();
       }
@@ -95,9 +96,11 @@ export default function ImportExtensions({
             </Button>
 
             {!isImporting ? (
-              <kbd
-                onClick={onNext}
-               className="flex mt-2 cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Space to Skip</kbd>
+              <div onClick={onNext} className="flex items-center gap-2 cursor-pointer">
+                <kbd className="flex cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Skip</kbd>
+                <kbd className="flex items-start justify-center w-4 h-4 text-base cursor-pointer bg-[var(--vscode-input-background)] min-w-[1rem]">{getMetaKeyLabel()}</kbd>
+                <kbd className="flex justify-center w-4 h-4 text-base cursor-pointer items-center font-mono bg-[var(--vscode-input-background)] min-w-[1rem]"><ArrowRightIcon className="w-3 h-3" /></kbd>
+              </div>
             ) : (
               <div>Import in progress! You can leave this page</div>
             )

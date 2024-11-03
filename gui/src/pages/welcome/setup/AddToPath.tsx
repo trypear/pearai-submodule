@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
-import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
+import { getMetaKeyLabel } from "@/util";
+import { ArrowLongRightIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { useContext, useState, useEffect } from "react";
 
 export default function AddToPath({
@@ -29,7 +30,7 @@ export default function AddToPath({
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !isAdding) {
         handleAddToPath();
-      } else if (event.key === ' ') {
+      } else if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowRight' && !isAdding) {
         event.preventDefault();
         onNext();
       }
@@ -119,9 +120,11 @@ export default function AddToPath({
             </Button>
 
             {!pathAdded ? (
-              <kbd
-                onClick={onNext}
-                className="flex mt-2 cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Space to Skip</kbd>
+              <div onClick={onNext} className="flex items-center gap-2 cursor-pointer">
+                <kbd className="flex cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Skip</kbd>
+                <kbd className="flex items-start justify-center w-4 h-4 text-base cursor-pointer bg-[var(--vscode-input-background)] min-w-[1rem]">{getMetaKeyLabel()}</kbd>
+                <kbd className="flex justify-center w-4 h-4 text-base cursor-pointer items-center font-mono bg-[var(--vscode-input-background)] min-w-[1rem]"><ArrowRightIcon className="w-3 h-3" /></kbd>
+              </div>
             ):
             (
               <div className="text-sm text-muted-foreground text-center">

@@ -1,10 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
+import { ArrowLongRightIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
+import { getMetaKeyLabel } from "@/util";
 
 export default function SignIn({
   onNext,
@@ -19,9 +20,9 @@ export default function SignIn({
   });
 
   useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === ' ') {
-        event.preventDefault();
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'ArrowRight') {
+        e.preventDefault();
         ideMessenger.post("markNewOnboardingComplete", undefined);
         onNext();
       }
@@ -68,8 +69,11 @@ export default function SignIn({
               ideMessenger.post("markNewOnboardingComplete", undefined);
               onNext();
             }}
+            className="flex items-center gap-2 cursor-pointer"
           >
-            <kbd className="flex cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Space to Skip</kbd>
+            <kbd className="flex text-xs cursor-pointer items-center font-mono bg-[var(--vscode-input-background)] min-w-[1rem]">Skip</kbd>
+            <kbd className="flex items-start justify-center w-4 h-4 text-base cursor-pointer bg-[var(--vscode-input-background)] min-w-[1rem]">{getMetaKeyLabel()}</kbd>
+            <kbd className="flex justify-center w-4 h-4 text-base cursor-pointer items-center font-mono bg-[var(--vscode-input-background)] min-w-[1rem]"><ArrowRightIcon className="w-3 h-3" /></kbd>
           </div>
         </div>
       </div>
