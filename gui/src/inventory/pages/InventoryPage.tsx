@@ -21,7 +21,7 @@ interface AITool {
   icon: string;
   whenToUse: ReactElement;
   strengths: ReactElement[];
-  weaknesses: ReactElement[];
+  weaknesses?: ReactElement[];
   enabled: boolean;
   comingSoon?: boolean;
 }
@@ -49,7 +49,6 @@ const initialTools: AITool[] = [
       <span>Also good for non-coding specific questions</span>,
       <span>Uses less credits than other tools</span>,
     ],
-    weaknesses: [<span>Not specialized for pure code generation</span>],
     enabled: true,
   },
   {
@@ -75,15 +74,6 @@ const initialTools: AITool[] = [
         suggestions
       </span>,
     ],
-    weaknesses: [
-      <span>
-        The flexibility also means it requires more human intervention
-      </span>,
-      <span>
-        The <kbd>Apply</kbd> button may not work as expected in some cases,
-        requiring manual copy-pasting
-      </span>,
-    ],
     enabled: true,
   },
   {
@@ -104,9 +94,6 @@ const initialTools: AITool[] = [
       <span>Low latency response times</span>,
       <span>Predicts where your cursor should go next</span>
     ],
-    weaknesses: [
-      <span>Packaged as a standalone extension, users have to sign into Supermaven separately when using it within PearAI</span>
-    ],
     enabled: true
   },
   {
@@ -126,12 +113,6 @@ const initialTools: AITool[] = [
       <span>Automated refactoring</span>,
       <span>Lower level of human intervention needed</span>,
     ],
-    weaknesses: [
-      <span>
-        Less control over code changes during generation as they are instantly
-        applied
-      </span>,
-    ],
     enabled: true,
   },
   {
@@ -148,10 +129,6 @@ const initialTools: AITool[] = [
       <span>Creative image generation</span>,
       <span>Wide range of styles</span>,
       <span>Quick results</span>,
-    ],
-    weaknesses: [
-      <span>May misinterpret complex prompts</span>,
-      <span>Limited control over specific details</span>,
     ],
     enabled: false,
     comingSoon: true,
@@ -176,13 +153,6 @@ const initialTools: AITool[] = [
     strengths: [
       <span>Intelligent memory of your coding profile</span>,
       <span>Increase in accuracy of results due to personalization</span>,
-    ],
-    weaknesses: [
-      <span>
-        Requires you to remove expired memories manually that are no longer
-        relevant
-      </span>,
-      <span>Requires PearAI server due to essential custom logic</span>,
     ],
     enabled: false,
     comingSoon: true,
@@ -398,7 +368,6 @@ export default function AIToolInventory() {
                       <li key={index}>{strength}</li>
                     ))}
                   </ul>
-                  <h3 className="font-semibold mb-1">Weaknesses:</h3>
                   <ul className="list-disc mb-2 pl-4">
                     {focusedTool.weaknesses.map((weakness, index) => (
                       <li key={index}>{weakness}</li>
