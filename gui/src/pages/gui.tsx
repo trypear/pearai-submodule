@@ -159,7 +159,9 @@ function GUI() {
   const [stepsOpen, setStepsOpen] = useState<(boolean | undefined)[]>([]);
   // If getting this from redux state, it is false. So need to get from localStorage directly.
   // This is likely because it becomes true only after user onboards, upon which the local storage is updated.
-  const showTutorialCard = getLocalStorage("showTutorialCard");
+  // On first launch, showTutorialCard will be null, so we want to show it (true)
+  // Once it's been shown and closed, it will be false in localStorage
+  const showTutorialCard = getLocalStorage("showTutorialCard") ?? (setLocalStorage("showTutorialCard", true), true);
   useEffect(() => {
     // Set the redux state to the updated localStorage value (true)
     dispatch(setShowInteractiveContinueTutorial(showTutorialCard ?? false));
