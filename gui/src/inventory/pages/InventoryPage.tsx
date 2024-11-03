@@ -88,34 +88,26 @@ const initialTools: AITool[] = [
   },
   {
     id: "3",
-    name: "Memory (mem0)",
-    description: (
-      <span>
-        Personalization: let the AI remember your past thoughts (coming soon)
-      </span>
-    ),
-    icon: "📝",
+    name: "Autocomplete (Supermaven)",
+    description: <span>Ultra-fast code completion and autocomplete suggestions. Recommended by PearAI as a standalone extension.</span>,
+    icon: "⚡",
     whenToUse: (
       <span>
-        When you want the AI to remember insights from past prompts you've given
-        it. It can automatically remember details like what version of for e.g.
-        Python you're using, or other specific details of your codebase, like
-        your coding styles, or your expertise level
+        When you need instant code completions while typing. Autocomplete offers
+        real-time suggestions and completes your code with minimal latency,
+        perfect for maintaining flow while coding.
       </span>
     ),
     strengths: [
-      <span>Intelligent memory of your coding profile</span>,
-      <span>Increase in accuracy of results due to personalization</span>,
+      <span>Lightning-fast completions</span>,
+      <span>Context-aware suggestions</span>,
+      <span>Low latency response times</span>,
+      <span>Predicts where your cursor should go next</span>
     ],
     weaknesses: [
-      <span>
-        Requires you to remove expired memories manually that are no longer
-        relevant
-      </span>,
-      <span>Requires PearAI server due to essential custom logic</span>,
+      <span>Packaged as a standalone extension, users have to sign into Supermaven separately when using it within PearAI</span>
     ],
-    enabled: false,
-    comingSoon: true,
+    enabled: true
   },
   {
     id: "4",
@@ -164,9 +156,41 @@ const initialTools: AITool[] = [
     enabled: false,
     comingSoon: true,
   },
+  {
+    id: "6",
+    name: "Memory (mem0)",
+    description: (
+      <span>
+        Personalization: let the AI remember your past thoughts (coming soon)
+      </span>
+    ),
+    icon: "📝",
+    whenToUse: (
+      <span>
+        When you want the AI to remember insights from past prompts you've given
+        it. It can automatically remember details like what version of for e.g.
+        Python you're using, or other specific details of your codebase, like
+        your coding styles, or your expertise level
+      </span>
+    ),
+    strengths: [
+      <span>Intelligent memory of your coding profile</span>,
+      <span>Increase in accuracy of results due to personalization</span>,
+    ],
+    weaknesses: [
+      <span>
+        Requires you to remove expired memories manually that are no longer
+        relevant
+      </span>,
+      <span>Requires PearAI server due to essential custom logic</span>,
+    ],
+    enabled: false,
+    comingSoon: true,
+  },
+
 ];
 
-const suggestedBuild = ["1", "2", "4"]; // IDs of suggested tools
+const suggestedBuild = ["1", "2", "4", "6"]; // IDs of suggested tools
 
 function AIToolCard({
   tool,
