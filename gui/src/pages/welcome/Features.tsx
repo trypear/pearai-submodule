@@ -181,7 +181,6 @@ export default function Features({ onNext }: { onNext: () => void }) {
             onClick={handleNextClick}
           >
             <span className="absolute left-1/2 -translate-x-1/2">Next</span>
-            <span className="ml-auto"><kbd className="flex items-center font-mono px-2 text-sm justify-center bg-[var(--vscode-input-background)]">Enter</kbd></span>
           </Button>
         </div>
       </div>

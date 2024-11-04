@@ -30,8 +30,6 @@ export const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ onBack, showBack =
         <ArrowLongRightIcon className="w-5 h-5 rotate-180" />
         <span className="text-base text-center mx-2">Back</span>
         <span className="flex items-center gap-1 text-base">
-            <kbd className="flex items-start justify-center w-4 h-4 text-base">{getMetaKeyLabel()}</kbd>
-            <kbd className="flex items-center justify-center w-4 h-4"><ArrowLeftIcon className="w-3 h-3" /></kbd>
         </span>
     </div>
   );

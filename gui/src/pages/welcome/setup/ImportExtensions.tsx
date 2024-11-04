@@ -87,9 +87,7 @@ export default function ImportExtensions({
                   </div>
                 ) : (
                   <>
-                    <div className="w-8" /> {/* Spacer to balance the button */}
-                    <span>Import</span>
-                    <kbd className="flex items-center font-mono text-sm justify-center bg-[var(--vscode-input-background)] min-w-[1rem]">Enter</kbd>
+                    <span className="text-center w-full">Import</span>
                   </>
                 )}
               </div>
@@ -97,9 +95,7 @@ export default function ImportExtensions({
 
             {!isImporting ? (
               <div onClick={onNext} className="flex items-center gap-2 cursor-pointer">
-                <kbd className="flex cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Skip</kbd>
-                <kbd className="flex items-start justify-center w-4 h-4 text-base cursor-pointer bg-[var(--vscode-input-background)] min-w-[1rem]">{getMetaKeyLabel()}</kbd>
-                <kbd className="flex justify-center w-4 h-4 text-base cursor-pointer items-center font-mono bg-[var(--vscode-input-background)] min-w-[1rem]"><ArrowRightIcon className="w-3 h-3" /></kbd>
+                <span className="text-center w-full">Skip</span>
               </div>
             ) : (
               <div>Import in progress! You can leave this page</div>

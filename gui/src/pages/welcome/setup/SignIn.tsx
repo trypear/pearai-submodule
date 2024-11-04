@@ -67,23 +67,16 @@ export default function SignIn({
               onClick={handleSignIn}
             >
               <div className="flex items-center justify-between w-full gap-2">
-                <div className="w-8" />
-                <span>Sign in</span>
-                <kbd className="flex items-center font-mono text-sm justify-center bg-[var(--vscode-input-background)] min-w-[4rem]">Enter</kbd>
+                <span className="text-center w-full">Sign In</span>
               </div>
             </Button>
 
-            <Button 
+            <Button
               className="w-[250px] md:w-[280px] bg-input text-foreground border border-input py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative"
               onClick={handleSignUp}
             >
               <div className="flex items-center justify-between w-full gap-2">
-                <div className="w-8" />
-                <span>Sign up</span>
-                <span className="flex items-center gap-1">
-                  <kbd className="flex items-center font-mono text-sm justify-center bg-background min-w-[1rem]">{getMetaKeyLabel()}</kbd>
-                  <kbd className="flex items-center font-mono text-sm justify-center bg-background min-w-[3rem]">Enter</kbd>
-                </span>
+                <span className="text-center w-full">Sign Up</span>
               </div>
             </Button>
           </div>
@@ -95,9 +88,7 @@ export default function SignIn({
             }}
             className="flex items-center gap-2 cursor-pointer"
           >
-            <kbd className="flex cursor-pointer items-center font-mono text-xs bg-[var(--vscode-input-background)] min-w-[1rem]">Skip</kbd>
-            <kbd className="flex items-start justify-center w-4 h-4 text-base cursor-pointer bg-[var(--vscode-input-background)] min-w-[1rem]">{getMetaKeyLabel()}</kbd>
-            <kbd className="flex justify-center w-4 h-4 text-base cursor-pointer items-center font-mono bg-[var(--vscode-input-background)] min-w-[1rem]"><ArrowRightIcon className="w-3 h-3" /></kbd>
+            <span className="text-center w-full">Skip</span>
           </div>
         </div>
       </div>
