@@ -302,7 +302,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
   // Keep track of the last valid content
   const lastContentRef = useRef(editorState);
-  
+
   useEffect(() => {
     if (editorState) {
       lastContentRef.current = editorState;
@@ -1029,7 +1029,6 @@ const TipTapEditor = memo(function TipTapEditor({
   }, []);
 
   const [optionKeyHeld, setOptionKeyHeld] = useState(false);
-
   // Prevent content flash during streaming
   useEffect(() => {
     if (editor && lastContentRef.current) {

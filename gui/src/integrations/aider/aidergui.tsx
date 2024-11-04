@@ -43,6 +43,7 @@ import {
   fallbackRender,
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
+import AiderManualInstallation from "./AiderManualInstallation";
 
 function AiderGUI() {
   const posthog = usePostHog();
@@ -62,8 +63,6 @@ function AiderGUI() {
   const aiderProcessState = useSelector(
     (state: RootState) => state.state.aiderProcessState,
   );
-
-  // console.dir(aiderProcessState.state);
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
   // many users won't reach onboarding screen due to cache. So set it manually,
@@ -199,12 +198,49 @@ function AiderGUI() {
   );
 
   if (aiderProcessState.state !== "ready") {
-    let msg = "";
+    let msg: string | JSX.Element = "";
+    if (aiderProcessState.state === "signedOut") {
+      msg = (
+        <>
+          Please{" "}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              ideMessenger.post("pearaiLogin", undefined);
+            }}
+            className="underline text-blue-300"
+          >
+            sign in
+          </a>{" "}
+          to use PearAI Creator.
+        </>
+      );
+    } 
     if (aiderProcessState.state === "stopped") {
-      msg = "PearAI Creator (Powered By aider) process is not running.";
+      msg = (
+        <>
+          PearAI Creator (Powered By aider) process is not running. Please view{" "}
+          <a 
+            href="https://trypear.ai/creator-troubleshooting" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="underline text-blue-300"
+          >
+            troubleshooting
+          </a>.
+        </>
+      );
     }
     if (aiderProcessState.state === "crashed") {
-      msg = "PearAI Creator (Powered By aider) process has crashed.";
+      msg = (
+        <>
+          PearAI Creator (Powered By aider) process has failed. Please ensure a folder is open, and view troubleshooting{" "}
+          <a href="https://trypear.ai/creator-troubleshooting" target="_blank" rel="noopener noreferrer" className="underline text-blue-300">
+            here
+          </a>.
+        </>
+      );
     }
     if (aiderProcessState.state === "uninstalled") {
       return <AiderManualInstallation />;
@@ -444,9 +480,8 @@ const tutorialContent = {
     copyText: "Make a new FAQ page for my website",
   },
   moreInfo: [
-    "Type '@' to add file context to your request.",
-    "Note that PearAI Creator will create files and make in-line changes for you automatically."
+    "- Type '@' to add file context to your request.",
+    "- Ignore system ```<<< SEARCH REPLACE >>>``` messages. These are for the system to make edits for you automatically."
   ]
-};
-import AiderManualInstallation from "./AiderManualInstallation";
+}
 
