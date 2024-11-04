@@ -23,8 +23,24 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
 
   const ideMessenger = useContext(IdeMessengerContext);
   return (
-    <div className="flex w-full overflow-hidden bg-background text-foreground">
-      <div className="w-full flex flex-col h-screen">
+    <div className="flex w-full overflow-hidden text-foreground">
+
+    <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6 space-y-6 pt-8">
+          <div>
+            <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
+              You're all set!
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Let's get started by opening a folder.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <div className="w-full flex flex-col h-screen relative bg-background">
         <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
           <div className="w-24 h-24 md:w-32 md:h-32 flex items-center justify-center">
             <img
@@ -33,11 +49,9 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
               className="w-full h-full object-contain"
             />
           </div>
-
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
             You're all set!
           </h2>
-
           <div className="flex flex-col items-center gap-3 mb-24">
             <Button
               className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative"
@@ -46,7 +60,7 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
               <div className="flex items-center justify-center w-full gap-2">
                 <div className="flex items-center gap-2">
                   <FolderOpen className="w-5 h-5" />
-                  <span>Open a folder</span>
+                  <span>Open folder</span>
                 </div>
               </div>
             </Button>

@@ -3,6 +3,7 @@ import Features from "./Features";
 import FinalStep from "./FinalStep";
 import SetupPage from "./SetupPage";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { WelcomeHeader } from "./WelcomeHeader";
 
 export default function Welcome() {
   const ideMessenger = useContext(IdeMessengerContext);
@@ -70,6 +71,4 @@ export default function Welcome() {
       {renderStep()}
     </div>
   );}
-import SignIn from "./setup/SignIn";
-import { WelcomeHeader } from "./WelcomeHeader";
 

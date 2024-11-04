@@ -185,7 +185,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
         </div>
       </div>
 
-      <div className="flex-1 relative bg-[var(--vscode-input-background)]">
+      <div className="flex-1 relative bg-background">
         {features.map((feature, index) => (
           <div
             key={index}
