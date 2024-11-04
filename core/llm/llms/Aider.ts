@@ -392,7 +392,7 @@ class Aider extends BaseLLM {
             
             // Customize error message based on authentication state
             let message = model === "pearai_model" && error.message.includes("authentication")
-              ? "Please sign in to use PearAI Creator"
+              ? "Please sign in to use PearAI Creator with hosted servers. You can also opt to use your own API-Key."
               : "PearAI Creator (Powered by aider) failed to start. Please contact PearAI support on Discord.";
 
             vscode.window
