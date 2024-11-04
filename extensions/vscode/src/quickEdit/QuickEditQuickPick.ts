@@ -469,9 +469,7 @@ export class QuickEdit {
         const filteredConfig = {
           ...config,
           models: config.models.filter((model: any) =>
-              !this.BLOCKED_MODELS.some(blocked =>
-                blocked.toLowerCase().includes(model.title.toLowerCase())
-              )
+              !this.BLOCKED_MODELS.some(blocked => this._curModelTitle!.toLowerCase().includes(blocked.toLowerCase()))
           )
       };
 
