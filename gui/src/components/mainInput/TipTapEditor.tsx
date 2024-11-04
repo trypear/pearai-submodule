@@ -158,7 +158,7 @@ interface TipTapEditorProps {
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
-  onContentChange?: (newState: JSONContent) => void;
+  onChange?: (newState: JSONContent) => void;
 }
 
 const TipTapEditor = ({
@@ -168,7 +168,7 @@ const TipTapEditor = ({
   onEnter,
   editorState,
   source = 'continue',
-  onContentChange,
+  onChange,
 }: TipTapEditorProps) => {
   const dispatch = useDispatch();
 
@@ -313,7 +313,7 @@ const TipTapEditor = ({
 
   // Keep track of the last valid content
   const lastContentRef = useRef(editorState);
-  
+
   useEffect(() => {
     if (editorState) {
       lastContentRef.current = editorState;
@@ -889,19 +889,19 @@ const TipTapEditor = ({
       editor.on('transaction', () => {
         const newContent = editor.getJSON();
         lastContentRef.current = newContent;
-        onContentChange?.(newContent);
-  
+        onChange?.(newContent);
+
         // If /edit is typed and no context items are selected, select the first
-        
+
         if (contextItems.length > 0) {
           return;
         }
-  
+
         const codeBlock = newContent.content?.find((el) => el.type === "codeBlock");
         if (!codeBlock) {
           return;
         }
-  
+
         // Search for slashcommand type
         for (const p of newContent.content) {
           if (
@@ -926,7 +926,7 @@ const TipTapEditor = ({
         }
       });
     }
-  }, [editor, onContentChange, contextItems, dispatch]);
+  }, [editor, onChange, contextItems, dispatch]);
 
   // Prevent content flash during streaming
   useEffect(() => {

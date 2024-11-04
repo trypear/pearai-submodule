@@ -219,18 +219,6 @@ function PerplexityGUI() {
                 real-time on the web. Search uses less credits than PearAI Chat,
                 and is perfect for documentation lookups.
               </p>
-              {state.perplexityHistory.length > 0 && (
-                <div className="mt-2">
-                  <NewSessionButton
-                    onClick={() => {
-                      saveSession();
-                    }}
-                    className="mr-auto"
-                  >
-                    Clear chat
-                  </NewSessionButton>
-                </div>
-              )}
             </div>
           </div>
           <StepsDiv>
@@ -399,11 +387,11 @@ function PerplexityGUI() {
 }
 
 const tutorialContent = {
-  goodFor: "searching documentation, debugging errors, quick look-ups",
-  notGoodFor: "direct feature implementations (use PearAI chat instead)",
+  goodFor: "Searching documentation, debugging errors, quick look-ups",
+  notGoodFor: "Direct feature implementations (use PearAI chat instead)",
   example: {
-    text: '"what\'s new in the latest python version?"',
-    copyText: "what's new in the latest python version?",
+    text: '"What\'s new in the latest python version?"',
+    copyText: "What's new in the latest python version?",
   },
 };
 

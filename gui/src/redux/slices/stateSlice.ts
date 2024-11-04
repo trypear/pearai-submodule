@@ -14,7 +14,7 @@ import { stripImages } from "core/llm/images";
 import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
-import { update } from "lodash";
+import { getLocalStorage } from "@/util/localStorage";
 import { AiderState } from "core/llm/llms/Aider";
 
 export const memoizedContextItemsSelector = createSelector(
@@ -127,6 +127,7 @@ type State = {
   mainEditorContent?: JSONContent;
   selectedProfileId: string;
   directoryItems: string;
+  showInteractiveContinueTutorial: boolean;
   aiderProcessState: AiderState;
   indexingState: {
     status: string;
@@ -177,6 +178,7 @@ const initialState: State = {
     progress: 0,
     desc: "",
   }
+  showInteractiveContinueTutorial: getLocalStorage("showTutorialCard") ?? false,
 };
 
 export const stateSlice = createSlice({
@@ -664,6 +666,9 @@ export const stateSlice = createSlice({
         selectedProfileId: payload,
       };
     },
+    setShowInteractiveContinueTutorial: (state, action: PayloadAction<boolean>) => {
+      state.showInteractiveContinueTutorial = action.payload;
+    },
   },
 });
 
@@ -699,6 +704,7 @@ export const {
   consumeMainEditorContent,
   setSelectedProfileId,
   deleteMessage,
-  setIndexingState
+  setIndexingState,
+  setShowInteractiveContinueTutorial,
 } = stateSlice.actions;
 export default stateSlice.reducer;
