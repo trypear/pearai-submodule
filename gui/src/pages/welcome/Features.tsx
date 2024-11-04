@@ -27,19 +27,19 @@ export default function Features({ onNext }: { onNext: () => void }) {
       title: "PearAI Chat",
       description:
         "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue.",
-      video: getAssetPath("high-def.png"),
+      video: getAssetPath("pearai-chat-welcome.mp4"),
     },
     {
       icon: <Bot className="h-6 w-6" />,
       title: "PearAI Creator",
       description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider.",
-      video: getAssetPath("pearai-@file.gif"),
+      video: getAssetPath("pearai-creator-welcome.mp4"),
     },
     {
       icon: <Search className="h-6 w-6" />,
       title: "PearAI Search",
       description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity.",
-      video: getAssetPath("pearai-CMD+I.gif"),
+      video: getAssetPath("pearai-search-welcome.mp4"),
     },
   ];
 
@@ -194,18 +194,16 @@ export default function Features({ onNext }: { onNext: () => void }) {
             }`}
           >
             {currentFeature === index && (
-              <img
-                key={`${feature.title}-${timestamp}`}
-                src={`${feature.video}?t=${timestamp}`}
-                alt={`${feature.title} demonstration`}
-                className={`w-full h-full object-cover transition-opacity duration-300 ${
-                  isLoading ? "opacity-0" : "opacity-100"
-                }`}
-                loading="eager"
-                style={{
-                  willChange: "transform, opacity",
-                }}
-              />
+              <div className="flex items-center justify-center h-full w-full">
+                <video
+                src={`${feature.video}`}
+                  className="rounded-lg max-h-[90%] max-w-[90%] object-contain"
+                  muted
+                  autoPlay
+                  playsInline
+                  loop
+                />
+              </div>
             )}
           </div>
         ))}
