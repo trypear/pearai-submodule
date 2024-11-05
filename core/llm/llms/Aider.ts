@@ -17,6 +17,7 @@ import { getHeaders } from "../../pearaiServer/stubs/headers.js";
 import { execSync } from "child_process";
 import * as os from "os";
 import * as vscode from "vscode";
+import * as pty from 'node-pty';
 
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
@@ -37,7 +38,7 @@ export interface AiderState {
   state: "starting" | "uninstalled" | "ready" |  "stopped" |"crashed" | "signedOut";
 }
 
-class Aider extends BaseLLM {
+export class Aider extends BaseLLM {
   getCurrentDirectory: (() => Promise<string>) | null = null;
   static providerName: ModelProvider = "aider";
   static defaultOptions: Partial<LLMOptions> = {
@@ -49,7 +50,7 @@ class Aider extends BaseLLM {
     },
   };
 
-  public aiderProcess: cp.ChildProcess | null = null;
+  public aiderProcess: pty.IPty | null = null;
   private aiderOutput: string = "";
   private credentials: PearAICredentials;
   private command: string[];
@@ -103,7 +104,7 @@ class Aider extends BaseLLM {
   }
 
   public killAiderProcess(reset: boolean = false): void {
-    if (this.aiderProcess && !this.aiderProcess.killed) {
+    if (this.aiderProcess) {
       console.log("Killing Aider process...");
       this.aiderProcess.kill();
       this.aiderProcess = null;
@@ -114,7 +115,7 @@ class Aider extends BaseLLM {
   }
 
   public aiderCtrlC(): void {
-    if (this.aiderProcess && !this.aiderProcess.killed) {
+    if (this.aiderProcess) {
       console.log("Sending Ctrl+C signal to Aider process...");
       this.sendToAiderChat("\x03"); // Send Ctrl+C to the Aider process
     } else {
@@ -179,7 +180,7 @@ class Aider extends BaseLLM {
     model: string,
     apiKey: string | undefined,
   ): Promise<void> {
-    if (this.aiderProcess && !this.aiderProcess.killed) {
+    if (this.aiderProcess) {
       console.log("Aider process already running");
       this.setAiderState("ready");
       return;
@@ -253,6 +254,10 @@ class Aider extends BaseLLM {
 
   const spawnAiderProcess = async () => {
     try {
+      if (!pty || typeof pty.spawn !== 'function') {
+        throw new Error('node-pty not properly initialized');
+      }
+
       if (IS_WINDOWS) {
         return spawnAiderProcessWindows();
       } else {
@@ -260,77 +265,100 @@ class Aider extends BaseLLM {
       }
     } catch (error) {
       console.error('Error spawning Aider process:', error);
-      return null;
+      this.setAiderState("crashed");
+      throw new Error(`Failed to start Aider process: ${error}`);
     }
   };
 
   const spawnAiderProcessWindows = async () => {
-    const envSetCommands = [
-      "setx PYTHONIOENCODING utf-8",
-      "setx AIDER_SIMPLE_OUTPUT 1",
-      "chcp 65001",
-    ];
+    try {
+      const envSetCommands = [
+        "setx PYTHONIOENCODING utf-8",
+        "setx AIDER_SIMPLE_OUTPUT 1",
+        "chcp 65001",
+      ];
 
-    if (model === "claude-3-5-sonnet-20240620") {
-      envSetCommands.push(`setx ANTHROPIC_API_KEY ${apiKey}`);
-    } else if (model === "gpt-4o") {
-      envSetCommands.push(`setx OPENAI_API_KEY ${apiKey}`);
-    } else {
-      // For pearai_model, we're using the access token
-      const accessToken = this.credentials.getAccessToken();
-      envSetCommands.push(`setx OPENAI_API_KEY ${accessToken}`);
-    }
+      if (model === "claude-3-5-sonnet-20240620") {
+        envSetCommands.push(`setx ANTHROPIC_API_KEY ${apiKey}`);
+      } else if (model === "gpt-4o") {
+        envSetCommands.push(`setx OPENAI_API_KEY ${apiKey}`);
+      } else {
+        // For pearai_model, we're using the access token
+        const accessToken = this.credentials.getAccessToken();
+        envSetCommands.push(`setx OPENAI_API_KEY ${accessToken}`);
+      }
 
-    // Execute setx commands in the background
-    for (const cmd of envSetCommands) {
-      await new Promise((resolve, reject) => {
-        cp.exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
-          if (error) {
-            console.error(`Error executing ${cmd}: ${error}`);
-            reject(error);
-          } else {
-            console.log(`Executed: ${cmd}`);
-            resolve(stdout);
-          }
+      // Execute setx commands in the background
+      for (const cmd of envSetCommands) {
+        await new Promise((resolve, reject) => {
+          cp.exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
+            if (error) {
+              console.error(`Error executing ${cmd}: ${error}`);
+              reject(error);
+            } else {
+              console.log(`Executed: ${cmd}`);
+              resolve(stdout);
+            }
+          });
         });
-      });
-    }
+      }
 
-    // Now spawn Aider in the background
-    return cp.spawn("cmd.exe", ["/c", ...this.command], {
-      stdio: ["pipe", "pipe", "pipe"],
-      cwd: currentDir,
-      env: {
-        ...process.env,
-        PATH: userPath,
-        PYTHONIOENCODING: "utf-8",
-        AIDER_SIMPLE_OUTPUT: "1",
-      },
-      windowsHide: true,
-    });
+      // Explicitly check if pty.spawn is available
+      if (typeof pty.spawn !== 'function') {
+        throw new Error('pty.spawn is not available');
+      }
+
+      return pty.spawn('cmd.exe', ['/c', ...this.command], {
+        name: 'xterm-color',
+        cols: 80,
+        rows: 30,
+        cwd: currentDir,
+        env: {
+          ...process.env,
+          PATH: userPath,
+          PYTHONIOENCODING: 'utf-8',
+          AIDER_SIMPLE_OUTPUT: '1'
+        }
+      });
+    } catch (error) {
+      console.error('Error in spawnAiderProcessWindows:', error);
+      throw error;
+    }
   };
 
   const spawnAiderProcessUnix = () => {
-    if (model.includes("claude")) {
-      this.command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
-    } else if (model.includes("gpt")) {
-      this.command.unshift(`export OPENAI_API_KEY=${apiKey};`);
-    } else {
-      // For pearai_model, we're using the access token
-      const accessToken = this.credentials.getAccessToken();
-      this.command.unshift(`export OPENAI_API_KEY=${accessToken};`);
-    }
+    try {
+      if (model.includes("claude")) {
+        this.command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
+      } else if (model.includes("gpt")) {
+        this.command.unshift(`export OPENAI_API_KEY=${apiKey};`);
+      } else {
+        // For pearai_model, we're using the access token
+        const accessToken = this.credentials.getAccessToken();
+        this.command.unshift(`export OPENAI_API_KEY=${accessToken};`);
+      }
 
-    return cp.spawn(userShell, ["-c", this.command.join(" ")], {
-      stdio: ["pipe", "pipe", "pipe"],
-      cwd: currentDir,
-      env: {
-        ...process.env,
-        PATH: userPath,
-        PYTHONIOENCODING: "utf-8",
-        AIDER_SIMPLE_OUTPUT: "1",
-      },
-    });
+      // Explicitly check if pty.spawn is available
+      if (typeof pty.spawn !== 'function') {
+        throw new Error('pty.spawn is not available');
+      }
+
+      return pty.spawn(userShell, ['-c', this.command.join(' ')], {
+        name: 'xterm-color',
+        cols: 80,
+        rows: 30,
+        cwd: currentDir,
+        env: {
+          ...process.env,
+          PATH: userPath,
+          PYTHONIOENCODING: 'utf-8',
+          AIDER_SIMPLE_OUTPUT: '1'
+        }
+      });
+    } catch (error) {
+      console.error('Error in spawnAiderProcessUnix:', error);
+      throw error;
+    }
   };
 
       const tryStartAider = async () => {
@@ -342,81 +370,31 @@ class Aider extends BaseLLM {
           return;
         }
 
-        if (this.aiderProcess.stdout && this.aiderProcess.stderr) {
-          const timeout = setTimeout(() => {
-            reject(new Error("Aider failed to start within timeout period"));
-          }, 30000); // 30 second timeout
+        const timeout = setTimeout(() => {
+          reject(new Error("Aider failed to start within timeout period"));
+        }, 30000); // 30 second timeout
 
-          this.aiderProcess.stdout.on("data", (data: Buffer) => {
-            this.captureAiderOutput(data);
-            // Look for the prompt that indicates aider is ready
-            const output = data.toString();
-            if (output.endsWith(AIDER_READY_FLAG)) {
-              // Aider's ready prompt
-              console.log("Aider is ready!");
-              this.setAiderState("ready");
-              clearTimeout(timeout);
-              resolve();
-            }
-          });
-
-          this.aiderProcess.stderr.on("data", (data: Buffer) => {
-          // Scanning repo text ends up here, we can maybe include this in the output in the future.
-          // ie "Scanning repo:  15%|█▍        | 151/1024 [00:00<00:03, 242.84it/s]""
-            console.error(`Aider error: ${data.toString()}`);
-          });
-
-          this.aiderProcess.on("close", (code: number | null) => {
-            console.log(`Aider process exited with code ${code}`);
+        this.aiderProcess.onData((data: string) => {
+          this.captureAiderOutput(Buffer.from(data));
+          // Look for the prompt that indicates aider is ready
+          if (data.endsWith(AIDER_READY_FLAG)) {
+            console.log("Aider is ready!");
+            this.setAiderState("ready");
             clearTimeout(timeout);
-            if (code !== 0) {
-              reject(new Error(`Aider process exited with code ${code}`));
-            } else {
-              this.aiderProcess = null;
-              resolve();
-            }
-          });
+            resolve();
+          }
+        });
 
-          this.aiderProcess.on("error", (error: Error) => {
-            console.error(`Error starting Aider: ${error.message}`);
-            
-            // Check if this is an authentication error for pearai_model
-            if (model === "pearai_model" && error.message.includes("authentication")) {
-              this.setAiderState("signedOut");  // Use new signedOut state
-            } else {
-              this.setAiderState("crashed");
-            }
-            
-            clearTimeout(timeout);
-            reject(error);
-            
-            // Customize error message based on authentication state
-            let message = model === "pearai_model" && error.message.includes("authentication")
-              ? "Please sign in to use PearAI Creator with hosted servers. You can also opt to use your own API-Key."
-              : "PearAI Creator (Powered by aider) failed to start. Please contact PearAI support on Discord.";
-
-            vscode.window
-              .showErrorMessage(
-                message,
-                ...(model === "pearai_model" ? ["Sign In"] : []),
-                "PearAI Support (Discord)",
-                "Show Logs",
-              )
-              .then((selection: any) => {
-                if (selection === "Sign In") {
-                  vscode.commands.executeCommand("pearai.login");
-                } else if (selection === "PearAI Support (Discord)") {
-                  vscode.env.openExternal(
-                    vscode.Uri.parse("https://discord.com/invite/7QMraJUsQt"),
-                  );
-                } else if (selection === "Show Logs") {
-                  vscode.commands.executeCommand(
-                    "workbench.action.toggleDevTools",
-                  );
-                }
-              });
-          });
-        }
+        this.aiderProcess.onExit(({ exitCode }) => {
+          console.log(`Aider process exited with code ${exitCode}`);
+          clearTimeout(timeout);
+          if (exitCode !== 0) {
+            reject(new Error(`Aider process exited with code ${exitCode}`));
+          } else {
+            this.aiderProcess = null;
+            resolve();
+          }
+        });
       };
 
       await tryStartAider();
@@ -424,13 +402,9 @@ class Aider extends BaseLLM {
   }
 
   sendToAiderChat(message: string): void {
-    if (
-      this.aiderProcess &&
-      this.aiderProcess.stdin &&
-      !this.aiderProcess.killed
-    ) {
-      const formattedMessage = message.replace(/\n+/g, " ");
-      this.aiderProcess.stdin.write(`${formattedMessage}\n`);
+    if (this.aiderProcess) {
+      const formattedMessage = message.replace(/\n+/g, ' ');
+      this.aiderProcess.write(`${formattedMessage}\n`);
     } else {
       console.error("PearAI Creator (Powered by Aider) process is not running");
       this.setAiderState("stopped");
@@ -549,8 +523,8 @@ class Aider extends BaseLLM {
           }
         }
 
-        // Safety check
-        if (this.aiderProcess?.killed) {
+        // Update safety check
+        if (!this.aiderProcess) {
           this.setAiderState("stopped");
           break;
         }
