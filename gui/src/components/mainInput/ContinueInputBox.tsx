@@ -9,7 +9,7 @@ import { newSession, setMessageAtIndex } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { isBareChatMode } from "../../util/bareChatMode";
 import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
 import { getFontSize } from "../../util";
@@ -112,7 +112,8 @@ interface ContinueInputBoxProps {
   source?: "perplexity" | "aider" | "continue";
 }
 
-function ContinueInputBox({
+
+const ContinueInputBox = memo(function ContinueInputBox({
   isLastUserInput,
   isMainInput,
   onEnter,
@@ -209,6 +210,6 @@ function ContinueInputBox({
       <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>
     </div>
   );
-};
+});
 
 export default ContinueInputBox;
