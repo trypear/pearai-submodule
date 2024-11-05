@@ -546,7 +546,7 @@ const commandsMap: (
 
       if (fullScreenTab && fullScreenPanel) {
         //Full screen open, but not focused - focus it
-        fullScreenPanel.reveal();
+        fullScreenPanel?.reveal();
         return;
       }
 
