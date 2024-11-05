@@ -376,12 +376,12 @@ export class VsCodeExtension {
           return;
         }
         const filepath = event.document.uri.fsPath;
-        this.debouncedNotifyEditorChange(filepath);
+        this.notifyEditorChange(filepath);
       })
     );
 
     this.ide.onDidChangeActiveTextEditor((filepath) => {
-      this.debouncedNotifyEditorChange(filepath || null);
+      this.notifyEditorChange(filepath || null);
     });
 
     startAiderProcess(this.core);
@@ -407,8 +407,4 @@ export class VsCodeExtension {
 
     this.sidebar.webviewProtocol?.request("activeEditorChange", { filepath });
   }
-
-  private debouncedNotifyEditorChange = debounce((filepath: string | null) => {
-    this.notifyEditorChange(filepath);
-  }, 100);
 }
