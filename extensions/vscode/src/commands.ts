@@ -353,7 +353,6 @@ const commandsMap: (
           core.invoke("index/setPaused", false);
         }, 6000);
       }
-
       await vscode.commands.executeCommand("pearai.showOverlay");
       await vscode.commands.executeCommand("pearai.showInteractiveContinueTutorial");
     },
