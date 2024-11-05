@@ -24,7 +24,7 @@ const IS_MAC = PLATFORM === "darwin";
 const IS_LINUX = PLATFORM === "linux";
 const EDIT_FORMAT:string = "normal"; // options ["normal", "udiff"]
 const UDIFF_FLAG = EDIT_FORMAT === "udiff"
-const AIDER_READY_FLAG = UDIFF_FLAG ? "udiff> " : "> ";
+const AIDER_READY_FLAG = UDIFF_FLAG ? "udiff>" : ">";
 const END_MARKER = IS_WINDOWS
   ? (UDIFF_FLAG ? "\r\nudiff> " : "\r\n> ")
   : (UDIFF_FLAG ? "\nudiff> " : "\n> ");
@@ -351,7 +351,9 @@ class Aider extends BaseLLM {
             this.captureAiderOutput(data);
             // Look for the prompt that indicates aider is ready
             const output = data.toString();
-            if (output.endsWith(AIDER_READY_FLAG)) {
+
+            const cleanOutput = output.replace(/[\r\n\s]/g, '');
+            if (cleanOutput === AIDER_READY_FLAG) {
               // Aider's ready prompt
               console.log("Aider is ready!");
               this.setAiderState("ready");
