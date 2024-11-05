@@ -64,13 +64,13 @@ function copyVSCodeSettingsToPearAIDir() {
     });
 
 
-    const exclusions = ['pearai.pearai', 'continue.continue']
+    const exclusions = ['pearai.pearai'];
     const platform = process.platform;
     const arch = process.arch;
 
      // Built-in extensions
     exclusions.push('supermaven');
-    if (platform === "darwin" && arch === "arm64") {
+    if (platform === "darwin") {
         exclusions.push('ms-python.vscode-pylance');
         exclusions.push('ms-python.python');
     }
