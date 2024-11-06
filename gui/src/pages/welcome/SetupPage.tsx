@@ -3,11 +3,12 @@
 import { useState, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Bot, Search } from "lucide-react";
+import { Sparkles, Bot, Search, Download, LogIn, User, Command, Terminal, Import, Move } from "lucide-react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import ImportExtensions from "./setup/ImportExtensions";
 import AddToPath from "./setup/AddToPath";
 import SignIn from "./setup/SignIn";
+import InstallTools from "./setup/InstallTools";
 
 const getLogoPath = (assetName: string) => {
   return `${window.vscMediaUrl}/logos/${assetName}`;
@@ -38,22 +39,28 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
 
   const setupSteps = [
     {
-      icon: <Sparkles className="h-6 w-6" />,
+      icon: <Move className="h-5 w-5" />,
       title: "Import VSCode Extensions",
       description:
         "Automatically import your extensions from VSCode to feel at home.",
       component: <ImportExtensions onNext={handleNextClick} />,
     },
     {
-      icon: <Bot className="h-6 w-6" />,
+      icon: <Terminal className="h-6 w-6" />,
       title: "Add PearAI To Your Path",
       description: "Easily open PearAI from the command line with 'pearai'.",
       component: <AddToPath onNext={handleNextClick} />,
     },
     {
-      icon: <Search className="h-6 w-6" />,
+      icon: <Download className="h-6 w-6" />,
+      title: "Install Additional Tools",
+      description: "Install recommended tools to enhance your PearAI experience.",
+      component: <InstallTools onNext={handleNextClick} />,
+    },
+    {
+      icon: <User className="h-6 w-6" />,
       title: "Sign in",
-      description: "Have PearAI work for free out oof the box by signing in.",
+      description: "Have PearAI work for free out of the box by signing in.",
       component: <SignIn onNext={handleNextClick} />,
     },
   ];
