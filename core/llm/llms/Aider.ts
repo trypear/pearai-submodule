@@ -28,7 +28,7 @@ const AIDER_READY_FLAG = UDIFF_FLAG ? "udiff> " : "> ";
 const END_MARKER = IS_WINDOWS
   ? (UDIFF_FLAG ? "\r\nudiff> " : "\r\n> ")
   : (UDIFF_FLAG ? "\nudiff> " : "\n> ");
-const READY_PROMPT_REGEX = />[^\S\r\n]+[\s\r\n]*$/;
+const READY_PROMPT_REGEX = />[^\S\r\n]*(?:[\r\n]|\s)*(?:\s+)(?:[\r\n]|\s)*$/;
 
 export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
@@ -195,7 +195,7 @@ class Aider extends BaseLLM {
       }
 
       let aiderFlags =
-        "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands --no-auto-lint --map-tokens 2048 --subtree-only"
+        "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands --no-check-update --no-auto-lint --map-tokens 2048 --subtree-only"
       if (UDIFF_FLAG) {
         aiderFlags += " --edit-format udiff";
       }
@@ -209,6 +209,8 @@ class Aider extends BaseLLM {
 
       for (const aiderCommand of aiderCommands) {
         try {
+          console.dir("Running aider command: ")
+          console.dir(aiderCommand)
           await execSync(`${aiderCommand} --version`, { stdio: "ignore" });
           commandFound = true;
 
@@ -321,7 +323,8 @@ class Aider extends BaseLLM {
       const accessToken = this.credentials.getAccessToken();
       this.command.unshift(`export OPENAI_API_KEY=${accessToken};`);
     }
-
+    console.dir("RUNNING AIDER COMMMAND:")
+    console.dir(this.command.join(" "))
     return cp.spawn(userShell, ["-c", this.command.join(" ")], {
       stdio: ["pipe", "pipe", "pipe"],
       cwd: currentDir,
