@@ -34,6 +34,7 @@ import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
+import { attemptInstallExtension } from "./activation/activate";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -250,8 +251,12 @@ const commandsMap: (
       importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
-      vscode.window.showInformationMessage("Marking New onboarding complete");
+      // vscode.window.showInformationMessage("Marking onboarding complete.");
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
+      attemptInstallExtension("supermaven.supermaven");
+    },
+    "pearai.resetInteractiveContinueTutorial": async () => {
+      sidebar.webviewProtocol?.request("resetInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.showInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
@@ -330,18 +335,28 @@ const commandsMap: (
       core.invoke("context/indexDocs", { reIndex: true });
     },
     "pearai.toggleCreator": async () => {
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.toggleSearch": async () => {
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.toggleInventory": async () => {
-      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.startOnboarding": async () => {
+      if (isFirstLaunch(extensionContext)) {
+        setTimeout(() => {
+          core.invoke("index/setPaused", true);
+        }, 200);
+        setTimeout(async () => {
+          core.invoke("index/setPaused", false);
+        }, 6000);
+      }
       await vscode.commands.executeCommand("pearai.showOverlay");
+      await vscode.commands.executeCommand("pearai.showInteractiveContinueTutorial");
     },
     "pearai.developer.restFirstLaunch": async () => {
+      vscode.commands.executeCommand("pearai.resetInteractiveContinueTutorial");
       extensionContext.globalState.update(FIRST_LAUNCH_KEY, false);
       vscode.window.showInformationMessage("Successfully reset PearAI first launch flag, RELOAD WINDOW TO SEE WELCOME PAGE", 'Reload Window')
         .then(selection => {
@@ -575,7 +590,7 @@ const commandsMap: (
     },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.aiderCtrlC": async () => {
       await aiderCtrlC(core);
@@ -588,7 +603,7 @@ const commandsMap: (
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.addPerplexityContext": (msg) => {
       const fullScreenTab = getFullScreenTab();
@@ -817,6 +832,7 @@ const commandsMap: (
       core.invoke("llm/setPearAICredentials", { accessToken: data.accessToken, refreshToken: data.refreshToken });
       sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
+      core.invoke("llm/startAiderProcess", undefined);
       if (isFirstLaunch(extensionContext)) {
         vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
       }
