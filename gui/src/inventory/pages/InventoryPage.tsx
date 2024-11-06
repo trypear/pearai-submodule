@@ -299,7 +299,7 @@ export default function AIToolInventory() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-[73vh] overflow-y-auto bg-background text-foreground">
+      <div className="flex flex-col h-[73vh] overflow-y-auto text-foreground">
         <header className="flex-none mb-6">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold mb-2 ml-4">PearAI Inventory</h1>

@@ -1,4 +1,5 @@
 import InventoryPage from "../inventory/pages/InventoryPage";
+import HomePage from "@/inventory/pages/HomePage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
 import AiderGUI from "@/integrations/aider/aidergui";
@@ -8,6 +9,7 @@ import { useWebviewListener } from "@/hooks/useWebviewListener";
 
 
 const tabs = [
+  { id: "home", name: "Home", component: <HomePage /> },
   { id: "inventory", name: "Inventory", component: <InventoryPage /> },
   {
     id: "aiderMode",
@@ -85,7 +87,7 @@ export default function Inventory() {
   const modifierKey = isMac ? '⌘' : "Ctrl";
 
   return (
-    <div className="h-screen flex flex-col bg-background">
+    <div className={`h-screen flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-background"}`}>
       <Tabs
         value={currentTab}
         defaultValue="inventory"
@@ -94,7 +96,7 @@ export default function Inventory() {
       >
         <div className="flex flex-col h-full">
           <div className="top-0 px-4 pt-4 z-10">
-            <TabsList className="bg-input text-center">
+            <TabsList className={`bg-input text-center ${currentTab === 'home' ? 'hidden' : ''}`}>
               {tabs.map((tab, index) => (
                 <TabsTrigger
                   key={tab.id}

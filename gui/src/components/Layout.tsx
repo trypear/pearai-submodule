@@ -273,7 +273,7 @@ const Layout = () => {
     <div className="w-full h-full">
       <div
         style={{
-          backgroundColor: vscBackground,
+          // backgroundColor: vscBackground,
           scrollbarGutter: "stable both-edges",
           minHeight: "100%",
           display: "grid",
