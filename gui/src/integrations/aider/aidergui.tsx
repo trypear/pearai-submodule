@@ -250,15 +250,15 @@ function AiderGUI() {
     }
 
     return (
-      <div className="top-[200px] left-0 w-full h-[calc(100%-200px)] bg-gray-500 bg-opacity-50 z-10 flex items-center justify-center">
-        <div className="text-white text-2xl">
-          <div className="spinner-border text-white" role="status">
-            <span className="visually-hidden">{msg}</span>
+      <div className="top-[200px] left-0 w-full h-[calc(100%-200px)] bg-opacity-50 z-10 flex items-center justify-center">
+        <div className="text-2xl">
+          <div className="spinner" role="status">
+            <span>{msg}</span>
           </div>
           {(aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") && (
             <div className="flex justify-center">
               <button
-                className="mt-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                className="mt-4 font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
                 onClick={() => ideMessenger.post("aiderResetSession", undefined)}
               >
                 Restart
