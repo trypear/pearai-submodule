@@ -9,7 +9,7 @@ import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { defaultBorderRadius, lightGray, vscInputBackground } from "..";
+import { defaultBorderRadius, lightGray, vscInputBackground, greenButtonColor } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
@@ -66,11 +66,13 @@ const StyledListboxOption = styled(Listbox.Option)<ListboxOptionProps>`
   padding: 6px;
 
   &:hover {
-    background: ${(props) => `${lightGray}33`};
+    background: ${(props) => (props.isCurrentModel ? greenButtonColor : `${lightGray}33`)};
+    color: ${(props) => (props.isCurrentModel ? "white" : "")};
   }
 
   background: ${(props) =>
-    props.isCurrentModel ? `${lightGray}33` : "transparent"};
+    props.isCurrentModel ? greenButtonColor : "transparent"};
+  color: ${(props) => (props.isCurrentModel ? "white" : "")};
 `;
 
 const StyledTrashIcon = styled(TrashIcon)`
