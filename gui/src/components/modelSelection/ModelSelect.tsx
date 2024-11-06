@@ -56,7 +56,11 @@ const StyledListboxOptions = styled(Listbox.Options)`
   overflow-y: auto;
 `;
 
-const StyledListboxOption = styled(Listbox.Option)`
+interface ListboxOptionProps {
+  isCurrentModel?: boolean;
+}
+
+const StyledListboxOption = styled(Listbox.Option)<ListboxOptionProps>`
   cursor: pointer;
   border-radius: ${defaultBorderRadius};
   padding: 6px;
@@ -64,6 +68,9 @@ const StyledListboxOption = styled(Listbox.Option)`
   &:hover {
     background: ${(props) => `${lightGray}33`};
   }
+
+  background: ${(props) =>
+    props.isCurrentModel ? `${lightGray}33` : "transparent"};
 `;
 
 const StyledTrashIcon = styled(TrashIcon)`
@@ -90,6 +97,7 @@ function ModelOption({
   idx: number;
   showDelete?: boolean;
 }) {
+  const defaultModel = useSelector(defaultModelSelector);
   const ideMessenger = useContext(IdeMessengerContext);
 
   const dispatch = useDispatch();
@@ -125,6 +133,7 @@ function ModelOption({
       onMouseLeave={() => {
         setHovered(false);
       }}
+      isCurrentModel={defaultModel?.title === option.title}
     >
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center pr-4">
