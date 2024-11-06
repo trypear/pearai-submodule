@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { FolderOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function FinalStep({ onBack }: { onBack: () => void }) {
 
@@ -21,24 +22,25 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
+  const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
   return (
     <div className="flex w-full overflow-hidden text-foreground">
 
-    <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6 pt-8">
-          <div>
-            <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
-              You're all set!
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Let's get started by opening a folder.
-            </p>
+      <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6 pt-8">
+            <div>
+              <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
+                You're all set!
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Let's get started by opening a folder.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
       <div className="w-full flex flex-col h-screen relative bg-background">
         <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
@@ -64,6 +66,14 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
             </Button>
+            <div
+              onClick={() => {
+                navigate("/inventory");
+              }}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              <span className="text-center w-full">Close</span>
+            </div>
           </div>
         </div>
       </div>
