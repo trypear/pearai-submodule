@@ -249,6 +249,33 @@ export class ContinueGUIWebviewViewProvider
         }
         ${page ? `<script>window.location.pathname = "${page}"</script>` : ""}
       </body>
+      ${isOverlay && `
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+              background-color: transparent;
+              width: 100vw;
+              height: 100vh;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              position: fixed;
+              top: 0;
+              left: 0;
+            }
+            
+            #root {
+              width: 80%;
+              height: 80%;
+              border-radius: 12px;
+              box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); 
+              position: relative;
+              overflow: hidden;
+              display: flex;
+            }
+          </style>
+      `}
     </html>`;
   }
 }

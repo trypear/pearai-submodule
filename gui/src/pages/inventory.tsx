@@ -85,7 +85,7 @@ export default function Inventory() {
   const modifierKey = isMac ? '⌘' : "Ctrl";
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-background">
+    <div className="h-screen flex flex-col bg-background">
       <Tabs
         value={currentTab}
         defaultValue="inventory"
@@ -112,7 +112,7 @@ export default function Inventory() {
             </TabsList>
           </div>
 
-          <div className="flex-1 min-h-0 p-4 pt-0 overflow-hidden">
+          <div className="flex-1 p-4 pt-0 overflow-hidden">
             {tabs.map((tab) => (
               <TabsContent
                 key={tab.id}

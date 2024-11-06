@@ -79,7 +79,7 @@ const initialTools: AITool[] = [
   {
     id: "3",
     name: "Autocomplete (Supermaven)",
-    description: <span>Ultra-fast code completion and autocomplete suggestions. Recommended by PearAI as a standalone extension.</span>,
+    description: <span>Fast code autocomplete suggestions. Recommended as a standalone extension</span>,
     icon: "⚡",
     whenToUse: (
       <span>
@@ -299,7 +299,7 @@ export default function AIToolInventory() {
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col h-full overflow-y-auto bg-background text-foreground">
+      <div className="flex flex-col h-[73vh] overflow-y-auto bg-background text-foreground">
         <header className="flex-none mb-6">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold mb-2 ml-4">PearAI Inventory</h1>
