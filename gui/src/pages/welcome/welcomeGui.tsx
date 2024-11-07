@@ -20,7 +20,7 @@ export default function Welcome() {
   }, []);
 
   useEffect(() => {
-    if (step === 2) {
+    if (step === 4) {
       ideMessenger.post("unlockOverlay", undefined);
     }
   }, [step]);

@@ -1,5 +1,4 @@
 import InventoryPage from "../inventory/pages/InventoryPage";
-import HomePage from "@/inventory/pages/HomePage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
 import AiderGUI from "@/integrations/aider/aidergui";
@@ -9,10 +8,7 @@ import { useWebviewListener } from "@/hooks/useWebviewListener";
 
 
 const tabs = [
-  { id: "home",
-    name: "Home",
-    component: <HomePage />
-  },
+  { id: "inventory", name: "Inventory", component: <InventoryPage /> },
   {
     id: "aiderMode",
     name: "Creator (aider)",
@@ -22,10 +18,6 @@ const tabs = [
     id: "perplexityMode",
     name: "Search (Perplexity)",
     component: <PerplexityGUI />,
-  },
-  { id: "inventory", 
-    name: "Inventory", 
-    component: <InventoryPage />
   },
 ];
 
