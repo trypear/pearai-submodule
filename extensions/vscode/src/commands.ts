@@ -29,7 +29,7 @@ import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
-import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessState } from './integrations/aider/aider';
+import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessState, installAider } from './integrations/aider/aider';
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
@@ -593,6 +593,9 @@ const commandsMap: (
         null,
         extensionContext.subscriptions,
       );
+    },
+    "pearai.installAider": async () => {
+      await installAider(core);
     },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);

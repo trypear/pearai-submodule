@@ -26,6 +26,7 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
+import { attemptInstallExtension } from "../activation/activate";
 
 /**
  * A shared messenger class between Core and Webview
@@ -91,6 +92,12 @@ export class VsCodeMessenger {
     });
     this.onWebview("importUserSettingsFromVSCode", (msg) => {
       vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
+    });
+    this.onWebview("install_vscode_extension", (msg) => {
+      attemptInstallExtension(msg.data.extensionId);
+    });
+    this.onWebview("install_aider", (msg) => {
+      vscode.commands.executeCommand("pearai.installAider");
     });
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");

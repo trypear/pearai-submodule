@@ -11,28 +11,10 @@ interface Tool {
   name: string;
   description: string;
   icon: JSX.Element;
-  installCommand: string;
+  installCommand: () => Promise<void>;
   preInstalled: boolean;
 }
 
-const tools: Tool[] = [
-  {
-    id: "aider",
-    name: "Aider",
-    description: "A command-line tool that lets you pair program with GPT-4, editing code and files together in your terminal.",
-    icon: <Bot className="h-6 w-6" />,
-    installCommand: "install_aider",
-    preInstalled: false
-  },
-  {
-    id: "supermaven",
-    name: "SuperMaven",
-    description: "An AI-powered tool that helps you understand and navigate complex codebases with semantic search and analysis.",
-    icon: <Sparkles className="h-6 w-6" />,
-    installCommand: "install_supermaven",
-    preInstalled: false
-  }
-];
 
 export default function InstallTools({
   onNext,
@@ -40,7 +22,6 @@ export default function InstallTools({
   onNext: () => void;
 }) {
   const ideMessenger = useContext(IdeMessengerContext);
-  const [installingTools, setInstallingTools] = useState<Record<string, boolean>>({});
   const [isInstallingAll, setIsInstallingAll] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   
@@ -52,18 +33,41 @@ export default function InstallTools({
     return initialState;
   });
 
-  const handleInstall = async (tool: Tool) => {
-    setInstallingTools(prev => ({ ...prev, [tool.id]: true }));
-    // await ideMessenger.post(tool.installCommand, undefined);
-    setTimeout(() => {
-      setInstallingTools(prev => ({ ...prev, [tool.id]: false }));
-    }, 2000);
+  const handleVSCExtensionInstall = async (extensionId: string) => {
+    await ideMessenger.post("install_vscode_extension", { extensionId });
   };
+
+  const handleAiderInstall = async () => {
+    await ideMessenger.post("install_aider", undefined);
+  };
+
+    const tools: Tool[] = [
+        {
+            id: "aider",
+            name: "Aider",
+            description: "A command-line tool that lets you pair program with GPT-4, editing code and files together in your terminal.",
+            icon: <Bot className="h-6 w-6" />,
+            installCommand: handleAiderInstall,
+            preInstalled: false
+        },
+        {
+            id: "supermaven",
+            name: "SuperMaven",
+            description: "An AI-powered tool that helps you understand and navigate complex codebases with semantic search and analysis.",
+            icon: <Sparkles className="h-6 w-6" />,
+            installCommand: () => handleVSCExtensionInstall("supermaven.supermaven"),
+            preInstalled: false
+        }
+    ];
+    
 
   const handleInstallAll = async () => {
     setIsInstallingAll(true);
-    // const installations = tools.map(tool => ideMessenger.post(tool.installCommand, undefined));
-    // await Promise.all(installations);
+    
+    tools.forEach(tool => {
+      tool.installCommand();
+    });
+
     setTimeout(() => {
       setIsInstallingAll(false);
       onNext();
@@ -78,8 +82,8 @@ export default function InstallTools({
     setIsInstallingAll(true);
     const installations = tools
       .filter(tool => checkedTools[tool.id])
-    //   .map(tool => ideMessenger.post(tool.installCommand, undefined));
-    // await Promise.all(installations);
+      .map(tool => tool.installCommand());
+    await Promise.all(installations);
     setTimeout(() => {
       setIsInstallingAll(false);
       onNext();
