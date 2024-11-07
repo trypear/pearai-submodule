@@ -70,7 +70,7 @@ export default function HomePage() {
         closeOverlay(e);
       }}
     >
-      <div className="flex-1 flex items-center justify-center" onClick={(e) => closeOverlay(e)}>
+      <div className="flex-1 flex items-center justify-center select-none" onClick={(e) => closeOverlay(e)}>
         <div className="grid grid-cols-3 gap-2">
           {menuItems.map((item) => (
             <div
@@ -98,7 +98,7 @@ export default function HomePage() {
           ))}
         </div>
       </div>
-      <div className="text-white/50 text-base mb-4 flex items-center gap-1">
+      <div className="text-white/50 text-base mb-4 flex items-center gap-1 select-none">
         Press <Kbd>{getMetaKeyLabel()}</Kbd><Kbd>E</Kbd> to toggle inventory at last page
       </div>
     </div>

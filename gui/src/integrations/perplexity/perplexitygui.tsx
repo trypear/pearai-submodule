@@ -42,6 +42,7 @@ import {
   fallbackRender,
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
+import { cn } from "@/lib/utils";
 
 function PerplexityGUI() {
   const posthog = usePostHog();
@@ -210,21 +211,38 @@ function PerplexityGUI() {
   return (
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-        <div className="mx-2">
-          <div className="pl-2">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>{" "}
-              <Badge variant="outline" className="pl-0">
-                Beta (Powered by Perplexity)
-              </Badge>
-            </div>
-            <div className="flex items-center mt-0 justify-between pr-1">
-              <p className="text-sm text-foreground m-0">
+        <div className={cn(
+          "mx-2",
+          state.perplexityHistory.length === 0 && "h-full flex flex-col justify-center"
+        )}>
+          {state.perplexityHistory.length === 0 ? (
+            <div className="max-w-2xl mx-auto w-full text-center mb-4">
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <h1 className="text-2xl font-bold">PearAI Search</h1>
+                <Badge variant="outline" className="pl-0">
+                  Beta (Powered by Perplexity)
+                </Badge>
+              </div>
+              <p className="text-sm text-foreground">
                 Ask for anything. We'll retrieve up-to-date information in
                 real-time on the web. Search uses less credits than PearAI Chat,
                 and is perfect for documentation lookups.
               </p>
-              {state.perplexityHistory.length > 0 &&
+            </div>
+          ) : (
+            <div className="pl-2">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>
+                <Badge variant="outline" className="pl-0">
+                  Beta (Powered by Perplexity)
+                </Badge>
+              </div>
+              <div className="flex items-center mt-0 justify-between pr-1">
+                <p className="text-sm text-foreground m-0">
+                  Ask for anything. We'll retrieve up-to-date information in
+                  real-time on the web. Search uses less credits than PearAI Chat,
+                  and is perfect for documentation lookups.
+                </p>
                 <div>
                   <NewSessionButton
                     onClick={() => {
@@ -236,9 +254,10 @@ function PerplexityGUI() {
                     Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
                   </NewSessionButton>
                 </div>
-              }
+              </div>
             </div>
-          </div>
+          )}
+
           <StepsDiv>
             {state.perplexityHistory.map((item, index: number) => (
               <Fragment key={index}>
@@ -337,15 +356,26 @@ function PerplexityGUI() {
               </Fragment>
             ))}
           </StepsDiv>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-            source="perplexity"
-          ></ContinueInputBox>
+
+          <div className={cn(
+            state.perplexityHistory.length === 0 
+              ? "max-w-2xl mx-auto w-full" 
+              : "w-full"
+          )}>
+            <ContinueInputBox
+              onEnter={(editorContent, modifiers) => {
+                sendInput(editorContent, modifiers);
+              }}
+              isLastUserInput={false}
+              isMainInput={true}
+              hidden={active}
+              source="perplexity"
+              className={cn(
+                state.perplexityHistory.length === 0 && "shadow-lg"
+              )}
+            />
+          </div>
+
           {active ? (
             <>
               <br />
