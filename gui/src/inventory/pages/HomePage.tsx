@@ -56,7 +56,7 @@ export default function HomePage() {
 
   return (
 <div className="h-full flex items-center justify-center">
-  <div className="grid grid-cols-3 gap-8">
+  <div className="grid grid-cols-3 gap-2">
     {menuItems.map((item) => (
       <div
         key={item.label}
@@ -68,20 +68,21 @@ export default function HomePage() {
         <div>{item.shortcut}</div>
         <img 
           src={`${getLogoPath(item.icon)}`} 
-          width="70%" 
-          height="70%" 
+          width="80%" 
+          height="80%" 
           alt="" 
           className="mb-2"
         />
-        <div className="text-center">
-          <div className="flex flex-col justify-center gap-2 items-center">
-            <div className="font-bold">{item.label}</div>
-            <p className="mt-1">{item.description}</p>
+        <div className="text-center w-4/5">
+          <div className="flex flex-col justify-center gap-1 items-center">
+            <div className="font-bold text-sm">{item.label}</div>
+            <p className="mt-1 text-xs">{item.description}</p>
           </div>
         </div>
       </div>
     ))}
   </div>
 </div>
+
   );
 }
