@@ -118,6 +118,13 @@ function AiderGUI() {
         !e.shiftKey
       ) {
         dispatch(setAiderInactive());
+      } else if (
+        e.key === "." && 
+        isMetaEquivalentKeyPressed(e) &&
+        !e.shiftKey
+      ) {
+        saveSession();
+        ideMessenger.post("aiderResetSession", undefined);
       }
     };
     window.addEventListener("keydown", listener);
@@ -278,15 +285,7 @@ function AiderGUI() {
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold mb-2">PearAI Creator</h1>
               <Badge variant="outline" className="pl-0">
-                Beta (Powered by{" "}
-                <a
-                  href="https://aider.chat/2024/06/02/main-swe-bench.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline px-1"
-                >
-                  aider)
-                </a>
+                Beta (Powered by aider)
               </Badge>
             </div>
             <div className="flex items-center mt-0 justify-between pr-1">
@@ -295,6 +294,19 @@ function AiderGUI() {
                 your project. Creator will make and apply the changes to your
                 files directly.
               </p>
+              {state.aiderHistory.length > 0 &&
+                <div>
+                  <NewSessionButton
+                    onClick={() => {
+                      saveSession();
+                      ideMessenger.post("aiderResetSession", undefined);
+                    }}
+                    className="mr-auto"
+                  >
+                    Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
+                  </NewSessionButton>
+                </div>
+              }
             </div>
           </div>
           <>
@@ -424,7 +436,7 @@ function AiderGUI() {
                 }}
                 className="mr-auto"
               >
-                Clear chat
+                Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
               </NewSessionButton>
             </div>
           ) : (

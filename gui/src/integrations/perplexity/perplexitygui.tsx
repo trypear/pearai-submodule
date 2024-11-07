@@ -18,7 +18,6 @@ import StepContainer from "../../components/gui/StepContainer";
 import TimelineItem from "../../components/gui/TimelineItem";
 import ContinueInputBox from "../../components/mainInput/ContinueInputBox";
 import { defaultInputModifiers } from "../../components/mainInput/inputModifiers";
-import { TutorialCard } from "../../components/mainInput/TutorialCard";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import useChatHandler from "../../hooks/useChatHandler";
 import useHistory from "../../hooks/useHistory";
@@ -34,7 +33,6 @@ import { RootState } from "../../redux/store";
 import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../../util/localStorage";
-import { isBareChatMode } from "../../util/bareChatMode";
 import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
@@ -117,6 +115,13 @@ function PerplexityGUI() {
         !e.shiftKey
       ) {
         dispatch(setPerplexityInactive());
+      } else if (
+        e.key === "." && 
+        isMetaEquivalentKeyPressed(e) &&
+        !e.shiftKey
+      ) {
+        saveSession();
+        ideMessenger.post("aiderResetSession", undefined);
       }
     };
     window.addEventListener("keydown", listener);
@@ -206,7 +211,7 @@ function PerplexityGUI() {
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
-          <div className="pl-2 border-b border-gray-700">
+          <div className="pl-2">
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>{" "}
               <Badge variant="outline" className="pl-0">
@@ -214,11 +219,24 @@ function PerplexityGUI() {
               </Badge>
             </div>
             <div className="flex items-center mt-0 justify-between pr-1">
-              <p className="text-sm text-gray-400 m-0">
+              <p className="text-sm text-foreground m-0">
                 Ask for anything. We'll retrieve up-to-date information in
                 real-time on the web. Search uses less credits than PearAI Chat,
                 and is perfect for documentation lookups.
               </p>
+              {state.perplexityHistory.length > 0 &&
+                <div>
+                  <NewSessionButton
+                    onClick={() => {
+                      saveSession();
+                      ideMessenger.post("aiderResetSession", undefined);
+                    }}
+                    className="mr-auto"
+                  >
+                    Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
+                  </NewSessionButton>
+                </div>
+              }
             </div>
           </div>
           <StepsDiv>
@@ -341,7 +359,7 @@ function PerplexityGUI() {
                 }}
                 className="mr-auto"
               >
-                Clear chat
+                Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
               </NewSessionButton>
             </div>
           ) : (
@@ -388,7 +406,7 @@ function PerplexityGUI() {
 
 const tutorialContent = {
   goodFor: "Searching documentation, debugging errors, quick look-ups",
-  notGoodFor: "Direct feature implementations (use PearAI chat instead)",
+  notGoodFor: "Direct feature implementations (use PearAI Creator instead)",
   example: {
     text: '"What\'s new in the latest python version?"',
     copyText: "What's new in the latest python version?",

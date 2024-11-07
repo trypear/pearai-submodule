@@ -7,20 +7,11 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 
-
 const tabs = [
-  { id: "home", name: "Home", component: <HomePage /> },
-  { id: "inventory", name: "Inventory", component: <InventoryPage /> },
-  {
-    id: "aiderMode",
-    name: "Creator (aider)",
-    component: <AiderGUI />,
-  },
-  {
-    id: "perplexityMode",
-    name: "Search (Perplexity)",
-    component: <PerplexityGUI />,
-  },
+  { id: "home", name: "Home", component: <HomePage />, shortcut: "1" },
+  { id: "aiderMode", name: "Creator", component: <AiderGUI />, shortcut: "2" },
+  { id: "perplexityMode", name: "Search", component: <PerplexityGUI />, shortcut: "3" },
+  { id: "inventory", name: "Inventory", component: <InventoryPage />, shortcut: "4" },
 ];
 
 export default function Inventory() {
@@ -28,63 +19,38 @@ export default function Inventory() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("inventory");
   const currentTab = location.pathname.split("/").pop() || "inventory";
-  const platform = navigator.userAgent.toLowerCase();
+  const isMac = navigator.userAgent.toLowerCase().includes("mac");
+  const modifierKey = isMac ? '⌘' : "Ctrl";
 
-  // Update activeTab whenever location changes
   useEffect(() => {
     const tab = location.pathname.split("/").pop() || "inventory";
     setActiveTab(tab);
   }, [location]);
 
+  useWebviewListener("navigateToCreator", () => handleTabChange("aiderMode"), []);
+  useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
+  useWebviewListener("navigateToInventory", () => handleTabChange("inventory"), []);
+  useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
 
-  // listen for navigation change requests from vscode
-  useWebviewListener(
-    "navigateToCreator",
-    async () => {
-      setActiveTab("aiderMode"); // Set active tab immediately
-      navigate("/inventory/aiderMode");
-    },
-    [],
-  );
-
-  useWebviewListener(
-    "navigateToSearch",
-    async () => {
-      setActiveTab("perplexityMode"); // Set active tab immediately
-      navigate("/inventory/perplexityMode");
-    },  
-    [],
-  );
-
-  useWebviewListener(
-    "navigateToInventory",
-    async () => {
-      setActiveTab("inventory"); // Set active tab immediately
-      navigate("/inventory");
-    },  
-    [],
-  );
-
-  // IDE event listeners
-  useWebviewListener(
-    "getCurrentTab",
-    async () => {
-      return activeTab;
-    },
-    [activeTab], // Add dependency to ensure we have latest value
-  );
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value); // Update active tab immediately
-    if (value === "inventory") {
-      navigate("/inventory");
-      return;
-    }
-    navigate(`/inventory/${value}`);
+  const handleTabChange = async (value: string) => {
+    setActiveTab(value);
+    navigate(value === "inventory" ? "/inventory" : `/inventory/${value}`);
   };
 
-  const isMac = platform.includes("mac");
-  const modifierKey = isMac ? '⌘' : "Ctrl";
+  const TabButton = ({ id, name, shortcut }: { id: string; name: string; shortcut: string }) => (
+    <TabsTrigger
+      value={id}
+      className={`text-xs font-medium px-3 py-1 rounded transition-all duration-300 ${
+        currentTab === id
+          ? ""
+          : "hover:opacity-80 hover:text-muted-foreground"
+      }`}
+    >
+      {name}
+      <kbd className="ml-1">{modifierKey}</kbd>
+      <kbd className="ml-[2px]">{shortcut}</kbd>
+    </TabsTrigger>
+  );
 
   return (
     <div className={`h-screen flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-background"}`}>
@@ -96,32 +62,28 @@ export default function Inventory() {
       >
         <div className="flex flex-col h-full">
           <div className="top-0 px-4 pt-4 z-10">
-            <TabsList className={`bg-input text-center ${currentTab === 'home' ? 'hidden' : ''}`}>
-              {tabs.map((tab, index) => (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className={`text-xs font-medium px-3 py-1 rounded transition-all duration-300 ${
-                    currentTab === tab.id
-                      ? "bg-primary text-primary-foreground border-b-2 border-accent"
-                      : "text-foreground hover:bg-muted hover:text-muted-foreground"
-                  }`}
-                >
-                  {`${tab.name}`}
-                  <kbd className="ml-1">{modifierKey}</kbd><kbd className="ml-1">{index + 1}</kbd>
-                </TabsTrigger>
-              ))}
+            <TabsList className={`flex justify-between ${currentTab === 'home' ? 'hidden' : ''}`}>
+              <div className="flex">
+                <TabButton {...tabs[0]} />
+              </div>
+              <div className="flex gap-1">
+                <TabButton {...tabs[1]} />
+                <TabButton {...tabs[2]} />
+              </div>
+              <div className="flex">
+                <TabButton {...tabs[3]} />
+              </div>
             </TabsList>
           </div>
 
           <div className="flex-1 p-4 pt-0 overflow-hidden">
-            {tabs.map((tab) => (
+            {tabs.map(({ id, component }) => (
               <TabsContent
-                key={tab.id}
-                value={tab.id}
+                key={id}
+                value={id}
                 className="h-[73vh] data-[state=active]:flex flex-col"
               >
-                {tab.component}
+                {component}
               </TabsContent>
             ))}
           </div>
