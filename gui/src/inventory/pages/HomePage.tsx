@@ -20,21 +20,21 @@ export default function HomePage() {
 
   const menuItems = [
     {
-      icon: "inventory-aider.png",
+      icon: "inventory-creator.svg",
       label: "Creator",
       description: <>Create new features</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>2</Kbd></span>,
       path: "/inventory/aiderMode",
     },
     {
-      icon: "inventory-perplexity.png",
+      icon: "inventory-search.svg",
       label: "Search",
       description: <>Up-to-date info (web search)</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>3</Kbd></span>,
       path: "/inventory/perplexityMode",
     },
     {
-      icon: "inventory-something.png",
+      icon: "inventory-mem0.svg",
       label: "Inventory",
       description: <>See all your AI tools</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>SHIFT</Kbd><Kbd>1</Kbd></span>,
