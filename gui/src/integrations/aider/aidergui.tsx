@@ -217,7 +217,7 @@ function AiderGUI() {
               e.preventDefault();
               ideMessenger.post("pearaiLogin", undefined);
             }}
-            className="underline text-blue-300"
+            className="underline text-foreground"
           >
             sign in
           </a>{" "}
@@ -233,7 +233,7 @@ function AiderGUI() {
             href="https://trypear.ai/creator-troubleshooting" 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="underline text-blue-300"
+            className="underline text-foreground"
           >
             troubleshooting
           </a>.
@@ -244,7 +244,7 @@ function AiderGUI() {
       msg = (
         <>
           PearAI Creator (Powered By aider) process has failed. Please ensure a folder is open, and view troubleshooting{" "}
-          <a href="https://trypear.ai/creator-troubleshooting" target="_blank" rel="noopener noreferrer" className="underline text-blue-300">
+          <a href="https://trypear.ai/creator-troubleshooting" target="_blank" rel="noopener noreferrer" className="underline text-foreground">
             here
           </a>.
         </>
@@ -293,14 +293,14 @@ function AiderGUI() {
                   Beta (Powered by aider)
                 </Badge>
               </div>
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-foreground">
                 Ask for a feature, describe a bug to fix, or ask for a change to
                 your project. Creator will make and apply the changes to your
                 files directly.
               </p>
             </div>
           ) : (
-            <div className="pl-2 border-b border-gray-700">
+            <div className="pl-2">
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold mb-2">PearAI Creator</h1>
                 <Badge variant="outline" className="pl-0">
@@ -308,7 +308,7 @@ function AiderGUI() {
                 </Badge>
               </div>
               <div className="flex items-center mt-0 justify-between pr-1">
-                <p className="text-sm text-gray-400 m-0">
+                <p className="text-sm text-foreground m-0">
                   Ask for a feature, describe a bug to fix, or ask for a change to
                   your project. Creator will make and apply the changes to your
                   files directly.
