@@ -128,7 +128,7 @@ const ProfileDropdownPortalDiv = styled.div`
   font-size: ${getFontSize() - 2};
 `;
 
-const OverlayContainer = styled.div<{ isPearOverlay: boolean }>`
+const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
   ${props => props.isPearOverlay && `
     width: 100%;
     height: 100%;
@@ -137,6 +137,7 @@ const OverlayContainer = styled.div<{ isPearOverlay: boolean }>`
     position: relative;
     overflow: hidden;
     display: flex;
+    background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
   `}
 `;
 
@@ -289,13 +290,18 @@ const Layout = () => {
     status: "loading",
   });
 
+  if (window.isPearOverlay) {
+    return <OverlayContainer isPearOverlay={window.isPearOverlay} path={location.pathname}>
+            <GlobalStyle/>
+            <Outlet />
+          </OverlayContainer>;
+  }
+
   return (
-    <OverlayContainer isPearOverlay={window?.isPearOverlay}>
-      <GlobalStyle />
       <div className="w-full h-full">
         <div
           style={{
-            backgroundColor: location.pathname === "/inventory/home" ? "transparent" : vscBackground,
+            backgroundColor: vscBackground,
             scrollbarGutter: "stable both-edges",
             minHeight: "100%",
             display: "grid",
@@ -377,7 +383,6 @@ const Layout = () => {
           id="tooltip-portal-div"
         />
       </div>
-    </OverlayContainer>
   );
 };
 

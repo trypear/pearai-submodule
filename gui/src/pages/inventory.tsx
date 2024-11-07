@@ -80,7 +80,7 @@ export default function Inventory() {
   );
 
   return (
-    <div className={`h-screen flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-background"}`}>
+    <div className={`h-full w-full flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-background"}`}>
       <Tabs
         value={currentTab}
         defaultValue="inventory"
