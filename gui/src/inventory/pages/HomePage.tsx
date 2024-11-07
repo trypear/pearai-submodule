@@ -1,7 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { getMetaKeyLabel } from "@/util";
+import { IdeMessengerContext } from "@/context/IdeMessenger";
 
 interface KbdProps {
   children: React.ReactNode;
@@ -17,6 +18,12 @@ export function Kbd({ children }: KbdProps) {
 
 export default function HomePage() {
   const navigate = useNavigate();
+
+  const closeOverlay = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.currentTarget === e.target) {
+      ideMessenger.post("closeOverlay", undefined);
+    }
+  }
 
   const menuItems = [
     {
@@ -54,35 +61,46 @@ export default function HomePage() {
     }
   }, []);
 
+  const ideMessenger = useContext(IdeMessengerContext);
+
   return (
-<div className="h-full flex items-center justify-center">
-  <div className="grid grid-cols-3 gap-2">
-    {menuItems.map((item) => (
-      <div
-        key={item.label}
-        className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-4 
-          rounded-lg transition-all duration-200 
-          transform hover:scale-105"
-        onClick={() => navigate(item.path)}
-      >
-        <div>{item.shortcut}</div>
-        <img 
-          src={`${getLogoPath(item.icon)}`} 
-          width="80%" 
-          height="80%" 
-          alt={`${item.label} logo`}
-          className="mb-2"
-        />
-        <div className="text-center w-4/5">
-          <div className="flex flex-col justify-center gap-1 items-center">
-            <div className="font-bold text-sm">{item.label}</div>
-            <p className="mt-1 text-xs">{item.description}</p>
-          </div>
+    <div 
+      className="h-full flex flex-col items-center" 
+      onClick={(e) => {
+        closeOverlay(e);
+      }}
+    >
+      <div className="flex-1 flex items-center justify-center" onClick={(e) => closeOverlay(e)}>
+        <div className="grid grid-cols-3 gap-2">
+          {menuItems.map((item) => (
+            <div
+              key={item.label}
+              className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-4 
+                rounded-lg transition-all duration-200 
+                transform hover:scale-105"
+              onClick={() => navigate(item.path)}
+            >
+              <div>{item.shortcut}</div>
+              <img 
+                src={`${getLogoPath(item.icon)}`} 
+                width="80%" 
+                height="80%" 
+                alt={`${item.label} logo`}
+                className="mb-2"
+              />
+              <div className="text-center w-4/5">
+                <div className="flex flex-col justify-center gap-1 items-center">
+                  <div className="font-bold text-sm">{item.label}</div>
+                  <p className="mt-1 text-xs">{item.description}</p>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    ))}
-  </div>
-</div>
-
+      <div className="text-white/50 text-base mb-4 flex items-center gap-1">
+        Press <Kbd>{getMetaKeyLabel()}</Kbd><Kbd>E</Kbd> to toggle inventory at last page
+      </div>
+    </div>
   );
 }
