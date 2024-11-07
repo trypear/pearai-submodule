@@ -155,7 +155,7 @@ export default function InstallTools({
 
             <div className="flex justify-end mt-4">
               <Button
-                className="text-button-foreground bg-button hover:bg-button-hover py-3 px-6 text-lg cursor-pointer"
+                className="w-[250px] mt-2 text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
                 onClick={handleInstallChecked}
                 disabled={isInstallingAll}
               >
@@ -167,7 +167,7 @@ export default function InstallTools({
 
         {!isAdvancedOpen && (
           <Button
-            className="mb-2 text-button-foreground bg-button hover:bg-button-hover py-3 px-6 text-lg cursor-pointer"
+            className="w-[250px] mb-2 text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
             onClick={handleInstallAll}
             disabled={isInstallingAll}
           >
