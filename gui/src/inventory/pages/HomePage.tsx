@@ -9,7 +9,7 @@ interface KbdProps {
 
 export function Kbd({ children }: KbdProps) {
   return (
-    <div className="inline-flex h-5 items-center justify-center rounded border bg-input px-1.5 font-mono font-medium text-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
+    <div className="inline-flex h-5 items-center justify-center rounded border-[0.5px] border-solid bg-background px-1.5 font-mono font-medium text-foreground">
       {children}
     </div>
   );
@@ -61,7 +61,7 @@ export default function HomePage() {
       <div
         key={item.label}
         className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-4 
-          rounded-lg hover:text-background transition-all duration-200 
+          rounded-lg hover:text-foreground transition-all duration-200 
           transform hover:scale-105"
         onClick={() => navigate(item.path)}
       >
