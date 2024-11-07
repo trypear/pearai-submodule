@@ -253,7 +253,6 @@ const commandsMap: (
     "pearai.welcome.markNewOnboardingComplete": async () => {
       // vscode.window.showInformationMessage("Marking onboarding complete.");
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
-      attemptInstallExtension("supermaven.supermaven");
     },
     "pearai.resetInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("resetInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
