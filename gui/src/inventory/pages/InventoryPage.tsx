@@ -41,7 +41,7 @@ const initialTools: AITool[] = [
       <span>
         When you need to find information where recency is important. Regular
         LLMs' knowledge are outdated by several months, whereas PearAI Search is
-        able to search the web for latest data.
+        able to search the web for latest data
       </span>
     ),
     strengths: [
@@ -85,7 +85,7 @@ const initialTools: AITool[] = [
       <span>
         When you need instant code completions while typing. Autocomplete offers
         real-time suggestions and completes your code with minimal latency,
-        perfect for maintaining flow while coding.
+        perfect for maintaining flow while coding
       </span>
     ),
     strengths: [
@@ -174,7 +174,7 @@ function AIToolCard({
   return (
     <TooltipProvider delayDuration={0}>
       <Card
-        className={`cursor-pointer h-32 transition-all bg-input ${tool.comingSoon ? "opacity-50" : ""}`}
+        className={`cursor-pointer h-35 overflow-hidden transition-all bg-input ${tool.comingSoon ? "opacity-50" : ""}`}
         onClick={tool.comingSoon ? undefined : onClick}
       >
         <CardContent className="p-2 px-4">
@@ -182,7 +182,8 @@ function AIToolCard({
             <div className="text-lg bg-primary/10 rounded-full">
               {tool.icon}
             </div>
-            <Tooltip>
+            {/* TODO: removed unfinished feature */}
+            {/* <Tooltip>
               <TooltipTrigger asChild>
                 <Switch
                   checked={tool.comingSoon ? false : true} // always enabled
@@ -200,7 +201,7 @@ function AIToolCard({
                   </p>
                 </TooltipContent>
               )}
-            </Tooltip>
+            </Tooltip> */}
           </div>
           <h3
             className={`text-sm font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
@@ -379,7 +380,8 @@ export default function AIToolInventory() {
                     </>
                   )}
                 </div>
-                {!focusedTool.comingSoon && (
+                {/* TODO: removed unfinished feature */}
+                {/* {!focusedTool.comingSoon && (
                   <div className="mt-2 flex items-center sticky bottom-0 bg-background p-2">
                     <Button
                       className="bg-button text-button-foreground cursor-not-allowed text-xs opacity-50"
@@ -397,7 +399,7 @@ export default function AIToolInventory() {
                       </p>
                     )}
                   </div>
-                )}
+                )} */}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center text-foreground opacity-60 mt-4 flex-grow">
@@ -407,8 +409,9 @@ export default function AIToolInventory() {
             )}
           </div>
         </main>
-
-        <footer className="flex-none mt-2 mb-2 p-2">
+        
+        {/* TODO: quick action slots are removed for now since now fully finished */}
+        {/* <footer className="flex-none mt-2 mb-2 p-2">
           <h3 className="flex items-center gap-1 font-semibold text-sm mb-2">
             Quick Action Slots{" "}
             <Badge variant="outline" className="pl-0">
@@ -448,7 +451,7 @@ export default function AIToolInventory() {
               })}
             </div>
           </div>
-        </footer>
+        </footer> */}
       </div>
     </TooltipProvider>
   );

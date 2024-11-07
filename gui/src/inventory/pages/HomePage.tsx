@@ -61,7 +61,7 @@ export default function HomePage() {
       <div
         key={item.label}
         className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-4 
-          rounded-lg hover:text-foreground transition-all duration-200 
+          rounded-lg transition-all duration-200 
           transform hover:scale-105"
         onClick={() => navigate(item.path)}
       >
