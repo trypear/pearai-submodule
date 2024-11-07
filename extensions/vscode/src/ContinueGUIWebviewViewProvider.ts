@@ -268,11 +268,6 @@ export class ContinueGUIWebviewViewProvider
             #root {
               width: 80%;
               height: 80%;
-              border-radius: 12px;
-              box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); 
-              position: relative;
-              overflow: hidden;
-              display: flex;
             }
           </style>
       `}
