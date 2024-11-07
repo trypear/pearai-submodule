@@ -190,6 +190,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
         // Wait 300ms for quick input widget to appear
         await new Promise(resolve => setTimeout(resolve, 100));
         ideMessenger.post("highlightElement", {elementSelectors: ['.quick-input-widget']});
+        nextPage();
       }
     },
     [currentPage],
@@ -205,26 +206,24 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
   )
 
   useEffect(() => {
-    if (currentPage === 2) {
+    if (currentPage === 3) {
       const handleEnterKey = (event: KeyboardEvent) => {
         if (event.key === 'Enter') {
           nextPage();
         }
         if (['Enter', 'ArrowLeft', 'ArrowRight', 'Escape'].includes(event.key)) {
           ideMessenger.post("unhighlightElement", {elementSelectors: ['.quick-input-widget']});
-          window.removeEventListener('keydown', handleEnterKey);
         }
       };
   
       window.addEventListener('keydown', handleEnterKey);
   
-      // Cleanup
+      // Cleanup function
       return () => {
-        window.removeEventListener('keydown', handleEnterKey);
         ideMessenger.post("unhighlightElement", {elementSelectors: ['.quick-input-widget']});
       };
     }
-  }, [currentPage]);
+  }, [currentPage]); // Include all dependencies
 
   useEffect(() => {
       window.addEventListener('keydown', handleKeyDown);
