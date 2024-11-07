@@ -24,6 +24,7 @@ interface AITool {
   weaknesses?: ReactElement[];
   enabled: boolean;
   comingSoon?: boolean;
+  installNeeded: boolean;
 }
 
 const initialTools: AITool[] = [
@@ -49,6 +50,7 @@ const initialTools: AITool[] = [
       <span>Also good for non-coding specific questions</span>,
       <span>Uses less credits than other tools</span>,
     ],
+    installNeeded: false,
     enabled: true,
   },
   {
@@ -74,6 +76,7 @@ const initialTools: AITool[] = [
         suggestions
       </span>,
     ],
+    installNeeded: false,
     enabled: true,
   },
   {
@@ -94,6 +97,7 @@ const initialTools: AITool[] = [
       <span>Low latency response times</span>,
       <span>Predicts where your cursor should go next</span>
     ],
+    installNeeded: true,
     enabled: true
   },
   {
@@ -113,6 +117,7 @@ const initialTools: AITool[] = [
       <span>Automated refactoring</span>,
       <span>Lower level of human intervention needed</span>,
     ],
+    installNeeded: true,
     enabled: true,
   },
   {
@@ -132,6 +137,7 @@ const initialTools: AITool[] = [
     ],
     enabled: false,
     comingSoon: true,
+    installNeeded: false,
   },
   {
     id: "6",
@@ -156,6 +162,7 @@ const initialTools: AITool[] = [
     ],
     enabled: false,
     comingSoon: true,
+    installNeeded: false,
   },
 
 ];
@@ -298,6 +305,10 @@ export default function AIToolInventory() {
     setQuickSlots(newQuickSlots);
   };
 
+  const handleInstall = (tool: AITool) => {
+
+  }
+
   return (
     <TooltipProvider>
       <div className="flex flex-col h-[73vh] overflow-y-auto text-foreground">
@@ -380,26 +391,21 @@ export default function AIToolInventory() {
                     </>
                   )}
                 </div>
-                {/* TODO: removed unfinished feature */}
-                {/* {!focusedTool.comingSoon && (
-                  <div className="mt-2 flex items-center sticky bottom-0 bg-background p-2">
-                    <Button
-                      className="bg-button text-button-foreground cursor-not-allowed text-xs opacity-50"
-                      // onClick={() => handleEquipToQuickSlot(focusedTool)}
-                      // disabled={true} // Disable the button for now
-                    >
-                      Equip to quick slots
-                    </Button>
-                    <span className="ml-2 py-0.5 bg-accent text-accent-foreground text-xs rounded-full font-medium">
-                      (Equip functionality coming soon)
-                    </span>
-                    {quickSlots.every((slot) => slot !== null) && (
-                      <p className="text-destructive mt-1 text-xs">
-                        Quick slots are full
-                      </p>
-                    )}
-                  </div>
-                )} */}
+                {focusedTool.installNeeded && (
+                <div className="mt-2 flex items-center sticky bottom-0 bg-background p-2">
+                <Button
+                  onClick={() => handleInstall(focusedTool)}
+                  disabled={!focusedTool.installNeeded}
+                >
+                  Click to install
+                </Button>
+                {quickSlots.every((slot) => slot !== null) && (
+                  <p className="text-destructive mt-1 text-xs">
+                    Quick slots are full
+                  </p>
+                )}
+              </div>
+                )}
               </>
             ) : (
               <div className="flex flex-col items-center justify-center text-foreground opacity-60 mt-4 flex-grow">
