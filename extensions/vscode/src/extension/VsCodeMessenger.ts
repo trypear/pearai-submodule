@@ -94,6 +94,13 @@ export class VsCodeMessenger {
     });
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");
+        // force close overlay if a folder is already open
+      if (vscode.workspace.workspaceFolders?.length) {
+        vscode.commands.executeCommand("pearai.unlockOverlay");
+        vscode.commands.executeCommand("pearai.hideOverlay");
+        // force reload to update overlay with new global state
+        vscode.commands.executeCommand("workbench.action.reloadWindow");
+      }
     });
     this.onWebview("pearInstallCommandLine", (msg) => {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
@@ -116,6 +123,12 @@ export class VsCodeMessenger {
           const contents = document.getText(range);
           return contents;
         });
+    });
+    this.onWebview("highlightElement", (msg) => {
+      vscode.commands.executeCommand("pearai.highlightElement", msg);
+    });
+    this.onWebview("unhighlightElement", (msg) => {
+      vscode.commands.executeCommand("pearai.unhighlightElement", msg);
     });
     this.onWebview("perplexityMode", (msg) => {
       vscode.commands.executeCommand("pearai.perplexityMode");
@@ -253,7 +266,7 @@ export class VsCodeMessenger {
       );
       await vscode.window.showTextDocument(doc);
     });
-
+    
     this.onWebview("openUrl", (msg) => {
       vscode.env.openExternal(vscode.Uri.parse(msg.data));
     });

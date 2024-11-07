@@ -261,6 +261,12 @@ const commandsMap: (
     "pearai.showInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
     },
+    "pearai.highlightElement": async (msg) => {
+      vscode.commands.executeCommand("pearai.highlightElements", msg.data.elementSelectors);
+    },
+    "pearai.unhighlightElement": async (msg) => {
+      vscode.commands.executeCommand("pearai.removeHighlight", msg.data.elementSelectors);
+    },
     "pearai.acceptDiff": async (newFilepath?: string | vscode.Uri) => {
       captureCommandTelemetry("acceptDiff");
 
@@ -335,13 +341,13 @@ const commandsMap: (
       core.invoke("context/indexDocs", { reIndex: true });
     },
     "pearai.toggleCreator": async () => {
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.toggleSearch": async () => {
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.toggleInventory": async () => {
-      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.startOnboarding": async () => {
       if (isFirstLaunch(extensionContext)) {
@@ -352,7 +358,6 @@ const commandsMap: (
           core.invoke("index/setPaused", false);
         }, 6000);
       }
-
       await vscode.commands.executeCommand("pearai.showOverlay");
       await vscode.commands.executeCommand("pearai.showInteractiveContinueTutorial");
     },
@@ -591,7 +596,7 @@ const commandsMap: (
     },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.aiderCtrlC": async () => {
       await aiderCtrlC(core);
@@ -604,7 +609,7 @@ const commandsMap: (
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID)
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.addPerplexityContext": (msg) => {
       const fullScreenTab = getFullScreenTab();
