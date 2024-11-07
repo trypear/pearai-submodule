@@ -4,15 +4,41 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
 import AiderGUI from "@/integrations/aider/aidergui";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 
 const tabs = [
-  { id: "home", name: "Home", component: <HomePage />, shortcut: "1" },
-  { id: "aiderMode", name: "Creator", component: <AiderGUI />, shortcut: "2" },
-  { id: "perplexityMode", name: "Search", component: <PerplexityGUI />, shortcut: "3" },
-  { id: "inventory", name: "Inventory", component: <InventoryPage />, shortcut: "4" },
+  { 
+    id: "home", 
+    name: "Home", 
+    component: <HomePage />, 
+    shortcut: <kbd className="ml-[1.5px]">1</kbd> 
+  },
+  { 
+    id: "aiderMode", 
+    name: "Creator", 
+    component: <AiderGUI />, 
+    shortcut: <kbd className="ml-[1.5px]">2</kbd> 
+  },
+  { 
+    id: "perplexityMode", 
+    name: "Search", 
+    component: <PerplexityGUI />, 
+    shortcut: <kbd className="ml-[1.5px]">3</kbd> 
+  },
+  { 
+    id: "inventory", 
+    name: "Inventory", 
+    component: <InventoryPage />, 
+    shortcut: <><kbd className="ml-[1.5px]">SHIFT</kbd><kbd className="ml-[1.5px]">1</kbd></> 
+  },
 ];
+
+interface TabButtonProps {
+  id: string;
+  name: string;
+  shortcut: ReactNode;
+}
 
 export default function Inventory() {
   const location = useLocation();
@@ -27,6 +53,7 @@ export default function Inventory() {
     setActiveTab(tab);
   }, [location]);
 
+  useWebviewListener("navigateToInventoryHome", () => handleTabChange("home"), []);
   useWebviewListener("navigateToCreator", () => handleTabChange("aiderMode"), []);
   useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
   useWebviewListener("navigateToInventory", () => handleTabChange("inventory"), []);
@@ -37,7 +64,7 @@ export default function Inventory() {
     navigate(value === "inventory" ? "/inventory" : `/inventory/${value}`);
   };
 
-  const TabButton = ({ id, name, shortcut }: { id: string; name: string; shortcut: string }) => (
+  const TabButton = ({ id, name, shortcut }: TabButtonProps) => (
     <TabsTrigger
       value={id}
       className={`text-xs font-medium px-3 py-1 rounded transition-all duration-300 ${
@@ -48,7 +75,7 @@ export default function Inventory() {
     >
       {name}
       <kbd className="ml-1">{modifierKey}</kbd>
-      <kbd className="ml-[2px]">{shortcut}</kbd>
+      {shortcut}
     </TabsTrigger>
   );
 

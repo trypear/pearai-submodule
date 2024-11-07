@@ -29,7 +29,7 @@ export default function HomePage() {
     {
       icon: "inventory-perplexity.png",
       label: "Search",
-      description: <>Up-to-date information</>,
+      description: <>Up-to-date info (web search)</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>3</Kbd></span>,
       path: "/inventory/perplexityMode",
     },
@@ -70,7 +70,7 @@ export default function HomePage() {
           src={`${getLogoPath(item.icon)}`} 
           width="80%" 
           height="80%" 
-          alt="" 
+          alt={`${item.label} logo`}
           className="mb-2"
         />
         <div className="text-center w-4/5">

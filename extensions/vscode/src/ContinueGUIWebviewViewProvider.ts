@@ -249,7 +249,7 @@ export class ContinueGUIWebviewViewProvider
         }
         ${page ? `<script>window.location.pathname = "${page}"</script>` : ""}
       </body>
-      ${isOverlay && `
+      ${isOverlay ? `
           <style>
             body {
               margin: 0;
@@ -270,7 +270,7 @@ export class ContinueGUIWebviewViewProvider
               height: 80%;
             }
           </style>
-      `}
+      `: ""}
     </html>`;
   }
 }
