@@ -31,8 +31,6 @@ import ProgressBar from "./loaders/ProgressBar";
 import PostHogPageView from "./PosthogPageView";
 import ProfileSwitcher from "./ProfileSwitcher";
 import ShortcutContainer from "./ShortcutContainer";
-import OnboardingTutorial from "@/pages/onboarding/OnboardingTutorial";
-import posthog from "posthog-js";
 
 // check mac or window
 const platform = navigator.userAgent.toLowerCase();
@@ -97,12 +95,12 @@ const Header = styled.header`
   overflow: hidden;
 `;
 
-const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean }>`
+const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean, path: string}>`
   display: grid;
   grid-template-rows: ${(props) => {
-    if (props.showHeader && props.showTutorial) {
+    if (props.showHeader && props.showTutorial && props.path !== "/onboarding") {
       return "auto auto 1fr auto";
-    } else if (props.showHeader || props.showTutorial) {
+    } else if (props.showHeader || (props.showTutorial && props.path !== "/onboarding")) {
       return "auto 1fr auto";
     } else {
       return "1fr auto";
@@ -320,10 +318,11 @@ const Layout = () => {
           />
 
           <GridDiv
-            showHeader={!window.isPearOverlay && SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
+            showHeader={SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
             showTutorial={!!showInteractiveContinueTutorial}
+            path={location.pathname}
           >
-            {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && !window.isPearOverlay && (
+            {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && (
               <Header>
                 <ShortcutContainer />
               </Header>

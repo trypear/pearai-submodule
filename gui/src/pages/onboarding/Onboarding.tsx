@@ -55,7 +55,7 @@ function Onboarding() {
   const modelInfo = providers["pearai_server"];
 
   return (
-    <div className="max-w-96  mx-auto leading-normal">
+    <div className="max-w-96 mx-auto leading-normal">
       <h1 className="text-center">Welcome to PearAI!</h1>
       <h3 className="mx-3 text-center">Begin your journey by logging in!</h3>
       <CustomModelButton
@@ -65,7 +65,7 @@ function Onboarding() {
           ideMessenger.post("pearaiLogin", undefined);
         }}
       >
-        <h3 className="text-center my-2">Sign Up / Log In</h3>
+        <h3 className="text-center my-2">Log In / Sign Up</h3>
         <img
           src={`${window.vscMediaUrl}/logos/${modelInfo?.icon}`}
           height="24px"
