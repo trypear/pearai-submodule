@@ -187,7 +187,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
     "quickEdit",
     async () => {
       if (currentPage === 2) {
-        // Wait 300ms for quick input widget to appear
+        // Wait 100ms for quick input widget to appear
         await new Promise(resolve => setTimeout(resolve, 100));
         ideMessenger.post("highlightElement", {elementSelectors: ['.quick-input-widget']});
         nextPage();
