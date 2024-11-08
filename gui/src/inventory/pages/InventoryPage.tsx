@@ -409,8 +409,8 @@ export default function AIToolInventory() {
               </>
             ) : (
               <div className="flex flex-col items-center justify-center text-foreground opacity-60 mt-4 flex-grow">
-                <p className="text-sm font-medium">No tool selected</p>
-                <p className="text-xs">Select a tool to view its details</p>
+                <p className="text-lg font-medium">No tool selected</p>
+                <p className="text">Select a tool to view its details</p>
               </div>
             )}
           </div>

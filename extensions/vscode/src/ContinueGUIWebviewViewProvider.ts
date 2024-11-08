@@ -270,6 +270,13 @@ export class ContinueGUIWebviewViewProvider
               height: 80%;
             }
           </style>
+          <script>
+            document.body.addEventListener('click', function(e) {
+                if (e.target === document.body) {
+                    vscode.postMessage({ messageType: 'closeOverlay', messageId: "closeOverlay" });
+                }
+            });
+          </script>
       `: ""}
     </html>`;
   }
