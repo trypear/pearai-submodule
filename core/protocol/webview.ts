@@ -1,5 +1,5 @@
 import type { ContextItemWithId, IndexingProgressUpdate } from "../index.js";
-import type { AiderState } from "../llm/llms/Aider";
+import type { AiderState } from "../llm/llms/AiderLLM.js";
 
 export type ToWebviewFromIdeOrCoreProtocol = {
   configUpdate: [undefined, void];

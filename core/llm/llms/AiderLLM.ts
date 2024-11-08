@@ -61,6 +61,8 @@ class Aider extends BaseLLM {
   }
 
   public setAiderState(state: AiderState["state"]): void {
+    console.dir(`Setting aider state from ${this.aiderState} to ${state}`);
+
     this.aiderState = state;
     // Send an update to the UI
     vscode.commands.executeCommand("pearai.refreshAiderProcessState");
