@@ -15,7 +15,7 @@ import {
 import { modelSupportsImages } from "core/llm/autodetect";
 import { getBasename, getRelativePath, isValidFilePath } from "core/util";
 import { usePostHog } from "posthog-js/react";
-import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState, memo, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -60,6 +60,7 @@ import ActiveFileIndicator from "./ActiveFileIndicator";
 
 const InputBoxDiv = styled.div`
   resize: none;
+
   padding: 8px 12px;
   padding-bottom: 4px;
   font-family: inherit;
@@ -72,9 +73,9 @@ const InputBoxDiv = styled.div`
   z-index: 1;
   outline: none;
   font-size: ${getFontSize()}px;
-
   &:focus {
     outline: none;
+
     border: 0.5px solid ${vscInputBorderFocus};
   }
 
@@ -159,6 +160,7 @@ interface TipTapEditorProps {
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
 }
+
 const TipTapEditor = memo(function TipTapEditor({
   availableContextProviders,
   availableSlashCommands,
@@ -455,7 +457,7 @@ const TipTapEditor = memo(function TipTapEditor({
           ideMessenger,
         ),
         renderHTML: (props) => {
-          return `@${props.node.attrs.label || props.node.attrs.id} `;
+          return `@${props.node.attrs.label || props.node.attrs.id}`;
         },
       }),
       SlashCommand.configure({
@@ -673,7 +675,6 @@ const TipTapEditor = memo(function TipTapEditor({
             editor.state.selection.from,
             editor.state.selection.to,
           );
-
           navigator.clipboard.writeText(selectedText);
           editor.commands.deleteSelection();
           event.preventDefault();
@@ -683,15 +684,12 @@ const TipTapEditor = memo(function TipTapEditor({
             editor.state.selection.from,
             editor.state.selection.to,
           );
-
           navigator.clipboard.writeText(selectedText);
           event.preventDefault();
         } else if ((event.metaKey || event.ctrlKey) && event.key === "v") {
           // Paste
           event.preventDefault(); // Prevent default paste behavior
-
           const clipboardText = await navigator.clipboard.readText();
-
           editor.commands.insertContent(clipboardText);
         }
       };
@@ -736,7 +734,7 @@ const TipTapEditor = memo(function TipTapEditor({
       dispatch(consumeMainEditorContent());
     }
   }, [mainEditorContent, editor]);
-  
+
   const onEnterRef = useUpdatingRef(
     (modifiers: InputModifiers) => {
       const json = editor.getJSON();
@@ -764,9 +762,9 @@ const TipTapEditor = memo(function TipTapEditor({
           content: [mentionNode]
         });
       }
-  
+
       onEnter(json, modifiers);
-  
+
       if (isMainInput) {
         const content = editor.state.toJSON().doc;
         addRef.current(content);
@@ -782,9 +780,9 @@ const TipTapEditor = memo(function TipTapEditor({
         ideMessenger.post("focusEditor", undefined);
       }
     };
-  
+
     window.addEventListener("keydown", handleKeyDown);
-  
+
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
