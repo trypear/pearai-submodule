@@ -28,7 +28,6 @@ import {
   deleteMessage,
   newSession,
   setAiderInactive,
-  updateAiderProcessState,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
@@ -61,8 +60,8 @@ function AiderGUI() {
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
-  const aiderProcessState = useSelector(
-    (state: RootState) => state.state.aiderProcessState,
+  const [aiderProcessState, setAiderProcessState] = useState(
+    useSelector((state: RootState) => state.state.aiderProcessState)
   );
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
@@ -120,7 +119,7 @@ function AiderGUI() {
       ) {
         dispatch(setAiderInactive());
       } else if (
-        e.key === "." && 
+        e.key === "." &&
         isMetaEquivalentKeyPressed(e) &&
         !e.shiftKey
       ) {
@@ -186,10 +185,13 @@ function AiderGUI() {
   useWebviewListener(
     "aiderProcessStateUpdate",
     async (data) => {
-      dispatch(updateAiderProcessState({ state: data.state }));
+      if (data) {
+        setAiderProcessState(data);
+      }
     },
-    [],
+    [setAiderProcessState]
   );
+
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
@@ -229,10 +231,10 @@ function AiderGUI() {
       msg = (
         <>
           PearAI Creator (Powered By aider) process is not running. Please view{" "}
-          <a 
-            href="https://trypear.ai/creator-troubleshooting" 
-            target="_blank" 
-            rel="noopener noreferrer" 
+          <a
+            href="https://trypear.ai/creator-troubleshooting"
+            target="_blank"
+            rel="noopener noreferrer"
             className="underline text-foreground"
           >
             troubleshooting
@@ -436,8 +438,8 @@ function AiderGUI() {
 
             <div className={cn(
               "transition-all duration-300",
-              state.aiderHistory.length === 0 
-                ? "max-w-2xl mx-auto w-full" 
+              state.aiderHistory.length === 0
+                ? "max-w-2xl mx-auto w-full"
                 : "w-full"
             )}>
               <ContinueInputBox

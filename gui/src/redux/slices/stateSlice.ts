@@ -206,9 +206,6 @@ export const stateSlice = createSlice({
     setActive: (state) => {
       state.active = true;
     },
-    updateAiderProcessState: (state, action: PayloadAction<AiderState>) => {
-      state.aiderProcessState = action.payload;
-    },
     setPerplexityActive: (state) => {
       state.perplexityActive = true;
     },
@@ -676,7 +673,6 @@ export const {
   setConfig,
   addPromptCompletionPair,
   setActive,
-  updateAiderProcessState,
   setPerplexityActive,
   setAiderActive,
   setEditingContextItemAtIndex,
