@@ -57,6 +57,8 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
+import ActiveFileIndicator from "./ActiveFileIndicator";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 
 
 const InputBoxDiv = styled.div`
@@ -192,6 +194,8 @@ const TipTapEditor = memo(function TipTapEditor({
   const editorKey = useMemo(() => `${(source || 'continue')}-editor`, [source]);
 
   const useActiveFile = useSelector(selectUseActiveFile);
+  const activeFilePath = useSelector((state: RootState) => state.uiState.activeFilePath);
+  const useActiveFileFinal = !!(useActiveFile || activeFilePath)
 
   const { saveSession } = useHistory(dispatch, source);
 
@@ -367,7 +371,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
               onEnterRef.current({
                 useCodebase: false,
-                noContext: !useActiveFile,
+                noContext: !useActiveFileFinal,
               });
               return true;
             },
@@ -375,7 +379,7 @@ const TipTapEditor = memo(function TipTapEditor({
             "Mod-Enter": () => {
               onEnterRef.current({
                 useCodebase: true,
-                noContext: !useActiveFile,
+                noContext: !useActiveFileFinal,
               });
               return true;
             },
@@ -384,7 +388,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
               onEnterRef.current({
                 useCodebase: false,
-                noContext: useActiveFile,
+                noContext: useActiveFileFinal,
               });
 
               return true;
@@ -651,6 +655,14 @@ const TipTapEditor = memo(function TipTapEditor({
       onEnterRef.current({ useCodebase: false, noContext: true });
     },
     [editor, onEnterRef.current, isMainInput],
+  );
+
+  useWebviewListener(
+    "setActiveFilePath",
+    async (data) => {
+      historyLength < 1 && dispatch(setActiveFilePath(data));
+    },
+    [dispatch]
   );
 
   useWebviewListener(
@@ -963,6 +975,7 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     >
+      {historyLength === 0 && <ActiveFileIndicator />}
       <EditorContent
         spellCheck={false}
         editor={editor}
