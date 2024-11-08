@@ -150,6 +150,30 @@ function getDataUrlForFile(file: File, img): string {
   return downsizedDataUrl;
 }
 
+// This is necessary due to multiple re-renders of the TipTapEditor
+const arePropsEqual = (
+  prevProps: TipTapEditorProps,
+  nextProps: TipTapEditorProps,
+) => {
+  const areArraysEqual = (a: any[] = [], b: any[] = []) =>
+    a.length === b.length && a.every((item, i) => item?.id === b[i]?.id);
+
+  return (
+    prevProps.isMainInput === nextProps.isMainInput &&
+    prevProps.source === nextProps.source &&
+    prevProps.editorState === nextProps.editorState &&
+    prevProps.onEnter === nextProps.onEnter &&
+    areArraysEqual(
+      prevProps.availableContextProviders,
+      nextProps.availableContextProviders,
+    ) &&
+    areArraysEqual(
+      prevProps.availableSlashCommands,
+      nextProps.availableSlashCommands,
+    )
+  );
+};
+
 interface ShowFileEvent extends CustomEvent<{ filepath: string }> {}
 
 interface TipTapEditorProps {
@@ -159,7 +183,6 @@ interface TipTapEditorProps {
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
-  onContentChange?: (newState: JSONContent) => void;
 }
 const TipTapEditor = memo(function TipTapEditor({
   availableContextProviders,
@@ -168,7 +191,6 @@ const TipTapEditor = memo(function TipTapEditor({
   onEnter,
   editorState,
   source = 'continue',
-  onContentChange,
 }: TipTapEditorProps) {
   const dispatch = useDispatch();
 
@@ -302,12 +324,13 @@ const TipTapEditor = memo(function TipTapEditor({
 
   // Keep track of the last valid content
   const lastContentRef = useRef(editorState);
+  const persistentContentRef = useRef<JSONContent | null>(null);
 
   useEffect(() => {
-    if (editorState) {
+    if (editorState && !active) {
       lastContentRef.current = editorState;
     }
-  }, [editorState]);
+  }, [editorState, active]);
 
   const editor: Editor = useEditor({
     extensions: [
@@ -482,7 +505,7 @@ const TipTapEditor = memo(function TipTapEditor({
         style: `font-size: ${getFontSize()}px;`,
       },
     },
-    content: lastContentRef.current,
+    content: persistentContentRef.current || lastContentRef.current,
     editable: true,
     onFocus: () => editorFocusedRef.current = true,
     onBlur: () => editorFocusedRef.current = true,
@@ -520,13 +543,17 @@ const TipTapEditor = memo(function TipTapEditor({
           }
         }
       }
+
+      if (editor) {
+        persistentContentRef.current = editor.getJSON();
+      }
     },
     onCreate({ editor }) {
-      if (lastContentRef.current) {
-        editor.commands.setContent(lastContentRef.current);
+      if (persistentContentRef.current) {
+        editor.commands.setContent(persistentContentRef.current);
       }
     }
-  }, [historyLength]);
+  }, []);
 
   const handleShowFile = useCallback((event: ShowFileEvent) => {
     if (!ideMessenger) return;
@@ -560,13 +587,19 @@ const TipTapEditor = memo(function TipTapEditor({
   
     if (mentionCount > 1) return false;
   
+    const hasSlashCommand = content.content?.some(node => 
+      node.type === "paragraph" && 
+      node.content?.some(child => child.type === "slashcommand")
+    );
+  
+    if (hasSlashCommand) return false;
+  
     return !content.content?.some(node => 
       (node.type === "paragraph" && 
         node.content?.some(child => 
           (child.type === "text" && child.text.trim().length > 0)
         )
       ) ||
-      node.type === "slashcommand" ||
       node.type === "codeBlock"
     );
   }, []);
@@ -628,17 +661,25 @@ const TipTapEditor = memo(function TipTapEditor({
   
   const handleEditorChange = useCallback(
     async (data: { filepath: string | null }) => {
-      if (isMainInput && historyLength === 0 && data.filepath) {
+      if (isMainInput && historyLength === 0 && editor && isEditorEmpty(editor) && data.filepath) {
         await createAndSetContext(data.filepath);
       }
     },
-    [isMainInput, historyLength, createAndSetContext]
+    [isMainInput, historyLength, editor, createAndSetContext]
   );
   
   useWebviewListener(
     "activeEditorChange",
-    handleEditorChange,
-    [handleEditorChange]
+    async (data) => {
+      if (!isMainInput || !editor) return;
+      
+      const empty = isEditorEmpty(editor);
+  
+      if (historyLength === 0 && empty && data.filepath) {
+        await createAndSetContext(data.filepath);
+      }
+    },
+    [isMainInput, editor, historyLength, createAndSetContext]
   );
 
   useEffect(() => {
@@ -743,43 +784,61 @@ const TipTapEditor = memo(function TipTapEditor({
   const onEnterRef = useUpdatingRef(
     (modifiers: InputModifiers) => {
       const json = editor.getJSON();
+      persistentContentRef.current = json;
 
       // Don't do anything if input box is empty
       if (!json.content?.some((c) => c.content)) {
         return;
       }
-  
-      const mentions = json.content?.reduce((acc, node) => {
-        if (node.content) {
-          const mentionNodes = node.content.filter(child => child.type === "mention");
 
-          acc.push(...mentionNodes);
-        }
-        return acc;
-      }, []);
+      try {
+        const mentions = json.content?.reduce((acc, node) => {
+          if (node.content) {
+            const mentionNodes = node.content.filter(child => child.type === "mention");
   
-      const newContextItems = mentions.map(mention => ({
-        name: mention.attrs.label || mention.attrs.id,
-        description: mention.attrs.id,
-        id: {
-          providerTitle: "file",
-          itemId: mention.attrs.id
-        },
-        content: "",
-        editable: false
-      }));
-  
-      requestAnimationFrame(() => {
-        dispatch(setContextItems(newContextItems));
-        
-        if (isMainInput) {
-          const content = editor.state.toJSON().doc;
+            acc.push(...mentionNodes);
+          }
 
-          addRef.current(content);
-        }
-      });
+          return acc;
+        }, []);
+    
+        const newContextItems = mentions.map(mention => ({
+          name: mention.attrs.label || mention.attrs.id,
+          description: mention.attrs.id,
+          id: {
+            providerTitle: "file",
+            itemId: mention.attrs.id
+          },
+          content: "",
+          editable: false
+        }));
+    
+        requestAnimationFrame(() => {
+          dispatch(setContextItems(newContextItems));
+          
+          if (isMainInput) {
+            const content = editor.state.toJSON().doc;
   
-      onEnter(json, modifiers);
+            addRef.current(content);
+          }
+        });
+    
+        onEnter(json, modifiers);
+
+        setTimeout(() => {
+          if (editor) {
+            editor.commands.clearContent();
+            persistentContentRef.current = null;
+            lastContentRef.current = null;
+          }
+        }, 0);
+      } catch (error) {
+        console.error('Error in onEnter:', error);
+
+        if (editor && persistentContentRef.current) {
+          editor.commands.setContent(persistentContentRef.current);
+        }
+      }
     },
     [onEnter, editor, isMainInput]
   );
@@ -1029,22 +1088,6 @@ const TipTapEditor = memo(function TipTapEditor({
   }, []);
 
   const [optionKeyHeld, setOptionKeyHeld] = useState(false);
-  // Prevent content flash during streaming
-  useEffect(() => {
-    if (editor && lastContentRef.current) {
-      const currentContent = editor.getJSON();
-      if (JSON.stringify(currentContent) !== JSON.stringify(lastContentRef.current)) {
-        editor.commands.setContent(lastContentRef.current);
-      }
-    }
-  }, [editor, source]);
-
-  // clear editor content after response
-  useEffect(() => {
-    if (isMainInput && !active && editor) {
-      editor.commands.clearContent();
-    }
-  }, [isMainInput, active, editor]);
 
   return (
     <InputBoxDiv
@@ -1143,6 +1186,6 @@ const TipTapEditor = memo(function TipTapEditor({
         )}
     </InputBoxDiv>
   );
-});
+}, arePropsEqual);
 
 export default TipTapEditor;

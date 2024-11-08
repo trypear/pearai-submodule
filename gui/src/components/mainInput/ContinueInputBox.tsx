@@ -9,7 +9,7 @@ import { newSession, setMessageAtIndex } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
-import { useState, useEffect, useCallback, memo } from "react";
+import { memo } from "react";
 import { isBareChatMode } from "../../util/bareChatMode";
 import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
 import { getFontSize } from "../../util";
@@ -125,14 +125,15 @@ const ContinueInputBox = memo(function ContinueInputBox({
   const dispatch = useDispatch();
 
   const active = useSelector((store: RootState) => {
-    switch (source) {
-      case "perplexity":
-        return store.state.perplexityActive;
-      case "aider":
-        return store.state.aiderActive;
-      default:
-        return store.state.active;
-    }
+    const state = store?.state;
+
+    if (!state) return false;
+
+    return source === "perplexity"
+      ? state.perplexityActive
+      : source === "aider"
+      ? state.aiderActive
+      : state.active;
   });
 
   const availableSlashCommands = useSelector(selectSlashCommands);
@@ -157,21 +158,6 @@ const ContinueInputBox = memo(function ContinueInputBox({
     [isMainInput],
   );
 
-  // check if lastActiveIntegration === source, if so, activate gradient border and tiptap editor
-  // actually can get history here and check if last message of passed in source was a lastUserInput
-  // Preserve editor state between renders
-  const [preservedState, setPreservedState] = useState(editorState);
-
-  useEffect(() => {
-    if (editorState) {
-      setPreservedState(editorState);
-    }
-  }, [editorState]);
-
-  const handleEditorChange = useCallback((newState: JSONContent) => {
-    setPreservedState(newState);
-  }, []);
-
   return (
     <div
       style={{
@@ -186,7 +172,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
         borderRadius={defaultBorderRadius}
       >
         <TipTapEditor
-          editorState={preservedState}
+          editorState={editorState}
           onEnter={onEnter}
           isMainInput={isMainInput}
           availableContextProviders={availableContextProviders}
@@ -194,7 +180,6 @@ const ContinueInputBox = memo(function ContinueInputBox({
             bareChatMode ? undefined : availableSlashCommands
           }
           source={source}
-          onContentChange={handleEditorChange}
         ></TipTapEditor>
       </GradientBorder>
       {active && isLastUserInput && (
