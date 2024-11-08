@@ -5,12 +5,13 @@ import { Card } from "@/components/ui/card";
 import { useContext, useState, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { Bot, Sparkles, MessageSquare, Search } from "lucide-react";
+import { getLogoPath } from "./ImportExtensions";
 
 interface Tool {
     id: string;
     name: string;
     description: string;
-    icon: JSX.Element;
+    icon: JSX.Element | string;
     installCommand: () => Promise<void>;
     preInstalled: boolean;
 }
@@ -35,7 +36,7 @@ export default function InstallTools({
             id: "aider",
             name: "Aider",
             description: "A command-line tool that lets you pair program with GPT-4, editing code and files together in your terminal.",
-            icon: <Bot className="h-6 w-6" />,
+            icon: "inventory-creator.svg",
             installCommand: handleAiderInstall,
             preInstalled: false
         },
@@ -163,7 +164,7 @@ export default function InstallTools({
                             }`}>
                                 <div className="flex items-center gap-4 flex-1">
                                     <div className="p-2 bg-muted rounded-lg">
-                                        {tool.icon}
+                                        {typeof tool.icon === 'string' ? <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-6 w-6" /> : tool.icon}
                                     </div>
                                     <div className="flex-1">
                                         <div className="flex items-center gap-2">
