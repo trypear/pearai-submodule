@@ -83,6 +83,9 @@ export class VsCodeMessenger {
     this.onWebview("markNewOnboardingComplete", (msg) => {
       vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
     });
+    this.onWebview("closeOverlay", (msg) => {
+      vscode.commands.executeCommand("pearai.hideOverlay");
+    });
     this.onWebview("lockOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.lockOverlay");
     });
@@ -123,6 +126,22 @@ export class VsCodeMessenger {
           const contents = document.getText(range);
           return contents;
         });
+    });
+    this.onWebview("openAiderChanges", (msg) => {
+      vscode.commands.executeCommand("pearai.openAiderChanges");
+    });
+    this.onWebview("getNumberOfChanges", (msg) => {
+      const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+      const repository = gitExtension?.getAPI(1).repositories[0];
+    
+      if (repository) {
+          const unstagedChanges = repository.state.workingTreeChanges;
+          return unstagedChanges.length;
+      }
+      return 0;
+    });
+    this.onWebview("closePearAIOverlay", (msg) => {
+      vscode.commands.executeCommand("pearai.hideOverlay");
     });
     this.onWebview("highlightElement", (msg) => {
       vscode.commands.executeCommand("pearai.highlightElement", msg);
