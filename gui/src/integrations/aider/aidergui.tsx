@@ -224,7 +224,7 @@ function AiderGUI() {
           to use PearAI Creator.
         </>
       );
-    } 
+    }
     if (aiderProcessState.state === "stopped") {
       msg = (
         <>
@@ -526,7 +526,6 @@ const tutorialContent = {
     copyText: "Make a new FAQ page for my website",
   },
   moreInfo: [
-    "- Type '@' to add file context to your request.",
     "- Ignore system ```<<< SEARCH REPLACE >>>``` messages. These are for the system to make edits for you automatically."
   ]
 }

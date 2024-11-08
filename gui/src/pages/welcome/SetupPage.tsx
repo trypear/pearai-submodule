@@ -103,15 +103,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
           </div>
         </div>
 
-        <div className="p-6 border-t border-input shrink-0">
-            <Button
-                className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer"
-                onClick={handleNextClick}
-            >
-                Next
-            </Button>
-            </div>
-        </div>
+      </div>
 
         <div className="w-[65%] flex flex-col h-full justify-center relative bg-background">
             {setupSteps.map((setupStep, index) => (
