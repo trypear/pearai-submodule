@@ -112,15 +112,14 @@ interface ContinueInputBoxProps {
   source?: "perplexity" | "aider" | "continue";
 }
 
-
 const ContinueInputBox = memo(function ContinueInputBox({
   isLastUserInput,
   isMainInput,
   onEnter,
   editorState,
+  contextItems = [],
   hidden,
   source = "continue",
-  contextItems = [],
 }: ContinueInputBoxProps) {
   const dispatch = useDispatch();
 

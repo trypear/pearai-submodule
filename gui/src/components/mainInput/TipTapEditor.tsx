@@ -553,23 +553,27 @@ const TipTapEditor = memo(function TipTapEditor({
   const isEditorEmpty = useCallback((editor: Editor) => {
     const content = editor.getJSON();
   
-    // Counting number of "@" mentions, if more than 1 return false
-    // Else, check if there's also text, if so, then is not empty.
-    // If only one "@" mention with no text, then switch the mention
-    // With new current file's mention.
+    // Counting number of "@" mentions
     const mentionCount = content.content?.reduce((count, node) => {
       return count + (node.content?.filter(child => child.type === "mention").length || 0);
     }, 0) || 0;
   
-    if (mentionCount > 1) return false;
+    // If only one mention (auto-added file) and no other content, consider it empty
+    if (mentionCount === 1) {
+      const hasOtherContent = content.content?.some(node => 
+        (node.type === "paragraph" && 
+          node.content?.some(child => 
+            child.type === "text" && child.text.trim().length > 0 && child.text !== " "
+          )
+        ) ||
+        node.type === "codeBlock" ||
+        node.type === "slashcommand"
+      );
+      
+      return !hasOtherContent;
+    }
   
-    const hasSlashCommand = content.content?.some(node => 
-      node.type === "paragraph" && 
-      node.content?.some(child => child.type === "slashcommand")
-    );
-  
-    if (hasSlashCommand) return false;
-  
+    // If more than one mention or other content exists, not empty
     return !content.content?.some(node => 
       (node.type === "paragraph" && 
         node.content?.some(child => 
@@ -634,15 +638,6 @@ const TipTapEditor = memo(function TipTapEditor({
       ).catch(console.error);
     }
   }, [editor, isMainInput, historyLength, createAndSetContext]);
-  
-  const handleEditorChange = useCallback(
-    async (data: { filepath: string | null }) => {
-      if (isMainInput && historyLength === 0 && editor && isEditorEmpty(editor) && data.filepath) {
-        await createAndSetContext(data.filepath);
-      }
-    },
-    [isMainInput, historyLength, editor, createAndSetContext]
-  );
   
   useWebviewListener(
     "activeEditorChange",
@@ -819,26 +814,15 @@ const TipTapEditor = memo(function TipTapEditor({
     [onEnter, editor, isMainInput]
   );
 
-  // This is a mechanism for overriding the IDE keyboard shortcut when inside of the webview
-  const [ignoreHighlightedCode, setIgnoreHighlightedCode] = useState(false);
-
   useEffect(() => {
-    const handleKeyDown = (event: any) => {
-      if (
-        isMetaEquivalentKeyPressed(event) &&
-        (isJetBrains() ? event.code === "KeyJ" : event.code === "KeyL")
-      ) {
-        setIgnoreHighlightedCode(true);
-        setTimeout(() => {
-          setIgnoreHighlightedCode(false);
-        }, 100);
-      } else if (event.key === "Escape") {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
         ideMessenger.post("focusEditor", undefined);
       }
     };
-
+  
     window.addEventListener("keydown", handleKeyDown);
-
+  
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
@@ -962,68 +946,64 @@ const TipTapEditor = memo(function TipTapEditor({
       if (!isMainInput || !editor) {
         return;
       }
-      if (!ignoreHighlightedCode) {
-        const rif: RangeInFile & { contents: string } =
-          data.rangeInFileWithContents;
-        const basename = getBasename(rif.filepath);
-        const relativePath = getRelativePath(
-          rif.filepath,
-          await ideMessenger.ide.getWorkspaceDirs(),
-        );
-        const rangeStr = `(${rif.range.start.line + 1}-${
-          rif.range.end.line + 1
-        })`;
-        const item: ContextItemWithId = {
-          content: rif.contents,
-          name: `${basename} ${rangeStr}`,
-          // Description is passed on to the LLM to give more context on file path
-          description: `${relativePath} ${rangeStr}`,
-          id: {
-            providerTitle: "code",
-            itemId: rif.filepath,
-          },
-        };
 
-        let index = 0;
-        for (const el of editor.getJSON().content) {
-          if (el.type === "codeBlock") {
-            index += 2;
-          } else {
-            break;
-          }
+      const rif: RangeInFile & { contents: string } =
+        data.rangeInFileWithContents;
+      const basename = getBasename(rif.filepath);
+      const relativePath = getRelativePath(
+        rif.filepath,
+        await ideMessenger.ide.getWorkspaceDirs(),
+      );
+      const rangeStr = `(${rif.range.start.line + 1}-${
+        rif.range.end.line + 1
+      })`;
+      const item: ContextItemWithId = {
+        content: rif.contents,
+        name: `${basename} ${rangeStr}`,
+        // Description is passed on to the LLM to give more context on file path
+        description: `${relativePath} ${rangeStr}`,
+        id: {
+          providerTitle: "code",
+          itemId: rif.filepath,
+        },
+      };
+
+      let index = 0;
+      for (const el of editor.getJSON().content) {
+        if (el.type === "codeBlock") {
+          index += 2;
+        } else {
+          break;
         }
-        editor
-          .chain()
-          .insertContentAt(index, {
-            type: "codeBlock",
-            attrs: {
-              item,
-            },
-          })
-          .run();
-
-        if (data.prompt) {
-          editor.commands.focus("end");
-          editor.commands.insertContent(data.prompt);
-        }
-
-        if (data.shouldRun) {
-          onEnterRef.current({ useCodebase: false, noContext: true });
-        }
-
-        setTimeout(() => {
-          editor.commands.blur();
-          editor.commands.focus("end");
-        }, 20);
       }
-      setIgnoreHighlightedCode(false);
+      editor
+        .chain()
+        .insertContentAt(index, {
+          type: "codeBlock",
+          attrs: {
+            item,
+          },
+        })
+        .run();
+
+      if (data.prompt) {
+        editor.commands.focus("end");
+        editor.commands.insertContent(data.prompt);
+      }
+
+      if (data.shouldRun) {
+        onEnterRef.current({ useCodebase: false, noContext: true });
+      }
+
+      setTimeout(() => {
+        editor.commands.blur();
+        editor.commands.focus("end");
+      }, 20);
     },
     [
       editor,
       isMainInput,
       historyLength,
-      ignoreHighlightedCode,
-      isMainInput,
       onEnterRef.current,
     ],
   );

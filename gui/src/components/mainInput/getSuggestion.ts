@@ -63,6 +63,7 @@ function getSuggestion(
             onOpen();
           });
         },
+
         onUpdate(props) {
           component.updateProps({ ...props, enterSubmenu });
 
@@ -74,6 +75,7 @@ function getSuggestion(
             getReferenceClientRect: props.clientRect,
           });
         },
+
         onKeyDown(props) {
           if (props.event.key === "Escape") {
             popup[0].hide();
@@ -83,6 +85,7 @@ function getSuggestion(
 
           return component.ref?.onKeyDown(props);
         },
+        
         onExit,
       };
     },
