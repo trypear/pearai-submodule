@@ -27,7 +27,7 @@ import { getFontSize } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
-import { isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
+import { isAiderMode, isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
 
 interface StepContainerProps {
   item: ChatHistoryItem;
@@ -81,6 +81,9 @@ function StepContainer({
   const ideMessenger = useContext(IdeMessengerContext);
   const bareChatMode = isBareChatMode();
   const isPerplexity = isPerplexityMode();
+  const isAider = isAiderMode();
+
+  const [numChanges, setNumChanges] = useState<number | null>(null);
 
   const [feedback, setFeedback] = useState<boolean | undefined>(undefined);
 
@@ -97,6 +100,22 @@ function StepContainer({
       }
     }
   };
+
+  const fetchNumberOfChanges = async () => {
+    try {
+      const response = await ideMessenger.request("getNumberOfChanges", undefined);
+      setNumChanges(response);
+    } catch (error) {
+      console.error("Failed to fetch number of changes:", error);
+    }
+  };
+  
+  useEffect(() => {
+    if (!active && isAider) {
+      fetchNumberOfChanges();
+    }
+  }, [active, isAider]);
+  
 
   const [truncatedEarly, setTruncatedEarly] = useState(false);
 
@@ -160,6 +179,18 @@ function StepContainer({
             Add to PearAI chat context
           </HeaderButtonWithText>
         )}
+        {
+          !active && isAider && (
+            <HeaderButtonWithText
+              onClick={() => {
+                ideMessenger.post("openAiderChanges", undefined);
+              }}
+            >
+              <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+              {numChanges && `See ${numChanges} changed file${numChanges === 1 ? '' : 's'}`}
+            </HeaderButtonWithText>
+          )
+        }
         {!active && (
           <div
             className="flex gap-1 absolute -bottom-2 right-0"
