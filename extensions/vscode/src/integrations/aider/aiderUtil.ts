@@ -193,7 +193,7 @@ async function checkPythonInstallation(): Promise<boolean> {
   return false;
 }
 
-async function checkAiderInstallation(): Promise<boolean> {
+export async function checkAiderInstallation(): Promise<boolean> {
   const commands = [
     "aider --version",
     "python -m aider --version",
