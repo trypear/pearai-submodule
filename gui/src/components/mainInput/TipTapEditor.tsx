@@ -15,7 +15,7 @@ import {
 import { modelSupportsImages } from "core/llm/autodetect";
 import { getBasename, getRelativePath, isValidFilePath } from "core/util";
 import { usePostHog } from "posthog-js/react";
-import { memo, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -36,7 +36,6 @@ import { selectUseActiveFile } from "../../redux/selectors";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import {
   consumeMainEditorContent,
-  newSession,
   setContextItems,
   setEditingContextItemAtIndex,
 } from "../../redux/slices/stateSlice";
@@ -44,7 +43,6 @@ import { RootState } from "../../redux/store";
 import {
   getFontSize,
   isJetBrains,
-  isMetaEquivalentKeyPressed,
   isWebEnvironment
 } from "../../util";
 import CodeBlockExtension from "./CodeBlockExtension";
@@ -58,6 +56,7 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
+import ActiveFileIndicator from "./ActiveFileIndicator";
 
 const InputBoxDiv = styled.div`
   resize: none;
@@ -303,10 +302,10 @@ const TipTapEditor = memo(function TipTapEditor({
   const persistentContentRef = useRef<JSONContent | null>(null);
 
   useEffect(() => {
-    if (editorState && !active) {
+    if (editorState) {
       lastContentRef.current = editorState;
     }
-  }, [editorState, active]);
+  }, [editorState]);
 
   const editor: Editor = useEditor({
     extensions: [
@@ -624,11 +623,9 @@ const TipTapEditor = memo(function TipTapEditor({
       if (isValidFilePath(filepath) && editor && isEditorEmpty(editor)) {
         const contextItem = createContextItem(filepath);
         dispatch(setContextItems([contextItem]));
-        updateEditorContent(editor, contextItem);
-        editor.commands.focus("end");
       }
     },
-    [editor, createContextItem, dispatch, updateEditorContent]
+    [editor, createContextItem, dispatch]
   );
   
   useEffect(() => {
@@ -655,21 +652,9 @@ const TipTapEditor = memo(function TipTapEditor({
 
   useEffect(() => {
     if (!ideMessenger) return;
-  
-    const listener = (event: ShowFileEvent) => {
-      try {
-        handleShowFile(event);
-      } catch (error) {
-        console.error('Error in show file handler:', error);
-      }
-    };
-  
-    window.addEventListener('showFile', listener as EventListener);
-    
-    return () => {
-      window.removeEventListener('showFile', listener as EventListener);
-    };
-  }, [handleShowFile, ideMessenger]);
+    window.addEventListener('showFile', handleShowFile as EventListener);
+    return () => window.removeEventListener('showFile', handleShowFile as EventListener);
+  }, [handleShowFile]);
 
   useEffect(() => {
     if (isJetBrains()) {
@@ -755,63 +740,40 @@ const TipTapEditor = memo(function TipTapEditor({
   const onEnterRef = useUpdatingRef(
     (modifiers: InputModifiers) => {
       const json = editor.getJSON();
-      persistentContentRef.current = json;
 
       // Don't do anything if input box is empty
       if (!json.content?.some((c) => c.content)) {
         return;
       }
-
-      try {
-        const mentions = json.content?.reduce((acc, node) => {
-          if (node.content) {
-            const mentionNodes = node.content.filter(child => child.type === "mention");
   
-            acc.push(...mentionNodes);
+      if (historyLength === 0 && contextItems[0]?.id.providerTitle === "file") {
+        const fileContextItem = contextItems[0];
+        const mentionNode = {
+          type: 'mention',
+          attrs: {
+            id: fileContextItem.description,
+            label: fileContextItem.name.replace(/^@/, ''),
+            renderInlineAs: null,
+            query: fileContextItem.description,
+            itemType: "file"
           }
-
-          return acc;
-        }, []);
-    
-        const newContextItems = mentions.map(mention => ({
-          name: mention.attrs.label || mention.attrs.id,
-          description: mention.attrs.id,
-          id: {
-            providerTitle: "file",
-            itemId: mention.attrs.id
-          },
-          content: "",
-          editable: false
-        }));
-    
-        requestAnimationFrame(() => {
-          dispatch(setContextItems(newContextItems));
-          
-          if (isMainInput) {
-            const content = editor.state.toJSON().doc;
+        };
   
-            addRef.current(content);
-          }
+        json.content.push({
+          type: 'paragraph',
+          content: [mentionNode]
         });
-    
-        onEnter(json, modifiers);
-
-        setTimeout(() => {
-          if (editor) {
-            editor.commands.clearContent();
-            persistentContentRef.current = null;
-            lastContentRef.current = null;
-          }
-        }, 0);
-      } catch (error) {
-        console.error('Error in onEnter:', error);
-
-        if (editor && persistentContentRef.current) {
-          editor.commands.setContent(persistentContentRef.current);
-        }
+      }
+  
+      onEnter(json, modifiers);
+  
+      if (isMainInput) {
+        const content = editor.state.toJSON().doc;
+        addRef.current(content);
+        editor.commands.clearContent(true);
       }
     },
-    [onEnter, editor, isMainInput]
+    [onEnter, editor, isMainInput, historyLength, contextItems],
   );
 
   useEffect(() => {
@@ -1099,6 +1061,7 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     >
+      {historyLength === 0 && <ActiveFileIndicator />}
       <EditorContent
         spellCheck={false}
         editor={editor}
