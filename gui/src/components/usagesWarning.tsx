@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { SERVER_URL } from "../../../core/util/parameters";
+import * as vscode from 'vscode';
 
 export default function UsageWarning() {
   const [isVisible, setIsVisible] = useState(false);
@@ -29,6 +30,7 @@ export default function UsageWarning() {
       if (warning_message) {
         setMessage(warning_message);
         setIsVisible(true); 
+        vscode.window.showWarningMessage(warning_message);
       } else {
         setMessage("");
         setIsVisible(false); 
