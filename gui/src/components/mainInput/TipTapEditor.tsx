@@ -150,30 +150,6 @@ function getDataUrlForFile(file: File, img): string {
   return downsizedDataUrl;
 }
 
-// This is necessary due to multiple re-renders of the TipTapEditor
-const arePropsEqual = (
-  prevProps: TipTapEditorProps,
-  nextProps: TipTapEditorProps,
-) => {
-  const areArraysEqual = (a: any[] = [], b: any[] = []) =>
-    a.length === b.length && a.every((item, i) => item?.id === b[i]?.id);
-
-  return (
-    prevProps.isMainInput === nextProps.isMainInput &&
-    prevProps.source === nextProps.source &&
-    prevProps.editorState === nextProps.editorState &&
-    prevProps.onEnter === nextProps.onEnter &&
-    areArraysEqual(
-      prevProps.availableContextProviders,
-      nextProps.availableContextProviders,
-    ) &&
-    areArraysEqual(
-      prevProps.availableSlashCommands,
-      nextProps.availableSlashCommands,
-    )
-  );
-};
-
 interface ShowFileEvent extends CustomEvent<{ filepath: string }> {}
 
 interface TipTapEditorProps {
@@ -1186,6 +1162,6 @@ const TipTapEditor = memo(function TipTapEditor({
         )}
     </InputBoxDiv>
   );
-}, arePropsEqual);
+});
 
 export default TipTapEditor;
