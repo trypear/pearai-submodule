@@ -41,7 +41,7 @@ export function shouldSkipContextProviders(
   }
 
   // For all other models,  skip if "relativefilecontext" or "relativegitfilecontext" is in the title
-  return description.title === "relativefilecontext || relativegitfilecontext";
+  return description.title === "relativefilecontext" || description.title ===  "relativegitfilecontext";
 }
 
 // This is for the frontend UI, which context providers are provided
