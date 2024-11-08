@@ -85,7 +85,7 @@ function getSuggestion(
 
           return component.ref?.onKeyDown(props);
         },
-        
+
         onExit,
       };
     },
