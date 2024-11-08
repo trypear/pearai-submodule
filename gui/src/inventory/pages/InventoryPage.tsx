@@ -1,4 +1,4 @@
-import { ReactElement, useContext, useState } from "react";
+import { ReactElement, useContext, useState, useEffect } from "react";
 import { Search, Star } from "lucide-react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { Input } from "@/components/ui/input";
@@ -15,6 +15,8 @@ import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { RootState } from "@/redux/store";
+import { useSelector } from "react-redux";
 
 interface AITool {
   id: string;
@@ -28,6 +30,7 @@ interface AITool {
   comingSoon?: boolean;
   poweredBy?: string;
   installNeeded: boolean;
+  isInstalled?: boolean;
   installCommand?: () => Promise<void>;
   note?: string;
 }
@@ -137,7 +140,31 @@ export default function AIToolInventory() {
 
   const ideMessenger = useContext(IdeMessengerContext);
 
-  const initialTools: AITool[] = [
+  const aiderProcessState = useSelector(
+    (state: RootState) => state.state.aiderProcessState,
+  );
+
+  // const [isAiderInstalled, setIsAiderInstalled] = useState(false);
+
+  // // Fetch installation status once when component mounts
+  // useEffect(() => {
+  //   const checkInstallations = async () => {
+  //     try {
+  //       const isAiderInstalled= await ideMessenger.request("is_aider_installed", undefined)
+  //       console.dir("asdfasdf")
+  //       console.dir(isAiderInstalled)
+  //       setIsAiderInstalled(isAiderInstalled);
+  //     } catch (error) {
+  //       console.error("Error checking installation status:", error);
+  //     }
+  //   };
+
+  //   checkInstallations();
+  // }, []);
+
+  
+
+  const [tools, setTools] = useState<AITool[]>([
     {
       id: "1",
       name: "Search",
@@ -235,6 +262,7 @@ export default function AIToolInventory() {
         <span>Lower level of human intervention needed</span>,
       ],
       installNeeded: true,
+      isInstalled: aiderProcessState.state !== "uninstalled",
       installCommand: async () => {
         await ideMessenger.post("install_aider", undefined);
       },
@@ -288,9 +316,9 @@ export default function AIToolInventory() {
       installNeeded: false,
     },
 
-  ];
+  ]);
 
-  const [tools, setTools] = useState<AITool[]>(initialTools);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [focusedTool, setFocusedTool] = useState<AITool | null>(null);
   // TODO: not used for now
@@ -426,14 +454,10 @@ export default function AIToolInventory() {
                     <Button
                       onClick={() => focusedTool.installCommand()}
                       disabled={!focusedTool.installNeeded}
+                      // variant={focusedTool.isInstalled ? "destructive" : "default"}
                     >
-                      Click to install
+                      {focusedTool.isInstalled ? "Uninstall" : "Click to install"}
                     </Button>
-                    {/* TODO: not used for now {quickSlots.every((slot) => slot !== null) && (
-                  <p className="text-destructive mt-1 text-xs">
-                    Quick slots are full
-                  </p>
-                )} */}
                   </div>
                 )}
               </>
