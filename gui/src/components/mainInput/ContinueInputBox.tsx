@@ -125,15 +125,14 @@ const ContinueInputBox = memo(function ContinueInputBox({
   const dispatch = useDispatch();
 
   const active = useSelector((store: RootState) => {
-    const state = store?.state;
-
-    if (!state) return false;
-
-    return source === "perplexity"
-      ? state.perplexityActive
-      : source === "aider"
-      ? state.aiderActive
-      : state.active;
+    switch (source) {
+      case "perplexity":
+        return store.state.perplexityActive;
+      case "aider":
+        return store.state.aiderActive;
+      default:
+        return store.state.active;
+    }
   });
 
   const availableSlashCommands = useSelector(selectSlashCommands);
