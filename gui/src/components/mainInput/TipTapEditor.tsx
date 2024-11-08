@@ -132,7 +132,7 @@ const getPlaceholder = (historyLength: number, location: any) => {
     : "Ask a follow-up";
 };
 
-const getDataUrlForFile = (file: File, img): string => {
+function getDataUrlForFile(file: File, img): string {
   const targetWidth = 512;
   const targetHeight = 512;
   const scaleFactor = Math.min(
@@ -161,7 +161,7 @@ interface TipTapEditorProps {
   onChange?: (newState: JSONContent) => void;
 }
 
-const TipTapEditor = ({
+const TipTapEditor = memo(function TipTapEditor({
   availableContextProviders,
   availableSlashCommands,
   isMainInput,
@@ -169,7 +169,7 @@ const TipTapEditor = ({
   editorState,
   source = 'continue',
   onChange,
-}: TipTapEditorProps) => {
+}: TipTapEditorProps) {
   const dispatch = useDispatch();
 
   const ideMessenger = useContext(IdeMessengerContext);
@@ -1036,6 +1036,6 @@ const TipTapEditor = ({
         )}
     </InputBoxDiv>
   );
-};
+});
 
 export default TipTapEditor;
