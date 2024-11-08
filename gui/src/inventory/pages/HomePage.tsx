@@ -27,7 +27,7 @@ export default function HomePage() {
 
   const menuItems = [
     {
-      icon: "inventory-mem0.svg",
+      icon: "inventory.svg",
       label: "Inventory",
       description: <>See all your AI tools</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>SHIFT</Kbd><Kbd>1</Kbd></span>,

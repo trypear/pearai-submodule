@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 
 interface AITool {
   id: string;
@@ -24,20 +25,22 @@ interface AITool {
   weaknesses?: ReactElement[];
   enabled: boolean;
   comingSoon?: boolean;
+  poweredBy?: string;
   installNeeded: boolean;
+  note?: string;
 }
 
 const initialTools: AITool[] = [
   {
     id: "1",
-    name: "Search (Perplexity)",
+    name: "Search",
     description: (
       <span>
         AI-powered search engine: up-to-date information for docs, libraries,
         etc.
       </span>
     ),
-    icon: "🔍",
+    icon: "inventory-search.svg",
     whenToUse: (
       <span>
         When you need to find information where recency is important. Regular
@@ -50,19 +53,20 @@ const initialTools: AITool[] = [
       <span>Also good for non-coding specific questions</span>,
       <span>Uses less credits than other tools</span>,
     ],
+    poweredBy: "Perplexity",
     installNeeded: false,
     enabled: true,
   },
   {
     id: "2",
-    name: "Chat (Continue)",
+    name: "Chat",
     description: <span>AI pair programmer for flexible coding assistance</span>,
-    icon: "👨‍💻",
+    icon: "inventory-chat.svg",
     whenToUse: (
       <span>
         When you need fragmented coding assistance and suggestions. Ask the chat
-        any question, it can generate code decently well and also create files.
-        Requires medium human intervention to apply and review changes.
+        any question, it can generate code and also create files.
+        Requires human intervention to apply and review changes.
       </span>
     ),
     strengths: [
@@ -77,13 +81,14 @@ const initialTools: AITool[] = [
       </span>,
     ],
     installNeeded: false,
+    poweredBy: "Continue",
     enabled: true,
   },
   {
     id: "3",
-    name: "Autocomplete (Supermaven)",
+    name: "Autocomplete",
     description: <span>Fast code autocomplete suggestions. Recommended as a standalone extension</span>,
-    icon: "⚡",
+    icon: "inventory-autocomplete.svg",
     whenToUse: (
       <span>
         When you need instant code completions while typing. Autocomplete offers
@@ -98,18 +103,20 @@ const initialTools: AITool[] = [
       <span>Predicts where your cursor should go next</span>
     ],
     installNeeded: true,
-    enabled: true
+    poweredBy: "Supermaven",
+    enabled: true,
+    note: "While we develop our own autocomplete service, we recommend Supermaven's autocomplete as an alternate standalone extension. They offer a great service and a free tier (requires separate login)." 
   },
   {
     id: "4",
-    name: "Creator (aider)",
+    name: "Creator",
     description: <span>"No-code" assistant; complete features directly</span>,
-    icon: "🤖",
+    icon: "inventory-creator.svg",
     whenToUse: (
       <span>
         When you need a feature or a bug fix completed, Creator will find the
         relevant files, and make changes directly to your code. You can see
-        specific diff changes in your source control tab afterwards
+        diff changes in your source control tab afterwards
       </span>
     ),
     strengths: [
@@ -118,11 +125,12 @@ const initialTools: AITool[] = [
       <span>Lower level of human intervention needed</span>,
     ],
     installNeeded: true,
+    poweredBy: "aider",
     enabled: true,
   },
   {
     id: "5",
-    name: "Painter (Flux)",
+    name: "Painter",
     description: <span>AI image generation from textual descriptions</span>,
     icon: "🎨",
     whenToUse: (
@@ -137,17 +145,18 @@ const initialTools: AITool[] = [
     ],
     enabled: false,
     comingSoon: true,
+    poweredBy: "Flux",
     installNeeded: false,
   },
   {
     id: "6",
-    name: "Memory (mem0)",
+    name: "Memory",
     description: (
       <span>
         Personalization: let the AI remember your past thoughts (coming soon)
       </span>
     ),
-    icon: "📝",
+    icon: "inventory-mem0.svg",
     whenToUse: (
       <span>
         When you want the AI to remember insights from past prompts you've given
@@ -162,6 +171,7 @@ const initialTools: AITool[] = [
     ],
     enabled: false,
     comingSoon: true,
+    poweredBy: "Mem0",
     installNeeded: false,
   },
 
@@ -184,11 +194,7 @@ function AIToolCard({
         className={`cursor-pointer h-35 overflow-hidden transition-all bg-input ${tool.comingSoon ? "opacity-50" : ""}`}
         onClick={tool.comingSoon ? undefined : onClick}
       >
-        <CardContent className="p-2 px-4">
-          <div className="flex items-center justify-between">
-            <div className="text-lg bg-primary/10 rounded-full">
-              {tool.icon}
-            </div>
+        <CardContent className="px-3">
             {/* TODO: removed unfinished feature */}
             {/* <Tooltip>
               <TooltipTrigger asChild>
@@ -209,10 +215,18 @@ function AIToolCard({
                 </TooltipContent>
               )}
             </Tooltip> */}
-          </div>
           <h3
-            className={`text-sm font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
+            className={`flex items-center gap-2 text-base font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
           >
+            {!tool.icon.endsWith(".svg") ? 
+              <div className="text-2xl">
+                {tool.icon}
+              </div> : (
+              <img 
+                src={getLogoPath(tool.icon)} 
+                className="w-6 h-6"
+              />
+            )}
             {tool.name}
           </h3>
           <p
@@ -226,54 +240,55 @@ function AIToolCard({
   );
 }
 
-interface QuickActionSlotProps {
-  tool: AITool | null;
-  onRemove: () => void;
-}
+// TODO: not used for now
+// interface QuickActionSlotProps {
+//   tool: AITool | null;
+//   onRemove: () => void;
+// }
 
-function QuickActionSlot({ tool, onRemove }: QuickActionSlotProps) {
-  return (
-    <div
-      className={`relative w-24 h-24 rounded-lg shadow-sm transition-all duration-200 ease-in-out
-                  flex flex-col items-center justify-center space-y-2
-                  hover:shadow-md
-                  ${tool ? "bg-button" : "bg-input"}
-                  ${tool ? "border border-input-border" : "border border-dashed border-input-border"}`}
-    >
-      {tool ? (
-        <>
-          <div className="text-3xl text-foreground">{tool.icon}</div>
-          <div className="text-xs font-medium text-center text-button-foreground px-2 line-clamp-2">
-            {tool.name}
-          </div>
-          <button
-            className="absolute top-0.5 right-1 p-0.5 m-1 text-foreground/50
-                       bg-button hover:bg-button-hover border-0
-                       rounded-md duration-200 ease-in-out"
-            onClick={onRemove}
-            aria-label={`Remove ${tool.name} from quick action slot`}
-          >
-            <XMarkIcon className="h-4 w-4" />
-          </button>
-        </>
-      ) : (
-        <div className="text-sm text-foreground/50">Empty</div>
-      )}
-    </div>
-  );
-}
+// function QuickActionSlot({ tool, onRemove }: QuickActionSlotProps) {
+//   return (
+//     <div
+//       className={`relative w-24 h-24 rounded-lg shadow-sm transition-all duration-200 ease-in-out
+//                   flex flex-col items-center justify-center space-y-2
+//                   hover:shadow-md
+//                   ${tool ? "bg-button" : "bg-input"}
+//                   ${tool ? "border border-input-border" : "border border-dashed border-input-border"}`}
+//     >
+//       {tool ? (
+//         <>
+//           <div className="text-3xl text-foreground">{tool.icon}</div>
+//           <div className="text-xs font-medium text-center text-button-foreground px-2 line-clamp-2">
+//             {tool.name}
+//           </div>
+//           <button
+//             className="absolute top-0.5 right-1 p-0.5 m-1 text-foreground/50
+//                        bg-button hover:bg-button-hover border-0
+//                        rounded-md duration-200 ease-in-out"
+//             onClick={onRemove}
+//             aria-label={`Remove ${tool.name} from quick action slot`}
+//           >
+//             <XMarkIcon className="h-4 w-4" />
+//           </button>
+//         </>
+//       ) : (
+//         <div className="text-sm text-foreground/50">Empty</div>
+//       )}
+//     </div>
+//   );
+// }
 
 export default function AIToolInventory() {
   const [tools, setTools] = useState<AITool[]>(initialTools);
   const [searchQuery, setSearchQuery] = useState("");
   const [focusedTool, setFocusedTool] = useState<AITool | null>(null);
-  const [quickSlots, setQuickSlots] = useState<(AITool | null)[]>([
-    null,
-    null,
-    null,
-    null,
-  ]);
-  const navigate = useNavigate();
+  // TODO: not used for now
+  // const [quickSlots, setQuickSlots] = useState<(AITool | null)[]>([
+  //   null,
+  //   null,
+  //   null,
+  //   null,
+  // ]);
 
   const filteredTools = tools.filter((tool) =>
     tool.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -287,26 +302,27 @@ export default function AIToolInventory() {
     );
   };
 
-  const handleEquipToQuickSlot = (tool: AITool) => {
-    const emptySlotIndex = quickSlots.findIndex((slot) => slot === null);
-    if (
-      emptySlotIndex !== -1 &&
-      !quickSlots.find((slot) => slot?.id === tool.id)
-    ) {
-      const newQuickSlots = [...quickSlots];
-      newQuickSlots[emptySlotIndex] = tool;
-      setQuickSlots(newQuickSlots);
-    }
-  };
+  // TODO: Not used for now
+  // const handleEquipToQuickSlot = (tool: AITool) => {
+  //   const emptySlotIndex = quickSlots.findIndex((slot) => slot === null);
+  //   if (
+  //     emptySlotIndex !== -1 &&
+  //     !quickSlots.find((slot) => slot?.id === tool.id)
+  //   ) {
+  //     const newQuickSlots = [...quickSlots];
+  //     newQuickSlots[emptySlotIndex] = tool;
+  //     setQuickSlots(newQuickSlots);
+  //   }
+  // };
 
-  const handleRemoveFromQuickSlot = (index: number) => {
-    const newQuickSlots = [...quickSlots];
-    newQuickSlots[index] = null;
-    setQuickSlots(newQuickSlots);
-  };
+  // const handleRemoveFromQuickSlot = (index: number) => {
+  //   const newQuickSlots = [...quickSlots];
+  //   newQuickSlots[index] = null;
+  //   setQuickSlots(newQuickSlots);
+  // };
 
   const handleInstall = (tool: AITool) => {
-
+    // TODO: implement install
   }
 
   return (
@@ -368,42 +384,45 @@ export default function AIToolInventory() {
             {focusedTool ? (
               <>
                 <div className="flex-grow text-foreground">
-                  <h2 className="text-lg text-font-bold mb-2">
-                    {focusedTool.name} {focusedTool.icon}
+                  <h2 className="text-lg text-font-bold mb-2 flex items-start gap-1">
+                    <div className="flex items-center gap-2">
+                      {!focusedTool.icon.endsWith(".svg") ? 
+                        <div className="text-2xl">
+                          {focusedTool.icon}
+                        </div> : (
+                          <img 
+                          src={getLogoPath(focusedTool.icon)} 
+                          className="w-5 h-5"
+                        />
+                      )}
+                    {focusedTool.name}
+                    </div>
+                    <Badge variant="outline" className="pl-0">Powered by {focusedTool.poweredBy}</Badge>
                   </h2>
-                  <p className="mb-2">{focusedTool.description}</p>{" "}
+                    <p className="mb-2">{focusedTool.description}</p>{" "}
                   <h3 className="font-semibold mb-1">When to use:</h3>
-                  <p className="mb-2">{focusedTool.whenToUse}</p>{" "}
+                    <p className="mb-2">{focusedTool.whenToUse}</p>{" "}
                   <h3 className="font-semibold mb-1">Strengths:</h3>
-                  <ul className="list-disc mb-2 pl-4">
-                    {focusedTool.strengths.map((strength, index) => (
-                      <li key={index}>{strength}</li>
-                    ))}
-                  </ul>
-                  {focusedTool.weaknesses && (
-                    <>
-                      <h3 className="font-semibold mb-1">Weaknesses:</h3>
-                      <ul className="list-disc mb-2 pl-4">
-                        {focusedTool.weaknesses.map((weakness, index) => (
-                          <li key={index}>{weakness}</li>
-                        ))}
-                      </ul>
-                    </>
-                  )}
+                    <ul className="list-disc mb-2 pl-4">
+                      {focusedTool.strengths.map((strength, index) => (
+                        <li key={index}>{strength}</li>
+                      ))}
+                    </ul>
                 </div>
                 {focusedTool.installNeeded && (
-                <div className="mt-2 flex items-center sticky bottom-0 bg-background p-2">
+                <div className="mt-2 flex flex-col items-start gap-2 sticky bottom-0 bg-background p-2">
+                {focusedTool?.note && <p className="text-sm text-muted-foreground">Note: {focusedTool.note}</p>}
                 <Button
                   onClick={() => handleInstall(focusedTool)}
                   disabled={!focusedTool.installNeeded}
                 >
                   Click to install
                 </Button>
-                {quickSlots.every((slot) => slot !== null) && (
+                {/* TODO: not used for now {quickSlots.every((slot) => slot !== null) && (
                   <p className="text-destructive mt-1 text-xs">
                     Quick slots are full
                   </p>
-                )}
+                )} */}
               </div>
                 )}
               </>
