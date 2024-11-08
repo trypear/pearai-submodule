@@ -9,10 +9,11 @@ import { newSession, setMessageAtIndex } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, memo } from "react";
 import { isBareChatMode } from "../../util/bareChatMode";
 import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
 import { getFontSize } from "../../util";
+import { cn } from "@/lib/utils";
 
 const gradient = keyframes`
   0% {
@@ -110,9 +111,10 @@ interface ContinueInputBoxProps {
   contextItems?: ContextItemWithId[];
   hidden?: boolean;
   source?: "perplexity" | "aider" | "continue";
+  className?: string;
 }
 
-const ContinueInputBox = ({
+const ContinueInputBox = memo(function ContinueInputBox({
   isLastUserInput,
   isMainInput,
   onEnter,
@@ -120,7 +122,8 @@ const ContinueInputBox = ({
   contextItems,
   hidden,
   source = "continue",
-}: ContinueInputBoxProps) => {
+  className,
+}: ContinueInputBoxProps) {
   const dispatch = useDispatch();
 
   const active = useSelector((store: RootState) => {
@@ -173,6 +176,7 @@ const ContinueInputBox = ({
 
   return (
     <div
+      className={cn(className)}
       style={{
         display: hidden ? "none" : "inherit",
       }}
@@ -209,6 +213,6 @@ const ContinueInputBox = ({
       <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>
     </div>
   );
-};
+});
 
 export default ContinueInputBox;

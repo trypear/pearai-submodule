@@ -1,12 +1,11 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { ArrowLongRightIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
+import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useContext, useState, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
-import { getMetaKeyLabel } from "@/util";
 
-const getLogoPath = (assetName: string) => {
+export const getLogoPath = (assetName: string) => {
   return `${window.vscMediaUrl}/logos/${assetName}`;
 };
 
@@ -55,8 +54,9 @@ export default function ImportExtensions({
             <img src={getLogoPath("pearai-green.svg")} className="w-36 h-36 ml-[-2.5rem]" alt="PearAI" />
           </div>
 
-          <div className="flex flex-col items-center gap-4">
-            <Button
+            {!isImporting ? 
+                      <div className="flex flex-col items-center gap-4">
+              <Button
               disabled={isImporting}
               className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer transition-all duration-300"
               onClick={handleImport}
@@ -91,17 +91,19 @@ export default function ImportExtensions({
                   </>
                 )}
               </div>
-            </Button>
-
-            {!isImporting ? (
-              <div onClick={onNext} className="flex items-center gap-2 cursor-pointer">
+            </Button> 
+            <div onClick={onNext} className="flex items-center gap-2 cursor-pointer">
                 <span className="text-center w-full">Skip</span>
               </div>
-            ) : (
+            </div>
+            : 
+            <div className="flex flex-col items-center gap-4 mb-24">
               <div>Import in progress! You can leave this page</div>
-            )
-            }
-          </div>
+              <div onClick={onNext} className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-center w-full">Continue</span>
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
