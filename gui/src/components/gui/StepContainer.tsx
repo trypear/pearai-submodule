@@ -23,7 +23,7 @@ import {
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import useUIConfig from "../../hooks/useUIConfig";
 import { RootState } from "../../redux/store";
-import { getFontSize } from "../../util";
+import { getAltKeyLabel, getFontSize } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
@@ -140,6 +140,21 @@ function StepContainer({
     }
   }, [item.message.content, active]);
 
+  // Add effect to handle keyboard shortcut
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.altKey || e.metaKey) && e.key.toLowerCase() === 'l' && isLast && !active && isPerplexity) {
+        ideMessenger.post("addPerplexityContext", {
+          text: stripImages(item.message.content),
+          language: "",
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isLast, active, isPerplexity, item.message.content, ideMessenger]);
+
   return (
     <div>
       <div className="relative">
@@ -176,7 +191,7 @@ function StepContainer({
             }}
           >
             <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-            Add to PearAI chat context
+            Add to PearAI chat context {isLast && <span className="ml-1 text-xs opacity-60"><kbd className="font-mono">{getAltKeyLabel()}</kbd> <kbd className="font-mono bg-vscButtonBackground/10 px-1">L</kbd></span>}
           </HeaderButtonWithText>
         )}
         {
