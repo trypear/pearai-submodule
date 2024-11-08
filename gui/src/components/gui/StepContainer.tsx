@@ -104,7 +104,9 @@ function StepContainer({
   const fetchNumberOfChanges = async () => {
     try {
       const response = await ideMessenger.request("getNumberOfChanges", undefined);
-      setNumChanges(response);
+      if(typeof response === 'number') {
+        setNumChanges(response);
+      }
     } catch (error) {
       console.error("Failed to fetch number of changes:", error);
     }
@@ -195,14 +197,14 @@ function StepContainer({
           </HeaderButtonWithText>
         )}
         {
-          !active && isAider && (
+          !active && isAider && numChanges && (
             <HeaderButtonWithText
               onClick={() => {
                 ideMessenger.post("openAiderChanges", undefined);
               }}
             >
               <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-              {numChanges && `See ${numChanges} changed file${numChanges === 1 ? '' : 's'}`}
+              See {numChanges} changed file{numChanges === 1 ? '' : 's'}
             </HeaderButtonWithText>
           )
         }
