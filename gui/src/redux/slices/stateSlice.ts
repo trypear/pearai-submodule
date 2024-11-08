@@ -177,7 +177,7 @@ const initialState: State = {
     status: "loading",
     progress: 0,
     desc: "",
-  }
+  },
   showInteractiveContinueTutorial: getLocalStorage("showTutorialCard") ?? false,
 };
 
