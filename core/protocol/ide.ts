@@ -98,6 +98,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   install_aider: [undefined, void];
   
   // overlay
+  closeOverlay: [undefined, void];
   lockOverlay: [undefined, void];
   unlockOverlay: [undefined, void];
 };
