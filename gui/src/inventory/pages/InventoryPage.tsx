@@ -137,30 +137,27 @@ function AIToolCard({
 // }
 
 export default function AIToolInventory() {
-
   const ideMessenger = useContext(IdeMessengerContext);
 
   const aiderProcessState = useSelector(
     (state: RootState) => state.state.aiderProcessState,
   );
 
-  // const [isAiderInstalled, setIsAiderInstalled] = useState(false);
+  const [isSuperMavenInstalled, setIsSuperMavenInstalled] = useState(false);
 
-  // // Fetch installation status once when component mounts
-  // useEffect(() => {
-  //   const checkInstallations = async () => {
-  //     try {
-  //       const isAiderInstalled= await ideMessenger.request("is_aider_installed", undefined)
-  //       console.dir("asdfasdf")
-  //       console.dir(isAiderInstalled)
-  //       setIsAiderInstalled(isAiderInstalled);
-  //     } catch (error) {
-  //       console.error("Error checking installation status:", error);
-  //     }
-  //   };
+  // Fetch installation status once when component mounts
+  useEffect(() => {
+    const checkInstallations = async () => {
+      try {
+        const isSuperMavenInstalled = await ideMessenger.request("is_vscode_extension_installed", { extensionId: "supermaven.supermaven" });
+        setIsSuperMavenInstalled(isSuperMavenInstalled);
+      } catch (error) {
+        console.error("Error checking installation status:", error);
+      }
+    };
 
-  //   checkInstallations();
-  // }, []);
+    checkInstallations();
+  }, []);
 
   
 
@@ -237,6 +234,7 @@ export default function AIToolInventory() {
         <span>Predicts where your cursor should go next</span>
       ],
       installNeeded: true,
+      isInstalled: isSuperMavenInstalled,
       installCommand: async () => {
         await ideMessenger.post("install_vscode_extension", { extensionId: "supermaven.supermaven" });
       },
