@@ -26,7 +26,8 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
-import { attemptInstallExtension } from "../activation/activate";
+import { attemptInstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
+import { checkAiderInstallation } from "../integrations/aider/aider";
 
 /**
  * A shared messenger class between Core and Webview
@@ -101,6 +102,17 @@ export class VsCodeMessenger {
     });
     this.onWebview("install_aider", (msg) => {
       vscode.commands.executeCommand("pearai.installAider");
+    });
+    this.onWebview("is_aider_installed", async (msg) => {
+      console.log("Checking Aider installation...");
+      const isAiderInstalled = await checkAiderInstallation();
+      console.log("Aider installation status:", isAiderInstalled);
+      return isAiderInstalled;
+    });
+    this.onWebview("is_vscode_extension_installed", async (msg) => {
+      const isInstalled = await isVSCodeExtensionInstalled(msg.data.extensionId);
+      console.log("VSCode extension installation status:", isInstalled);
+      return isInstalled;
     });
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");

@@ -10,6 +10,10 @@ import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
 import { isFirstLaunch } from "../copySettings";
 
+export async function isVSCodeExtensionInstalled(extensionId: string): Promise<boolean> {
+  return vscode.extensions.getExtension(extensionId) !== undefined;
+};
+
 export async function attemptInstallExtension(extensionId: string): Promise<void> {
   // Check if extension is already installed
   const extension = vscode.extensions.getExtension(extensionId);

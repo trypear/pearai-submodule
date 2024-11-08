@@ -96,7 +96,10 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   pearInstallCommandLine: [undefined, void];
   install_vscode_extension: [{ extensionId: string }, void];
   install_aider: [undefined, void];
-  
+
+  is_aider_installed: [undefined, boolean];
+  is_vscode_extension_installed: [{ extensionId: string }, boolean];
+
   // overlay
   closeOverlay: [undefined, void];
   lockOverlay: [undefined, void];
