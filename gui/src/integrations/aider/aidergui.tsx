@@ -45,6 +45,11 @@ import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import AiderManualInstallation from "./AiderManualInstallation";
 import { cn } from "@/lib/utils";
 
+
+export interface AiderState {
+  state: "starting" | "uninstalled" | "ready" |  "stopped" |"crashed" | "signedOut";
+}
+
 function AiderGUI() {
   const posthog = usePostHog();
   const dispatch = useDispatch();
@@ -60,9 +65,9 @@ function AiderGUI() {
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
-  const [aiderProcessState, setAiderProcessState] = useState(
-    useSelector((state: RootState) => state.state.aiderProcessState)
-  );
+  const [aiderProcessState, setAiderProcessState] = useState<AiderState>({
+    state: "starting"
+  });
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
   // many users won't reach onboarding screen due to cache. So set it manually,
@@ -183,13 +188,14 @@ function AiderGUI() {
   }, []);
 
   useWebviewListener(
-    "aiderProcessStateUpdate",
+    "setAiderProcessStateInGUI",
     async (data) => {
+      console.dir("IM IN HERE GUI")
+      console.dir(data)
       if (data) {
         setAiderProcessState(data);
       }
-    },
-    [setAiderProcessState]
+    }
   );
 
 
@@ -207,9 +213,9 @@ function AiderGUI() {
     [state.aiderHistory],
   );
 
-  if (aiderProcessState.state !== "ready") {
+  if (aiderProcessState?.state !== "ready") {
     let msg: string | JSX.Element = "";
-    if (aiderProcessState.state === "signedOut") {
+    if (aiderProcessState?.state === "signedOut") {
       msg = (
         <>
           Please{" "}
@@ -227,7 +233,7 @@ function AiderGUI() {
         </>
       );
     }
-    if (aiderProcessState.state === "stopped") {
+    if (aiderProcessState?.state === "stopped") {
       msg = (
         <>
           PearAI Creator (Powered By aider) process is not running. Please view{" "}
@@ -242,7 +248,7 @@ function AiderGUI() {
         </>
       );
     }
-    if (aiderProcessState.state === "crashed") {
+    if (aiderProcessState?.state === "crashed") {
       msg = (
         <>
           PearAI Creator (Powered By aider) process has failed. Please ensure a folder is open, and view troubleshooting{" "}
@@ -252,10 +258,10 @@ function AiderGUI() {
         </>
       );
     }
-    if (aiderProcessState.state === "uninstalled") {
+    if (aiderProcessState?.state === "uninstalled") {
       return <AiderManualInstallation />;
     }
-    if (aiderProcessState.state === "starting") {
+    if (aiderProcessState?.state === "starting") {
       msg = "Spinning up PearAI Creator (Powered By aider), please give it a second...";
     }
 
@@ -265,7 +271,7 @@ function AiderGUI() {
           <div className="spinner" role="status">
             <span>{msg}</span>
           </div>
-          {(aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") && (
+          {(aiderProcessState?.state === "stopped" || aiderProcessState?.state === "crashed") && (
             <div className="flex justify-center">
               <button
                 className="mt-4 font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"

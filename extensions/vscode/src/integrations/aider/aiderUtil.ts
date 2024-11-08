@@ -62,15 +62,16 @@ export async function startAiderProcess(
 }
 
 export async function refreshAiderProcessState(core: Core) {
+  console.dir("IM HERE IN REFRESH")
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as Aider | undefined;
 
   if (!aiderModel) {
-    core.send("aiderProcessStateUpdate", { state: "stopped" });
+    core.send("setAiderProcessStateInGUI", { state: "stopped" });
     return;
   }
 
-  core.send("aiderProcessStateUpdate", { state: aiderModel.getAiderState() });
+  core.send("setAiderProcessStateInGUI", { state: aiderModel.getAiderState() });
 }
 
 export async function killAiderProcess(core: Core) {
