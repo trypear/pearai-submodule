@@ -94,10 +94,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   importUserSettingsFromVSCode: [undefined, void];
   pearWelcomeOpenFolder: [undefined, void];
   pearInstallCommandLine: [undefined, void];
-  install_vscode_extension: [{ extensionId: string }, void];
-  install_aider: [undefined, void];
-
-  is_aider_installed: [undefined, boolean];
+  installVscodeExtension: [{ extensionId: string }, void];
   is_vscode_extension_installed: [{ extensionId: string }, boolean];
 
   // overlay

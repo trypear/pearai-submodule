@@ -26,7 +26,7 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
-import { attemptInstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
+import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
 
 /**
@@ -97,13 +97,16 @@ export class VsCodeMessenger {
     this.onWebview("importUserSettingsFromVSCode", (msg) => {
       vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
     });
-    this.onWebview("install_vscode_extension", (msg) => {
+    this.onWebview("installVscodeExtension", (msg) => {
       attemptInstallExtension(msg.data.extensionId);
     });
-    this.onWebview("install_aider", (msg) => {
+    this.onWebview("uninstallVscodeExtension", (msg) => {
+      attemptUninstallExtension(msg.data.extensionId);
+    });
+    this.onWebview("installAider", (msg) => {
       vscode.commands.executeCommand("pearai.installAider");
     });
-    this.onWebview("is_aider_installed", async (msg) => {
+    this.onWebview("isAiderInstalled", async (msg) => {
       console.log("Checking Aider installation...");
       const isAiderInstalled = await checkAiderInstallation();
       console.log("Aider installation status:", isAiderInstalled);
