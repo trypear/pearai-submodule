@@ -44,11 +44,8 @@ import {
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import AiderManualInstallation from "./AiderManualInstallation";
 import { cn } from "@/lib/utils";
+import type { AiderState } from "../../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
 
-
-export interface AiderState {
-  state: "starting" | "uninstalled" | "ready" |  "stopped" |"crashed" | "signedOut";
-}
 
 function AiderGUI() {
   const posthog = usePostHog();
@@ -213,9 +210,9 @@ function AiderGUI() {
     [state.aiderHistory],
   );
 
-  if (aiderProcessState?.state !== "ready") {
+  if (aiderProcessState.state !== "ready") {
     let msg: string | JSX.Element = "";
-    if (aiderProcessState?.state === "signedOut") {
+    if (aiderProcessState.state === "signedOut") {
       msg = (
         <>
           Please{" "}
@@ -233,7 +230,7 @@ function AiderGUI() {
         </>
       );
     }
-    if (aiderProcessState?.state === "stopped") {
+    if (aiderProcessState.state === "stopped") {
       msg = (
         <>
           PearAI Creator (Powered By aider) process is not running. Please view{" "}
@@ -248,7 +245,7 @@ function AiderGUI() {
         </>
       );
     }
-    if (aiderProcessState?.state === "crashed") {
+    if (aiderProcessState.state === "crashed") {
       msg = (
         <>
           PearAI Creator (Powered By aider) process has failed. Please ensure a folder is open, and view troubleshooting{" "}
@@ -258,10 +255,10 @@ function AiderGUI() {
         </>
       );
     }
-    if (aiderProcessState?.state === "uninstalled") {
+    if (aiderProcessState.state === "uninstalled") {
       return <AiderManualInstallation />;
     }
-    if (aiderProcessState?.state === "starting") {
+    if (aiderProcessState.state === "starting") {
       msg = "Spinning up PearAI Creator (Powered By aider), please give it a second...";
     }
 
@@ -271,7 +268,7 @@ function AiderGUI() {
           <div className="spinner" role="status">
             <span>{msg}</span>
           </div>
-          {(aiderProcessState?.state === "stopped" || aiderProcessState?.state === "crashed") && (
+          {(aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") && (
             <div className="flex justify-center">
               <button
                 className="mt-4 font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
