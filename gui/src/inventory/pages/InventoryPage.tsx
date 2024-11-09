@@ -161,7 +161,7 @@ export default function AIToolInventory() {
   const [isAiderInstalled, setIsAiderInstalled] = useState(false);
 
   useEffect(() => {
-    setTools(prevTools => 
+    setTools(prevTools =>
       prevTools.map(tool => {
         if (tool.id === AIToolID.CREATOR) { // Aider's ID
           return { ...tool, isInstalled: isAiderInstalled }
@@ -172,7 +172,7 @@ export default function AIToolInventory() {
         }
       })
     );
-  }, [isSuperMavenInstalled, isAiderInstalled]);  
+  }, [isSuperMavenInstalled, isAiderInstalled]);
 
   // Fetch installation status once when component mounts
   useEffect(() => {
@@ -194,13 +194,12 @@ export default function AIToolInventory() {
       console.dir(isInstalled)
       setIsAiderInstalled(isInstalled);
     }
-    // todo: CHECK AIDER INSTALLATION
 
     checkAiderInstallation();
     checkInstallations();
   }, []);
 
-  
+
 
   const [tools, setTools] = useState<AITool[]>([
     {
@@ -304,7 +303,7 @@ export default function AIToolInventory() {
         <span>Lower level of human intervention needed</span>,
       ],
       installNeeded: true,
-      isInstalled: false, //todo: add logic @ nang
+      isInstalled: isAiderInstalled,
       installCommand: async () => {
         if (isAiderInstalled) {
           ideMessenger.post("uninstallAider", undefined);
