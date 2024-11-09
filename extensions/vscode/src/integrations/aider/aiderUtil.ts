@@ -268,6 +268,19 @@ export async function installAider(core: Core) {
   }
 }
 
+export async function uninstallAider(core: Core) {
+  const isAiderInstalled = await checkAiderInstallation();
+  if (!isAiderInstalled) {
+    return;
+  }
+  vscode.window.showInformationMessage("Uninstalling Aider...");
+  if (IS_WINDOWS) {
+    execSync("python -m pip uninstall -y aider-chat");
+  } else {
+    execSync("brew uninstall aider");
+  }
+}
+
 async function executeCommand(command: string): Promise<string> {
   return new Promise((resolve, reject) => {
     cp.exec(command, (error, stdout, stderr) => {

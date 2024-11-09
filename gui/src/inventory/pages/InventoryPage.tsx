@@ -149,7 +149,7 @@ export default function AIToolInventory() {
   useEffect(() => {
     setTools(prevTools => 
       prevTools.map(tool => {
-        if (tool.id === "2") { // Aider's ID
+        if (tool.id === "4") { // Aider's ID
           return { ...tool, isInstalled: isAiderInstalled }
         } else if (tool.id === "3") { // Supermaven's ID
           return { ...tool, isInstalled: isSuperMavenInstalled }
@@ -172,8 +172,17 @@ export default function AIToolInventory() {
         console.error("Error checking installation status:", error);
       }
     };
+
+    const checkAiderInstallation = async () => {
+      const response = await ideMessenger.request("isAiderInstalled", undefined);
+      const isInstalled = typeof response === 'boolean' ? response : false;
+      console.dir("INVENTORY AIDER INSTALLED ")
+      console.dir(isInstalled)
+      setIsAiderInstalled(isInstalled);
+    }
     // todo: CHECK AIDER INSTALLATION
 
+    checkAiderInstallation();
     checkInstallations();
   }, []);
 
@@ -283,6 +292,10 @@ export default function AIToolInventory() {
       installNeeded: true,
       isInstalled: false, //todo: add logic @ nang
       installCommand: async () => {
+        if (isAiderInstalled) {
+          ideMessenger.post("uninstallAider", undefined);
+          return;
+        }
         ideMessenger.post("installAider", undefined);
       },
       poweredBy: "aider",
