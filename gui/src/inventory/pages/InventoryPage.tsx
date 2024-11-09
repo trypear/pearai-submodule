@@ -262,7 +262,7 @@ export default function AIToolInventory() {
       installNeeded: true,
       isInstalled: aiderProcessState.state !== "uninstalled",
       installCommand: async () => {
-        await ideMessenger.post("install_aider", undefined);
+        ideMessenger.post("installAider", undefined);
       },
       poweredBy: "aider",
       enabled: true,
