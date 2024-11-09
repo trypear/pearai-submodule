@@ -138,12 +138,22 @@ function AIToolCard({
 
 export default function AIToolInventory() {
   const ideMessenger = useContext(IdeMessengerContext);
-
-  const aiderProcessState = useSelector(
-    (state: RootState) => state.state.aiderProcessState,
-  );
-
   const [isSuperMavenInstalled, setIsSuperMavenInstalled] = useState(false);
+  const [isAiderInstalled, setIsAiderInstalled] = useState(false);
+
+  useEffect(() => {
+    setTools(prevTools => 
+      prevTools.map(tool => {
+        if (tool.id === "2") { // Aider's ID
+          return { ...tool, isInstalled: isAiderInstalled }
+        } else if (tool.id === "3") { // Supermaven's ID
+          return { ...tool, isInstalled: isSuperMavenInstalled }
+        } else {
+          return tool
+        }
+      })
+    );
+  }, [isSuperMavenInstalled, isAiderInstalled]);  
 
   // Fetch installation status once when component mounts
   useEffect(() => {
@@ -151,10 +161,13 @@ export default function AIToolInventory() {
       try {
         const isSuperMavenInstalled = await ideMessenger.request("is_vscode_extension_installed", { extensionId: "supermaven.supermaven" });
         setIsSuperMavenInstalled(isSuperMavenInstalled);
+        console.dir("CHECKING SUPERMAVEN INSTALLED")
+        console.dir(isSuperMavenInstalled)
       } catch (error) {
         console.error("Error checking installation status:", error);
       }
     };
+    // todo: CHECK AIDER INSTALLATION
 
     checkInstallations();
   }, []);
@@ -236,7 +249,10 @@ export default function AIToolInventory() {
       installNeeded: true,
       isInstalled: isSuperMavenInstalled,
       installCommand: async () => {
-        await ideMessenger.post("install_vscode_extension", { extensionId: "supermaven.supermaven" });
+        if (isSuperMavenInstalled) {
+          return ideMessenger.post("uninstallVscodeExtension", { extensionId: "supermaven.supermaven" });
+        }
+        ideMessenger.post("installVscodeExtension", { extensionId: "supermaven.supermaven" });
       },
       poweredBy: "Supermaven",
       enabled: true,
@@ -260,7 +276,7 @@ export default function AIToolInventory() {
         <span>Lower level of human intervention needed</span>,
       ],
       installNeeded: true,
-      isInstalled: aiderProcessState.state !== "uninstalled",
+      isInstalled: false, //todo: add logic @ nang
       installCommand: async () => {
         ideMessenger.post("installAider", undefined);
       },

@@ -50,6 +50,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   isAiderInstalled: [undefined, boolean];
   installAider: [undefined, void];
   isSupermavenInstalled: [undefined, boolean];
+  uninstallVscodeExtension: [{ extensionId: string }, void];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {

@@ -23,7 +23,7 @@ export default function InstallTools({
 }) {
 
     const handleVSCExtensionInstall = async (extensionId: string) => {
-        ideMessenger.post("install_vscode_extension", { extensionId });
+        ideMessenger.post("installVscodeExtension", { extensionId });
     };
 
     const handleAiderInstall = async () => {
