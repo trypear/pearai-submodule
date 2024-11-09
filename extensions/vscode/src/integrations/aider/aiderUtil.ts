@@ -3,7 +3,7 @@ import * as cp from "child_process";
 import { Core } from "core/core";
 import { ContinueGUIWebviewViewProvider } from "../../ContinueGUIWebviewViewProvider";
 import { getIntegrationTab } from "../../util/integrationUtils";
-import Aider from "core/llm/llms/Aider";
+import Aider from "core/llm/llms/AiderLLM";
 import { execSync } from "child_process";
 import { isFirstPearAICreatorLaunch } from "../../copySettings";
 
@@ -47,11 +47,11 @@ export async function refreshAiderProcessState(core: Core) {
   const aiderModel = config.models.find((model) => model instanceof Aider) as Aider | undefined;
 
   if (!aiderModel) {
-    core.send("aiderProcessStateUpdate", { state: "stopped" });
+    core.send("setAiderProcessStateInGUI", { state: "stopped" });
     return;
   }
 
-  core.send("aiderProcessStateUpdate", { state: aiderModel.getAiderState() });
+  core.send("setAiderProcessStateInGUI", { state: aiderModel.getAiderState() });
 }
 
 export async function killAiderProcess(core: Core) {
@@ -193,7 +193,7 @@ async function checkPythonInstallation(): Promise<boolean> {
   return false;
 }
 
-async function checkAiderInstallation(): Promise<boolean> {
+export async function checkAiderInstallation(): Promise<boolean> {
   const commands = [
     "aider --version",
     "python -m aider --version",
