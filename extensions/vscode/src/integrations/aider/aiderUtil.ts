@@ -62,7 +62,6 @@ export async function startAiderProcess(
 }
 
 export async function refreshAiderProcessState(core: Core) {
-  console.dir("IM HERE IN REFRESH")
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as Aider | undefined;
 

@@ -187,8 +187,6 @@ function AiderGUI() {
   useWebviewListener(
     "setAiderProcessStateInGUI",
     async (data) => {
-      console.dir("IM IN HERE GUI")
-      console.dir(data)
       if (data) {
         setAiderProcessState(data);
       }

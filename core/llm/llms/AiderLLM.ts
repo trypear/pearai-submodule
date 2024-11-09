@@ -504,8 +504,6 @@ class Aider extends BaseLLM {
   ): AsyncGenerator<ChatMessage> {
     console.log("Inside Aider _streamChat");
     const lastMessage = messages[messages.length - 1].content.toString();
-    console.dir("Sending to aider:");
-    console.dir (lastMessage);
     this.sendToAiderChat(lastMessage);
 
     this.aiderOutput = "";
