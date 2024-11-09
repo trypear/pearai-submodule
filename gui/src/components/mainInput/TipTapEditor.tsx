@@ -194,8 +194,6 @@ const TipTapEditor = memo(function TipTapEditor({
   const editorKey = useMemo(() => `${(source || 'continue')}-editor`, [source]);
 
   const useActiveFile = useSelector(selectUseActiveFile);
-  const activeFilePath = useSelector((state: RootState) => state.uiState.activeFilePath);
-  const useActiveFileFinal = !!(useActiveFile || activeFilePath)
 
   const { saveSession } = useHistory(dispatch, source);
 
@@ -371,7 +369,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
               onEnterRef.current({
                 useCodebase: false,
-                noContext: !useActiveFileFinal,
+                noContext: !useActiveFile,
               });
               return true;
             },
@@ -379,7 +377,7 @@ const TipTapEditor = memo(function TipTapEditor({
             "Mod-Enter": () => {
               onEnterRef.current({
                 useCodebase: true,
-                noContext: !useActiveFileFinal,
+                noContext: !useActiveFile,
               });
               return true;
             },
@@ -388,7 +386,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
               onEnterRef.current({
                 useCodebase: false,
-                noContext: useActiveFileFinal,
+                noContext: useActiveFile,
               });
 
               return true;

@@ -183,11 +183,8 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
         ideMessenger,
       );
 
-      console.dir(`TEST: Use active file? ${useActiveFile}`);
-      console.dir(`TEST: !noContext? ${!modifiers.noContext}, useActiveFile? ${useActiveFile}, history.length? ${history.length}, index? ${index}`);
-      console.dir(`TEST: IF Condition: ${(!modifiers.noContext || useActiveFile) && (history.length === 0 || index === 0)}`)
       // Automatically use currently open file
-      if ((!modifiers.noContext || useActiveFile) && (history.length === 0 || index === 0)) {
+      if (source === 'continue' && (!modifiers.noContext || useActiveFile) && (history.length === 0 || index === 0)) {
         console.dir("TEST: USING ACTIVE FILE")
         const usingFreeTrial = defaultModel.provider === "free-trial";
 
