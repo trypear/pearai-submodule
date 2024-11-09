@@ -303,7 +303,7 @@ export default function AIToolInventory() {
         <span>Lower level of human intervention needed</span>,
       ],
       installNeeded: true,
-      isInstalled: isAiderInstalled,
+      isInstalled: false, // Initially set to false
       installCommand: async () => {
         if (isAiderInstalled) {
           ideMessenger.post("uninstallAider", undefined);
