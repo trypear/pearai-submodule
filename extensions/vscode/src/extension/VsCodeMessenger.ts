@@ -26,6 +26,8 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
+import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
+import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
 
 /**
  * A shared messenger class between Core and Webview
@@ -83,6 +85,9 @@ export class VsCodeMessenger {
     this.onWebview("markNewOnboardingComplete", (msg) => {
       vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
     });
+    this.onWebview("closeOverlay", (msg) => {
+      vscode.commands.executeCommand("pearai.hideOverlay");
+    });
     this.onWebview("lockOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.lockOverlay");
     });
@@ -92,12 +97,37 @@ export class VsCodeMessenger {
     this.onWebview("importUserSettingsFromVSCode", (msg) => {
       vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
     });
+    this.onWebview("installVscodeExtension", (msg) => {
+      attemptInstallExtension(msg.data.extensionId);
+    });
+    this.onWebview("uninstallVscodeExtension", (msg) => {
+      attemptUninstallExtension(msg.data.extensionId);
+    });
+    this.onWebview("installAider", (msg) => {
+      vscode.commands.executeCommand("pearai.installAider");
+    });
+    this.onWebview("uninstallAider", (msg) => {
+      vscode.commands.executeCommand("pearai.uninstallAider");
+    });
+    this.onWebview("isAiderInstalled", async (msg) => {
+      console.log("Checking Aider installation...");
+      const isAiderInstalled = await checkAiderInstallation();
+      console.log("Aider installation status:", isAiderInstalled);
+      return isAiderInstalled;
+    });
+    this.onWebview("is_vscode_extension_installed", async (msg) => {
+      const isInstalled = await isVSCodeExtensionInstalled(msg.data.extensionId);
+      console.log("VSCode extension installation status:", isInstalled);
+      return isInstalled;
+    });
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");
         // force close overlay if a folder is already open
       if (vscode.workspace.workspaceFolders?.length) {
         vscode.commands.executeCommand("pearai.unlockOverlay");
         vscode.commands.executeCommand("pearai.hideOverlay");
+        // force reload to update overlay with new global state
+        vscode.commands.executeCommand("workbench.action.reloadWindow");
       }
     });
     this.onWebview("pearInstallCommandLine", (msg) => {
@@ -121,6 +151,31 @@ export class VsCodeMessenger {
           const contents = document.getText(range);
           return contents;
         });
+    });
+    this.onWebview("openAiderChanges", (msg) => {
+      vscode.commands.executeCommand("pearai.openAiderChanges");
+    });
+    this.onWebview("getNumberOfChanges", (msg) => {
+      const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+      const repository = gitExtension?.getAPI(1).repositories[0];
+
+      if (repository) {
+          const unstagedChanges = repository.state.workingTreeChanges;
+          return unstagedChanges.length;
+      }
+      return 0;
+    });
+    this.onWebview("completeWelcome", (msg) => {
+      vscode.commands.executeCommand("pearai.unlockOverlay");
+      vscode.commands.executeCommand("pearai.hideOverlay");
+      // force reload to update overlay with new global state
+      vscode.commands.executeCommand("workbench.action.reloadWindow");
+    });
+    this.onWebview("highlightElement", (msg) => {
+      vscode.commands.executeCommand("pearai.highlightElement", msg);
+    });
+    this.onWebview("unhighlightElement", (msg) => {
+      vscode.commands.executeCommand("pearai.unhighlightElement", msg);
     });
     this.onWebview("perplexityMode", (msg) => {
       vscode.commands.executeCommand("pearai.perplexityMode");
@@ -258,7 +313,7 @@ export class VsCodeMessenger {
       );
       await vscode.window.showTextDocument(doc);
     });
-    
+
     this.onWebview("openUrl", (msg) => {
       vscode.env.openExternal(vscode.Uri.parse(msg.data));
     });

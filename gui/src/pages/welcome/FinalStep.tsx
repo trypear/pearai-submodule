@@ -4,14 +4,23 @@ import { Button } from "@/components/ui/button";
 import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { FolderOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function FinalStep({ onBack }: { onBack: () => void }) {
+
+  const navigate = useNavigate();
 
   const handleOpenFolder = () => {
     ideMessenger.post("pearWelcomeOpenFolder", undefined);
   };
 
+  const handleClose = () => {
+    ideMessenger.post("completeWelcome", undefined);
+  };
+
   useEffect(() => {
+    // unlock overlay when we get to last page
+    ideMessenger.post("unlockOverlay", undefined);
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         handleOpenFolder();
@@ -52,7 +61,7 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground mb-6">
             You're all set!
           </h2>
-          <div className="flex flex-col items-center gap-3 mb-24">
+          <div className="flex flex-col items-center gap-4 mb-24">
             <Button
               className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative"
               onClick={handleOpenFolder}
@@ -64,6 +73,12 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
                 </div>
               </div>
             </Button>
+            <div
+              onClick={handleClose}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+            <span className="text-center w-full">Close</span>
+            </div>
           </div>
         </div>
       </div>

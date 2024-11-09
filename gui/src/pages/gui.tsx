@@ -52,17 +52,15 @@ import {
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
-
   scrollbar-width: none; /* Firefox */
-
   /* Hide scrollbar for Chrome, Safari and Opera */
   &::-webkit-scrollbar {
     display: none;
   }
-
   height: 100%;
 `;
 
@@ -276,6 +274,14 @@ function GUI() {
       mainTextInputRef.current?.focus?.();
     },
     [saveSession],
+  );
+
+  useWebviewListener(
+    "setActiveFilePath",
+    async (data) => {
+      dispatch(setActiveFilePath(data));
+    },
+    []
   );
 
   useWebviewListener(

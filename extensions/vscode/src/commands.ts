@@ -29,7 +29,7 @@ import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
-import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessState } from './integrations/aider/aider';
+import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessState, installAider, uninstallAider } from './integrations/aider/aiderUtil';
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
@@ -248,18 +248,44 @@ const commandsMap: (
         console.dir("Extension launch detected as a subsequent launch. Skipping user settings import.");
         return;
       }
-      importUserSettingsFromVSCode();
+      await importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
       // vscode.window.showInformationMessage("Marking onboarding complete.");
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
-      attemptInstallExtension("supermaven.supermaven");
     },
     "pearai.resetInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("resetInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.showInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
+    },
+    "pearai.openAiderChanges": async () => {
+      // Close overlay
+      await vscode.commands.executeCommand('pearai.hideOverlay');
+      // Open source control
+      await vscode.commands.executeCommand('workbench.view.scm');
+
+      // Get Git extension
+      const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+      const repository = gitExtension?.getAPI(1).repositories[0];
+      if (repository) {
+          // Get unstaged changes
+          const unstagedChanges = repository.state.workingTreeChanges;
+          if (unstagedChanges.length > 0) {
+              // Open the diff view of the first staged change
+              await vscode.commands.executeCommand(
+                  'git.openChange',
+                  unstagedChanges[0].uri
+              );
+          }
+      }
+    },
+    "pearai.highlightElement": async (msg) => {
+      vscode.commands.executeCommand("pearai.highlightElements", msg.data.elementSelectors);
+    },
+    "pearai.unhighlightElement": async (msg) => {
+      vscode.commands.executeCommand("pearai.removeHighlight", msg.data.elementSelectors);
     },
     "pearai.acceptDiff": async (newFilepath?: string | vscode.Uri) => {
       captureCommandTelemetry("acceptDiff");
@@ -342,6 +368,9 @@ const commandsMap: (
     },
     "pearai.toggleInventory": async () => {
       await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
+    },
+    "pearai.toggleInventoryHome": async () => {
+      await handleIntegrationShortcutKey("navigateToInventoryHome", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
     "pearai.startOnboarding": async () => {
       if (isFirstLaunch(extensionContext)) {
@@ -525,8 +554,10 @@ const commandsMap: (
       captureCommandTelemetry("sendToTerminal");
       ide.runCommand(text);
     },
-    "pearai.newSession": () => {
+    "pearai.newSession": async () => {
       sidebar.webviewProtocol?.request("newSession", undefined);
+      const currentFile = await ide.getCurrentFile();
+      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, [
@@ -588,6 +619,12 @@ const commandsMap: (
         extensionContext.subscriptions,
       );
     },
+    "pearai.installAider": async () => {
+      await installAider(core);
+    },
+    "pearai.uninstallAider": async () => {
+      await uninstallAider(core);
+    },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);
       await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
@@ -600,6 +637,9 @@ const commandsMap: (
     },
     "pearai.refreshAiderProcessState": async () => {
       await refreshAiderProcessState(core);
+    },
+    "pearai.setAiderProcessState": async (state) => {
+      core.send("setAiderProcessStateInGUI", { state: state });
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);

@@ -20,6 +20,8 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   showTutorial: [undefined, void];
   showFile: [{ filepath: string }, void];
   openConfigJson: [undefined, void];
+  highlightElement: [{elementSelectors: string[]}, void];
+  unhighlightElement: [{elementSelectors: string[]}, void];
   perplexityMode: [undefined, void];
   addPerplexityContext: [{text: string, language: string}, void]
   addPerplexityContextinChat: [{ text: string, language: string }, void];
@@ -42,10 +44,20 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   openHistory: [undefined, void];
   appendSelected: [undefined, void];
   pearaiLogin: [undefined, void];
+  closePearAIOverlay: [undefined, void];
+  openAiderChanges: [undefined, void];
+  getNumberOfChanges: [undefined, number];
+  isAiderInstalled: [undefined, boolean];
+  installAider: [undefined, void];
+  uninstallAider: [undefined, void];
+  isSupermavenInstalled: [undefined, boolean];
+  uninstallVscodeExtension: [{ extensionId: string }, void];
+  completeWelcome: [undefined, void];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setInactive: [undefined, void];
+  setActiveFilePath: [string | undefined, void];
   resetInteractiveContinueTutorial: [undefined, void];
   showInteractiveContinueTutorial: [undefined, void];
   submitMessage: [{ message: any }, void]; // any -> JSONContent from TipTap
@@ -85,5 +97,6 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   navigateToCreator: [undefined, void];
   navigateToSearch: [undefined, void];
   navigateToInventory: [undefined, void];
+  navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
 };

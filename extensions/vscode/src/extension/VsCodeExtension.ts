@@ -32,7 +32,7 @@ import { Battery } from "../util/battery";
 import { TabAutocompleteModel } from "../util/loadAutocompleteModel";
 import type { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { VsCodeMessenger } from "./VsCodeMessenger";
-import { startAiderProcess } from "../integrations/aider/aider";
+import { startAiderProcess } from "../integrations/aider/aiderUtil";
 
 export class VsCodeExtension {
   // Currently some of these are public so they can be used in testing (test/test-suites)
@@ -369,8 +369,10 @@ export class VsCodeExtension {
 
     this.ide.onDidChangeActiveTextEditor((filepath) => {
       this.core.invoke("didChangeActiveTextEditor", { filepath });
+      this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
     });
 
+    this.updateNewWindowActiveFilePath()
     startAiderProcess(this.core);
   }
 
@@ -381,6 +383,11 @@ export class VsCodeExtension {
 
   private async refreshContextProviders() {
     this.sidebar.webviewProtocol.request("refreshSubmenuItems", undefined); // Refresh all context providers
+  }
+
+  private async updateNewWindowActiveFilePath() {
+    const currentFile = await this.ide.getCurrentFile();
+    this.sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
   }
 
   registerCustomContextProvider(contextProvider: IContextProvider) {

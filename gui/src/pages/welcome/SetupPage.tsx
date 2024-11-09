@@ -1,24 +1,19 @@
 "use client";
 
-import { useState, useContext } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Bot, Search } from "lucide-react";
+import { Sparkles, Bot, Search, Download, LogIn, User, Command, Terminal, Import, Move } from "lucide-react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import ImportExtensions from "./setup/ImportExtensions";
 import AddToPath from "./setup/AddToPath";
 import SignIn from "./setup/SignIn";
-
-const getLogoPath = (assetName: string) => {
-  return `${window.vscMediaUrl}/logos/${assetName}`;
-};
+import InstallTools from "./setup/InstallTools";
 
 export default function SetupPage({ onNext }: { onNext: () => void }) {
   const [currentFeature, setCurrentFeature] = useState(0);
   const [timestamp, setTimestamp] = useState(Date.now());
   console.dir(window.vscMediaUrl)
-
-  const ideMessenger = useContext(IdeMessengerContext);
 
   const handleFeatureChange = (index: number) => {
     setCurrentFeature(index);
@@ -38,29 +33,35 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
 
   const setupSteps = [
     {
-      icon: <Sparkles className="h-6 w-6" />,
+      icon: <Move className="h-5 w-5" />,
       title: "Import VSCode Extensions",
       description:
         "Automatically import your extensions from VSCode to feel at home.",
       component: <ImportExtensions onNext={handleNextClick} />,
     },
     {
-      icon: <Bot className="h-6 w-6" />,
+      icon: <Terminal className="h-6 w-6" />,
       title: "Add PearAI To Your Path",
       description: "Easily open PearAI from the command line with 'pearai'.",
       component: <AddToPath onNext={handleNextClick} />,
     },
     {
-      icon: <Search className="h-6 w-6" />,
+      icon: <Download className="h-6 w-6" />,
+      title: "Install Additional Tools",
+      description: "Install recommended tools to enhance your PearAI experience.",
+      component: <InstallTools onNext={handleNextClick} />,
+    },
+    {
+      icon: <User className="h-6 w-6" />,
       title: "Sign in",
-      description: "Have PearAI work for free out oof the box by signing in.",
+      description: "Have PearAI work for free out of the box by signing in.",
       component: <SignIn onNext={handleNextClick} />,
     },
   ];
 
   return (
-    <div className="flex w-full overflow-hidden text-foreground">
-      <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
+    <div className="flex w-full overflow-hidden text-foreground h-full">
+      <div className="w-[35%] flex flex-col">
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6 pt-8">
             <div>
@@ -110,21 +111,13 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
           </div>
         </div>
 
-        <div className="p-6 border-t border-input shrink-0">
-            <Button
-                className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer"
-                onClick={handleNextClick}
-            >
-                Next
-            </Button>
-            </div>
-        </div>
+      </div>
 
-        <div className="flex-1 relative bg-[var(--vscode-input-background)]">
+        <div className="w-[65%] flex flex-col h-full justify-center relative bg-background">
             {setupSteps.map((setupStep, index) => (
                 <div
                 key={index}
-                className={`absolute inset-0 transition-opacity duration-300 ease-in-out ${
+                className={`transition-opacity duration-300 ease-in-out ${
                     currentFeature === index
                     ? "opacity-100 z-10"
                     : "opacity-0 z-0"

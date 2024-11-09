@@ -3,7 +3,7 @@ import * as cp from "child_process";
 import { Core } from "core/core";
 import { ContinueGUIWebviewViewProvider } from "../../ContinueGUIWebviewViewProvider";
 import { getIntegrationTab } from "../../util/integrationUtils";
-import Aider from "core/llm/llms/Aider";
+import Aider from "core/llm/llms/AiderLLM";
 import { execSync } from "child_process";
 import { isFirstPearAICreatorLaunch } from "../../copySettings";
 
@@ -18,46 +18,27 @@ let aiderPanel: vscode.WebviewPanel | undefined;
 export async function startAiderProcess(
   core: Core,
 ) {
-  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
-  const isPythonInstalled = await checkPythonInstallation();
-  const isAiderInstalled = await checkAiderInstallation();
-  let setAiderUninstalled = false;
-  // If this is the first time running, try to install aider automatically if we can
-  if (isFirstPearAICreatorLaunch) {
-    if (!isAiderInstalled) {
-      // If aider is not installed and prereq's are not installed, then go to manual installation
-      if (!isBrewInstalled || !isPythonInstalled) {
-        setAiderUninstalled = true;
-      } else { // If prereq's are installed, then try to install aider automatically
-        setAiderUninstalled = (await handleAiderNotInstalled(core)) || true;
-      }
-    }
-  } else {
-    // If this is not the first time we are running and aider is not installed, give up.
-    // Users will have to manual install
-    if (!isAiderInstalled) {
-      setAiderUninstalled = true;
-    }
-  }
-
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as
     | Aider
     | undefined;
 
-  if (aiderModel) {
-    try {
-      if (setAiderUninstalled) {
-        await aiderModel.setAiderState("uninstalled");
-      }
-      else {
-        await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
-      }
-    } catch (e) {
-      console.warn(`Error starting Aider process: ${e}`);
-    }
-  } else {
+  if (!aiderModel) {
     console.warn("No Aider model found in configuration");
+    return;
+  }
+
+  const isAiderInstalled = await checkAiderInstallation();
+
+  if (!isAiderInstalled) {
+    await aiderModel.setAiderState("uninstalled");
+    return;
+  }
+
+  try {
+    await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
+  } catch (e) {
+    console.warn(`Error starting Aider process: ${e}`);
   }
 }
 
@@ -66,11 +47,11 @@ export async function refreshAiderProcessState(core: Core) {
   const aiderModel = config.models.find((model) => model instanceof Aider) as Aider | undefined;
 
   if (!aiderModel) {
-    core.send("aiderProcessStateUpdate", { state: "stopped" });
+    core.send("setAiderProcessStateInGUI", { state: "stopped" });
     return;
   }
 
-  core.send("aiderProcessStateUpdate", { state: aiderModel.getAiderState() });
+  core.send("setAiderProcessStateInGUI", { state: aiderModel.getAiderState() });
 }
 
 export async function killAiderProcess(core: Core) {
@@ -212,7 +193,7 @@ async function checkPythonInstallation(): Promise<boolean> {
   return false;
 }
 
-async function checkAiderInstallation(): Promise<boolean> {
+export async function checkAiderInstallation(): Promise<boolean> {
   const commands = [
     "aider --version",
     "python -m aider --version",
@@ -242,7 +223,7 @@ async function checkBrewInstallation(): Promise<boolean> {
 
 
 // Return whether or not automatic install worked or not
-async function handleAiderNotInstalled(core: Core) {
+export async function installAider(core: Core) {
   const isPythonInstalled = await checkPythonInstallation();
   console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
@@ -257,6 +238,14 @@ async function handleAiderNotInstalled(core: Core) {
   }
 
   if (!isAiderInstalled) {
+    // if brew or python is not installed, then user must install manually
+    if (!isBrewInstalled || !isPythonInstalled) {
+      vscode.window.showInformationMessage("Plese follow manual installation steps to install Aider.");
+      return;
+    }
+
+    vscode.window.showInformationMessage("Installing Aider...");
+
     let command = "";
     if (IS_WINDOWS) {
       command += "python -m pip install -U aider-chat;";
@@ -276,6 +265,19 @@ async function handleAiderNotInstalled(core: Core) {
         console.error("Failed to execute Aider command:", error);
         return true;
     }
+  }
+}
+
+export async function uninstallAider(core: Core) {
+  const isAiderInstalled = await checkAiderInstallation();
+  if (!isAiderInstalled) {
+    return;
+  }
+  vscode.window.showInformationMessage("Uninstalling Aider...");
+  if (IS_WINDOWS) {
+    execSync("python -m pip uninstall -y aider-chat");
+  } else {
+    execSync("brew uninstall aider");
   }
 }
 
