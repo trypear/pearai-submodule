@@ -369,10 +369,7 @@ export class VsCodeExtension {
 
     this.ide.onDidChangeActiveTextEditor((filepath) => {
       this.core.invoke("didChangeActiveTextEditor", { filepath });
-
-      if (filepath) {
-        this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
-      }
+      this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
     });
 
     startAiderProcess(this.core);
