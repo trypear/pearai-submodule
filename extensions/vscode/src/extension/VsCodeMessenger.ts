@@ -100,10 +100,10 @@ export class VsCodeMessenger {
     this.onWebview("install_vscode_extension", (msg) => {
       attemptInstallExtension(msg.data.extensionId);
     });
-    this.onWebview("install_aider", (msg) => {
+    this.onWebview("installAider", (msg) => {
       vscode.commands.executeCommand("pearai.installAider");
     });
-    this.onWebview("is_aider_installed", async (msg) => {
+    this.onWebview("isAiderInstalled", async (msg) => {
       console.log("Checking Aider installation...");
       const isAiderInstalled = await checkAiderInstallation();
       console.log("Aider installation status:", isAiderInstalled);

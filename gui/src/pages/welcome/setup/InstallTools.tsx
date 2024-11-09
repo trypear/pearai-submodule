@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useContext, useState, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
-import { Bot, Sparkles, MessageSquare, Search } from "lucide-react";
 import { getLogoPath } from "./ImportExtensions";
 
 interface Tool {
@@ -24,27 +23,27 @@ export default function InstallTools({
 }) {
 
     const handleVSCExtensionInstall = async (extensionId: string) => {
-        await ideMessenger.post("install_vscode_extension", { extensionId });
+        ideMessenger.post("install_vscode_extension", { extensionId });
     };
 
     const handleAiderInstall = async () => {
-        await ideMessenger.post("install_aider", undefined);
+        ideMessenger.post("installAider", undefined);
     };
 
     const tools: Tool[] = [
         {
             id: "aider",
-            name: "Aider",
-            description: "A command-line tool that lets you pair program with GPT-4, editing code and files together in your terminal.",
+            name: "PearAI Creator",
+            description: "PearAI Creator is a no-code tool powered by Aider that let's you build complete features with just a prompt.",
             icon: "inventory-creator.svg",
             installCommand: handleAiderInstall,
             preInstalled: false
         },
         {
             id: "supermaven",
-            name: "SuperMaven",
-            description: "An AI-powered tool that helps you understand and navigate complex codebases with semantic search and analysis.",
-            icon: <Sparkles className="h-6 w-6" />,
+            name: "PearAI Predict",
+            description: "PearAI Predict is an AI powered code-completion tool. It is currently recommended by PearAI as a standalone extension.",
+            icon: "autocomplete.svg",
             installCommand: () => handleVSCExtensionInstall("supermaven.supermaven"),
             preInstalled: false
         }
@@ -52,7 +51,6 @@ export default function InstallTools({
 
     const ideMessenger = useContext(IdeMessengerContext);
     const [isInstallingAll, setIsInstallingAll] = useState(false);
-    const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
     const [attemptedInstalls, setAttemptedInstalls] = useState<string[]>(() => {
         const saved = localStorage.getItem('onboardingAttemptedInstalls');
         return saved ? JSON.parse(saved) : [];
@@ -148,73 +146,56 @@ export default function InstallTools({
         <div className="step-content flex w-full h-screen items-center justify-center bg-background text-foreground">
             <div className="w-full max-w-[800px] flex flex-col items-center p-4">
                 <h5 className="text-xl md:text-2xl lg:text-2xl font-bold text-foreground mb-12 text-center">
-                    PearAI requires some extra installation to give you the complete experience
+                    PearAI requires some extra installation for the following integrations
                 </h5>
-
-
-
-                <details className="w-full mb-4" onToggle={() => setIsAdvancedOpen(!isAdvancedOpen)}>
-                    <summary className="cursor-pointer text-sm hover:text-muted-foreground transition-colors">
-                        Advanced Configuration
-                    </summary>
-                    <div className="space-y-2 mt-4">
-                        {tools.map((tool) => (
-                            <Card key={tool.id} className={`p-4 flex items-center border-solid border-2 justify-between ${
-                                tool.preInstalled || attemptedInstalls.includes(tool.id) ? 'opacity-60' : ''
-                            }`}>
-                                <div className="flex items-center gap-4 flex-1">
-                                    <div className="p-2 bg-muted rounded-lg">
-                                        {typeof tool.icon === 'string' ? <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-6 w-6" /> : tool.icon}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <div className="font-semibold text-lg">{tool.name}</div>
-                                            {(tool.preInstalled || attemptedInstalls.includes(tool.id)) && (
-                                                <span className="text-xs ml-2 bg-foreground  text-white  px-2 py-1 rounded-md">
-                                                    {tool.preInstalled ? 'Pre-installed' : 'Setup initiated'}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="text-sm text-muted-foreground">{tool.description}</p>
-                                    </div>
+    
+                <div className="w-full space-y-2 mb-4">
+                    {tools.map((tool) => (
+                        <Card key={tool.id} className={`p-4 flex items-center border-solid border-2 justify-between ${
+                            tool.preInstalled || attemptedInstalls.includes(tool.id) ? 'opacity-60' : ''
+                        }`}>
+                            <div className="flex items-center gap-4 flex-1">
+                                <div className="p-1 bg-muted rounded-lg">
+                                    {typeof tool.icon === 'string' ? 
+                                    <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-[80px]" /> 
+                                    : tool.icon}
                                 </div>
-                                <div className="flex items-center h-5 ml-4">
-                                    <input
-                                        type="checkbox"
-                                        checked={checkedTools[tool.id] || false}
-                                        onChange={() => handleCheckboxChange(tool.id)}
-                                        disabled={tool.preInstalled || attemptedInstalls.includes(tool.id)}
-                                        className="w-4 h-4 cursor-pointer rounded border-gray-300 text-primary focus:ring-primary"
-                                        style={{
-                                            accentColor: 'var(--button)',
-                                        }}
-                                    />
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                        <div className="font-semibold text-lg">{tool.name}</div>
+                                        {(tool.preInstalled || attemptedInstalls.includes(tool.id)) && (
+                                            <span className="text-xs ml-2 bg-foreground text-white px-2 py-1 rounded-md">
+                                                {tool.preInstalled ? 'Pre-installed' : 'Setup initiated'}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">{tool.description}</p>
                                 </div>
-                            </Card>
-                        ))}
-
-                        <div className="flex justify-end mt-4">
-                            <Button
-                                className="w-[250px] mt-2 text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
-                                onClick={handleInstallChecked}
-                                disabled={isInstallingAll || !areAnyToolsSelected() || areAllToolsAttempted()}
-                            >
-                                {getButtonText()}
-                            </Button>
-                        </div>
-                    </div>
-                </details>
-
-                {!isAdvancedOpen && (
-                    <Button
-                        className="w-[250px] mb-2 text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
-                        onClick={handleInstallAll}
-                        disabled={isInstallingAll || areAllToolsAttempted()}
-                    >
-                        {areAllToolsAttempted() ? "All Tools Setup Initiated" : "Install All Tools"}
-                    </Button>
-                )}
-
+                            </div>
+                            <div className="flex items-center h-5 ml-4">
+                                <input
+                                    type="checkbox"
+                                    checked={checkedTools[tool.id] || false}
+                                    onChange={() => handleCheckboxChange(tool.id)}
+                                    disabled={tool.preInstalled || attemptedInstalls.includes(tool.id)}
+                                    className="w-4 h-4 cursor-pointer rounded border-gray-300 text-primary focus:ring-primary"
+                                    style={{
+                                        accentColor: 'var(--button)',
+                                    }}
+                                />
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+    
+                <Button
+                    className="w-[250px] mb-2 text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
+                    onClick={handleInstallChecked}
+                    disabled={isInstallingAll || !areAnyToolsSelected() || areAllToolsAttempted()}
+                >
+                    {getButtonText()}
+                </Button>
+    
                 <div
                     onClick={onNext}
                     className="mt-4 text-center text-sm cursor-pointer hover:text-muted-foreground transition-colors"
