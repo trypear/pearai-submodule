@@ -185,7 +185,6 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
 
       // Automatically use currently open file
       if (source === 'continue' && (!modifiers.noContext || useActiveFile) && (history.length === 0 || index === 0)) {
-        console.dir("TEST: USING ACTIVE FILE")
         const usingFreeTrial = defaultModel.provider === "free-trial";
 
         const currentFilePath = await ideMessenger.ide.getCurrentFile();
