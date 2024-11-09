@@ -9,7 +9,12 @@ import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { defaultBorderRadius, lightGray, vscInputBackground, greenButtonColor } from "..";
+import {
+  defaultBorderRadius,
+  lightGray,
+  vscInputBackground,
+  greenButtonColor,
+} from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
@@ -66,13 +71,12 @@ const StyledListboxOption = styled(Listbox.Option)<ListboxOptionProps>`
   padding: 6px;
 
   &:hover {
-    background: ${(props) => (props.isCurrentModel ? greenButtonColor : `${lightGray}33`)};
-    color: ${(props) => (props.isCurrentModel ? "white" : "")};
+    background: ${(props) =>
+      props.isCurrentModel ? `${lightGray}66` : `${lightGray}33`};
   }
 
   background: ${(props) =>
-    props.isCurrentModel ? greenButtonColor : "transparent"};
-  color: ${(props) => (props.isCurrentModel ? "white" : "")};
+    props.isCurrentModel ? `${lightGray}66` : "transparent"};
 `;
 
 const StyledTrashIcon = styled(TrashIcon)`
@@ -190,7 +194,11 @@ function ModelSelect() {
   useEffect(() => {
     setOptions(
       allModels
-        .filter((model) => !model?.title?.toLowerCase().includes("aider") && !model?.title?.toLowerCase().includes("perplexity"))
+        .filter(
+          (model) =>
+            !model?.title?.toLowerCase().includes("aider") &&
+            !model?.title?.toLowerCase().includes("perplexity"),
+        )
         .map((model) => {
           return {
             value: model.title,
@@ -238,14 +246,16 @@ function ModelSelect() {
           </span>
         </StyledListboxButton>
         <StyledListboxOptions>
-          {options.filter((option) => option.isDefault).map((option, idx) => (
-            <ModelOption
-              option={option}
-              idx={idx}
-              key={idx}
-              showDelete={!option.isDefault}
-            />
-          ))}
+          {options
+            .filter((option) => option.isDefault)
+            .map((option, idx) => (
+              <ModelOption
+                option={option}
+                idx={idx}
+                key={idx}
+                showDelete={!option.isDefault}
+              />
+            ))}
 
           {selectedProfileId === "local" && (
             <>
