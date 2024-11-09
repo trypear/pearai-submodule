@@ -80,11 +80,11 @@ function AIToolCard({
               <div className="text-2xl">
                 {tool.icon}
               </div> : (
-                <img
-                  src={getLogoPath(tool.icon)}
-                  className="w-6 h-6"
-                />
-              )}
+              <img
+                src={getLogoPath(tool.icon)}
+                className="w-6 h-6"
+              />
+            )}
             {tool.name}
           </h3>
           <p
@@ -139,9 +139,9 @@ function AIToolCard({
 export default function AIToolInventory() {
   const ideMessenger = useContext(IdeMessengerContext);
 
-  const aiderProcessState = useSelector(
-    (state: RootState) => state.state.aiderProcessState,
-  );
+  // const aiderProcessState = useSelector(
+  //   (state: RootState) => state.state.aiderProcessState,
+  // );
 
   const [isSuperMavenInstalled, setIsSuperMavenInstalled] = useState(false);
 
@@ -260,7 +260,7 @@ export default function AIToolInventory() {
         <span>Lower level of human intervention needed</span>,
       ],
       installNeeded: true,
-      isInstalled: aiderProcessState.state !== "uninstalled",
+      // isInstalled: aiderProcessState.state !== "uninstalled",
       installCommand: async () => {
         await ideMessenger.post("install_aider", undefined);
       },
@@ -428,11 +428,11 @@ export default function AIToolInventory() {
                           {focusedTool.icon}
                         </div> : (
                           <img
-                            src={getLogoPath(focusedTool.icon)}
-                            className="w-5 h-5"
-                          />
-                        )}
-                      {focusedTool.name}
+                          src={getLogoPath(focusedTool.icon)}
+                          className="w-5 h-5"
+                        />
+                      )}
+                    {focusedTool.name}
                     </div>
                     <Badge variant="outline" className="pl-0">Powered by {focusedTool.poweredBy}</Badge>
                   </h2>
