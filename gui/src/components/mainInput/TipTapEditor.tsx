@@ -656,14 +656,6 @@ const TipTapEditor = memo(function TipTapEditor({
   );
 
   useWebviewListener(
-    "setActiveFilePath",
-    async (data) => {
-      historyLength < 1 && dispatch(setActiveFilePath(data));
-    },
-    [dispatch]
-  );
-
-  useWebviewListener(
     "addPerplexityContextinChat",
     async (data) => {
       if (!isMainInput || !editor) {
