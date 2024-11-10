@@ -7,8 +7,7 @@ export default function UsageWarning() {
   const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState("");
 
-  // TODO: get logged in user token 
-  const token = "";
+  const token = localStorage.getItem('userToken') || "";
   const url = `${SERVER_URL}/get-usage`;
 
   const getMessage = async () => {
