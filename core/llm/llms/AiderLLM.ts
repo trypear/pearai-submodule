@@ -332,6 +332,7 @@ class Aider extends BaseLLM {
           const accessToken = this.credentials.getAccessToken();
           this.command.unshift(`export OPENAI_API_KEY=${accessToken};`);
         }
+
         return cp.spawn(userShell, ["-c", this.command.join(" ")], {
           stdio: ["pipe", "pipe", "pipe"],
           cwd: currentDir,
