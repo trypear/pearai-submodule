@@ -9,6 +9,7 @@ import ImportExtensions from "./setup/ImportExtensions";
 import AddToPath from "./setup/AddToPath";
 import SignIn from "./setup/SignIn";
 import InstallTools from "./setup/InstallTools";
+import { getPlatform } from "@/util";
 
 export default function SetupPage({ onNext }: { onNext: () => void }) {
   const [currentFeature, setCurrentFeature] = useState(0);
@@ -31,7 +32,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     }
   };
 
-  const setupSteps = [
+  const allSetupSteps = [
     {
       icon: <Move className="h-5 w-5" />,
       title: "Import VSCode Extensions",
@@ -44,6 +45,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       title: "Add PearAI To Your Path",
       description: "Easily open PearAI from the command line with 'pearai'.",
       component: <AddToPath onNext={handleNextClick} />,
+      platformSpecific: "mac"
     },
     {
       icon: <Download className="h-6 w-6" />,
@@ -58,6 +60,10 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       component: <SignIn onNext={handleNextClick} />,
     },
   ];
+
+  const setupSteps = allSetupSteps.filter(step => 
+    !step.platformSpecific || step.platformSpecific === getPlatform()
+  );
 
   return (
     <div className="flex w-full overflow-hidden text-foreground h-full">
