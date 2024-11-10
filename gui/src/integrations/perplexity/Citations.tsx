@@ -43,22 +43,22 @@ const CitationCard = ({ url }: { url: string }) => {
       href={url}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex-shrink-0 w-64 p-4 bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow duration-200 group"
+      className="flex-shrink-0 w-40 text-xs px-3 bg-sidebar-background rounded-md hover:shadow-md hover:opacity-70 hover:text-foreground transition-shadow duration-200 group no-underline"
     >
-      <div className="flex items-center space-x-3">
-        <img 
-          src={info.favicon} 
-          alt="" 
-          className="w-6 h-6 rounded"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src = 'default-favicon.png';
-          }}
-        />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-900 truncate group-hover:text-blue-600">
-            {info.title}
-          </p>
-          <p className="text-xs text-gray-500 truncate">
+      <div className="flex flex-col">
+        <div className="font-medium py-2 h-[3rem] text-foreground line-clamp-3  no-underline">
+          {info.title}
+        </div>
+        <div className="flex items-center space-x-2">
+          <img 
+            src={info.favicon} 
+            alt="" 
+            className="w-4 h-4 rounded-lg"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'default-favicon.png';
+            }}
+          />
+          <p className="text-xs py-2 m-0 text-input-foreground text-button truncate no-underline">
             {new URL(info.url).hostname}
           </p>
         </div>
@@ -72,7 +72,7 @@ export const Citations = ({ citations, className }: CitationsProps) => {
 
   return (
     <div className={cn("mb-4", className)}>
-      <div className="font-medium mb-2 text-sm text-gray-700">Citations:</div>
+      <div className="font-base my-2 text-sm text-muted-foreground">Citations:</div> 
       <div className="overflow-x-auto pb-2">
         <div className="flex space-x-4">
           {citations.map((citation, i) => (
@@ -80,7 +80,7 @@ export const Citations = ({ citations, className }: CitationsProps) => {
           ))}
         </div>
       </div>
-      <div className="h-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent mt-2 opacity-50" />
+      <div className="h-1 bg-gradient-to-r from-transparent via-input to-transparent mt-2 opacity-50" />
     </div>
   );
 };
