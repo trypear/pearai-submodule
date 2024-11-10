@@ -26,6 +26,21 @@ export async function startAiderProcess(core: Core) {
     return;
   }
 
+  // Check if current workspace is a git repo
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders || workspaceFolders.length === 0) {
+    await aiderModel.setAiderState("notgitrepo");
+    // vscode.window.showErrorMessage('Please open a workspace folder to use PearAI Creator.');
+    return;
+  }
+
+  const isGitRepo = await isGitRepository(workspaceFolders[0].uri.fsPath);
+  if (!isGitRepo) {
+    console.dir("setting state to notgitrepo");
+    await aiderModel.setAiderState("notgitrepo");
+    return;
+  }
+
   const isAiderInstalled = await checkAiderInstallation();
 
   if (!isAiderInstalled) {
@@ -278,6 +293,21 @@ export async function uninstallAider(core: Core) {
     execSync("python -m pip uninstall -y aider-chat");
   } else {
     execSync("brew uninstall aider");
+  }
+}
+
+// check if directory is a git repo
+async function isGitRepository(directory: string): Promise<boolean> {
+  try {
+    const result = execSync('git rev-parse --is-inside-work-tree', {
+      cwd: directory,
+      stdio: ['ignore', 'pipe', 'ignore'],
+      encoding: 'utf-8'
+    }).trim();
+    return result === 'true';
+  } catch (error) {
+    console.log('Aider Error:Directory is not a git repository:', error);
+    return false;
   }
 }
 
