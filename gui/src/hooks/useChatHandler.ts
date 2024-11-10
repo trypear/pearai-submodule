@@ -33,7 +33,8 @@ import {
   setMessageAtIndex,
   streamUpdate,
   streamAiderUpdate,
-  streamPerplexityUpdate
+  streamPerplexityUpdate,
+  setPerplexityCitations,
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
 
@@ -71,6 +72,12 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
         messages,
       );
       let next = await gen.next();
+      if (source === 'perplexity') {
+        dispatch(
+          setPerplexityCitations((next.value as ChatMessage).citations)
+        );
+      }
+
       while (!next.done) {
         if (!activeRef.current) {
           abortController.abort();

@@ -271,6 +271,7 @@ export type MessageContent = string | MessagePart[];
 export interface ChatMessage {
   role: ChatMessageRole;
   content: MessageContent;
+  citations?: string[];
 }
 
 export interface ContextItemId {
@@ -322,6 +323,7 @@ export interface ChatHistoryItem {
   modifiers?: InputModifiers;
   contextItems: ContextItemWithId[];
   promptLogs?: PromptLog[];
+  citations?: string[];
 }
 
 export type ChatHistory = ChatHistoryItem[];

@@ -140,11 +140,11 @@ class PearAIServer extends BaseLLM {
       if (value.metadata && Object.keys(value.metadata).length > 0) {
         console.log("Metadata received:", value.metadata);
       }
-
       if (value.content) {
         yield {
           role: "assistant",
           content: value.content,
+          citations: value?.citations,
         };
         completion += value.content;
       }

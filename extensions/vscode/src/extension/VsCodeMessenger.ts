@@ -180,6 +180,13 @@ export class VsCodeMessenger {
     this.onWebview("unhighlightElement", (msg) => {
       vscode.commands.executeCommand("pearai.unhighlightElement", msg);
     });
+    this.onWebview("getUrlTitle", async (msg) => {
+      const url = msg.data;
+      const res = await fetch(url);
+      const text = await res.text();
+      const match = text.match(/<title[^>]*>([^<]+)<\/title>/);
+      return match ? match[1] : new URL(url).hostname;
+    });
     this.onWebview("perplexityMode", (msg) => {
       vscode.commands.executeCommand("pearai.perplexityMode");
     });
