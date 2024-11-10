@@ -15,9 +15,7 @@ const IS_LINUX = PLATFORM === "linux";
 let aiderPanel: vscode.WebviewPanel | undefined;
 
 // Aider process management functions
-export async function startAiderProcess(
-  core: Core,
-) {
+export async function startAiderProcess(core: Core) {
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as
     | Aider
@@ -44,7 +42,9 @@ export async function startAiderProcess(
 
 export async function refreshAiderProcessState(core: Core) {
   const config = await core.configHandler.loadConfig();
-  const aiderModel = config.models.find((model) => model instanceof Aider) as Aider | undefined;
+  const aiderModel = config.models.find((model) => model instanceof Aider) as
+    | Aider
+    | undefined;
 
   if (!aiderModel) {
     core.send("setAiderProcessStateInGUI", { state: "stopped" });
@@ -175,8 +175,6 @@ export async function openAiderPanel(
   );
 }
 
-
-
 async function checkPythonInstallation(): Promise<boolean> {
   const commands = ["python3 --version", "python --version"];
 
@@ -221,13 +219,13 @@ async function checkBrewInstallation(): Promise<boolean> {
   }
 }
 
-
 // Return whether or not automatic install worked or not
 export async function installAider(core: Core) {
   const isPythonInstalled = await checkPythonInstallation();
   console.log("PYTHON CHECK RESULT :");
   console.dir(isPythonInstalled);
-  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  const isBrewInstalled =
+    IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
   console.log("BREW CHECK RESULT :");
   console.dir(isBrewInstalled);
   const isAiderInstalled = await checkAiderInstallation();
@@ -240,7 +238,9 @@ export async function installAider(core: Core) {
   if (!isAiderInstalled) {
     // if brew or python is not installed, then user must install manually
     if (!isBrewInstalled || !isPythonInstalled) {
-      vscode.window.showInformationMessage("Plese follow manual installation steps to install Aider.");
+      vscode.window.showInformationMessage(
+        "Plese follow manual installation steps to install Aider.",
+      );
       return;
     }
 
@@ -256,14 +256,14 @@ export async function installAider(core: Core) {
     }
 
     try {
-        execSync(command);
-        // If execution was successful, start the Aider process
-        core.invoke("llm/startAiderProcess", undefined);
-        return false;
+      execSync(command);
+      // If execution was successful, start the Aider process
+      core.invoke("llm/startAiderProcess", undefined);
+      return false;
     } catch (error) {
-        // Handle the error case
-        console.error("Failed to execute Aider command:", error);
-        return true;
+      // Handle the error case
+      console.error("Failed to execute Aider command:", error);
+      return true;
     }
   }
 }
@@ -292,7 +292,6 @@ async function executeCommand(command: string): Promise<string> {
     });
   });
 }
-
 
 // Commented out as the user must do this themselves
 
