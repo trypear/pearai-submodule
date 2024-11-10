@@ -184,6 +184,8 @@ function AiderGUI() {
   }, []);
 
   useWebviewListener("setAiderProcessStateInGUI", async (data) => {
+    console.dir("I GOT THE MESSAGE ");
+    console.dir(data);
     if (data) {
       setAiderProcessState(data);
     }
@@ -262,6 +264,9 @@ function AiderGUI() {
     if (aiderProcessState.state === "starting") {
       msg =
         "Spinning up PearAI Creator (Powered By aider), please give it a second...";
+    }
+    if (aiderProcessState.state === "notGitRepo") {
+      msg = "NOT A GIT REPO";
     }
 
     return (

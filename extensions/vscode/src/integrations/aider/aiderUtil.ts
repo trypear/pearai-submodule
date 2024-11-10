@@ -29,7 +29,7 @@ export async function startAiderProcess(core: Core) {
   const isAiderInstalled = await checkAiderInstallation();
 
   if (!isAiderInstalled) {
-    await aiderModel.setAiderState("uninstalled");
+    core.send("setAiderProcessStateInGUI", { state: "uninstalled" });
     return;
   }
 
@@ -42,15 +42,21 @@ export async function startAiderProcess(core: Core) {
 
 export async function refreshAiderProcessState(core: Core) {
   const config = await core.configHandler.loadConfig();
+
   const aiderModel = config.models.find((model) => model instanceof Aider) as
     | Aider
     | undefined;
+
+  console.dir("All Aider models:");
+  console.dir(config.models.filter((model) => model instanceof Aider));
 
   if (!aiderModel) {
     core.send("setAiderProcessStateInGUI", { state: "stopped" });
     return;
   }
 
+  console.dir("IM IN REFRESH");
+  console.dir(aiderModel.getAiderState());
   core.send("setAiderProcessStateInGUI", { state: aiderModel.getAiderState() });
 }
 
@@ -281,9 +287,12 @@ export async function uninstallAider(core: Core) {
   }
 }
 
-async function executeCommand(command: string): Promise<string> {
+async function executeCommand(
+  command: string,
+  options?: { cwd?: string },
+): Promise<string> {
   return new Promise((resolve, reject) => {
-    cp.exec(command, (error, stdout, stderr) => {
+    cp.exec(command, { cwd: options?.cwd }, (error, stdout, stderr) => {
       if (error) {
         reject(stderr || error);
       } else {

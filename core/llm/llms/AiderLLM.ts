@@ -81,6 +81,8 @@ class Aider extends BaseLLM {
       options.setCredentials || (async () => {}),
     );
     console.log("Aider constructor called");
+    console.dir("INITING AIDERLLM");
+
     this.model = options.model;
     this.apiKey = options.apiKey;
     this.command = [];
@@ -181,6 +183,22 @@ class Aider extends BaseLLM {
     this.aiderOutput += cleanOutput;
   }
 
+  private async isGitRepo(): Promise<boolean> {
+    try {
+      if (this.getCurrentDirectory) {
+        const currentDir = await this.getCurrentDirectory();
+        execSync("git rev-parse --is-inside-work-tree", {
+          cwd: currentDir,
+          stdio: "ignore",
+        });
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
   public async startAiderChat(
     model: string,
     apiKey: string | undefined,
@@ -188,6 +206,13 @@ class Aider extends BaseLLM {
     if (this.aiderProcess && !this.aiderProcess.killed) {
       console.log("Aider process already running");
       this.setAiderState("ready");
+      return;
+    }
+
+    const isGitRepository = await this.isGitRepo();
+    if (!isGitRepository) {
+      console.log("Setting as not a git repo");
+      this.setAiderState("notGitRepo");
       return;
     }
 
