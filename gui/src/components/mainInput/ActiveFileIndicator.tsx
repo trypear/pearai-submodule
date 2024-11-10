@@ -29,7 +29,7 @@ export default function ActiveFileIndicator() {
           <X className="text-xs pt-[0.15rem] pr-[0.1rem]" size={9} onClick={removeActiveFile}/>
         </span>
         :
-        <span className="mention flex items-center gap-[0.15rem]">
+        <span className="flex items-center gap-[0.15rem]">
           None
         </span>
       }
