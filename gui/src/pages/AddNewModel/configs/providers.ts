@@ -93,11 +93,11 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
   other: {
     title: "Other",
     provider: "other",
-    description: "Use your own API key for different cloud, local, and other LLM providers (i.e. OpenAI).",
+    description:
+      "Use your own API key for different cloud, local, and other LLM providers (i.e. OpenAI).",
     icon: "openai.png",
     tags: [ModelProviderTags.RequiresApiKey],
-    packages: [
-    ],
+    packages: [],
     showInMenu: false,
   },
   openai: {

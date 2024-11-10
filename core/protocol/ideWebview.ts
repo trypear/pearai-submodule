@@ -47,10 +47,18 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   closePearAIOverlay: [undefined, void];
   openAiderChanges: [undefined, void];
   getNumberOfChanges: [undefined, number];
+  isAiderInstalled: [undefined, boolean];
+  installAider: [undefined, void];
+  uninstallAider: [undefined, void];
+  isSupermavenInstalled: [undefined, boolean];
+  uninstallVscodeExtension: [{ extensionId: string }, void];
+  completeWelcome: [undefined, void];
+  openInventory: [undefined, void];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setInactive: [undefined, void];
+  setActiveFilePath: [string | undefined, void];
   resetInteractiveContinueTutorial: [undefined, void];
   showInteractiveContinueTutorial: [undefined, void];
   submitMessage: [{ message: any }, void]; // any -> JSONContent from TipTap

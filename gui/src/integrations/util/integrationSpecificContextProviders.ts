@@ -6,13 +6,15 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
-const aiderContextProvidersSpecific = ["relativefilecontext"];
+const aiderContextProvidersSpecific = ["relativegitfilecontext"];
 
 const perplexityContextProvidersSpecific = ["file", "terminal", "folder"];
 
 const SPECIFIC_CONTEXT_PROVIDERS_INTEGRATIONS = {
   aider: aiderContextProvidersSpecific,
+  creator: aiderContextProvidersSpecific,
   perplexity: perplexityContextProvidersSpecific,
+  search: perplexityContextProvidersSpecific,
 };
 
 const SPECIFIC_CONTEXT_PROVIDERS_PATHNAME = {
@@ -22,6 +24,7 @@ const SPECIFIC_CONTEXT_PROVIDERS_PATHNAME = {
   "/inventory/perplexityMode": perplexityContextProvidersSpecific,
 };
 
+// shouldSkipContextProviders is for the backend
 export function shouldSkipContextProviders(
   defaultModelTitle: string | undefined,
   description: { title: string },
@@ -39,11 +42,14 @@ export function shouldSkipContextProviders(
     );
   }
 
-  // For all other models, only skip if "relativefilecontext"
-  return description.title === "relativefilecontext";
+  // For all other models,  skip if "relativefilecontext" or "relativegitfilecontext" is in the title
+  return (
+    description.title === "relativefilecontext" ||
+    description.title === "relativegitfilecontext"
+  );
 }
 
-// This is for the frontend, which context providers are provided
+// This is for the frontend UI, which context providers are provided
 export function getContextProviders() {
   let location = useLocation();
   let pathname = location.pathname;
@@ -60,9 +66,11 @@ export function getContextProviders() {
       );
     }
 
-    // Default filtering logic, just filter out "relativefilecontext"
+    // Default filtering logic, just filter out "relativefilecontext" and "relativegitfilecontext"
     return availableContextProviders.filter(
-      (provider) => provider.title !== "relativefilecontext",
+      (provider) =>
+        provider.title !== "relativefilecontext" &&
+        provider.title !== "relativegitfilecontext",
     );
   }, [pathname, availableContextProviders]);
 }

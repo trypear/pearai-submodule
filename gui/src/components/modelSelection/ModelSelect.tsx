@@ -24,6 +24,7 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog";
+import { isAiderMode, isPerplexityMode } from "@/util/bareChatMode";
 
 const StyledListboxButton = styled(Listbox.Button)`
   font-family: inherit;
@@ -164,6 +165,8 @@ interface Option {
 function ModelSelect() {
   const dispatch = useDispatch();
   const defaultModel = useSelector(defaultModelSelector);
+  const perplexityMode = isPerplexityMode();
+  const aiderMode = isAiderMode();
   const allModels = useSelector(
     (state: RootState) => state.state.config.models,
   );
@@ -179,7 +182,17 @@ function ModelSelect() {
   useEffect(() => {
     setOptions(
       allModels
-        .filter((model) => !model?.title?.toLowerCase().includes("aider") && !model?.title?.toLowerCase().includes("perplexity"))
+        .filter((model) => {
+          if (aiderMode) {
+            // In Aider mode, only include models with "aider" in title
+            return model?.title?.toLowerCase().includes("creator");
+          }
+          // In normal mode, exclude aider and perplexity models
+          return (
+            !model?.title?.toLowerCase().includes("creator") &&
+            !model?.title?.toLowerCase().includes("perplexity")
+          );
+        })
         .map((model) => {
           return {
             value: model.title,
@@ -188,7 +201,7 @@ function ModelSelect() {
           };
         }),
     );
-  }, [allModels]);
+  }, [allModels, aiderMode]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -227,14 +240,16 @@ function ModelSelect() {
           </span>
         </StyledListboxButton>
         <StyledListboxOptions>
-          {options.filter((option) => option.isDefault).map((option, idx) => (
-            <ModelOption
-              option={option}
-              idx={idx}
-              key={idx}
-              showDelete={!option.isDefault}
-            />
-          ))}
+          {options
+            .filter((option) => option.isDefault)
+            .map((option, idx) => (
+              <ModelOption
+                option={option}
+                idx={idx}
+                key={idx}
+                showDelete={!option.isDefault}
+              />
+            ))}
 
           {selectedProfileId === "local" && (
             <>
