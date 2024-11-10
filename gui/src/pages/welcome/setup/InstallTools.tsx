@@ -34,7 +34,7 @@ export default function InstallTools({
         {
             id: "aider",
             name: "PearAI Creator",
-            description: "PearAI Creator is a no-code tool powered by Aider that let's you build complete features with just a prompt.",
+            description: "PearAI Creator is a no-code tool powered by aider that let's you build complete features with just a prompt.",
             icon: "inventory-creator.svg",
             installCommand: handleAiderInstall,
             preInstalled: false
@@ -42,8 +42,8 @@ export default function InstallTools({
         {
             id: "supermaven",
             name: "PearAI Predict",
-            description: "PearAI Predict is an AI powered code-completion tool. It is currently recommended by PearAI as a standalone Supermaven extension.",
-            icon: "autocomplete.svg",
+            description: "PearAI Predict is our upcoming code autocomplete tool. While it’s under development, we recommend using Supermaven as a standalone extension within PearAI for code autocompletion. Selecting this option will install Supermaven.", 
+            icon: "inventory-autocomplete.svg",
             installCommand: () => handleVSCExtensionInstall("supermaven.supermaven"),
             preInstalled: false
         }
