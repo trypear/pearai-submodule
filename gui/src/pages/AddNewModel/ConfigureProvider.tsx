@@ -22,7 +22,6 @@ import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { updatedObj } from "../../util";
 import type { ProviderInfo } from "./configs/providers";
 import { providers } from "./configs/providers";
-import { useWebviewListener } from "../../hooks/useWebviewListener";
 
 const GridDiv = styled.div`
   display: grid;
@@ -56,6 +55,12 @@ export const CustomModelButton = styled.div<{ disabled: boolean }>`
   `}
 `;
 
+const ErrorText = styled.div`
+    color: #dc2626;
+    font-size: 14px;
+    margin-top: 8px;
+`;
+
 function ConfigureProvider() {
   useNavigationListener();
   const formMethods = useForm();
@@ -78,6 +83,7 @@ function ConfigureProvider() {
     }
   }, [providerName]);
 
+  // TODO: This is not being used - do we still need this?
   const handleContinue = () => {
     if (!modelInfo) return;
 
@@ -121,54 +127,64 @@ function ConfigureProvider() {
       .some((d) => !formMethods.watch(d.key));
   }, [modelInfo, formMethods]);
 
-  const handleOpenRouterSubmit = handleSubmit((data) => {
-    const { apiKey, model } = data;
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-    if (!apiKey || !model) {
+  const handleOpenRouterSubmit = () => {
+    const formValues = formMethods.getValues();
+    const model = formValues.model;
+    const apiKey = formValues.apikey;
+
+    if (!formValues.apiKey) {
+      setErrorMessage("Please enter your OpenRouter API key");
       return;
     }
 
-    const selectedPackage = providers.openrouter?.packages.find(
-      (pkg) => pkg.params.model === model,
-    );
-
-    if (!selectedPackage) {
-      // Handle error: selected model not found
+    if (!formValues.model) {
+      setErrorMessage("Please select a model");
       return;
     }
 
-    let formParams: any = {};
+    handleSubmit((data) => {
+      const selectedPackage = providers.openrouter?.packages.find(
+        (pkg) => pkg.params.model === model,
+      );
 
-    for (const d of providers.openrouter?.collectInputFor || []) {
-      const val = data[d.key];
-      if (val === "" || val === undefined || val === null) {
-        continue;
+      let formParams: any = {};
+
+      for (const d of providers.openrouter?.collectInputFor || []) {
+        const val = data[d.key];
+
+        if (val === "" || val === undefined || val === null) {
+          continue;
+        }
+
+        formParams = updatedObj(formParams, {
+          [d.key]: d.inputType === "text" ? val : parseFloat(val),
+        });
       }
-      formParams = updatedObj(formParams, {
-        [d.key]: d.inputType === "text" ? val : parseFloat(val),
-      });
-    }
 
-    const modelConfig = {
-      ...selectedPackage.params,
-      ...providers.openrouter?.params,
-      ...formParams,
-      apiKey,
-      model,
-      provider: "openrouter",
-      title: `${selectedPackage.title} (OpenRouter)` || `${model} (OpenRouter)`,
-    };
+      const modelConfig = {
+        ...selectedPackage.params,
+        ...providers.openrouter?.params,
+        ...formParams,
+        apiKey,
+        model,
+        provider: "openrouter",
+        title:
+          `${selectedPackage.title} (OpenRouter)` || `${model} (OpenRouter)`,
+      };
 
-    ideMessenger.post("config/addModel", { model: modelConfig });
+      ideMessenger.post("config/addModel", { model: modelConfig });
 
-    dispatch(
-      setDefaultModel({
-        title: modelConfig.title,
-        force: true,
-      }),
-    );
-    navigate("/");
-  });
+      dispatch(
+        setDefaultModel({
+          title: modelConfig.title,
+          force: true,
+        }),
+      );
+      navigate("/");
+    })();
+  };
 
   return (
     <FormProvider {...formMethods}>
@@ -386,13 +402,20 @@ function ConfigureProvider() {
             </div>
           )}
           {providerName === "openrouter" && (
-            <CustomModelButton
-              className={`mt-4 font-bold py-2 px-4 h-8`}
-              onClick={handleOpenRouterSubmit}
-              disabled={!watch("apiKey") || !watch("model")}
-            >
-              Add OpenRouter Model
-            </CustomModelButton>
+            <>
+              {errorMessage && (
+                <ErrorText>
+                  {errorMessage}
+                </ErrorText>
+              )}
+              <CustomModelButton
+                className={`mt-4 font-bold py-2 px-4 h-8`}
+                onClick={handleOpenRouterSubmit}
+                disabled={false}
+              >
+                Add OpenRouter Model
+              </CustomModelButton>
+            </>
           )}
         {providerName === "pearai_server" ? (
             <>
