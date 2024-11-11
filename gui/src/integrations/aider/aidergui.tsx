@@ -263,18 +263,30 @@ function AiderGUI() {
       msg =
         "Spinning up PearAI Creator (Powered By aider), please give it a second...";
     }
-
+    if (aiderProcessState.state === "notgitrepo") {
+      msg = (<>To use PearAI Creator, please open a git repository or initialize current workspace directory as a git repository.
+        {/* <div className="flex justify-center mt-4">
+          <div
+            className="text-sm bg-button text-white py-3 px-6 rounded-lg cursor-pointer"
+            onClick={() => ideMessenger.post("aiderGitInit", undefined)}
+          >
+            Initialize Git
+          </div>
+        </div> */}
+      </>)
+    }
+    
     return (
-      <div className="top-[200px] left-0 w-full h-[calc(100%-200px)] bg-opacity-50 z-10 flex items-center justify-center">
-        <div className="text-2xl">
+      <div className="h-[calc(100%-200px)] p-40 bg-opacity-50 z-10 flex items-center justify-center">
+        <div className="text-2xl text-center">
           <div className="spinner" role="status">
             <span>{msg}</span>
           </div>
           {(aiderProcessState.state === "stopped" ||
             aiderProcessState.state === "crashed") && (
-            <div className="flex justify-center">
+            <div className="flex justify-center mt-4">
               <button
-                className="mt-4 font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                className="font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
                 onClick={() =>
                   ideMessenger.post("aiderResetSession", undefined)
                 }
