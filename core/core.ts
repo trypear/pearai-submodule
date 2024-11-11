@@ -383,7 +383,7 @@ export class Core {
           });
           break;
         }
-        yield { content: next.value.content };
+        yield { content: next.value.content, citations: next.value?.citations };
         next = await gen.next();
       }
 

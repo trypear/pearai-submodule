@@ -43,6 +43,8 @@ import {
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import { cn } from "@/lib/utils";
+import { Citations } from './Citations';
+
 
 function PerplexityGUI() {
   const posthog = usePostHog();
@@ -309,6 +311,14 @@ function PerplexityGUI() {
                         }
                         onToggle={() => {}}
                       >
+                          {item.citations && 
+                          <Citations 
+                            citations={item.citations} 
+                            isLast={
+                              index === sessionState.perplexityHistory.length - 1
+                            }
+                            active={active}
+                          /> }
                         <StepContainer
                           index={index}
                           isLast={
