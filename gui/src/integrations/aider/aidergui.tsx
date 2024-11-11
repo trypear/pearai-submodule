@@ -63,6 +63,7 @@ function AiderGUI() {
   const state = useSelector((state: RootState) => state.state);
   const [aiderProcessState, setAiderProcessState] = useState<AiderState>({
     state: "starting",
+    timeStamp: Date.now(),
   });
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
@@ -77,6 +78,8 @@ function AiderGUI() {
     setLocalStorage("showAiderTutorialCard", false);
     setShowAiderTutorialCard(false);
   };
+
+  const [showReloadButton, setShowReloadButton] = useState(false);
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -132,6 +135,24 @@ function AiderGUI() {
     return () => window.removeEventListener("keydown", listener);
   }, [active]);
 
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (aiderProcessState.state === "starting") {
+      timeoutId = setTimeout(() => {
+        if (aiderProcessState.state === "starting") {
+          setShowReloadButton(true);
+        }
+      }, 15000); // 15 seconds
+    } else {
+      setShowReloadButton(false);
+    }
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [aiderProcessState.state, aiderProcessState.timeStamp]);
+
   const { streamResponse } = useChatHandler(dispatch, ideMessenger, "aider");
 
   const sendInput = useCallback(
@@ -185,7 +206,7 @@ function AiderGUI() {
 
   useWebviewListener("setAiderProcessStateInGUI", async (data) => {
     if (data) {
-      setAiderProcessState(data);
+      setAiderProcessState({state: data.state, timeStamp: Date.now()});
     }
   });
 
@@ -260,8 +281,36 @@ function AiderGUI() {
       return <AiderManualInstallation />;
     }
     if (aiderProcessState.state === "starting") {
-      msg =
-        "Spinning up PearAI Creator (Powered By aider), please give it a second...";
+      msg = (
+        <>
+          Spinning up PearAI Creator (Powered By aider), please give it a second...
+          {showReloadButton && (
+            <>
+              <div className="text-sm mt-6 p-2">
+                Aider not starting? try to restart aider or reload window
+              </div>
+              <div className="flex justify-center mt-4 gap-x-4">
+                <button
+                  className="tracking-wide py-3 px-6 border-none rounded-lg bg-button text-button-foreground transition-colors cursor-pointer"
+                  onClick={() => {
+                    setAiderProcessState({state: "starting", timeStamp: Date.now()});
+                    setShowReloadButton(false); // Reset the state
+                    ideMessenger.post("aiderResetSession", undefined);
+                  }}
+                >
+                  Restart Aider Session
+                </button>
+                <button
+                  className="tracking-wide py-3 px-6 border-none rounded-lg bg-button text-button-foreground transition-colors cursor-pointer"
+                  onClick={() => ideMessenger.post("reloadWindow", undefined)}
+                >
+                  Reload window
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      );
     }
     if (aiderProcessState.state === "notgitrepo") {
       msg = (<>To use PearAI Creator, please open a git repository or initialize current workspace directory as a git repository.
