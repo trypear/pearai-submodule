@@ -6,13 +6,20 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, Bot, Search } from "lucide-react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { setOnboardingState } from "@/redux/slices/stateSlice";
 
 const getAssetPath = (assetName: string) => {
   return `${window.vscMediaUrl}/assets/${assetName}`;
 };
 
 export default function Features({ onNext }: { onNext: () => void }) {
+  const dispatch = useDispatch();
+
   const [currentFeature, setCurrentFeature] = useState(0);
+  const onboardingState = useSelector((state: RootState) => state.state.onboardingState);
+  const visitedFeatures = onboardingState.visitedFeatures || [];
   const [progress, setProgress] = useState(0);
   const progressInterval = useRef<NodeJS.Timeout>();
   const [isLoading, setIsLoading] = useState(true);
@@ -88,15 +95,21 @@ export default function Features({ onNext }: { onNext: () => void }) {
   }, [currentFeature]);
 
   const handleFeatureChange = (index: number) => {
-    setCurrentFeature(index);
-    setProgress(0);
-    setTimestamp(Date.now());
+    if (visitedFeatures.includes(index)) {
+      setCurrentFeature(index);
+      setProgress(0);
+      setTimestamp(Date.now());
+    }
   };
 
   const handleNextClick = () => {
     if (currentFeature < features.length - 1) {
       // Increment the feature index if not the last one
-      setCurrentFeature(currentFeature + 1);
+      const nextFeature = currentFeature + 1;
+      setCurrentFeature(nextFeature);
+      if (!visitedFeatures.includes(nextFeature)) {
+        dispatch(setOnboardingState({...onboardingState, visitedFeatures: [...visitedFeatures, nextFeature]}));
+      }
       setProgress(0);
       setTimestamp(Date.now());
     } else {
@@ -134,13 +147,13 @@ export default function Features({ onNext }: { onNext: () => void }) {
               {features.map((feature, index) => (
                 <Card
                   key={index}
-                  className={`border-none p-3 transition-all duration-200 hover:scale-[1.02] ${
+                  className={`border-none p-3 transition-all duration-200 ${
                     currentFeature === index
                       ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]"
-                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60 hover:opacity-80"
-                  }`}
+                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
+                  } ${!visitedFeatures.includes(index) ? 'cursor-not-allowed' : 'hover:scale-[1.02] cursor-pointer hover:opacity-80'}`}
                   onClick={() => handleFeatureChange(index)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: visitedFeatures.includes(index) ? "pointer" : "not-allowed" }}
                 >
                   <div className="flex items-center gap-3">
                     <div
