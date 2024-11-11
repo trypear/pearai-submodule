@@ -63,7 +63,7 @@ export const openRouterProvider: ProviderInfo = {
   description:
     "A platform that provides a unified API for accessing various large language models (LLMs) from different providers.",
   icon: "open-router.png",
-  longDescription: `OpenRouter aims to simplify the integration and management of models by offering a single interface, allowing developers to leverage the capabilities of multiple LLMs without dealing with the complexities of each individual API.  Obtain a API key from the [OpenRouter Dashboard](https://openrouter.io/api-keys).`,
+  longDescription: `OpenRouter aims to simplify the integration and management of models by offering a single interface, allowing developers to leverage the capabilities of multiple LLMs without dealing with the complexities of each individual API.  Obtain a API key from the [OpenRouter Dashboard](https://openrouter.ai/settings/keys).`,
   tags: [ModelProviderTags.RequiresApiKey],
   params: {
     apiKey: "",
