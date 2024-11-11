@@ -33,7 +33,8 @@ import {
   setMessageAtIndex,
   streamUpdate,
   streamAiderUpdate,
-  streamPerplexityUpdate
+  streamPerplexityUpdate,
+  setPerplexityCitations,
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
 
@@ -71,6 +72,30 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
         messages,
       );
       let next = await gen.next();
+      if (source === 'perplexity') {
+        // Fetch all titles concurrently
+        const citations = ((next.value as ChatMessage).citations || []);
+        const citationsWithTitles = await Promise.all(
+          citations.map(async (url) => {
+            try {
+              const title = await ideMessenger.request("getUrlTitle", url);
+              return {
+                url,
+                title
+              };
+            } catch (error) {
+              console.error('Failed to fetch title for:', url);
+              return {
+                url,
+                title: new URL(url).hostname
+              };
+            }
+          })
+        );
+        
+        dispatch(setPerplexityCitations(citationsWithTitles));
+      }
+
       while (!next.done) {
         if (!activeRef.current) {
           abortController.abort();

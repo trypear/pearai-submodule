@@ -54,6 +54,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   uninstallVscodeExtension: [{ extensionId: string }, void];
   completeWelcome: [undefined, void];
   openInventory: [undefined, void];
+  getUrlTitle: [string, string];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
