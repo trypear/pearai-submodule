@@ -47,15 +47,20 @@ async function copyVSCodeSettingsToPearAIDir() {
 
     const itemsToCopy = ['settings.json', 'keybindings.json', 'snippets', 'sync', 'globalStorage/state.vscdb', 'globalStorage/state.vscdb.backup'];
     
-    for (const item of itemsToCopy) {
+    // Use Promise.all to copy items concurrently
+    await Promise.all(itemsToCopy.map(async (item) => {
         const source = path.join(vscodeSettingsDir, item);
         const destination = path.join(pearAIDevSettingsDir, item);
         
         try {
-            if (await fs.promises.access(source).then(() => true).catch(() => false)) {
+            const exists = await fs.promises.access(source)
+                .then(() => true)
+                .catch(() => false);
+                
+            if (exists) {
                 const stats = await fs.promises.lstat(source);
                 if (stats.isDirectory()) {
-                    await copyDirectoryRecursiveSync(source, destination);
+                    await copyDirectoryRecursive(source, destination);
                 } else {
                     await fs.promises.copyFile(source, destination);
                 }
@@ -63,7 +68,7 @@ async function copyVSCodeSettingsToPearAIDir() {
         } catch (error) {
             console.error(`Error copying ${item}: ${error}`);
         }
-    }
+    }));
 
     const exclusions = [
         'pearai.pearai',
@@ -75,7 +80,7 @@ async function copyVSCodeSettingsToPearAIDir() {
         'continue'
     ];
 
-    await copyDirectoryRecursiveSync(vscodeExtensionsDir, pearAIDevExtensionsDir, exclusions);
+    await copyDirectoryRecursive(vscodeExtensionsDir, pearAIDevExtensionsDir, exclusions);
 }
 
 function getVSCodeSettingsDir() {
@@ -89,28 +94,28 @@ function getVSCodeSettingsDir() {
     }
 }
 
-async function copyDirectoryRecursiveSync(source: string, destination: string, exclusions: string[] = []) {
+async function copyDirectoryRecursive(source: string, destination: string, exclusions: string[] = []) {
     await fs.promises.mkdir(destination, { recursive: true });
     
     const items = await fs.promises.readdir(source);
-    for (const item of items) {
+    
+    await Promise.all(items.map(async (item) => {
         const sourcePath = path.join(source, item);
         const destinationPath = path.join(destination, item);
 
         const shouldExclude = exclusions.some(exclusion =>
             sourcePath.toLowerCase().includes(exclusion.toLowerCase())
-            
         );
 
         if (!shouldExclude) {
             const stats = await fs.promises.lstat(sourcePath);
             if (stats.isDirectory()) {
-                await copyDirectoryRecursiveSync(sourcePath, destinationPath, exclusions);
+                await copyDirectoryRecursive(sourcePath, destinationPath, exclusions);
             } else {
                 await fs.promises.copyFile(sourcePath, destinationPath);
             }
         }
-    }
+    }));
 }
 
 
@@ -119,7 +124,10 @@ export async function importUserSettingsFromVSCode() {
         await new Promise(resolve => setTimeout(resolve, 3000));
         
         vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
-        await copyVSCodeSettingsToPearAIDir();
+
+        await new Promise(resolve => setTimeout(resolve, 60000));        
+        // Uncomment this when ready
+        // await copyVSCodeSettingsToPearAIDir();
         
         vscode.window.showInformationMessage(
             'Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.',
