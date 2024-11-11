@@ -73,9 +73,27 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
       );
       let next = await gen.next();
       if (source === 'perplexity') {
-        dispatch(
-          setPerplexityCitations((next.value as ChatMessage).citations)
+        // Fetch all titles concurrently
+        const citations = ((next.value as ChatMessage).citations || []);
+        const citationsWithTitles = await Promise.all(
+          citations.map(async (url) => {
+            try {
+              const title = await ideMessenger.request("getUrlTitle", url);
+              return {
+                url,
+                title
+              };
+            } catch (error) {
+              console.error('Failed to fetch title for:', url);
+              return {
+                url,
+                title: new URL(url).hostname
+              };
+            }
+          })
         );
+        
+        dispatch(setPerplexityCitations(citationsWithTitles));
       }
 
       while (!next.done) {

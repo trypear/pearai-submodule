@@ -303,7 +303,12 @@ function PerplexityGUI() {
                         onToggle={() => {}}
                       >
                           {item.citations && 
-                          <Citations citations={item.citations} />}
+                          <Citations 
+                            citations={item.citations} 
+                            isLast={
+                              index === sessionState.perplexityHistory.length - 1
+                            }
+                          /> }
                         <StepContainer
                           index={index}
                           isLast={

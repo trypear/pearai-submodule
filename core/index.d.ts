@@ -317,13 +317,18 @@ export interface PromptLog {
   completion: string;
 }
 
+export interface Citation {
+  url: string;
+  title: string;
+}
+
 export interface ChatHistoryItem {
   message: ChatMessage;
   editorState?: any;
   modifiers?: InputModifiers;
   contextItems: ContextItemWithId[];
   promptLogs?: PromptLog[];
-  citations?: string[];
+  citations?: Citation[];
 }
 
 export type ChatHistory = ChatHistoryItem[];
