@@ -308,6 +308,7 @@ function PerplexityGUI() {
                             isLast={
                               index === sessionState.perplexityHistory.length - 1
                             }
+                            active={active}
                           /> }
                         <StepContainer
                           index={index}
