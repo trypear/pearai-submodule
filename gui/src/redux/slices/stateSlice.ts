@@ -4,6 +4,7 @@ import {
   ChatHistory,
   ChatHistoryItem,
   ChatMessage,
+  Citation,
   ContextItemId,
   ContextItemWithId,
   PersistedSessionInfo,
@@ -116,6 +117,7 @@ type State = {
   history: ChatHistory;
   perplexityHistory: ChatHistory;
   aiderHistory: ChatHistory;
+  perplexityCitations: Citation[];
   contextItems: ContextItemWithId[];
   active: boolean;
   perplexityActive: boolean;
@@ -134,6 +136,7 @@ const initialState: State = {
   history: [],
   perplexityHistory: [],
   aiderHistory: [],
+  perplexityCitations: [],
   contextItems: [],
   active: false,
   perplexityActive: false,
@@ -209,6 +212,9 @@ export const stateSlice = createSlice({
     },
     setAiderActive: (state) => {
       state.aiderActive = true;
+    },
+    setPerplexityCitations: (state, action: PayloadAction<Citation[]>) => {
+      state.perplexityHistory[state.perplexityHistory.length - 1].citations = action.payload;
     },
     clearLastResponse: (state, action?: PayloadAction<'perplexity' | 'aider' | 'continue'>) => {
       if (action.payload === 'perplexity') {
@@ -374,6 +380,7 @@ export const stateSlice = createSlice({
         message: { role: "user", content: "" },
         contextItems: state.contextItems,
         editorState: payload.editorState,
+        citations: [],
       });
       state.perplexityHistory.push({
         message: {
@@ -673,6 +680,7 @@ export const {
   setActive,
   setPerplexityActive,
   setAiderActive,
+  setPerplexityCitations,
   setEditingContextItemAtIndex,
   initNewActiveMessage,
   initNewActivePerplexityMessage,

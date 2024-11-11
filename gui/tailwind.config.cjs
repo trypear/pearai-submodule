@@ -4,6 +4,15 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0px)' }
+        }
+      },
+      animation: {
+        fadeIn: 'fadeIn 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+      },
       colors: {
         "vsc-background": "rgb(var(--vsc-background) / <alpha-value>)",
         "secondary-dark": "rgb(var(--secondary-dark) / <alpha-value>)",
