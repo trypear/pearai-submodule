@@ -20,6 +20,10 @@ const CitationCard = ({
   active: boolean;
 }) => {
   const favicon = `https://www.google.com/s2/favicons?domain=${citation.url}&size=128`;
+  const animationDuration = 1500; // base animation duration in ms
+  const delayBetweenItems = 200; // delay between items in ms
+  const totalDuration = animationDuration + delayBetweenItems * index;
+
 
   return (
     <a
@@ -27,13 +31,17 @@ const CitationCard = ({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "flex-shrink-0 w-40 text-xs px-3 bg-sidebar-background rounded-md hover:shadow-md hover:!opacity-70 hover:text-foreground transition-shadow duration-200 group no-underline",
-        isLast && active && "opacity-0 animate-fadeIn"
-
+        "flex-shrink-0 w-40 text-xs px-3 bg-sidebar-background rounded-md transition-all duration-200 group no-underline",
+        isLast && active && "opacity-0 animate-fadeIn pointer-events-none",
+        totalDuration === 0 || !active && "hover:shadow-md hover:!opacity-70 hover:text-foreground"
       )}
       style={{ 
-        animationDelay: `${index * 200}ms`,
-        animationFillMode: 'forwards'
+        animationDelay: `${index * delayBetweenItems}ms`,
+        transition: `pointer-events ${totalDuration}ms step-end`
+      }}
+      onAnimationEnd={(e) => {
+        e.currentTarget.classList.remove('pointer-events-none');
+        e.currentTarget.classList.add('hover:shadow-md', 'hover:!opacity-70', 'hover:text-foreground');
       }}
     >
       <div className="flex flex-col">
