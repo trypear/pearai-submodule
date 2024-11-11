@@ -1,3 +1,3 @@
 export interface AiderState {
-  state: "starting" | "uninstalled" | "ready" |  "stopped" |"crashed" | "signedOut";
+  state: "starting" | "uninstalled" | "ready" |  "stopped" |"crashed" | "signedOut" | "notgitrepo";
 }
