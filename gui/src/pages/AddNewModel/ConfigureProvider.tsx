@@ -386,17 +386,13 @@ function ConfigureProvider() {
             </div>
           )}
           {providerName === "openrouter" && (
-            <button
-              className={`mt-4 font-bold py-2 px-4 rounded ${
-                !watch("apiKey") || !watch("model")
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-700 text-white"
-              }`}
+            <CustomModelButton
+              className={`mt-4 font-bold py-2 px-4 h-8`}
               onClick={handleOpenRouterSubmit}
               disabled={!watch("apiKey") || !watch("model")}
             >
               Add OpenRouter Model
-            </button>
+            </CustomModelButton>
           )}
         {providerName === "pearai_server" ? (
             <>
