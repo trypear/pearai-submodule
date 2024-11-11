@@ -25,7 +25,11 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ModelSelect from "../modelSelection/ModelSelect";
-import { isBareChatMode, isPerplexityMode, isAiderMode} from "../../util/bareChatMode";
+import {
+  isBareChatMode,
+  isPerplexityMode,
+  isAiderMode,
+} from "../../util/bareChatMode";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useLocation } from "react-router-dom";
@@ -179,7 +183,7 @@ const InputToolbar = (props: InputToolbarProps) => {
   useEffect(() => {
     if (location.pathname.split("/").pop() === "aiderMode") {
       const aider = allModels.find((model) =>
-        model?.title?.toLowerCase().includes("aider"),
+        model?.title?.toLowerCase().includes("creator"),
       );
       dispatch(setDefaultModel({ title: aider?.title }));
     } else if (location.pathname.split("/").pop() === "perplexityMode") {
@@ -199,7 +203,7 @@ const InputToolbar = (props: InputToolbarProps) => {
       >
         <span className="flex gap-2 items-center whitespace-nowrap">
             <>
-              {!aiderMode && !perplexityMode && <ModelSelect />}
+              {!perplexityMode && <ModelSelect />}
               <StyledSpan
                 onClick={(e) => {
                   props.onAddContextItem();

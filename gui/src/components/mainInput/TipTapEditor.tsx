@@ -57,6 +57,10 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
+import ActiveFileIndicator from "./ActiveFileIndicator";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import TopBar from "./TopBarIndicators";
+import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 
 
 const InputBoxDiv = styled.div`
@@ -513,6 +517,9 @@ const TipTapEditor = memo(function TipTapEditor({
   }, []);  // Remove dependencies to prevent recreation
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
+
+  const isPerplexity = isPerplexityMode();
+  const isAider = isAiderMode();
 
   useEffect(() => {
     const handleShowFile = (event: CustomEvent) => {
@@ -991,7 +998,8 @@ const TipTapEditor = memo(function TipTapEditor({
         });
         event.preventDefault();
       }}
-    >
+    > 
+      {(!isPerplexity && !isAider) && <TopBar />}
       <EditorContent
         spellCheck={false}
         editor={editor}

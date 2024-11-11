@@ -4,19 +4,23 @@ import { Button } from "@/components/ui/button";
 import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { FolderOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function FinalStep({ onBack }: { onBack: () => void }) {
+
+  const navigate = useNavigate();
 
   const handleOpenFolder = () => {
     ideMessenger.post("pearWelcomeOpenFolder", undefined);
   };
 
   const handleClose = () => {
-    ideMessenger.post("unlockOverlay", undefined);
-    ideMessenger.post("closePearAIOverlay", undefined);
+    ideMessenger.post("completeWelcome", undefined);
   };
 
   useEffect(() => {
+    // unlock overlay when we get to last page
+    ideMessenger.post("unlockOverlay", undefined);
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         handleOpenFolder();
