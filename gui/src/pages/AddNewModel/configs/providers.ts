@@ -5,6 +5,7 @@ import { FREE_TRIAL_LIMIT_REQUESTS } from "../../../util/freeTrial";
 import { completionParamsInputs } from "./completionParamsInputs";
 import type { ModelPackage } from "./models";
 import { models } from "./models";
+import { fetchOpenRouterModels } from "../OpenRouterServices";
 
 export interface InputDescriptor {
   inputType: HTMLInputTypeAttribute;
@@ -55,6 +56,54 @@ export const apiBaseInput: InputDescriptor = {
   placeholder: "e.g. http://localhost:8080",
   required: false,
 };
+
+export const openRouterProvider: ProviderInfo = {
+  title: "OpenRouter API",
+  provider: "openrouter" as ModelProvider,
+  description:
+    "A platform that provides a unified API for accessing various large language models (LLMs) from different providers.",
+  icon: "open-router.png",
+  longDescription: `OpenRouter aims to simplify the integration and management of models by offering a single interface, allowing developers to leverage the capabilities of multiple LLMs without dealing with the complexities of each individual API.  Obtain a API key from the [OpenRouter Dashboard](https://openrouter.io/api-keys).`,
+  tags: [ModelProviderTags.RequiresApiKey],
+  params: {
+    apiKey: "",
+  },
+  collectInputFor: [
+    {
+      inputType: "password",
+      key: "apiKey",
+      label: "API Key",
+      placeholder: "Enter your OpenRouter API key",
+      required: true,
+    },
+    ...completionParamsInputsConfigs,
+  ],
+  packages: [],
+  apiKeyUrl: "https://openrouter.ai/settings/keys",
+};
+
+export const loadOpenRouterPackages = async () => {
+  try {
+    const models = await fetchOpenRouterModels();
+
+    openRouterProvider.packages = models
+      .map((model) => ({
+        title: model.name,
+        description: model.description,
+        params: {
+          model: model.id,
+          contextLength: model.context_length,
+        },
+        isOpenSource: false,
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+  } catch (error) {
+    console.error("Error fetching OpenRouter models:", error);
+    openRouterProvider.packages = [];
+  }
+};
+
+loadOpenRouterPackages();
 
 export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
   pearai_server: {
@@ -213,6 +262,7 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
       ...completionParamsInputsConfigs,
     ],
   },
+  openrouter: openRouterProvider,
   mistral: {
     title: "Mistral API",
     provider: "mistral",

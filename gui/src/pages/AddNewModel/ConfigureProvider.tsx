@@ -7,6 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import {
   Input,
+  Select,
   defaultBorderRadius,
   lightGray,
   vscBackground,
@@ -69,6 +70,8 @@ function ConfigureProvider() {
   //  different authentication flow is required for watsonx. This state helps to determine which flow to use for authentication
   const [watsonxAuthenticate, setWatsonxAuthenticate] = React.useState(true);
 
+  const { watch, handleSubmit } = formMethods;
+
   useEffect(() => {
     if (providerName) {
       setModelInfo(providers[providerName]);
@@ -117,6 +120,55 @@ function ConfigureProvider() {
       ?.filter((d) => d.isWatsonxAuthenticatedByCredentials)
       .some((d) => !formMethods.watch(d.key));
   }, [modelInfo, formMethods]);
+
+  const handleOpenRouterSubmit = handleSubmit((data) => {
+    const { apiKey, model } = data;
+
+    if (!apiKey || !model) {
+      return;
+    }
+
+    const selectedPackage = providers.openrouter?.packages.find(
+      (pkg) => pkg.params.model === model,
+    );
+
+    if (!selectedPackage) {
+      // Handle error: selected model not found
+      return;
+    }
+
+    let formParams: any = {};
+
+    for (const d of providers.openrouter?.collectInputFor || []) {
+      const val = data[d.key];
+      if (val === "" || val === undefined || val === null) {
+        continue;
+      }
+      formParams = updatedObj(formParams, {
+        [d.key]: d.inputType === "text" ? val : parseFloat(val),
+      });
+    }
+
+    const modelConfig = {
+      ...selectedPackage.params,
+      ...providers.openrouter?.params,
+      ...formParams,
+      apiKey,
+      model,
+      provider: "openrouter",
+      title: `${selectedPackage.title} (OpenRouter)` || `${model} (OpenRouter)`,
+    };
+
+    ideMessenger.post("config/addModel", { model: modelConfig });
+
+    dispatch(
+      setDefaultModel({
+        title: modelConfig.title,
+        force: true,
+      }),
+    );
+    navigate("/");
+  });
 
   return (
     <FormProvider {...formMethods}>
@@ -280,6 +332,21 @@ function ConfigureProvider() {
                 // Check the attribute is only for Watson X
                 if (d.isWatsonxAttribute) return null;
                 if (d.required) return null;
+
+                let defaultValue = d.defaultValue;
+
+                if (
+                  providerName === "openrouter" &&
+                  d.key === "contextLength"
+                ) {
+                  const selectedPackage = providers[
+                    "openrouter"
+                  ]?.packages.find(
+                    (pkg) => pkg.params.model === watch("model"),
+                  );
+                  defaultValue = selectedPackage?.params.contextLength;
+                }
+
                 return (
                   <div key={idx}>
                     <label htmlFor={d.key}>{d.label}</label>
@@ -288,7 +355,7 @@ function ConfigureProvider() {
                       id={d.key}
                       className="border-2 border-gray-200 rounded-md p-2 m-2"
                       placeholder={d.placeholder}
-                      defaultValue={d.defaultValue}
+                      defaultValue={defaultValue}
                       min={d.min}
                       max={d.max}
                       step={d.step}
@@ -301,7 +368,32 @@ function ConfigureProvider() {
               })}
             </details>
           )}
-
+          {providerName === "openrouter" && (
+            <div className="mb-2">
+              <label htmlFor="model">Select a Model</label>
+              <Select
+                id="model"
+                className="border-2 border-gray-200 rounded-md p-2 m-2 w-full"
+                {...formMethods.register("model", { required: true })}
+              >
+                <option value="">Select a model</option>
+                {providers.openrouter?.packages.map((pkg) => (
+                  <option key={pkg.params.model} value={pkg.params.model}>
+                    {pkg.title}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
+          {providerName === "openrouter" && (
+            <button
+              className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              onClick={handleOpenRouterSubmit}
+              disabled={!watch("apiKey") || !watch("model")}
+            >
+              Add OpenRouter Model
+            </button>
+          )}
         {providerName === "pearai_server" ? (
             <>
 
@@ -340,68 +432,70 @@ function ConfigureProvider() {
                   </small>
             </>
             ) : (
-              <>
-              <h3 className="mb-2">Select a model preset</h3>
-              <GridDiv>
-                {modelInfo?.packages.map((pkg, idx) => {
-                  return (
-                    <ModelCard
-                      key={idx}
-                      disabled={
-                        disableModelCards() &&
-                        enablecardsForApikey() &&
-                        enablecardsForCredentials()
-                      }
-                      title={pkg.title}
-                      description={pkg.description}
-                      tags={pkg.tags}
-                      refUrl={pkg.refUrl}
-                      icon={pkg.icon || modelInfo.icon}
-                      dimensions={pkg.dimensions}
-                      onClick={(e, dimensionChoices) => {
-                        if (
+              providerName !== "openrouter" && (
+                <>
+                <h3 className="mb-2">Select a model preset</h3>
+                <GridDiv>
+                  {modelInfo?.packages.map((pkg, idx) => {
+                    return (
+                      <ModelCard
+                        key={idx}
+                        disabled={
                           disableModelCards() &&
                           enablecardsForApikey() &&
                           enablecardsForCredentials()
-                        )
-                          return;
-                        let formParams: any = {};
-                        for (const d of modelInfo.collectInputFor || []) {
-                          const val = formMethods.watch(d.key);
-                          if (val === "" || val === undefined || val === null) {
-                            continue;
-                          }
-                          formParams = updatedObj(formParams, {
-                            [d.key]: d.inputType === "text" ? val : parseFloat(val),
-                          });
                         }
+                        title={pkg.title}
+                        description={pkg.description}
+                        tags={pkg.tags}
+                        refUrl={pkg.refUrl}
+                        icon={pkg.icon || modelInfo.icon}
+                        dimensions={pkg.dimensions}
+                        onClick={(e, dimensionChoices) => {
+                          if (
+                            disableModelCards() &&
+                            enablecardsForApikey() &&
+                            enablecardsForCredentials()
+                          )
+                            return;
+                          let formParams: any = {};
+                          for (const d of modelInfo.collectInputFor || []) {
+                            const val = formMethods.watch(d.key);
+                            if (val === "" || val === undefined || val === null) {
+                              continue;
+                            }
+                            formParams = updatedObj(formParams, {
+                              [d.key]: d.inputType === "text" ? val : parseFloat(val),
+                            });
+                          }
 
-                        const model = {
-                          ...pkg.params,
-                          ...modelInfo.params,
-                          ..._.merge(
-                            {},
-                            ...(pkg.dimensions?.map((dimension, i) => {
-                              if (!dimensionChoices?.[i]) return {};
-                              return {
-                                ...dimension.options[dimensionChoices[i]],
-                              };
-                            }) || []),
-                          ),
-                          ...formParams,
-                          provider: modelInfo.provider,
-                        };
-                        ideMessenger.post("config/addModel", { model });
-                        dispatch(
-                          setDefaultModel({ title: model.title, force: true }),
-                        );
-                        navigate("/");
-                      }}
-                    />
-                  );
-                })}
-              </GridDiv>
-            </>
+                          const model = {
+                            ...pkg.params,
+                            ...modelInfo.params,
+                            ..._.merge(
+                              {},
+                              ...(pkg.dimensions?.map((dimension, i) => {
+                                if (!dimensionChoices?.[i]) return {};
+                                return {
+                                  ...dimension.options[dimensionChoices[i]],
+                                };
+                              }) || []),
+                            ),
+                            ...formParams,
+                            provider: modelInfo.provider,
+                          };
+                          ideMessenger.post("config/addModel", { model });
+                          dispatch(
+                            setDefaultModel({ title: model.title, force: true }),
+                          );
+                          navigate("/");
+                        }}
+                      />
+                    );
+                  })}
+                </GridDiv>
+              </>
+            )
           )}
         </div>
       </div>
