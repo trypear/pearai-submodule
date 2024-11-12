@@ -24,7 +24,6 @@ import {
   vscBackground,
   vscForeground,
 } from "../components";
-import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
 import StepContainer from "../components/gui/StepContainer";
 import TimelineItem from "../components/gui/TimelineItem";
 import ContinueInputBox from "../components/mainInput/ContinueInputBox";
@@ -53,6 +52,8 @@ import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
 import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { AutoScrollContainer, ScrollContent } from "@/components/AutoScrollContainer";
+import { StickyContinueInputBox } from "@/components/StickyContinueInputBox";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
@@ -75,7 +76,7 @@ export const StopButton = styled.div`
   border-radius: ${defaultBorderRadius};
   padding: 4px 8px;
   background: ${vscBackground};
-  z-index: 50;
+  z-index: 105;
   color: var(--vscode-textPreformat-foreground);
 
   cursor: pointer;
@@ -171,44 +172,9 @@ function GUI() {
   }, []);
 
   const mainTextInputRef = useRef<HTMLInputElement>(null);
-  const topGuiDivRef = useRef<HTMLDivElement>(null);
-  const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const state = useSelector((state: RootState) => state.state);
-
-  const handleScroll = () => {
-    const OFFSET_HERUISTIC = 300;
-    if (!topGuiDivRef.current) return;
-
-    const { scrollTop, scrollHeight, clientHeight } = topGuiDivRef.current;
-    const atBottom =
-      scrollHeight - clientHeight <= scrollTop + OFFSET_HERUISTIC;
-
-    setIsAtBottom(atBottom);
-  };
-
-  useEffect(() => {
-    if (!active || !topGuiDivRef.current) return;
-
-    const scrollAreaElement = topGuiDivRef.current;
-    scrollAreaElement.scrollTop =
-      scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
-
-    setIsAtBottom(true);
-  }, [active]);
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      window.scrollTo({
-        top: topGuiDivRef.current?.scrollHeight,
-        behavior: "instant" as any,
-      });
-    }, 1);
-
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [topGuiDivRef.current]);
 
   useEffect(() => {
     const listener = (e: any) => {
@@ -328,104 +294,110 @@ function GUI() {
             <OnboardingTutorial onClose={onCloseTutorialCard}/>
         </TutorialCardDiv>
       }
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-        <div className="mx-2">
-          <StepsDiv>
-            {state.history.map((item, index: number) => {
-              return (
-                <Fragment key={index}>
-                  <ErrorBoundary
-                    FallbackComponent={fallbackRender}
-                    onReset={() => {
-                      dispatch(newSession({session: undefined, source: 'continue'}));
-                    }}
-                  >
-                    {item.message.role === "user" ? (
-                      <ContinueInputBox
-                        onEnter={async (editorState, modifiers) => {
-                          streamResponse(
-                            editorState,
-                            modifiers,
-                            ideMessenger,
-                            index,
-                          );
-                        }}
-                        isLastUserInput={isLastUserInput(index)}
-                        isMainInput={false}
-                        editorState={item.editorState}
-                        contextItems={item.contextItems}
-                      ></ContinueInputBox>
-                    ) : (
-                      <div className="thread-message">
-                        <TimelineItem
-                          item={item}
-                          iconElement={
-                            <ChatBubbleOvalLeftIcon
-                              width="16px"
-                              height="16px"
-                            />
-                          }
-                          open={
-                            typeof stepsOpen[index] === "undefined"
-                              ? true
-                              : stepsOpen[index]!
-                          }
-                          onToggle={() => {}}
-                        >
-                          <StepContainer
-                            index={index}
-                            isLast={index === sessionState.history.length - 1}
-                            isFirst={index === 0}
+      <AutoScrollContainer ref={containerRef} active={active}>
+        <ScrollContent>
+          <div className="mx-2">
+            <StepsDiv>
+              {state.history.map((item, index: number) => {
+                return (
+                  <Fragment key={index}>
+                    <ErrorBoundary
+                      FallbackComponent={fallbackRender}
+                      onReset={() => {
+                        dispatch(newSession({session: undefined, source: 'continue'}));
+                      }}
+                    >
+                      {item.message.role === "user" ? (
+                        <ContinueInputBox
+                          onEnter={async (editorState, modifiers) => {
+                            streamResponse(
+                              editorState,
+                              modifiers,
+                              ideMessenger,
+                              index,
+                            );
+                          }}
+                          isLastUserInput={isLastUserInput(index)}
+                          isMainInput={false}
+                          editorState={item.editorState}
+                          contextItems={item.contextItems}
+                        ></ContinueInputBox>
+                      ) : (
+                        <div className="thread-message" style={{ zIndex: 99 }}>
+                          <TimelineItem
+                            item={item}
+                            iconElement={
+                              <ChatBubbleOvalLeftIcon
+                                width="16px"
+                                height="16px"
+                              />
+                            }
                             open={
                               typeof stepsOpen[index] === "undefined"
                                 ? true
                                 : stepsOpen[index]!
                             }
-                            key={index}
-                            onUserInput={(input: string) => {}}
-                            item={item}
-                            onReverse={() => {}}
-                            onRetry={() => {
-                              streamResponse(
-                                state.history[index - 1].editorState,
-                                state.history[index - 1].modifiers ??
-                                  defaultInputModifiers,
-                                ideMessenger,
-                                index - 1,
-                              );
-                            }}
-                            onContinueGeneration={() => {
-                              window.postMessage(
-                                {
-                                  messageType: "userInput",
-                                  data: {
-                                    input: "Keep going.",
+                            onToggle={() => {}}
+                          >
+                            <StepContainer
+                              index={index}
+                              isLast={index === sessionState.history.length - 1}
+                              isFirst={index === 0}
+                              open={
+                                typeof stepsOpen[index] === "undefined"
+                                  ? true
+                                  : stepsOpen[index]!
+                              }
+                              key={index}
+                              onUserInput={(input: string) => {}}
+                              item={item}
+                              onReverse={() => {}}
+                              onRetry={() => {
+                                streamResponse(
+                                  state.history[index - 1].editorState,
+                                  state.history[index - 1].modifiers ??
+                                    defaultInputModifiers,
+                                  ideMessenger,
+                                  index - 1,
+                                );
+                              }}
+                              onContinueGeneration={() => {
+                                window.postMessage(
+                                  {
+                                    messageType: "userInput",
+                                    data: {
+                                      input: "Keep going.",
+                                    },
                                   },
-                                },
-                                "*",
-                              );
-                            }}
-                            onDelete={() => {
-                              dispatch(
-                                deleteMessage({
-                                  index: index,
-                                  source: "continue",
-                                }),
-                              );
-                            }}
-                            modelTitle={
-                              item.promptLogs?.[0]?.completionOptions?.model ??
-                              ""
-                            }
-                          />
-                        </TimelineItem>
-                      </div>
-                    )}
-                  </ErrorBoundary>
-                </Fragment>
-              );
-            })}
-          </StepsDiv>
+                                  "*",
+                                );
+                              }}
+                              onDelete={() => {
+                                dispatch(
+                                  deleteMessage({
+                                    index: index,
+                                    source: "continue",
+                                  }),
+                                );
+                              }}
+                              modelTitle={
+                                item.promptLogs?.[0]?.completionOptions?.model ??
+                                ""
+                              }
+                            />
+                          </TimelineItem>
+                        </div>
+                      )}
+                    </ErrorBoundary>
+                  </Fragment>
+                );
+              })}
+            </StepsDiv>
+          </div>
+        </ScrollContent>
+      </AutoScrollContainer>
+      <StickyContinueInputBox scrollContainerRef={containerRef} forceFixed={active}>
+        <div className="mx-2">
           <ContinueInputBox
             onEnter={(editorContent, modifiers) => {
               sendInput(editorContent, modifiers);
@@ -469,12 +441,7 @@ function GUI() {
             </>
           )}
         </div>
-        <ChatScrollAnchor
-          scrollAreaRef={topGuiDivRef}
-          isAtBottom={isAtBottom}
-          trackVisibility={active}
-        />
-      </TopGuiDiv>
+      </StickyContinueInputBox>
       {active && (
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"

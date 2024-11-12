@@ -29,7 +29,7 @@ const StyledMarkdown = styled.div<{
     border-radius: ${defaultBorderRadius};
 
     max-width: calc(100vw - 24px);
-    overflow-x: scroll;
+    overflow-x: auto;
     overflow-y: hidden;
 
     ${(props) => {

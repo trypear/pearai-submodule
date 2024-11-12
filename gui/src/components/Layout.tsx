@@ -107,7 +107,14 @@ const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean, path: s
     }
   }};
   min-height: 100vh;
-  overflow-x: visible;
+  overflow-x: hidden;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
 `;
 
 const ModelDropdownPortalDiv = styled.div`
