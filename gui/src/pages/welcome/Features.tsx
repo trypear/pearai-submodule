@@ -10,6 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setOnboardingState } from "@/redux/slices/stateSlice";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
+import { Link } from "react-router-dom";
 
 const getAssetPath = (assetName: string) => {
   return `${window.vscMediaUrl}/assets/${assetName}`;
@@ -34,19 +35,19 @@ export default function Features({ onNext }: { onNext: () => void }) {
       icon: "inventory-chat.svg",
       title: "PearAI Chat",
       description:
-        "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue.",
+        "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue*.",
       video: getAssetPath("pearai-chat-welcome.mp4"),
     },
     {
       icon: "inventory-creator.svg",
       title: "PearAI Creator",
-      description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider.",
+      description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider*.",
       video: getAssetPath("pearai-creator-welcome.mp4"),
     },
     {
       icon: "inventory-search.svg",
       title: "PearAI Search",
-      description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity.",
+      description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity*.",
       video: getAssetPath("pearai-search-welcome.mp4"),
     },
   ];
@@ -184,6 +185,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
           </div>
         </div>
 
+
         <div className="p-6 border-t border-input shrink-0">
           <Button
             className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer relative"
@@ -194,7 +196,8 @@ export default function Features({ onNext }: { onNext: () => void }) {
         </div>
       </div>
 
-      <div className="w-[65%] flex flex-col h-full relative bg-background">
+      <div className="w-[65%] flex flex-col h-full relative bg-background justify-between">
+
         {features.map((feature, index) => (
           <div
             key={index}
@@ -216,6 +219,19 @@ export default function Features({ onNext }: { onNext: () => void }) {
             )}
           </div>
         ))}
+        <div></div>
+        <div className="text-[10px] z-[100] hover:cursor-pointer  text-muted-foreground mt-4 flex justify-end pr-4 pb-4">
+          *View PearAI Disclaimer page{" "}
+          <a
+            href="https://trypear.ai/disclaimer/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:cursor-pointer hover:text-primary hover:underline ml-1"
+          >
+            here
+          </a>
+          .
+        </div>
       </div>
     </div>
   );
