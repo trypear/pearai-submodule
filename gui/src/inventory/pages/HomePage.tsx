@@ -51,7 +51,7 @@ export default function HomePage() {
 
   useEffect(() => {
     document.documentElement.style.setProperty('--overlay-border-radius', '15px');
-    document.documentElement.style.setProperty('backdrop-filter', `blur(3}px)`);
+    document.documentElement.style.setProperty('backdrop-filter', `blur(3px)`);
     document.documentElement.style.setProperty('background-color', "rgba(0, 0, 0, 0.35)");
   }, []);
 
