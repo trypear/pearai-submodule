@@ -129,6 +129,10 @@ type State = {
   mainEditorContent?: JSONContent;
   selectedProfileId: string;
   directoryItems: string;
+  onboardingState: { 
+    visitedFeatures: number[]; 
+    visitedSteps: number[] 
+  };
   showInteractiveContinueTutorial: boolean;
 };
 
@@ -169,6 +173,10 @@ const initialState: State = {
   defaultModelTitle: "GPT-4",
   selectedProfileId: "local",
   directoryItems: "",
+  onboardingState: {
+    visitedFeatures: [0],
+    visitedSteps: [0]
+  },
   showInteractiveContinueTutorial: getLocalStorage("showTutorialCard") ?? false,
 };
 
@@ -652,6 +660,9 @@ export const stateSlice = createSlice({
         selectedProfileId: payload,
       };
     },
+    setOnboardingState: (state, { payload }: PayloadAction<any>) => {
+      state.onboardingState = payload;
+    },  
     setShowInteractiveContinueTutorial: (state, action: PayloadAction<boolean>) => {
       state.showInteractiveContinueTutorial = action.payload;
     },
@@ -690,6 +701,7 @@ export const {
   consumeMainEditorContent,
   setSelectedProfileId,
   deleteMessage,
+  setOnboardingState,
   setShowInteractiveContinueTutorial,
 } = stateSlice.actions;
 export default stateSlice.reducer;

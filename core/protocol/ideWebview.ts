@@ -1,3 +1,4 @@
+import { AiderState } from "../../extensions/vscode/src/integrations/aider/types/aiderTypes.js";
 import type { RangeInFileWithContents } from "../commands/util.js";
 import type { ContextSubmenuItem } from "../index.js";
 import { ToIdeFromWebviewOrCoreProtocol } from "./ide.js";
@@ -101,4 +102,5 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   navigateToInventory: [undefined, void];
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
+  setAiderProcessStateInGUI: [AiderState, void];
 };
