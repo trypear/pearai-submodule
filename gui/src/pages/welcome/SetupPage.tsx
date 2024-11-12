@@ -10,21 +10,32 @@ import AddToPath from "./setup/AddToPath";
 import SignIn from "./setup/SignIn";
 import InstallTools from "./setup/InstallTools";
 import { getPlatform } from "@/util";
+import { RootState } from "@/redux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { setOnboardingState } from "@/redux/slices/stateSlice";
 
 export default function SetupPage({ onNext }: { onNext: () => void }) {
+  const dispatch = useDispatch();
   const [currentFeature, setCurrentFeature] = useState(0);
+  const onboardingState = useSelector((state: RootState) => state.state.onboardingState);
+  const visitedSteps = onboardingState.visitedSteps || [];
   const [timestamp, setTimestamp] = useState(Date.now());
   console.dir(window.vscMediaUrl)
 
   const handleFeatureChange = (index: number) => {
-    setCurrentFeature(index);
-    setTimestamp(Date.now());
+    if (visitedSteps.includes(index)) {
+      setCurrentFeature(index);
+      setTimestamp(Date.now());
+    }
   };
 
   const handleNextClick = () => {
     if (currentFeature < setupSteps.length - 1) {
-      // Increment the feature index if not the last one
-      setCurrentFeature(currentFeature + 1);
+      const nextFeature = currentFeature + 1;
+      setCurrentFeature(nextFeature);
+      if (!visitedSteps.includes(nextFeature)) {
+        dispatch(setOnboardingState({...onboardingState, visitedSteps: [...visitedSteps, nextFeature]}));
+      }
       setTimestamp(Date.now());
     } else {
       // Proceed to the next step if the last feature
@@ -82,13 +93,12 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
               {setupSteps.map((feature, index) => (
                 <Card
                   key={index}
-                  className={`border-none p-3 transition-all duration-200 hover:scale-[1.02] ${
+                  className={`border-none p-3 transition-all duration-200 ${
                     currentFeature === index
                       ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]"
-                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60 hover:opacity-80"
-                  }`}
+                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
+                  } ${!visitedSteps.includes(index) ? 'cursor-not-allowed' : 'hover:scale-[1.02] cursor-pointer'}`}
                   onClick={() => handleFeatureChange(index)}
-                  style={{ cursor: "pointer" }}
                 >
                   <div className="flex items-center gap-3">
                     <div
