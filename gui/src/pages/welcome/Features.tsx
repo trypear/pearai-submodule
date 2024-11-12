@@ -9,6 +9,7 @@ import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/redux/store";
 import { setOnboardingState } from "@/redux/slices/stateSlice";
+import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { Link } from "react-router-dom";
 
 const getAssetPath = (assetName: string) => {
@@ -31,20 +32,20 @@ export default function Features({ onNext }: { onNext: () => void }) {
 
   const features = [
     {
-      icon: <Sparkles className="h-6 w-6" />,
+      icon: "inventory-chat.svg",
       title: "PearAI Chat",
       description:
         "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue*.",
       video: getAssetPath("pearai-chat-welcome.mp4"),
     },
     {
-      icon: <Bot className="h-6 w-6" />,
+      icon: "inventory-creator.svg",
       title: "PearAI Creator",
       description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider*.",
       video: getAssetPath("pearai-creator-welcome.mp4"),
     },
     {
-      icon: <Search className="h-6 w-6" />,
+      icon: "inventory-search.svg",
       title: "PearAI Search",
       description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity*.",
       video: getAssetPath("pearai-search-welcome.mp4"),
@@ -157,15 +158,10 @@ export default function Features({ onNext }: { onNext: () => void }) {
                   style={{ cursor: visitedFeatures.includes(index) ? "pointer" : "not-allowed" }}
                 >
                   <div className="flex items-center gap-3">
-                    <div
-                      className={`p-1.5 rounded-lg ${
-                        currentFeature === index
-                          ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]"
-                          : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
-                      }`}
-                    >
-                      {feature.icon}
-                    </div>
+                    <img
+                      src={getLogoPath(feature.icon)}
+                      className="w-10 h-10"
+                    />
                     <div className="min-w-0">
                       <h3 className="font-semibold text-foreground text-sm">
                         {feature.title}
