@@ -49,15 +49,10 @@ export default function HomePage() {
     },
   ];
 
-  const updateOverlayStyle = (borderRadius: string, boxShadow: string, blur: string) => {
-    document.documentElement.style.setProperty('--overlay-border-radius', borderRadius);
-    document.documentElement.style.setProperty('backdrop-filter', `blur(${blur}px)`);
-    document.documentElement.style.setProperty('background-color', "rgba(0, 0, 0, 0.35)");
-
-  };
-
   useEffect(() => {
-    updateOverlayStyle('0px', 'transparent', '3');
+    document.documentElement.style.setProperty('--overlay-border-radius', '15px');
+    document.documentElement.style.setProperty('backdrop-filter', `blur(3}px)`);
+    document.documentElement.style.setProperty('background-color', "rgba(0, 0, 0, 0.35)");
   }, []);
 
   const ideMessenger = useContext(IdeMessengerContext);
