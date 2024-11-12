@@ -132,7 +132,7 @@ function ConfigureProvider() {
   const handleOpenRouterSubmit = () => {
     const formValues = formMethods.getValues();
     const model = formValues.model;
-    const apiKey = formValues.apikey;
+    const apiKey = formValues.apiKey;
 
     if (!formValues.apiKey) {
       setErrorMessage("Please enter your OpenRouter API key");
