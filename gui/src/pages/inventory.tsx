@@ -108,7 +108,7 @@ export default function Inventory() {
               <TabsContent
                 key={id}
                 value={id}
-                className="h-[73vh] data-[state=active]:flex flex-col"
+                className="max-h-full data-[state=active]:flex flex-col"
               >
                 {component}
               </TabsContent>

@@ -129,6 +129,10 @@ type State = {
   mainEditorContent?: JSONContent;
   selectedProfileId: string;
   directoryItems: string;
+  onboardingState: { 
+    visitedFeatures: number[]; 
+    visitedSteps: number[] 
+  };
   showInteractiveContinueTutorial: boolean;
   indexingState: {
     status: string;
@@ -178,6 +182,10 @@ const initialState: State = {
     status: "loading",
     progress: 0,
     desc: "",
+  },
+  onboardingState: {
+    visitedFeatures: [0],
+    visitedSteps: [0]
   },
   showInteractiveContinueTutorial: getLocalStorage("showTutorialCard") ?? false,
 };
@@ -668,6 +676,9 @@ export const stateSlice = createSlice({
         selectedProfileId: payload,
       };
     },
+    setOnboardingState: (state, { payload }: PayloadAction<any>) => {
+      state.onboardingState = payload;
+    },  
     setShowInteractiveContinueTutorial: (state, action: PayloadAction<boolean>) => {
       state.showInteractiveContinueTutorial = action.payload;
     },
@@ -707,6 +718,7 @@ export const {
   setSelectedProfileId,
   deleteMessage,
   setIndexingState,
+  setOnboardingState,
   setShowInteractiveContinueTutorial,
 } = stateSlice.actions;
 export default stateSlice.reducer;

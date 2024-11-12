@@ -34,7 +34,7 @@ export default function InstallTools({
         {
             id: "aider",
             name: "PearAI Creator",
-            description: "PearAI Creator is a no-code tool powered by aider that let's you build complete features with just a prompt.",
+            description: "PearAI Creator is a no-code tool powered by aider* that let's you build complete features with just a prompt.",
             icon: "inventory-creator.svg",
             installCommand: handleAiderInstall,
             preInstalled: false
@@ -42,7 +42,7 @@ export default function InstallTools({
         {
             id: "supermaven",
             name: "PearAI Predict",
-            description: "PearAI Predict is our upcoming code autocomplete tool. While it’s under development, we recommend using Supermaven as a standalone extension within PearAI for code autocompletion. Selecting this option will install Supermaven.", 
+            description: "PearAI Predict is our upcoming code autocomplete tool. While it’s under development, we recommend using Supermaven* as a standalone extension within PearAI for code autocompletion. Selecting this option will install Supermaven.",
             icon: "inventory-autocomplete.svg",
             installCommand: () => handleVSCExtensionInstall("supermaven.supermaven"),
             preInstalled: false
@@ -89,8 +89,8 @@ export default function InstallTools({
 
     const handleInstallChecked = async () => {
         setIsInstallingAll(true);
-        
-        const selectedTools = tools.filter(tool => 
+
+        const selectedTools = tools.filter(tool =>
             checkedTools[tool.id] && !attemptedInstalls.includes(tool.id)
         );
         selectedTools.forEach(tool => tool.installCommand());
@@ -148,7 +148,7 @@ export default function InstallTools({
                 <h5 className="text-xl md:text-2xl lg:text-2xl font-bold text-foreground mb-12 text-center">
                     PearAI requires some extra installation for the following integrations
                 </h5>
-    
+
                 <div className="w-full space-y-2 mb-4">
                     {tools.map((tool) => (
                         <Card key={tool.id} className={`p-4 flex items-center border-solid border-2 justify-between ${
@@ -156,8 +156,8 @@ export default function InstallTools({
                         }`}>
                             <div className="flex items-center gap-4 flex-1">
                                 <div className="p-1 bg-muted rounded-lg">
-                                    {typeof tool.icon === 'string' ? 
-                                    <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-[80px]" /> 
+                                    {typeof tool.icon === 'string' ?
+                                    <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-[80px]" />
                                     : tool.icon}
                                 </div>
                                 <div className="flex-1">
@@ -201,6 +201,18 @@ export default function InstallTools({
                 >
                     {getButtonText()}
                 </Button>
+                </div>
+                <div className="text-[10px] z-[100] hover:cursor-pointer  text-muted-foreground mt-4 flex justify-end pr-4 pb-4">
+                    *View PearAI Disclaimer page{" "}
+                    <a
+                        href="https://trypear.ai/disclaimer/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-muted-foreground hover:cursor-pointer hover:text-primary hover:underline ml-1"
+                    >
+                        here
+                    </a>
+                    .
                 </div>
             </div>
         </div>
