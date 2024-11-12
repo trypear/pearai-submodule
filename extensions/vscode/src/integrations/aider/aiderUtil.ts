@@ -1,11 +1,13 @@
 import * as vscode from "vscode";
 import * as cp from "child_process";
 import { Core } from "core/core";
-import { ContinueGUIWebviewViewProvider } from "../../ContinueGUIWebviewViewProvider";
+import { ContinueGUIWebviewViewProvider, PEAR_OVERLAY_VIEW_ID } from "../../ContinueGUIWebviewViewProvider";
 import { getIntegrationTab } from "../../util/integrationUtils";
 import Aider from "core/llm/llms/AiderLLM";
 import { execSync } from "child_process";
 import { isFirstPearAICreatorLaunch } from "../../copySettings";
+import { VsCodeWebviewProtocol } from "../../webviewProtocol";
+
 
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
@@ -55,18 +57,19 @@ export async function startAiderProcess(core: Core) {
   }
 }
 
-export async function refreshAiderProcessState(core: Core) {
+export async function refreshAiderProcessState(core: Core, webviewProtocol: VsCodeWebviewProtocol) {
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as
     | Aider
     | undefined;
 
+
   if (!aiderModel) {
-    core.send("setAiderProcessStateInGUI", { state: "stopped" });
+    webviewProtocol?.request("setAiderProcessStateInGUI", { state: "stopped" }, [PEAR_OVERLAY_VIEW_ID]);
     return;
   }
 
-  core.send("setAiderProcessStateInGUI", { state: aiderModel.getAiderState() });
+  webviewProtocol?.request("setAiderProcessStateInGUI", { state: aiderModel.getAiderState() }, [PEAR_OVERLAY_VIEW_ID]);
 }
 
 export async function killAiderProcess(core: Core) {

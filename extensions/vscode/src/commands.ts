@@ -35,6 +35,7 @@ import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
 import { attemptInstallExtension } from "./activation/activate";
+import { AiderState } from "./integrations/aider/types/aiderTypes";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -636,10 +637,10 @@ const commandsMap: (
       await aiderResetSession(core);
     },
     "pearai.refreshAiderProcessState": async () => {
-      await refreshAiderProcessState(core);
+      await refreshAiderProcessState(core, sidebar.webviewProtocol);
     },
-    "pearai.setAiderProcessState": async (state) => {
-      core.send("setAiderProcessStateInGUI", { state: state });
+    "pearai.setAiderProcessState": async (state: AiderState["state"]) => {
+      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", { state: state }, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);
