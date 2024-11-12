@@ -57,5 +57,4 @@ export const CORE_TO_WEBVIEW_PASS_THROUGH: (keyof ToWebviewFromCoreProtocol)[] =
     "refreshSubmenuItems",
     "isContinueInputFocused",
     "didChangeAvailableProfiles",
-    "setAiderProcessStateInGUI"
   ];
