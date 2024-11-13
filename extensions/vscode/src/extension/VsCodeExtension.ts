@@ -33,6 +33,7 @@ import { TabAutocompleteModel } from "../util/loadAutocompleteModel";
 import type { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { VsCodeMessenger } from "./VsCodeMessenger";
 import { startAiderProcess } from "../integrations/aider/aiderUtil";
+import { isValidFilePath } from "../../../../gui/src/util/fileValidation";
 
 export class VsCodeExtension {
   // Currently some of these are public so they can be used in testing (test/test-suites)
@@ -375,10 +376,16 @@ export class VsCodeExtension {
       }
     });
 
-    this.ide.onDidChangeActiveTextEditor((filepath) => {
-      this.core.invoke("didChangeActiveTextEditor", { filepath });
-      this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
-    });
+    context.subscriptions.push(
+      vscode.window.onDidChangeActiveTextEditor((event) => {
+        if (!event) return;
+        const filepath = event.document.uri.fsPath;
+        if (isValidFilePath(filepath)) {
+          this.core.invoke("didChangeActiveTextEditor", { filepath });
+          this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
+        }
+      })
+    );
 
     this.updateNewWindowActiveFilePath()
     startAiderProcess(this.core);
