@@ -168,6 +168,9 @@ export class VsCodeMessenger {
     this.onWebview("openInventory", (msg) => {
       vscode.commands.executeCommand("pearai.toggleInventoryHome");
     });
+    this.onWebview("pearAIinstallation", (data) => {
+      console.dir(data);
+    });
     this.onWebview("completeWelcome", (msg) => {
       vscode.commands.executeCommand("pearai.unlockOverlay");
       vscode.commands.executeCommand("pearai.hideOverlay");

@@ -14,15 +14,22 @@ export default function ImportExtensions({
 }: {
   onNext: () => void;
 }) {
-  const ideMessenger = useContext(IdeMessengerContext);
+  // const ideMessenger = useContext(IdeMessengerContext);
   const [isImporting, setIsImporting] = useState(false);
 
   const handleImport = () => {
+    localStorage.setItem('importUserSettingsFromVSCode', 'true');
     setIsImporting(true);
-    ideMessenger.post("importUserSettingsFromVSCode", undefined);
+    // ideMessenger.post("importUserSettingsFromVSCode", undefined);  // todo: MOVE TO COMMANDS DIRECTLY, AFTER OPENING FOLDER
   };
 
+  const handleSkip = () => {
+    localStorage.setItem('importUserSettingsFromVSCode', 'false');
+    onNext()
+  }
+
   useEffect(() => {
+    setIsImporting(localStorage.getItem('importUserSettingsFromVSCode') === 'true')
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !isImporting) {
         handleImport();
@@ -51,7 +58,7 @@ export default function ImportExtensions({
 
             {!isImporting ? 
           <div className="absolute bottom-8 right-8 flex items-center gap-4">
-              <div onClick={onNext} className="flex items-center gap-2 cursor-pointer">
+              <div onClick={handleSkip} className="flex items-center gap-2 cursor-pointer">
                 <span className="text-center w-full">Skip</span>
               </div>
               <Button

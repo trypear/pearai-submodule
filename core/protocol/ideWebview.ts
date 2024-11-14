@@ -56,6 +56,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   completeWelcome: [undefined, void];
   openInventory: [undefined, void];
   getUrlTitle: [string, string];
+  pearAIinstallation: [{tools: string[], installExtensions: boolean}, void];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {

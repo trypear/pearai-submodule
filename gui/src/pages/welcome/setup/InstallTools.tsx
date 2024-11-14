@@ -22,6 +22,7 @@ export default function InstallTools({
     onNext: () => void;
 }) {
 
+    // TODO: MOVE THESE TO COMMANDS, PASS MSG TO KNOW WHICH TO INSTALL?
     const handleVSCExtensionInstall = async (extensionId: string) => {
         ideMessenger.post("installVscodeExtension", { extensionId });
     };
@@ -50,9 +51,10 @@ export default function InstallTools({
     ];
 
     const ideMessenger = useContext(IdeMessengerContext);
-    const [isInstallingAll, setIsInstallingAll] = useState(false);
+    // const [isInstallingAll, setIsInstallingAll] = useState(false);
+
     const [attemptedInstalls, setAttemptedInstalls] = useState<string[]>(() => {
-        const saved = localStorage.getItem('onboardingAttemptedInstalls');
+        const saved = localStorage.getItem('onboardingSelectedTools');
         return saved ? JSON.parse(saved) : [];
     });
 
@@ -65,22 +67,22 @@ export default function InstallTools({
     });
 
 
-
     const handleInstallAll = async () => {
-        setIsInstallingAll(true);
+        // setIsInstallingAll(true);
 
-        const toolsToInstall = tools.filter(tool => !attemptedInstalls.includes(tool.id));
-        toolsToInstall.forEach(tool => tool.installCommand());
-
+        // const toolsToInstall = tools.filter(tool => !attemptedInstalls.includes(tool.id));
+        // toolsToInstall.forEach(tool => tool.installCommand());
+        localStorage.setItem('onboardingSelectedTools', JSON.stringify(tools.map(t => t.id)));
         // Save to attempted installations
-        const newAttemptedInstalls = [...new Set([...attemptedInstalls, ...toolsToInstall.map(t => t.id)])];
-        localStorage.setItem('onboardingAttemptedInstalls', JSON.stringify(newAttemptedInstalls));
-        setAttemptedInstalls(newAttemptedInstalls);
+        // const newAttemptedInstalls = [...new Set([...attemptedInstalls, ...toolsToInstall.map(t => t.id)])];
+        // localStorage.setItem('onboardingAttemptedInstalls', JSON.stringify(newAttemptedInstalls));
+        // setAttemptedInstalls(newAttemptedInstalls);
 
-        setTimeout(() => {
-            setIsInstallingAll(false);
-            onNext();
-        }, 3000);
+        onNext()
+        // setTimeout(() => {
+        //     setIsInstallingAll(false);
+        //     onNext();
+        // }, 3000);
     };
 
     const handleCheckboxChange = (toolId: string) => {
@@ -88,22 +90,23 @@ export default function InstallTools({
     };
 
     const handleInstallChecked = async () => {
-        setIsInstallingAll(true);
+        // setIsInstallingAll(true);
 
         const selectedTools = tools.filter(tool =>
-            checkedTools[tool.id] && !attemptedInstalls.includes(tool.id)
+            checkedTools[tool.id] /*&& !attemptedInstalls.includes(tool.id) */
         );
-        selectedTools.forEach(tool => tool.installCommand());
+        // selectedTools.forEach(tool => tool.installCommand());
 
         // Save to attempted installations
-        const newAttemptedInstalls = [...new Set([...attemptedInstalls, ...selectedTools.map(t => t.id)])];
-        localStorage.setItem('onboardingAttemptedInstalls', JSON.stringify(newAttemptedInstalls));
-        setAttemptedInstalls(newAttemptedInstalls);
-
-        setTimeout(() => {
-            setIsInstallingAll(false);
-            onNext();
-        }, 3000);
+        // const newAttemptedInstalls = [...new Set([...attemptedInstalls, ...selectedTools.map(t => t.id)])];
+        // localStorage.setItem('onboardingAttemptedInstalls', JSON.stringify(newAttemptedInstalls));
+        // setAttemptedInstalls(newAttemptedInstalls);
+        localStorage.setItem('onboardingSelectedTools', JSON.stringify(selectedTools.map(t => t.id)));
+        onNext()
+        // setTimeout(() => {
+        //     setIsInstallingAll(false);
+        //     onNext();
+        // }, 3000);
     };
 
     const areAllToolsSelected = () => {
@@ -119,19 +122,29 @@ export default function InstallTools({
     };
 
     const getButtonText = () => {
-        if (areAllToolsAttempted()) {
-            return "All Tools Setup Initiated";
+        // if (areAllToolsAttempted()) {
+        //     return "All Tools Setup Initiated";
+        // }
+        if (areAllToolsAttempted() || !areAnyToolsSelected()) {
+            return "Next"
         }
-        if (!areAnyToolsSelected()) {
-            return "None Selected";
+        if (areAllToolsSelected() && attemptedInstalls?.length > 0) {
+            return "Install Selected Tool";
+        }
+        if (attemptedInstalls?.length > 0) {
+            return "Next";
         }
         return areAllToolsSelected() ? "Install All Tools" : "Install Selected Tools";
     };
 
     useEffect(() => {
+        // JSON.parse(localStorage.getItem('onboardingSelectedTools'))?.forEach((tool) => {
+
+        // })
+        // setIsInstallingAll(JSON.parse(localStorage.getItem('onboardingSelectedTools')).length > 0)
         const handleKeyPress = (event: KeyboardEvent) => {
-            if (event.key === 'Enter' && !isInstallingAll) {
-                handleInstallAll();
+            if (event.key === 'Enter') {
+                handleInstallChecked();
             } else if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowRight') {
                 event.preventDefault();
                 onNext();
@@ -140,7 +153,7 @@ export default function InstallTools({
 
         window.addEventListener('keydown', handleKeyPress);
         return () => window.removeEventListener('keydown', handleKeyPress);
-    }, [isInstallingAll]);
+    }, []);
 
     return (
         <div className="step-content flex w-full h-screen items-center justify-center bg-background text-foreground">
@@ -195,9 +208,8 @@ export default function InstallTools({
                     Skip
                 </div>
                 <Button
-              className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
-              onClick={handleInstallChecked}
-                    disabled={isInstallingAll || !areAnyToolsSelected() || areAllToolsAttempted()}
+                    className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
+                    onClick={handleInstallChecked}
                 >
                     {getButtonText()}
                 </Button>

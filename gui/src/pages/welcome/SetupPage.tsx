@@ -45,10 +45,11 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
 
   const allSetupSteps = [
     {
-      icon: <User className="h-6 w-6" />,
-      title: "Sign in",
-      description: "Have PearAI work for free out of the box by signing in.",
-      component: <SignIn onNext={handleNextClick} />,
+      icon: <Move className="h-5 w-5" />,
+      title: "Import VSCode Extensions",
+      description:
+        "Automatically import your extensions from VSCode to feel at home.",
+      component: <ImportExtensions onNext={handleNextClick} />,
     },
     {
       icon: <Terminal className="h-6 w-6" />,
@@ -63,15 +64,12 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       description: "Install recommended tools to enhance your PearAI experience.",
       component: <InstallTools onNext={handleNextClick} />,
     },
-    // devnote: keep import extensions as last step.
-    // because if user has lots of extensions, it can take a while to activate them all 
-    // which makes extension host unresponsive and it makes the UI feel more laggy.
+
     {
-      icon: <Move className="h-5 w-5" />,
-      title: "Import VSCode Extensions",
-      description:
-        "Automatically import your extensions from VSCode to feel at home.",
-      component: <ImportExtensions onNext={handleNextClick} />,
+      icon: <User className="h-6 w-6" />,
+      title: "Sign in",
+      description: "Have PearAI work for free out of the box by signing in.",
+      component: <SignIn onNext={handleNextClick} />,
     },
   ];
 
