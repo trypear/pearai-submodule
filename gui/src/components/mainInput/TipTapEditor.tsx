@@ -163,6 +163,7 @@ interface TipTapEditorProps {
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
   onChange?: (newState: JSONContent) => void;
+  isFirstInSession?: boolean;
 }
 
 const TipTapEditor = memo(function TipTapEditor({
@@ -173,6 +174,7 @@ const TipTapEditor = memo(function TipTapEditor({
   editorState,
   source = 'continue',
   onChange,
+  isFirstInSession,
 }: TipTapEditorProps) {
   const dispatch = useDispatch();
 
@@ -970,7 +972,7 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     > 
-      {(!isPerplexity && !isAider) && <TopBar />}
+      {(!isPerplexity && !isAider) && isFirstInSession && <TopBar />}
       <EditorContent
         spellCheck={false}
         editor={editor}

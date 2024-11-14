@@ -112,6 +112,7 @@ interface ContinueInputBoxProps {
   hidden?: boolean;
   source?: "perplexity" | "aider" | "continue";
   className?: string;
+  isFirstInSession?: boolean;
 }
 
 const ContinueInputBox = memo(function ContinueInputBox({
@@ -123,6 +124,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
   hidden,
   source = "continue",
   className,
+  isFirstInSession,
 }: ContinueInputBoxProps) {
   const dispatch = useDispatch();
 
@@ -198,6 +200,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
           }
           source={source}
           onChange={handleEditorChange}
+          isFirstInSession={isFirstInSession}
         />
       </GradientBorder>
       {active && isLastUserInput && (

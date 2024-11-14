@@ -354,6 +354,7 @@ function GUI() {
                         isMainInput={false}
                         editorState={item.editorState}
                         contextItems={item.contextItems}
+                        isFirstInSession={index === state.history.findIndex(item => item.message.role === "user")}
                       ></ContinueInputBox>
                     ) : (
                       <div className="thread-message">
@@ -433,6 +434,7 @@ function GUI() {
             isLastUserInput={false}
             isMainInput={true}
             hidden={active}
+            isFirstInSession={state.history.length === 0}
           ></ContinueInputBox>
           {active ? (
             <>
