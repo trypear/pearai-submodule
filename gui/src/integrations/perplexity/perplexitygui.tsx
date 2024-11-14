@@ -125,7 +125,6 @@ function PerplexityGUI() {
         !e.shiftKey
       ) {
         saveSession();
-        ideMessenger.post("aiderResetSession", undefined);
       }
     };
     window.addEventListener("keydown", listener);
