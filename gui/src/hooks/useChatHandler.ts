@@ -179,8 +179,8 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
         abortController.abort();
         break;
       }
-      if (typeof update === "string") {
-        dispatch(streamUpdate(update));
+      if (typeof update.content === "string") {
+        dispatch(streamUpdate(update.content));
       }
     }
     clearInterval(checkActiveInterval);
