@@ -12,16 +12,19 @@ export default function FinalStep({ onNext }: { onNext: () => void }) {
   const selectedTools = JSON.parse(localStorage.getItem('onboardingSelectedTools'));
   const installExtensions = localStorage.getItem('importUserSettingsFromVSCode') === 'true';
 
-  const handleOpenFolder = () => {
-    ideMessenger.post("pearWelcomeOpenFolder", undefined);
+  const initiateInstallations = () => {
     ideMessenger.post("pearAIinstallation", {tools: selectedTools, installExtensions: installExtensions})
     ideMessenger.post("markNewOnboardingComplete", undefined);
+  };
+
+  const handleOpenFolder = () => {
+    ideMessenger.post("pearWelcomeOpenFolder", undefined);
+    initiateInstallations();
     onNext() // navigates to inventory page
   };
 
   const handleClose = () => {
-    ideMessenger.post("pearAIinstallation", {tools: selectedTools, installExtensions: installExtensions});
-    ideMessenger.post("markNewOnboardingComplete", undefined);
+    initiateInstallations();
     onNext() // navigates to inventory page
   };
 
@@ -31,6 +34,9 @@ export default function FinalStep({ onNext }: { onNext: () => void }) {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         handleOpenFolder();
+      }
+      if (event.key === 'Escape') {
+        initiateInstallations();
       }
     };
     window.addEventListener('keydown', handleKeyPress);
