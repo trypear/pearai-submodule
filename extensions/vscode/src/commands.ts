@@ -255,6 +255,7 @@ const commandsMap: (
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
       await vscode.commands.executeCommand('pearai.unlockOverlay');
       await vscode.commands.executeCommand('pearai.hideOverlay');
+      vscode.commands.executeCommand("workbench.action.restartExtensionHost");
     },
     "pearai.restFirstLaunchInGUI": async () => {
       sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEAR_CONTINUE_VIEW_ID]);
