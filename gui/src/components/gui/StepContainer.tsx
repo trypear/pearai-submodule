@@ -165,6 +165,7 @@ function StepContainer({
     <div>
       <div className="relative">
         <ContentDiv
+          className="max-w-4xl mx-auto"
           hidden={!open}
           isUserInput={isUserInput}
           fontSize={getFontSize()}

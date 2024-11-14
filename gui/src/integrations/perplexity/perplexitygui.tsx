@@ -320,8 +320,6 @@ function PerplexityGUI() {
                             }
                             active={active}
                           /> }
-                        <div
-                          className="max-w-4xl mx-auto">
                           <StepContainer
                           index={index}
                           isLast={
@@ -371,7 +369,6 @@ function PerplexityGUI() {
                           }
                           source="perplexity"
                         />
-                        </div>
                       </TimelineItem>
                     </div>
                   )}
