@@ -64,6 +64,11 @@ export default function InstallTools({
         onNext()
     };
 
+    const handleSkip = () => {
+        localStorage.setItem('onboardingSelectedTools', JSON.stringify([]));
+        onNext()
+      }
+
     const areAllToolsSelected = () => {
         return tools.every(tool => checkedTools[tool.id]);
     };
@@ -150,7 +155,7 @@ export default function InstallTools({
                 </div>
                 <div className="absolute bottom-8 right-8 flex items-center gap-4">
                 <div
-                    onClick={onNext}
+                    onClick={handleSkip}
                     className="flex items-center gap-2 cursor-pointer"
                 >
                     Skip
