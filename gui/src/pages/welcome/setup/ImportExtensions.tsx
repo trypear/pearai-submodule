@@ -14,14 +14,12 @@ export default function ImportExtensions({
 }: {
   onNext: () => void;
 }) {
-  // const ideMessenger = useContext(IdeMessengerContext);
   const [isImporting, setIsImporting] = useState(false);
 
   const handleImport = () => {
     localStorage.setItem('importUserSettingsFromVSCode', 'true');
     setIsImporting(true);
     onNext();
-    // ideMessenger.post("importUserSettingsFromVSCode", undefined);  // todo: MOVE TO COMMANDS DIRECTLY, AFTER OPENING FOLDER
   };
 
   const handleSkip = () => {

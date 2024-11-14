@@ -163,10 +163,8 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("pearai.toggleInventoryHome");
     });
     this.onWebview("pearAIinstallation", (msg) => {
-      console.dir(msg);
       const { tools, installExtensions } = msg.data;
       if (installExtensions) {
-        console.dir("INSTALLING EXTENSIONS")
         vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
       }
 
