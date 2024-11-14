@@ -75,7 +75,7 @@ export const Citations = ({ citations, className, isLast, active}: CitationsProp
       <div className="overflow-x-auto pb-2">
         <div className="flex space-x-2">
           {citations.map((citation, i) => (
-            <CitationCard 
+            <CitationCard
               key={citation.url} 
               citation={citation} 
               isLast={isLast}

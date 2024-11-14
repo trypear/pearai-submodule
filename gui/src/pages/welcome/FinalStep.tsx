@@ -21,6 +21,7 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
   useEffect(() => {
     // unlock overlay when we get to last page
     ideMessenger.post("unlockOverlay", undefined);
+    ideMessenger.post("markNewOnboardingComplete", undefined);
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         handleOpenFolder();

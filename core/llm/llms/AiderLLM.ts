@@ -138,8 +138,7 @@ class Aider extends BaseLLM {
     if (IS_WINDOWS) {
       return process.env.COMSPEC || "cmd.exe";
     }
-    // return process.env.SHELL || "/bin/sh";
-    return "/bin/sh";
+    return process.env.SHELL || "/bin/sh";
   }
 
   private getUserPath(): string {
