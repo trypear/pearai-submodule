@@ -1,6 +1,29 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from "vscode";
 import { ContinueGUIWebviewViewProvider } from "../ContinueGUIWebviewViewProvider";
 import { ToWebviewProtocol } from "core/protocol";
+
+export enum InstallableTool {
+  AIDER = "aider",
+  SUPERMAVEN = "supermaven"
+}
+
+export interface ToolCommand {
+  command: string;
+  args?: any;
+}
+
+export type ToolType = typeof InstallableTool[keyof typeof InstallableTool];
+
+export const TOOL_COMMANDS: Record<ToolType, ToolCommand> = {
+  [InstallableTool.AIDER]: {
+    command: "pearai.installAider"
+  },
+  [InstallableTool.SUPERMAVEN]: {
+    command: "workbench.extensions.installExtension",
+    args: "supermaven.supermaven"
+  }
+};
 
 
 export function getIntegrationTab(webviewName: string) {
