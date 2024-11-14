@@ -184,6 +184,7 @@ function StepContainer({
               isLast={isLast}
               messageIndex={index}
               integrationSource={source}
+              citations={isPerplexity ? item.citations : undefined}
             />
           )}
         </ContentDiv>

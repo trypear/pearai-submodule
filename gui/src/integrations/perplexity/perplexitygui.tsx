@@ -1,3 +1,4 @@
+import React from "react";
 import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
@@ -319,7 +320,9 @@ function PerplexityGUI() {
                             }
                             active={active}
                           /> }
-                        <StepContainer
+                        <div
+                          className="max-w-4xl mx-auto">
+                          <StepContainer
                           index={index}
                           isLast={
                             index === sessionState.perplexityHistory.length - 1
@@ -368,6 +371,7 @@ function PerplexityGUI() {
                           }
                           source="perplexity"
                         />
+                        </div>
                       </TimelineItem>
                     </div>
                   )}
