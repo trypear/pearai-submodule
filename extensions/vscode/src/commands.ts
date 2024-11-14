@@ -252,8 +252,9 @@ const commandsMap: (
       await importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
-      // vscode.window.showInformationMessage("Marking onboarding complete.");
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
+      await vscode.commands.executeCommand('pearai.unlockOverlay');
+      await vscode.commands.executeCommand('pearai.hideOverlay');
     },
     "pearai.resetInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("resetInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);

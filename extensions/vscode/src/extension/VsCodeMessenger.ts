@@ -28,6 +28,7 @@ import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
+import { TOOL_COMMANDS, ToolType } from "../util/integrationUtils";
 
 /**
  * A shared messenger class between Core and Webview
@@ -122,13 +123,6 @@ export class VsCodeMessenger {
     });
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");
-        // force close overlay if a folder is already open
-      if (vscode.workspace.workspaceFolders?.length) {
-        vscode.commands.executeCommand("pearai.unlockOverlay");
-        vscode.commands.executeCommand("pearai.hideOverlay");
-        // force reload to update overlay with new global state
-        vscode.commands.executeCommand("workbench.action.reloadWindow");
-      }
     });
     this.onWebview("pearInstallCommandLine", (msg) => {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
@@ -168,14 +162,30 @@ export class VsCodeMessenger {
     this.onWebview("openInventory", (msg) => {
       vscode.commands.executeCommand("pearai.toggleInventoryHome");
     });
-    this.onWebview("pearAIinstallation", (data) => {
-      console.dir(data);
+    this.onWebview("pearAIinstallation", (msg) => {
+      console.dir(msg);
+      const { tools, installExtensions } = msg.data;
+      if (installExtensions) {
+        console.dir("INSTALLING EXTENSIONS")
+        vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
+      }
+
+      tools.forEach((tool: ToolType) => {
+        const toolCommand = TOOL_COMMANDS[tool];
+        if (toolCommand) {
+          if (toolCommand.args) {
+            vscode.commands.executeCommand(toolCommand.command, toolCommand.args);
+          } else {
+            vscode.commands.executeCommand(toolCommand.command);
+          }
+        } else {
+          console.warn(`Unknown tool: ${tool}`);
+        }
+      });
     });
-    this.onWebview("completeWelcome", (msg) => {
+    this.onWebview("closePearAIOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.unlockOverlay");
       vscode.commands.executeCommand("pearai.hideOverlay");
-      // force reload to update overlay with new global state
-      vscode.commands.executeCommand("workbench.action.reloadWindow");
     });
     this.onWebview("highlightElement", (msg) => {
       vscode.commands.executeCommand("pearai.highlightElement", msg);
