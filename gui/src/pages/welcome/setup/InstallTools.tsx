@@ -11,7 +11,6 @@ interface Tool {
     name: string;
     description: string;
     icon: JSX.Element | string;
-    installCommand: () => Promise<void>;
     preInstalled: boolean;
 }
 
@@ -22,22 +21,12 @@ export default function InstallTools({
     onNext: () => void;
 }) {
 
-    // TODO: MOVE THESE TO COMMANDS, PASS MSG TO KNOW WHICH TO INSTALL?
-    const handleVSCExtensionInstall = async (extensionId: string) => {
-        ideMessenger.post("installVscodeExtension", { extensionId });
-    };
-
-    const handleAiderInstall = async () => {
-        ideMessenger.post("installAider", undefined);
-    };
-
     const tools: Tool[] = [
         {
             id: "aider",
             name: "PearAI Creator",
             description: "PearAI Creator is a no-code tool powered by aider* that let's you build complete features with just a prompt.",
             icon: "inventory-creator.svg",
-            installCommand: handleAiderInstall,
             preInstalled: false
         },
         {
@@ -45,13 +34,9 @@ export default function InstallTools({
             name: "PearAI Predict",
             description: "PearAI Predict is our upcoming code autocomplete tool. While it’s under development, we recommend using Supermaven* as a standalone extension within PearAI for code autocompletion. Selecting this option will install Supermaven.",
             icon: "inventory-autocomplete.svg",
-            installCommand: () => handleVSCExtensionInstall("supermaven.supermaven"),
             preInstalled: false
         }
     ];
-
-    const ideMessenger = useContext(IdeMessengerContext);
-    // const [isInstallingAll, setIsInstallingAll] = useState(false);
 
     const [attemptedInstalls, setAttemptedInstalls] = useState<string[]>(() => {
         const saved = localStorage.getItem('onboardingSelectedTools');
@@ -66,47 +51,17 @@ export default function InstallTools({
         return initialState;
     });
 
-
-    const handleInstallAll = async () => {
-        // setIsInstallingAll(true);
-
-        // const toolsToInstall = tools.filter(tool => !attemptedInstalls.includes(tool.id));
-        // toolsToInstall.forEach(tool => tool.installCommand());
-        localStorage.setItem('onboardingSelectedTools', JSON.stringify(tools.map(t => t.id)));
-        // Save to attempted installations
-        // const newAttemptedInstalls = [...new Set([...attemptedInstalls, ...toolsToInstall.map(t => t.id)])];
-        // localStorage.setItem('onboardingAttemptedInstalls', JSON.stringify(newAttemptedInstalls));
-        // setAttemptedInstalls(newAttemptedInstalls);
-
-        onNext()
-        // setTimeout(() => {
-        //     setIsInstallingAll(false);
-        //     onNext();
-        // }, 3000);
-    };
-
     const handleCheckboxChange = (toolId: string) => {
         setCheckedTools(prev => ({ ...prev, [toolId]: !prev[toolId] }));
     };
 
     const handleInstallChecked = async () => {
-        // setIsInstallingAll(true);
-
         const selectedTools = tools.filter(tool =>
-            checkedTools[tool.id] /*&& !attemptedInstalls.includes(tool.id) */
+            checkedTools[tool.id]
         );
-        // selectedTools.forEach(tool => tool.installCommand());
 
-        // Save to attempted installations
-        // const newAttemptedInstalls = [...new Set([...attemptedInstalls, ...selectedTools.map(t => t.id)])];
-        // localStorage.setItem('onboardingAttemptedInstalls', JSON.stringify(newAttemptedInstalls));
-        // setAttemptedInstalls(newAttemptedInstalls);
         localStorage.setItem('onboardingSelectedTools', JSON.stringify(selectedTools.map(t => t.id)));
         onNext()
-        // setTimeout(() => {
-        //     setIsInstallingAll(false);
-        //     onNext();
-        // }, 3000);
     };
 
     const areAllToolsSelected = () => {
@@ -122,9 +77,6 @@ export default function InstallTools({
     };
 
     const getButtonText = () => {
-        // if (areAllToolsAttempted()) {
-        //     return "All Tools Setup Initiated";
-        // }
         if (areAllToolsAttempted() || !areAnyToolsSelected()) {
             return "Next"
         }
@@ -138,10 +90,6 @@ export default function InstallTools({
     };
 
     useEffect(() => {
-        // JSON.parse(localStorage.getItem('onboardingSelectedTools'))?.forEach((tool) => {
-
-        // })
-        // setIsInstallingAll(JSON.parse(localStorage.getItem('onboardingSelectedTools')).length > 0)
         const handleKeyPress = (event: KeyboardEvent) => {
             if (event.key === 'Enter') {
                 handleInstallChecked();
