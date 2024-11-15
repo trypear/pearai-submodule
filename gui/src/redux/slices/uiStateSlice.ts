@@ -1,4 +1,6 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { isValidFilePath } from "../../util/fileValidation";
+
 type UiState = {
   bottomMessage: JSX.Element | undefined;
   bottomMessageCloseTimeout: NodeJS.Timeout | undefined;
@@ -58,7 +60,8 @@ export const uiStateSlice = createSlice({
       state.displayBottomMessageOnBottom = action.payload;
     },
     setActiveFilePath: (state, action: PayloadAction<UiState["activeFilePath"]>) => {
-      state.activeFilePath = action.payload ?? "";
+      const filepath = action.payload ?? "";
+      state.activeFilePath = isValidFilePath(filepath) ? filepath : undefined;
     },
   },
 });
