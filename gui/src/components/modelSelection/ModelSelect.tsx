@@ -173,6 +173,7 @@ function ModelSelect() {
 
   const location = useLocation();
   const navigate = useNavigate();
+  const ideMessenger = useContext(IdeMessengerContext);
 
   const [options, setOptions] = useState<Option[]>([]);
   const selectedProfileId = useSelector(
@@ -269,6 +270,10 @@ function ModelSelect() {
               <StyledListboxOption
                 key={options.length}
                 onClick={(e) => {
+                  if (aiderMode) {
+                    ideMessenger.post("openConfigJson", undefined);
+                    return;
+                  }
                   e.stopPropagation();
                   e.preventDefault();
                   navigate("/addModel");
