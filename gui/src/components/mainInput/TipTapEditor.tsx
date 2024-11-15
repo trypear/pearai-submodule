@@ -295,7 +295,7 @@ const TipTapEditor = memo(function TipTapEditor({
     } else {
       ideMessenger.post("errorPopup", {
         message:
-          "Images need to be in jpg or png format and less than 10MB in size.",
+          "Images need to be in jpg, gif, svg, webp, or png format and less than 10MB in size.",
       });
     }
     return undefined;
