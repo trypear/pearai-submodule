@@ -1,3 +1,4 @@
+import React from "react";
 import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
@@ -124,7 +125,6 @@ function PerplexityGUI() {
         !e.shiftKey
       ) {
         saveSession();
-        ideMessenger.post("aiderResetSession", undefined);
       }
     };
     window.addEventListener("keydown", listener);
@@ -319,7 +319,7 @@ function PerplexityGUI() {
                             }
                             active={active}
                           /> }
-                        <StepContainer
+                          <StepContainer
                           index={index}
                           isLast={
                             index === sessionState.perplexityHistory.length - 1
