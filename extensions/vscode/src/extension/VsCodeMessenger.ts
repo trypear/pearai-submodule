@@ -168,18 +168,20 @@ export class VsCodeMessenger {
         vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
       }
 
-      tools.forEach((tool: ToolType) => {
-        const toolCommand = TOOL_COMMANDS[tool];
-        if (toolCommand) {
-          if (toolCommand.args) {
-            vscode.commands.executeCommand(toolCommand.command, toolCommand.args);
+      if (tools) {
+        tools.forEach((tool: ToolType) => {
+          const toolCommand = TOOL_COMMANDS[tool];
+          if (toolCommand) {
+            if (toolCommand.args) {
+              vscode.commands.executeCommand(toolCommand.command, toolCommand.args);
+            } else {
+              vscode.commands.executeCommand(toolCommand.command);
+            }
           } else {
-            vscode.commands.executeCommand(toolCommand.command);
+            console.warn(`Unknown tool: ${tool}`);
           }
-        } else {
-          console.warn(`Unknown tool: ${tool}`);
-        }
-      });
+        });
+      }
     });
     this.onWebview("closePearAIOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.unlockOverlay");

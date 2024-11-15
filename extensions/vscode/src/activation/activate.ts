@@ -116,9 +116,7 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 // Custom Layout settings that we want default for PearAPP
 const setupPearAPPLayout = async (context: vscode.ExtensionContext) => {
   // move pearai extension to auxiliary bar (secondary side bar) if there is a folder open
-  if(vscode.workspace.workspaceFolders){
-    vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
-  }
+  vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
   // set activity bar position to top
   vscode.commands.executeCommand("workbench.action.activityBarLocation.top");
   // enable wrapped tabs

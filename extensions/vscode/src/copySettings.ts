@@ -45,8 +45,32 @@ async function copyVSCodeSettingsToPearAIDir() {
     await fs.promises.mkdir(pearAIDevSettingsDir, { recursive: true });
     await fs.promises.mkdir(pearAIDevExtensionsDir, { recursive: true });
 
-    const itemsToCopy = ['settings.json', 'keybindings.json', 'snippets', 'sync', 'globalStorage/state.vscdb', 'globalStorage/state.vscdb.backup'];
     
+    // Special handling for copying settings.json to filter out layout settings
+    const settingsSource = path.join(vscodeSettingsDir, 'settings.json');
+    const settingsDestination = path.join(pearAIDevSettingsDir, 'settings.json');
+    try {
+        if (await fs.promises.access(settingsSource).then(() => true).catch(() => false)) {
+            const settingsContent = await fs.promises.readFile(settingsSource, 'utf8');
+            const settings = JSON.parse(settingsContent);
+            
+            // Filter out layout-related settings
+            const filteredSettings = Object.fromEntries(
+                Object.entries(settings).filter(([key]) => !key.includes('workbench.') && !key.includes('window.'))
+            );
+            
+            await fs.promises.writeFile(
+                settingsDestination, 
+                JSON.stringify(filteredSettings, null, 2)
+            );
+        }
+    } catch (error) {
+        console.error(`Error copying settings.json: ${error}`);
+    }
+
+
+    const itemsToCopy = ['snippets', 'keybindings.json', 'sync', 'globalStorage/state.vscdb', 'globalStorage/state.vscdb.backup'];
+
     for (const item of itemsToCopy) {
         const source = path.join(vscodeSettingsDir, item);
         const destination = path.join(pearAIDevSettingsDir, item);

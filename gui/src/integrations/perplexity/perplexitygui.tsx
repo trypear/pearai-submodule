@@ -228,9 +228,9 @@ function PerplexityGUI() {
         >
           {state.perplexityHistory.length === 0 ? (
             <div className="max-w-2xl mx-auto w-full text-center">
-              <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
-                <h1 className="text-2xl font-bold">PearAI Search</h1>
-                <Badge variant="outline" className="lg:absolute lg:right-20 lg:translate-y-0">
+              <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center">
+                <h1 className="text-2xl font-bold mr-2">PearAI Search</h1>
+                <Badge variant="outline">
                   Beta (Powered by Perplexity*)
                 </Badge>
               </div>

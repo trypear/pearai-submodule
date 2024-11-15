@@ -15,23 +15,6 @@ import _ from "lodash";
 import { useWebviewListener } from "../../hooks/useWebviewListener";
 import { Button } from "@/components/ui/button";
 
-const EllipsisContainer = styled.span`
-  display: inline-block;
-  text-align: left;
-  &::after {
-    content: '';
-    position: absolute;
-    animation: ellipsis 1.5s steps(4, end) infinite;
-  }
-
-  @keyframes ellipsis {
-    0%, 20% { content: ''; }
-    40% { content: '.'; }
-    60% { content: '..'; }
-    80%, 100% { content: '...'; }
-  }
-`;
-
 function Onboarding() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -58,7 +41,7 @@ function Onboarding() {
           style={{ marginRight: "5px" }}
         />
       <h1 className="text-center">Welcome to PearAI!</h1>
-      <h3 className="mx-3 text-center flex">Begin your journey by logging in<EllipsisContainer /></h3>
+      <h3 className="mx-3 text-center flex">Begin your journey by logging in</h3>
       <Button 
         variant="animated"
         size="lg"
