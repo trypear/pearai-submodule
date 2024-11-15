@@ -327,31 +327,45 @@ const TipTapEditor = memo(function TipTapEditor({
             props: {
               handleDOMEvents: {
                 paste(view, event) {
-                  console.log("Pasting image");
                   const items = event.clipboardData.items;
-                  for (const item of items) {
-                    const file = item.getAsFile();
-                    file &&
-                      modelSupportsImages(
+
+                  const hasImageItem = Array.from(items).some(
+                    item => item.type.startsWith('image/')
+                  );
+
+                  // Only log and process if we actually have an image
+                  if (hasImageItem) {
+                    console.log("Pasting image");
+                    for (const item of items) {
+                      if (!item.type.startsWith('image/')) continue;
+                      
+                      const file = item.getAsFile();
+                      if (!file) continue;
+      
+                      if (modelSupportsImages(
                         defaultModel.provider,
                         defaultModel.model,
                         defaultModel.title,
                         defaultModel.capabilities,
-                      ) &&
-                      handleImageFile(file).then((resp) => {
-                        if (!resp) {
-                          return;
-                        }
-                        const [img, dataUrl] = resp;
-                        const { schema } = view.state;
-                        const node = schema.nodes.image.create({
-                          src: dataUrl,
+                      )) {
+                        event.preventDefault();
+                        
+                        handleImageFile(file).then((resp) => {
+                          if (!resp) return;
+                          
+                          const [img, dataUrl] = resp;
+                          const { schema } = view.state;
+                          const node = schema.nodes.image.create({
+                            src: dataUrl,
+                          });
+                          const pos = view.state.selection.from;
+                          const tr = view.state.tr.insert(pos, node);
+                          view.dispatch(tr);
                         });
-                        const tr = view.state.tr.insert(0, node);
-                        view.dispatch(tr);
-                      });
+                      }
+                    }
                   }
-                },
+                }
               },
             },
           });
@@ -488,6 +502,23 @@ const TipTapEditor = memo(function TipTapEditor({
       attributes: {
         class: "outline-none -mt-1 mb-1 overflow-hidden",
         style: `font-size: ${getFontSize()}px;`,
+      },
+      handlePaste: (view, event) => {
+        // If it's not an image paste, handle as plain text
+        const items = event.clipboardData.items;
+        const hasImageItem = Array.from(items).some(
+          item => item.type.startsWith('image/')
+        );
+        
+        if (!hasImageItem) {
+          event.preventDefault();
+          const text = event.clipboardData.getData('text/plain');
+          const { tr } = view.state;
+          tr.insertText(text);
+          view.dispatch(tr);
+          return true;
+        }
+        return false;
       },
     },
     content: lastContentRef.current,
