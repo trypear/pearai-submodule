@@ -175,7 +175,7 @@ export class IdeMessenger implements IIdeMessenger {
       if (buffer.length > index) {
         const chunk = buffer.slice(index);
         index = buffer.length;
-        yield {chunk, citations};
+        yield {content: chunk, citations};
       }
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
@@ -183,7 +183,7 @@ export class IdeMessenger implements IIdeMessenger {
     if (buffer.length > index) {
       const chunk = buffer.slice(index);
       index = buffer.length;
-      yield {chunk, citations};
+      yield {content: chunk, citations};
     }
 
     return returnVal;
@@ -207,7 +207,7 @@ export class IdeMessenger implements IIdeMessenger {
 
     let next = await gen.next();
     while (!next.done) {
-      yield { role: "user", content: next.value.chunk, citations: next.value.citations };
+      yield { role: "user", content: next.value.content, citations: next.value.citations };
       next = await gen.next();
     }
 
