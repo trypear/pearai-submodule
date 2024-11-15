@@ -6,25 +6,37 @@ import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { FolderOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function FinalStep({ onBack }: { onBack: () => void }) {
+export default function FinalStep({ onNext }: { onNext: () => void }) {
 
   const navigate = useNavigate();
+  const selectedTools = JSON.parse(localStorage.getItem('onboardingSelectedTools'));
+  const installExtensions = localStorage.getItem('importUserSettingsFromVSCode') === 'true';
+
+  const initiateInstallations = () => {
+    ideMessenger.post("pearAIinstallation", {tools: selectedTools, installExtensions: installExtensions})
+    ideMessenger.post("markNewOnboardingComplete", undefined);
+  };
 
   const handleOpenFolder = () => {
     ideMessenger.post("pearWelcomeOpenFolder", undefined);
+    initiateInstallations();
+    onNext() // navigates to inventory page
   };
 
   const handleClose = () => {
-    ideMessenger.post("completeWelcome", undefined);
+    initiateInstallations();
+    onNext() // navigates to inventory page
   };
 
   useEffect(() => {
     // unlock overlay when we get to last page
     ideMessenger.post("unlockOverlay", undefined);
-    ideMessenger.post("markNewOnboardingComplete", undefined);
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         handleOpenFolder();
+      }
+      if (event.key === 'Escape') {
+        initiateInstallations();
       }
     };
     window.addEventListener('keydown', handleKeyPress);
@@ -34,7 +46,6 @@ export default function FinalStep({ onBack }: { onBack: () => void }) {
   const ideMessenger = useContext(IdeMessengerContext);
   return (
     <div className="flex w-full overflow-hidden text-foreground">
-
     <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
       <div className="flex-1 overflow-y-auto">
         <div className="p-6 space-y-6 pt-8">

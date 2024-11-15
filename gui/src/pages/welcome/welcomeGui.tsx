@@ -4,6 +4,7 @@ import FinalStep from "./FinalStep";
 import SetupPage from "./SetupPage";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { WelcomeHeader } from "./WelcomeHeader";
+import InventoryPage from "@/inventory/pages/InventoryPage";
 
 export default function Welcome() {
   const ideMessenger = useContext(IdeMessengerContext);
@@ -44,8 +45,7 @@ export default function Welcome() {
   }, [ideMessenger]); // Dependency array ensures this runs once when the component mounts
 
   const handleNextStep = () => {
-    setStep((prevStep) => Math.min(prevStep + 1, 2));
-    console.dir(`step: ${step}`);
+    setStep((prevStep) => Math.min(prevStep + 1, 3));
   };
 
   const handleBackStep = () => {
@@ -59,7 +59,9 @@ export default function Welcome() {
       case 1:
           return <SetupPage onNext={handleNextStep} />;
       case 2:
-        return <FinalStep onBack={handleBackStep} />;
+        return <FinalStep onNext={handleNextStep} />;
+      case 3:
+        return <InventoryPage />;
       default:
         return null;
     }
