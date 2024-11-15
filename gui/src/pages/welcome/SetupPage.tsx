@@ -64,6 +64,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       description: "Install recommended tools to enhance your PearAI experience.",
       component: <InstallTools onNext={handleNextClick} />,
     },
+
     {
       icon: <User className="h-6 w-6" />,
       title: "Sign in",
