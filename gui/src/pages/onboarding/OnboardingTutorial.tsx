@@ -9,12 +9,51 @@ import { getMetaKeyAndShortcutLabel } from '@/util';
 import { ChevronLeft, ChevronRight, Lightbulb } from 'lucide-react';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+import { motion } from 'framer-motion';
 
 interface OnboardingTutorialProps {
   onClose: () => void;
   onExampleClick?: (text: string) => void;
 }
+
+
+const gradient = keyframes`
+  0% {
+    background-position: 0px 0;
+  }
+  100% {
+    background-position: 100em 0;
+  }
+`;
+
+const TutorialCardBorder = styled.div`
+  border-radius: 8px;
+  width: 100%;
+  margin-left: 2rem; 
+  margin-right: 2rem;
+  background: repeating-linear-gradient(
+      101.79deg,
+      #4DA587 0%,
+      #4DA677 10%,
+      #3E9467 20%,
+      #4DA587 30%,
+      #3E9467 40%,
+      #4DA587 50%,
+      #3E9467 60%,
+      #4DA587 70%,
+      #3E9467 80%,
+      #4DA587 90%,
+      #4DA587 100%
+    );
+  background-size: 200% 200%;
+  animation: ${gradient} 4s ease infinite;
+  width: 100% - 0.6rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 8px;
+`;
 
 const TutorialCardDiv = styled.div`
   border-radius: 8px;
@@ -22,18 +61,18 @@ const TutorialCardDiv = styled.div`
   width: 100%;
   position: relative;
   max-height: 30rem;
-  border: 1px solid ${vscForeground};
+  height: 20rem;
   box-shadow: 
     0 8px 16px rgba(0, 0, 0, 0.2),
     0 4px 4px rgba(0, 0, 0, 0.15),
     0 0 1px rgba(255, 255, 255, 0.1) inset;
+  overflow: hidden;
 `;
 
-const ContentWrapper = styled.div<{ direction: 'left' | 'right' }>`
+const ContentWrapper = styled(motion.div)<{ direction: 'left' | 'right' }>`
   opacity: 0;
   margin-top: 0.5rem;
   border-top: 1px solid ${vscInputBorderFocus};
-  transform: translateX(${props => props.direction === 'left' ? '-0.2rem' : '0.3rem'});
   animation: slideIn 0.6s ease-out forwards;
 
   @keyframes slideIn {
@@ -59,29 +98,6 @@ const ExamplesSection = styled.div`
   }
 `;
 
-const ShimmeredText = styled.span`
-  position: relative;
-  display: inline-block;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, ${vscForeground} 90%, transparent) 50%,
-    ${vscForeground} 50%
-  );
-  background-size: 200% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmerText 3s ease-out forwards;
-
-  @keyframes shimmerText {
-    0% {
-      background-position: 100% 0;
-    }
-    100% {
-      background-position: -100% 0;
-    }
-  }
-`;
 
 const ExamplesHeader = styled.div`
   display: flex;
@@ -96,12 +112,22 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
   const ideMessenger = useContext(IdeMessengerContext);
   const dispatch = useDispatch();
   const { saveSession } = useHistory(dispatch, "continue");
+  const [noCodeSelectedMsg, setNoCodeSelectedMsg] = useState<string | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const pages = [
     {
-      title: <h3>Select Code and Chat (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>L</kbd>)</h3>,
-      description: <p>Highlight a portion of code, and press <b><kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+<kbd className="text-base">L</kbd></b> to add it to the chat context.<br/><br/>
-      <em>Don't have a file open? Use <kbd className="underline decoration-current hover:no-underline cursor-pointer font-bold" onClick={() => ideMessenger.post("showTutorial", undefined)}>pearai_tutorial.py</kbd>.</em></p>,
+      title: (<h3>Select Code and Chat (<kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>L</kbd>)</h3>),
+      description: <p>Select few lines of code, and press <b><kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd> <kbd className="font-mono">L</kbd></b> to add it to this chat box context.<br/><br/>
+      <span>Don't have a file open?</span>
+      <br/>
+      <span className='mt-2'> Click here <kbd className="no-underline font-mono decoration-current hover:underline cursor-pointer font-bold" onClick={() => ideMessenger.post("showTutorial", undefined)}>pearai_tutorial.py</kbd> to open a sample file</span>
+      {noCodeSelectedMsg && (
+        <div className="bg-yellow-200 text-yellow-800 p-2 rounded mb-2">
+          {noCodeSelectedMsg}
+        </div>
+      )}
+      </p>,
     },
     {
       description: (
@@ -148,12 +174,13 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
   ]
 
   const nextPage = () => {
+    setIsTransitioning(true);
     setSlideDirection('right');
     setCurrentPage((prev) => Math.min(prev + 1, pages.length - 1));
     if (currentPage === 1) {
-      // clear chat
-      saveSession()
+      saveSession();
     }
+    setTimeout(() => setIsTransitioning(false), 600);
   };
 
   const prevPage = () => {
@@ -173,8 +200,12 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
   }, [currentPage, nextPage, prevPage]);
 
   useWebviewListener(
-    "focusContinueInput",
-    async () => {
+    "highlightedCode",
+    async (data) => {
+      if (!data.rangeInFileWithContents.contents) {
+        setNoCodeSelectedMsg("Hey, seems you have not selected any code.");
+        return;
+      }
       if (currentPage === 0) {
         nextPage()
       }
@@ -231,7 +262,8 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
   }, [currentPage]);
   
   return (
-    <TutorialCardDiv className="flex flex-col p-2 justify-between bg-background">
+    <TutorialCardBorder>
+    <TutorialCardDiv className={`flex flex-col p-2 justify-between bg-background text-sm overflow-hidden text-input-foreground`}>
       <div className="mb-3">
       <div
           onClick={onClose}
@@ -243,11 +275,24 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
       </div>
           <div className="flex flex-col justify-between mt-1">
             <div>
-              <div className="flex justify-between items-center text-muted">
-              Quick Tutorial (1 min)
+              <div className="flex justify-between items-center ">
+              Learn how to use PearAI chat
               </div>
-              <ContentWrapper direction={slideDirection} key={currentPage} className="pl-1">
-                <ShimmeredText className="text-sm">{currentPageData.description}</ShimmeredText>
+              <ContentWrapper
+                direction={slideDirection}
+                key={currentPage}
+                initial={{ x: slideDirection === 'right' ? 100 : -100, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: slideDirection === 'right' ? -100 : 100, opacity: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <motion.span
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {currentPageData.description}
+                </motion.span>
                 {hasExamples && (
                   <ExamplesSection >
                     <ExamplesHeader >
@@ -291,6 +336,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({ onClose, onExam
         </Button>
       </div>
     </TutorialCardDiv>
+    </TutorialCardBorder>
   );
 };
 
