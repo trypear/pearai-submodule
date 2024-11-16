@@ -78,7 +78,7 @@ const TutorialCardDiv = styled.div`
   border-radius: 8px;
   margin: 1rem;
   width: 100%;
-  min-width: 300px;
+  min-width: 400px;
   position: relative;
   max-height: 30rem;
   height: 24rem;
@@ -96,13 +96,6 @@ const ContentWrapper = styled(motion.div)<{ direction: "left" | "right" }>`
   border-top: 1px solid ${vscInputBorderFocus};
   animation: slideIn 0.6s ease-out forwards;
   flex: 1;
-
-  @keyframes slideIn {
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
 `;
 
 const ExamplesSection = styled.div`
@@ -110,14 +103,7 @@ const ExamplesSection = styled.div`
   padding: 1rem;
   padding-top: 0.1rem;
   border-radius: 8px;
-  opacity: 0;
-  animation: fadeIn 0.3s ease-out 0.2s forwards;
   background-color: ${vscBackground};
-  @keyframes fadeIn {
-    to {
-      opacity: 1;
-    }
-  }
 `;
 
 const ExamplesHeader = styled.div`
@@ -188,7 +174,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       description: (
         <>
           <p>
-            Ask a question about the code you just highlighted and added to the
+            Ask a question about the code you just Selected and added to the
             chat below!
           </p>
           <DelayedMessage
@@ -264,7 +250,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       description: (
         <>
           <p>
-            Try asking anything about your entire codebase by prompting then
+            Try asking anything about your entire codebase by typing in prompt then 
             pressing{" "}
             <b>
               <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
@@ -467,6 +453,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                         />
                       ))}
                     </div>
+                    <div className="text-xs mt-3">copy prompts by clicking them</div> 
                   </ExamplesSection>
                 )}
               </ContentWrapper>
