@@ -119,6 +119,4 @@ const setupPearAPPLayout = async (context: vscode.ExtensionContext) => {
   vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
   // set activity bar position to top
   vscode.commands.executeCommand("workbench.action.activityBarLocation.top");
-  // enable wrapped tabs
-  vscode.workspace.getConfiguration().update('workbench.editor.wrapTabs', true, true);
 };
