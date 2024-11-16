@@ -10,7 +10,7 @@ import { IdeMessengerContext } from "@/context/IdeMessenger";
 import useHistory from "@/hooks/useHistory";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 import { getMetaKeyAndShortcutLabel } from "@/util";
-import { ChevronLeft, ChevronRight, Lightbulb } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Lightbulb } from "lucide-react";
 import React, {
   useCallback,
   useContext,
@@ -21,6 +21,7 @@ import React, {
 import { useDispatch } from "react-redux";
 import styled, { keyframes } from "styled-components";
 import { motion } from "framer-motion";
+import { CardFooter } from "@/components/ui/card";
 
 interface OnboardingTutorialProps {
   onClose: () => void;
@@ -70,19 +71,22 @@ const TutorialCardDiv = styled.div`
   width: 100%;
   position: relative;
   max-height: 30rem;
-  height: 20rem;
+  height: 24rem;
   box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.2),
     0 4px 4px rgba(0, 0, 0, 0.15),
     0 0 1px rgba(255, 255, 255, 0.1) inset;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 `;
 
-const ContentWrapper = styled(motion.div)<{ direction: "left" | "right" }>`
+const ContentWrapper = styled(motion.div) <{ direction: "left" | "right" }>`
   opacity: 0;
   margin-top: 0.5rem;
   border-top: 1px solid ${vscInputBorderFocus};
   animation: slideIn 0.6s ease-out forwards;
+  flex: 1;
 
   @keyframes slideIn {
     to {
@@ -94,8 +98,8 @@ const ContentWrapper = styled(motion.div)<{ direction: "left" | "right" }>`
 
 const ExamplesSection = styled.div`
   margin-top: 0.5rem;
-  padding-top: 1rem;
   padding: 1rem;
+  padding-top: 0.1rem;
   border-radius: 8px;
   opacity: 0;
   animation: fadeIn 0.3s ease-out 0.2s forwards;
@@ -111,7 +115,6 @@ const ExamplesHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 0.2rem;
-  margin-bottom: 0.5rem;
 `;
 
 const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
@@ -119,6 +122,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
   onExampleClick,
 }) => {
   const [currentPage, setCurrentPage] = useState(0);
+  const totalPages = 6; // Adjust based on your pages
   const [slideDirection, setSlideDirection] = useState<"left" | "right">(
     "right",
   );
@@ -173,7 +177,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       description: (
         <>
           <p>
-            Ask a question about the code you just highlighted in the chat
+            Ask a question about the code you just highlighted and added to the chat
             below!
           </p>
           <DelayedMessage
@@ -193,13 +197,13 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       ),
       description: (
         <p>
-          Now let's try inline editing... Try the below examples by first
-          highlighting a function in full, and pressing{" "}
+          Now let's try inline editing. First
+          select a function you want to edit, and then press shortcut key {" "} 
           <b>
-            <kbd className="text-base">{getMetaKeyAndShortcutLabel()}</kbd>+
-            <kbd>I</kbd>
+            <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd> &nbsp;
+            <kbd className="font-mono">I</kbd>
           </b>
-          .
+          &nbsp; and then you can type the prompt to edit the code.
         </p>
       ),
       examples: ["Add error handling", "Improve this code"],
@@ -218,15 +222,18 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             <li>
               <b>
                 accept all changes with{" "}
-                <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+ENTER</kbd>
+                <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>&nbsp;
+                <kbd className="font-mono">SHIFT</kbd>&nbsp;
+                <kbd className="font-mono">ENTER</kbd>&nbsp;
               </b>
-              ,
             </li>
             <li>
               or{" "}
               <b>
                 reject all changes with{" "}
-                <kbd>{getMetaKeyAndShortcutLabel()}+SHIFT+BACKSPACE</kbd>
+                <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>&nbsp;
+                <kbd className="font-mono">SHIFT</kbd>&nbsp;
+                <kbd className="font-mono">BACKSPACE</kbd>&nbsp;
               </b>
             </li>
           </ul>
@@ -241,19 +248,23 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
         </h3>
       ),
       description: (
-        <p>
-          Almost done! Try asking anything about your general codebase by
-          prompting then pressing{" "}
-          <b>
-            <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>ENTER</kbd>
-          </b>
-          .<br />
-          <br /> Note: codebase indexing must finish before you can run this!
-        </p>
+        <>
+          <p>
+            Almost done! Try asking anything about your entire codebase by
+            prompting then pressing{" "}
+            <b>
+              <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>&nbsp;<kbd className="font-mono">ENTER</kbd>  
+            </b>
+          </p>
+          <span>
+            Note: codebase indexing must finish before you can run this!
+
+          </span>
+        </>
       ),
       examples: [
         "What does my codebase do",
-        "Where should I start to implement a feature about X",
+        "How to implement a feature new-feature",
       ],
     },
     {
@@ -262,7 +273,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
         <p>
           Lastly, press{" "}
           <b>
-            <kbd>{getMetaKeyAndShortcutLabel()}</kbd>+<kbd>E</kbd>
+            <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>&nbsp;<kbd className="font-mono">E</kbd> 
           </b>{" "}
           to toggle <b>PearAI Inventory</b>, and try out{" "}
           <strong>Creator</strong> and <strong>Search</strong> directly in
@@ -420,8 +431,11 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                 {hasExamples && (
                   <ExamplesSection>
                     <ExamplesHeader>
-                      <Lightbulb size={13} />
-                      <span>Try these examples</span>
+                      <Lightbulb size={13} strokeWidth={3} />
+                      <div className="flex items-center gap-1">
+                        <h3 className="text-sm font-normal">Try these example prompts</h3>
+                        <h3 className="text-sm font-normal"> - (click to copy)</h3>
+                      </div>
                     </ExamplesHeader>
                     <div className="flex flex-wrap gap-1">
                       {currentPageData.examples.map((example) => (
@@ -440,28 +454,36 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             </div>
           </div>
         </div>
-        <div className="pl-1 justify-end items-center gap-2 inline-flex">
+        <CardFooter className="flex items-center justify-between pt-6 select-none">
           <Button
-            size="icon"
+            variant="ghost"
+            size="sm"
+            className="text-primary"
             onClick={prevPage}
             disabled={currentPage === 0}
-            className="h-6 w-6"
           >
-            <ChevronLeft color="background" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            <span>Previous</span>
           </Button>
-          <span className="text-xs">
-            {currentPage + 1} / {pages.length}
-          </span>
+          <motion.div
+            key={currentPage}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-sm text-white/70"
+          >
+            {currentPage + 1} / {totalPages}
+          </motion.div>
           <Button
-            size="icon"
+            variant="default"
+            size="sm"
+            className="bg-button"
             onClick={nextPage}
-            disabled={currentPage === pages.length - 1}
-            className="h-6 w-6"
+            disabled={currentPage === totalPages - 1}
           >
-            <ChevronRight color="background" />
+            <span className="mr-2">Next</span>
+            <ArrowRight className="h-4 w-4" />
           </Button>
-        </div>
-      </TutorialCardDiv>
+        </CardFooter>      </TutorialCardDiv>
     </TutorialCardBorder>
   );
 };
