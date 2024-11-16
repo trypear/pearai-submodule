@@ -10,7 +10,15 @@ import { IdeMessengerContext } from "@/context/IdeMessenger";
 import useHistory from "@/hooks/useHistory";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 import { getMetaKeyAndShortcutLabel } from "@/util";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, Lightbulb } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Lightbulb,
+  X,
+} from "lucide-react";
 import React, {
   useCallback,
   useContext,
@@ -69,6 +77,7 @@ const TutorialCardDiv = styled.div`
   border-radius: 8px;
   margin: 1rem;
   width: 100%;
+  min-width: 300px;
   position: relative;
   max-height: 30rem;
   height: 24rem;
@@ -76,12 +85,11 @@ const TutorialCardDiv = styled.div`
     0 8px 16px rgba(0, 0, 0, 0.2),
     0 4px 4px rgba(0, 0, 0, 0.15),
     0 0 1px rgba(255, 255, 255, 0.1) inset;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 `;
 
-const ContentWrapper = styled(motion.div) <{ direction: "left" | "right" }>`
+const ContentWrapper = styled(motion.div)<{ direction: "left" | "right" }>`
   opacity: 0;
   margin-top: 0.5rem;
   border-top: 1px solid ${vscInputBorderFocus};
@@ -115,6 +123,10 @@ const ExamplesHeader = styled.div`
   display: flex;
   align-items: center;
   gap: 0.2rem;
+`;
+
+const Footer = styled(CardFooter)`
+  // Add any additional styling for the footer if needed
 `;
 
 const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
@@ -177,8 +189,8 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       description: (
         <>
           <p>
-            Ask a question about the code you just highlighted and added to the chat
-            below!
+            Ask a question about the code you just highlighted and added to the
+            chat below!
           </p>
           <DelayedMessage
             message="Press the right arrow below for the next step."
@@ -197,10 +209,11 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       ),
       description: (
         <p>
-          Now let's try inline editing. First
-          select a function you want to edit, and then press shortcut key {" "} 
+          Now let's try inline editing. First select a function you want to
+          edit, and then press shortcut key{" "}
           <b>
-            <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd> &nbsp;
+            <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>{" "}
+            &nbsp;
             <kbd className="font-mono">I</kbd>
           </b>
           &nbsp; and then you can type the prompt to edit the code.
@@ -222,7 +235,8 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             <li>
               <b>
                 accept all changes with{" "}
-                <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>&nbsp;
+                <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
+                &nbsp;
                 <kbd className="font-mono">SHIFT</kbd>&nbsp;
                 <kbd className="font-mono">ENTER</kbd>&nbsp;
               </b>
@@ -231,7 +245,8 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
               or{" "}
               <b>
                 reject all changes with{" "}
-                <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>&nbsp;
+                <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
+                &nbsp;
                 <kbd className="font-mono">SHIFT</kbd>&nbsp;
                 <kbd className="font-mono">BACKSPACE</kbd>&nbsp;
               </b>
@@ -250,15 +265,15 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       description: (
         <>
           <p>
-            Almost done! Try asking anything about your entire codebase by
-            prompting then pressing{" "}
+            Try asking anything about your entire codebase by prompting then
+            pressing{" "}
             <b>
-              <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>&nbsp;<kbd className="font-mono">ENTER</kbd>  
+              <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
+              &nbsp;<kbd className="font-mono">ENTER</kbd>
             </b>
           </p>
           <span>
             Note: codebase indexing must finish before you can run this!
-
           </span>
         </>
       ),
@@ -270,19 +285,23 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
     {
       title: <h3>Toggle PearAI Inventory</h3>,
       description: (
-        <p>
-          Lastly, press{" "}
-          <b>
-            <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>&nbsp;<kbd className="font-mono">E</kbd> 
-          </b>{" "}
-          to toggle <b>PearAI Inventory</b>, and try out{" "}
-          <strong>Creator</strong> and <strong>Search</strong> directly in
-          there! <br />
-          <br />
-          Enjoy PearAI! If you have questions, feel free to ask us in our{" "}
-          <a href="https://discord.gg/7QMraJUsQt">Discord</a>, or through{" "}
-          <a href="mailto:pear@trypear.ai">email</a>.
-        </p>
+        <>
+          <p>
+            Lastly, press{" "}
+            <b>
+              <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
+              &nbsp;<kbd className="font-mono">E</kbd>
+            </b>{" "}
+            to toggle <b>PearAI Inventory</b>, and try out{" "}
+            <strong>Creator</strong> and <strong>Search</strong> directly in
+            there! <br />
+            <br />
+            If you have questions, feel free to ask us in our{" "}
+            <a href="https://discord.gg/7QMraJUsQt">Discord</a>, or through{" "}
+            <a href="mailto:pear@trypear.ai">email</a>.
+          </p>
+          Enjoy PearAI!
+        </>
       ),
     },
   ];
@@ -395,15 +414,15 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
         <div className="mb-3">
           <div
             onClick={onClose}
-            className="absolute underline top-2 right-2 p-1 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-full cursor-pointer shadow-sm"
+            className="absolute underline top-2 rounded-full right-2 p-1 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 rounded-full cursor-pointer shadow-sm"
             role="button"
             aria-label="Close"
           >
-            Close
+            <X className="h-4 w-4" />
           </div>
           <div className="flex flex-col justify-between mt-1">
             <div>
-              <h2 className="text-xl font-semibold tracking-tight mb-0">
+              <h2 className="text-lg font-semibold tracking-tight mb-0">
                 Learn how to use PearAI chat
               </h2>
 
@@ -431,10 +450,11 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                 {hasExamples && (
                   <ExamplesSection>
                     <ExamplesHeader>
-                      <Lightbulb size={13} strokeWidth={3} />
-                      <div className="flex items-center gap-1">
-                        <h3 className="text-sm font-normal">Try these example prompts</h3>
-                        <h3 className="text-sm font-normal"> - (click to copy)</h3>
+                      <Lightbulb size={13} />
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-medium">
+                          Try these examples
+                        </h3>
                       </div>
                     </ExamplesHeader>
                     <div className="flex flex-wrap gap-1">
@@ -477,13 +497,19 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             variant="default"
             size="sm"
             className="bg-button"
-            onClick={nextPage}
-            disabled={currentPage === totalPages - 1}
+            onClick={currentPage === totalPages - 1 ? onClose : nextPage}
           >
-            <span className="mr-2">Next</span>
-            <ArrowRight className="h-4 w-4" />
+            <span className="mr-2">
+              {currentPage === totalPages - 1 ? "Finish" : "Next"}
+            </span>
+            {currentPage === totalPages - 1 ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <ArrowRight className="h-4 w-4" />
+            )}
           </Button>
-        </CardFooter>      </TutorialCardDiv>
+        </CardFooter>{" "}
+      </TutorialCardDiv>
     </TutorialCardBorder>
   );
 };
