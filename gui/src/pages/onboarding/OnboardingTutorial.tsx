@@ -16,6 +16,7 @@ import {
   Check,
   ChevronLeft,
   ChevronRight,
+  Copy,
   Lightbulb,
   X,
 } from "lucide-react";
@@ -141,9 +142,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
   const ideMessenger = useContext(IdeMessengerContext);
   const dispatch = useDispatch();
   const { saveSession } = useHistory(dispatch, "continue");
-  const [noCodeSelectedMsg, setNoCodeSelectedMsg] = useState<string | null>(
-    null,
-  );
+  const [noCodeSelectedMsg, setNoCodeSelectedMsg] = useState<boolean>(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const pages = [
@@ -178,8 +177,8 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             to open a sample file
           </span>
           {noCodeSelectedMsg && (
-            <div className="bg-yellow-200 text-yellow-800 p-2 rounded mb-2">
-              {noCodeSelectedMsg}
+            <div className="mt-3 bg-input p-2 rounded mb-2">
+              {"⚠️ Hey, seems you pressed the shortcut but did not select any code. try again by selecting some code."}
             </div>
           )}
         </p>
@@ -339,7 +338,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
     "highlightedCode",
     async (data) => {
       if (!data.rangeInFileWithContents.contents) {
-        setNoCodeSelectedMsg("Hey, seems you have not selected any code.");
+        setNoCodeSelectedMsg(true);
         return;
       }
       if (currentPage === 0) {
@@ -453,7 +452,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                       <Lightbulb size={13} />
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm font-medium">
-                          Try these examples
+                          Try these examples prompts
                         </h3>
                       </div>
                     </ExamplesHeader>
