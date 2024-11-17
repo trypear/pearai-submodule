@@ -80,7 +80,6 @@ const TutorialCardDiv = styled.div`
   min-width: 250px;
   position: relative;
   max-height: 30rem;
-  height: 24rem;
   box-shadow:
     0 8px 16px rgba(0, 0, 0, 0.2),
     0 4px 4px rgba(0, 0, 0, 0.15),
