@@ -101,6 +101,19 @@ async function addHighlightedCodeToContext(
   if (editor) {
     const selection = editor.selection;
     if (selection.isEmpty) {
+      const rangeInFileWithContents = {
+        filepath: editor.document.uri.fsPath,
+        contents: "",
+        range: {
+          start: { line: 0, character: 0, },
+          end: { line: 0, character: 0, },
+        },
+      };
+
+      webviewProtocol?.request("highlightedCode", {
+        rangeInFileWithContents,
+      }, ["pearai.pearAIChatView"]);
+      
       return;
     }
     // adjust starting position to include indentation
