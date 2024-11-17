@@ -1,9 +1,32 @@
+import { providers } from "./configs/providers";
+
 interface OpenRouterModel {
   description: any;
   context_length: any;
   id: string;
   name: string;
 }
+
+export const loadOpenRouterPackages = async () => {
+  try {
+    const models = await fetchOpenRouterModels();
+
+    providers.openrouter.packages = models
+      .map((model) => ({
+        title: model.name,
+        description: model.description,
+        params: {
+          model: model.id,
+          contextLength: model.context_length,
+        },
+        isOpenSource: false,
+      }))
+      .sort((a, b) => a.title.localeCompare(b.title));
+  } catch (error) {
+    console.error("Error fetching OpenRouter models:", error);
+    providers.openrouter.packages = [];
+  }
+};
 
 export async function fetchOpenRouterModels(): Promise<OpenRouterModel[]> {
   try {
