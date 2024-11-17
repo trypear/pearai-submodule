@@ -49,8 +49,7 @@ const gradient = keyframes`
 const TutorialCardBorder = styled.div`
   border-radius: 8px;
   width: 100%;
-  margin-left: 2rem;
-  margin-right: 2rem;
+  margin: 0 1rem;
   background: repeating-linear-gradient(
     101.79deg,
     #4da587 0%,
@@ -78,7 +77,7 @@ const TutorialCardDiv = styled.div`
   border-radius: 8px;
   margin: 1rem;
   width: 100%;
-  min-width: 400px;
+  min-width: 250px;
   position: relative;
   max-height: 30rem;
   height: 24rem;
@@ -460,7 +459,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             </div>
           </div>
         </div>
-        <CardFooter className="flex items-center justify-between pt-6 select-none">
+        <CardFooter className="flex items-center justify-between pt-3 select-none">
           <Button
             variant="ghost"
             size="sm"
