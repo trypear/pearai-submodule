@@ -515,6 +515,9 @@ const TipTapEditor = memo(function TipTapEditor({
           const { schema } = view.state;
           let pos = view.state.selection.from;
   
+          // Delete the selected text before inserting new text
+          tr.delete(view.state.selection.from, view.state.selection.to);
+
           lines.forEach((line, index) => {
             if (index > 0) {
               tr.insert(pos++, schema.nodes.hardBreak.create());
