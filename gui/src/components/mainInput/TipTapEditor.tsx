@@ -61,7 +61,7 @@ import ActiveFileIndicator from "./ActiveFileIndicator";
 import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 import TopBar from "./TopBarIndicators";
 import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
-
+import HardBreak from '@tiptap/extension-hard-break';
 
 const InputBoxDiv = styled.div`
   resize: none;
@@ -295,7 +295,7 @@ const TipTapEditor = memo(function TipTapEditor({
     } else {
       ideMessenger.post("errorPopup", {
         message:
-          "Images need to be in jpg, gif, svg, webp, or png format and less than 10MB in size.",
+          "Images need to be in jpg or png format and less than 10MB in size.",
       });
     }
     return undefined;
@@ -358,8 +358,7 @@ const TipTapEditor = memo(function TipTapEditor({
                           const node = schema.nodes.image.create({
                             src: dataUrl,
                           });
-                          const pos = view.state.selection.from;
-                          const tr = view.state.tr.insert(pos, node);
+                          const tr = view.state.tr.insert(0, node);
                           view.dispatch(tr);
                         });
                       }
@@ -465,6 +464,7 @@ const TipTapEditor = memo(function TipTapEditor({
         },
       }),
       Text,
+      HardBreak,
       Mention.configure({
         HTMLAttributes: {
           class: "mention",
@@ -503,18 +503,26 @@ const TipTapEditor = memo(function TipTapEditor({
         class: "outline-none -mt-1 mb-1 overflow-hidden",
         style: `font-size: ${getFontSize()}px;`,
       },
-      handlePaste: (view, event) => {
-        // If it's not an image paste, handle as plain text
+      handlePaste(view, event) {
         const items = event.clipboardData.items;
-        const hasImageItem = Array.from(items).some(
-          item => item.type.startsWith('image/')
-        );
+        const hasImageItem = Array.from(items).some(item => item.type.startsWith('image/'));
         
         if (!hasImageItem) {
           event.preventDefault();
           const text = event.clipboardData.getData('text/plain');
+          const lines = text.split(/\r?\n/);
           const { tr } = view.state;
-          tr.insertText(text);
+          const { schema } = view.state;
+          let pos = view.state.selection.from;
+  
+          lines.forEach((line, index) => {
+            if (index > 0) {
+              tr.insert(pos++, schema.nodes.hardBreak.create());
+            }
+            tr.insertText(line, pos);
+            pos += line.length;
+          });
+  
           view.dispatch(tr);
           return true;
         }
