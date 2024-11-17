@@ -10,6 +10,7 @@ import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { isJetBrains } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "./CopyButton";
+import { isPerplexityMode } from '../../util/bareChatMode';
 
 const TopDiv = styled.div`
   position: sticky;
@@ -79,7 +80,16 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
   return (
     <TopDiv>
       <SecondDiv bottom={props.bottom || false}>
-        {isJetBrains() || (
+        {isPerplexityMode() && <HeaderButtonWithText
+          text="Add to PearAI chat context"
+          style={{ backgroundColor: vscEditorBackground }}
+          onClick={() => {
+            ideMessenger.post("addPerplexityContext", { text: props.text, language: props.language });
+          }}
+        >
+          <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+        </HeaderButtonWithText>}
+        {isJetBrains() || !isPerplexityMode() && (
           <HeaderButtonWithText
             text={
               isTerminalCodeBlock(props.language, props.text)
@@ -89,7 +99,6 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
                   : "Apply to current file"
             }
             disabled={applying}
-            style={{ backgroundColor: vscEditorBackground }}
             onClick={() => {
               if (isTerminalCodeBlock(props.language, props.text)) {
                 let text = props.text;
@@ -115,15 +124,14 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
             )}
           </HeaderButtonWithText>
         )}
-        <HeaderButtonWithText
+        {!isPerplexityMode() && <HeaderButtonWithText
           text="Insert at cursor"
-          style={{ backgroundColor: vscEditorBackground }}
           onClick={() => {
             ideMessenger.post("insertAtCursor", { text: props.text });
           }}
         >
           <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-        </HeaderButtonWithText>
+        </HeaderButtonWithText>}
         <CopyButton text={props.text} />
       </SecondDiv>
     </TopDiv>

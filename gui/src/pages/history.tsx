@@ -7,7 +7,7 @@ import { SessionInfo } from "core";
 import MiniSearch from "minisearch";
 import React, { Fragment, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   defaultBorderRadius,
@@ -86,13 +86,17 @@ function TableRow({
   session,
   date,
   onDelete,
+  isSelected,
 }: {
   session: SessionInfo;
   date: Date;
   onDelete: (sessionId: string) => void;
+  isSelected: boolean;
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location?.state?.from; // indicates where the user came from, todo: use with navigate below
   const apiUrl = window.serverUrl;
   const workspacePaths = window.workspacePaths || [""];
   const [hovered, setHovered] = useState(false);
@@ -123,6 +127,7 @@ function TableRow({
     <td
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      style={isSelected ? { backgroundColor: vscInputBackground } : {}}
     >
       <div className="flex justify-between items-center w-full">
         <TdDiv
@@ -130,7 +135,7 @@ function TableRow({
             // Save current session
             saveSession();
             await loadSession(session.sessionId);
-            navigate("/");
+            navigate("/");  //todo: use from variable to determine where to go back to, currently history only enabled for continue
           }}
         >
           <div className="text-md w-100">
@@ -200,7 +205,8 @@ function lastPartOfPath(path: string): string {
 function History() {
   useNavigationListener();
   const navigate = useNavigate();
-
+  const location = useLocation();
+  const from = location?.state?.from === '/' ? 'continue' : location?.state?.from; // indicates where the user came from
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
   const [filteredAndSortedSessions, setFilteredAndSortedSessions] = useState<
     SessionInfo[]
@@ -219,7 +225,7 @@ function History() {
   const [headerHeight, setHeaderHeight] = useState(0);
 
   const dispatch = useDispatch();
-  const { getHistory } = useHistory(dispatch);
+  const { getHistory, loadSession, saveSession } = useHistory(dispatch);
 
   const [minisearch, setMinisearch] = useState<
     MiniSearch<{ title: string; sessionId: string }>
@@ -230,6 +236,47 @@ function History() {
     }),
   );
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(-1);
+  const tableRef = React.useRef<HTMLDivElement>(null);
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const newIndex = Math.min(selectedIndex + 1, filteredAndSortedSessions.length - 1);
+      setSelectedIndex(newIndex);
+      scrollSelectedIntoView(newIndex);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const newIndex = Math.max(selectedIndex - 1, 0);
+      setSelectedIndex(newIndex);
+      scrollSelectedIntoView(newIndex);
+    } else if (e.key === "Enter" && selectedIndex !== -1) {
+      e.preventDefault();
+      const selectedSession = filteredAndSortedSessions[selectedIndex];
+      saveSession();
+      loadSession(selectedSession.sessionId);
+      navigate("/");
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedIndex, filteredAndSortedSessions]);
+
+  const scrollSelectedIntoView = (index: number) => {
+    if (tableRef.current) {
+      const rows = tableRef.current.querySelectorAll('tr');
+      if (rows[index]) {
+        rows[index].scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    }
+  };
 
   useEffect(() => {
     const fetchSessions = async () => {
@@ -265,6 +312,16 @@ function History() {
           }
           return workspacePaths.includes(session.workspaceDirectory);
         })
+        // Filter by session type
+        .filter((session) => {
+          if (typeof from === "undefined") {
+            return true;
+          }
+          if (!session.integrationType) {
+            return true;  // older history with no integration type
+          }
+          return session.integrationType === from;
+        })
         // Filter by search term
         .filter((session) => {
           return searchTerm === "" || sessionIds.includes(session.sessionId);
@@ -287,7 +344,12 @@ function History() {
   const earlier = new Date(0);
 
   return (
-    <div className="overflow-y-scroll" style={{ fontSize: getFontSize() }}>
+    <div
+      className="overflow-y-scroll"
+      style={{ fontSize: getFontSize() }}
+      tabIndex={0}
+      ref={tableRef}
+    >
       <div
         ref={stickyHistoryHeaderRef}
         className="sticky top-0"
@@ -332,7 +394,8 @@ function History() {
           </div>
         )}
 
-        <table className="w-full border-spacing-0 border-collapse">
+        <table className="w-full border-spacing-0 border-collapse"
+        >
           <tbody>
             {filteredAndSortedSessions.map((session, index) => {
               const prevDate =
@@ -362,11 +425,14 @@ function History() {
                       </SectionHeader>
                     )}
 
-                  <Tr key={index}>
+                  <Tr
+                    key={index}
+                  >
                     <TableRow
                       session={session}
                       date={date}
                       onDelete={() => deleteSessionInUI(session.sessionId)}
+                      isSelected={index === selectedIndex}
                     ></TableRow>
                   </Tr>
                 </Fragment>

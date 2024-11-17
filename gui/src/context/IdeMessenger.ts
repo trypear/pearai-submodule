@@ -150,10 +150,12 @@ export class IdeMessenger implements IIdeMessenger {
     let index = 0;
     let done = false;
     let returnVal = undefined;
+    let citations = [];
 
     const handler = (event: { data: Message }) => {
       if (event.data.messageId === messageId) {
         const responseData = event.data.data;
+        citations = responseData?.citations;
         if (responseData.done) {
           window.removeEventListener("message", handler);
           done = true;
@@ -173,7 +175,7 @@ export class IdeMessenger implements IIdeMessenger {
       if (buffer.length > index) {
         const chunk = buffer.slice(index);
         index = buffer.length;
-        yield chunk;
+        yield {content: chunk, citations};
       }
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
@@ -181,7 +183,7 @@ export class IdeMessenger implements IIdeMessenger {
     if (buffer.length > index) {
       const chunk = buffer.slice(index);
       index = buffer.length;
-      yield chunk;
+      yield {content: chunk, citations};
     }
 
     return returnVal;
@@ -205,7 +207,7 @@ export class IdeMessenger implements IIdeMessenger {
 
     let next = await gen.next();
     while (!next.done) {
-      yield { role: "user", content: next.value };
+      yield { role: "user", content: next.value.content, citations: next.value.citations };
       next = await gen.next();
     }
 

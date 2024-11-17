@@ -1,9 +1,9 @@
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { IndexingProgressUpdate } from "core";
-import { useContext, useEffect, useState, useRef } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import styled from "styled-components";
+import styled, { createGlobalStyle } from "styled-components";
 import {
   CustomScrollbarDiv,
   defaultBorderRadius,
@@ -40,6 +40,13 @@ const isWindows = platform.includes("win");
 // #region Styled Components
 const HEADER_HEIGHT = "1.55rem";
 const FOOTER_HEIGHT = "1.8em";
+
+const GlobalStyle = createGlobalStyle`
+  :root {
+    --overlay-border-radius: 12px;
+    --overlay-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  }
+`;
 
 const BottomMessageDiv = styled.div<{ displayOnBottom: boolean }>`
   position: fixed;
@@ -88,10 +95,17 @@ const Header = styled.header`
   overflow: hidden;
 `;
 
-const GridDiv = styled.div<{ showHeader: boolean }>`
+const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean, path: string}>`
   display: grid;
-  grid-template-rows: ${(props) =>
-    props.showHeader ? "auto 1fr auto" : "1fr auto"};
+  grid-template-rows: ${(props) => {
+    if (props.showHeader && props.showTutorial && props.path !== "/onboarding") {
+      return "auto auto 1fr auto";
+    } else if (props.showHeader || (props.showTutorial && props.path !== "/onboarding")) {
+      return "auto 1fr auto";
+    } else {
+      return "1fr auto";
+    }
+  }};
   min-height: 100vh;
   overflow-x: visible;
 `;
@@ -112,12 +126,31 @@ const ProfileDropdownPortalDiv = styled.div`
   font-size: ${getFontSize() - 2};
 `;
 
+const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
+  ${props => props.isPearOverlay && `
+    width: 100%;
+    height: 100%;
+    border-radius: var(--overlay-border-radius, 12px);
+    box-shadow: ${props.path === "/inventory/home" ? "none" : "var(--overlay-box-shadow, 0 8px 24px rgba(0, 0, 0, 0.25))"};
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
+  `}
+`;
+
+
 // #endregion
 
 const HIDE_FOOTER_ON_PAGES = [
   "/onboarding",
   "/localOnboarding",
   "/apiKeyOnboarding",
+  "/aiderMode",
+  "/inventory",
+  "/inventory/aiderMode",
+  "/inventory/perplexityMode",
+  "/welcome"
 ];
 
 const SHOW_SHORTCUTS_ON_PAGES = ["/"];
@@ -144,6 +177,8 @@ const Layout = () => {
   const displayBottomMessageOnBottom = useSelector(
     (state: RootState) => state.uiState.displayBottomMessageOnBottom,
   );
+
+  const showInteractiveContinueTutorial = useSelector((state: RootState) => state.state.showInteractiveContinueTutorial);
 
   const timeline = useSelector((state: RootState) => state.state.history);
 
@@ -188,7 +223,7 @@ const Layout = () => {
       if (location.pathname === "/history") {
         navigate("/");
       } else {
-        navigate("/history");
+        navigate("/history", { state: { from: location.pathname } });
       }
     },
     [location, navigate],
@@ -238,14 +273,15 @@ const Layout = () => {
     [navigate],
   );
 
-  useEffect(() => {
-    if (
-      shouldBeginOnboarding() &&
-      (location.pathname === "/" || location.pathname === "/index.html")
-    ) {
-      navigate("/onboarding");
-    }
-  }, [location]);
+  // login and onboarding happens from overlay now.
+  // useEffect(() => {
+  //   if (
+  //     shouldBeginOnboarding() &&
+  //     (location.pathname === "/" || location.pathname === "/index.html")
+  //   ) {
+  //     navigate("/onboarding");
+  //   }
+  // }, [location]);
 
   const [indexingState, setIndexingState] = useState<IndexingProgressUpdate>({
     desc: "Loading indexing config",
@@ -253,91 +289,100 @@ const Layout = () => {
     status: "loading",
   });
 
+  if (window.isPearOverlay) {
+    return <OverlayContainer isPearOverlay={window.isPearOverlay} path={location.pathname}>
+            <GlobalStyle/>
+            <Outlet />
+          </OverlayContainer>;
+  }
+
   return (
-    <div>
-      <div
-        style={{
-          backgroundColor: vscBackground,
-          scrollbarGutter: "stable both-edges",
-          minHeight: "100%",
-          display: "grid",
-          gridTemplateRows: "1fr auto",
-        }}
-      >
-        <TextDialog
-          showDialog={showDialog}
-          onEnter={() => {
-            dispatch(setShowDialog(false));
+      <div className="w-full h-full">
+        <div
+          style={{
+            backgroundColor: vscBackground,
+            scrollbarGutter: "stable both-edges",
+            minHeight: "100%",
+            display: "grid",
+            gridTemplateRows: "1fr auto",
           }}
-          onClose={() => {
-            dispatch(setShowDialog(false));
-          }}
-          message={dialogMessage}
+        >
+          <TextDialog
+            showDialog={showDialog}
+            onEnter={() => {
+              dispatch(setShowDialog(false));
+            }}
+            onClose={() => {
+              dispatch(setShowDialog(false));
+            }}
+            message={dialogMessage}
+          />
+
+          <GridDiv
+            showHeader={SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
+            showTutorial={!!showInteractiveContinueTutorial}
+            path={location.pathname}
+          >
+            {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && (
+              <Header>
+                <ShortcutContainer />
+              </Header>
+            )}
+            <PostHogPageView />
+            <Outlet />
+            <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
+            <ProfileDropdownPortalDiv id="profile-select-top-div"></ProfileDropdownPortalDiv>
+            {HIDE_FOOTER_ON_PAGES.includes(location.pathname) || (
+              <Footer>
+                <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
+                  {indexingState.status !== "indexing" && // Would take up too much space together with indexing progress
+                    defaultModel?.provider === "free-trial" && (
+                      <ProgressBar
+                        completed={parseInt(localStorage.getItem("ftc") || "0")}
+                        total={FREE_TRIAL_LIMIT_REQUESTS}
+                      />
+                    )}
+                  <IndexingProgressBar indexingState={indexingState} />
+                </div>
+
+                <ProfileSwitcher />
+                <HeaderButtonWithText
+                  tooltipPlacement="top-end"
+                  text="Help"
+                  onClick={() => {
+                    if (location.pathname === "/help") {
+                      navigate("/");
+                    } else {
+                      navigate("/help");
+                    }
+                  }}
+                >
+                  <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
+                </HeaderButtonWithText>
+              </Footer>
+            )}
+          </GridDiv>
+
+          <BottomMessageDiv
+            displayOnBottom={displayBottomMessageOnBottom}
+            onMouseEnter={() => {
+              dispatch(setBottomMessageCloseTimeout(undefined));
+            }}
+            onMouseLeave={(e) => {
+              if (!e.buttons) {
+                dispatch(setBottomMessage(undefined));
+              }
+            }}
+            hidden={!bottomMessage}
+          >
+            {bottomMessage}
+          </BottomMessageDiv>
+        </div>
+        <div
+          style={{ fontSize: `${getFontSize() - 4}px` }}
+          id="tooltip-portal-div"
         />
-
-        <GridDiv
-          showHeader={SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
-        >
-          {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && (
-            <Header>
-              <ShortcutContainer />
-            </Header>
-          )}
-          <PostHogPageView />
-          <Outlet />
-          <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
-          <ProfileDropdownPortalDiv id="profile-select-top-div"></ProfileDropdownPortalDiv>
-          {HIDE_FOOTER_ON_PAGES.includes(location.pathname) || (
-            <Footer>
-              <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
-                {indexingState.status !== "indexing" && // Would take up too much space together with indexing progress
-                  defaultModel?.provider === "free-trial" && (
-                    <ProgressBar
-                      completed={parseInt(localStorage.getItem("ftc") || "0")}
-                      total={FREE_TRIAL_LIMIT_REQUESTS}
-                    />
-                  )}
-                <IndexingProgressBar indexingState={indexingState} />
-              </div>
-
-              <ProfileSwitcher />
-              <HeaderButtonWithText
-                tooltipPlacement="top-end"
-                text="Help"
-                onClick={() => {
-                  if (location.pathname === "/help") {
-                    navigate("/");
-                  } else {
-                    navigate("/help");
-                  }
-                }}
-              >
-                <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
-              </HeaderButtonWithText>
-            </Footer>
-          )}
-        </GridDiv>
-
-        <BottomMessageDiv
-          displayOnBottom={displayBottomMessageOnBottom}
-          onMouseEnter={() => {
-            dispatch(setBottomMessageCloseTimeout(undefined));
-          }}
-          onMouseLeave={(e) => {
-            if (!e.buttons) {
-              dispatch(setBottomMessage(undefined));
-            }
-          }}
-          hidden={!bottomMessage}
-        >
-          {bottomMessage}
-        </BottomMessageDiv>
       </div>
-      <div
-        style={{ fontSize: `${getFontSize() - 4}px` }}
-        id="tooltip-portal-div"
-      />
-    </div>
   );
 };
 

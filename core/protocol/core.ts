@@ -93,7 +93,9 @@ export type ToCoreFromIdeOrWebviewProtocol = {
     },
     string,
   ];
-  "llm/resetPearAICredentials": [undefined | string, void];
+  "llm/setPearAICredentials": [{ accessToken?: string; refreshToken?: string }, void];
+  "llm/startAiderProcess": [undefined, void];
+  "llm/killAiderProcess": [undefined, void];
   "llm/listModels": [{ title: string }, string[] | undefined];
   "llm/streamComplete": [
     {
@@ -131,7 +133,10 @@ export type ToCoreFromIdeOrWebviewProtocol = {
     { model: string; promptTokens: number; generatedTokens: number }[],
   ];
   "index/setPaused": [boolean, void];
-  "index/forceReIndex": [undefined | string, void];
+  "index/forceReIndex": [
+    undefined | { dir?: string; shouldClearIndexes?: boolean },
+    void,
+  ];
   "index/indexingProgressBarInitialized": [undefined, void];
   completeOnboarding: [
     {

@@ -1,8 +1,6 @@
 import {
   ArrowLeftIcon,
   ChatBubbleOvalLeftIcon,
-  CodeBracketSquareIcon,
-  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
@@ -42,12 +40,8 @@ import {
   deleteMessage,
   newSession,
   setInactive,
+  setShowInteractiveContinueTutorial,
 } from "../redux/slices/stateSlice";
-import {
-  setDialogEntryOn,
-  setDialogMessage,
-  setShowDialog,
-} from "../redux/slices/uiStateSlice";
 import { RootState } from "../redux/store";
 import {
   getFontSize,
@@ -57,21 +51,20 @@ import {
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
+import OnboardingTutorial from "./onboarding/OnboardingTutorial";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 
-const TopGuiDiv = styled.div`
+export const TopGuiDiv = styled.div`
   overflow-y: scroll;
-
   scrollbar-width: none; /* Firefox */
-
   /* Hide scrollbar for Chrome, Safari and Opera */
   &::-webkit-scrollbar {
     display: none;
   }
-
   height: 100%;
 `;
 
-const StopButton = styled.div`
+export const StopButton = styled.div`
   width: fit-content;
   margin-right: auto;
   margin-left: auto;
@@ -88,7 +81,7 @@ const StopButton = styled.div`
   cursor: pointer;
 `;
 
-const StepsDiv = styled.div`
+export const StepsDiv = styled.div`
   padding-bottom: 8px;
   position: relative;
   background-color: transparent;
@@ -96,17 +89,6 @@ const StepsDiv = styled.div`
   & > * {
     position: relative;
   }
-
-  // Gray, vertical line on the left ("thread")
-  // &::before {
-  //   content: "";
-  //   position: absolute;
-  //   height: calc(100% - 12px);
-  //   border-left: 2px solid ${lightGray};
-  //   left: 28px;
-  //   z-index: 0;
-  //   bottom: 12px;
-  // }
 
   .thread-message {
     margin: 16px 8px 0 8px;
@@ -116,7 +98,7 @@ const StepsDiv = styled.div`
   }
 `;
 
-const NewSessionButton = styled.div`
+export const NewSessionButton = styled.div`
   width: fit-content;
   margin-right: auto;
   margin-left: 6px;
@@ -136,41 +118,17 @@ const NewSessionButton = styled.div`
   cursor: pointer;
 `;
 
-const ThreadHead = styled.div`
+const TutorialCardDiv = styled.header`
+  position: sticky;
+  top: 0px;
+  z-index: 500;
+  background-color: ${vscBackground}ee; // Added 'ee' for slight transparency
   display: flex;
-  align-items: center;
-  gap: 6px;
-  margin: 18px 6px 0 6px;
-`;
 
-const THREAD_AVATAR_SIZE = 15;
+  width: 100%;
+`
 
-const ThreadAvatar = styled.div`
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: rgba(248, 248, 248, 0.75);
-  color: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(136, 136, 136, 0.3);
-`;
-
-const ThreadUserTitle = styled.div`
-  text-transform: capitalize;
-  font-weight: 500;
-  margin-bottom: 2px;
-`;
-
-const ThreadUserName = styled.div`
-  font-size: ${getFontSize() - 3}px;
-  color: ${lightGray};
-`;
-
-function fallbackRender({ error, resetErrorBoundary }) {
-  // Call resetErrorBoundary() to reset the error boundary and retry the render.
-
+export function fallbackRender({ error, resetErrorBoundary }) {
   return (
     <div
       role="alert"
@@ -194,32 +152,30 @@ function GUI() {
   const ideMessenger = useContext(IdeMessengerContext);
 
   const sessionState = useSelector((state: RootState) => state.state);
-
   const defaultModel = useSelector(defaultModelSelector);
-
   const active = useSelector((state: RootState) => state.state.active);
-
   const [stepsOpen, setStepsOpen] = useState<(boolean | undefined)[]>([]);
+  // If getting this from redux state, it is false. So need to get from localStorage directly.
+  // This is likely because it becomes true only after user onboards, upon which the local storage is updated.
+  // On first launch, showTutorialCard will be null, so we want to show it (true)
+  // Once it's been shown and closed, it will be false in localStorage
+  const showTutorialCard = getLocalStorage("showTutorialCard") ?? (setLocalStorage("showTutorialCard", true), true);
+  useEffect(() => {
+    // Set the redux state to the updated localStorage value (true)
+    dispatch(setShowInteractiveContinueTutorial(showTutorialCard ?? false));
+  }, [])
+  const onCloseTutorialCard = useCallback(() => {
+      posthog.capture("closedTutorialCard");
+      setLocalStorage("showTutorialCard", false);
+      dispatch(setShowInteractiveContinueTutorial(false));
+  }, []);
 
   const mainTextInputRef = useRef<HTMLInputElement>(null);
   const topGuiDivRef = useRef<HTMLDivElement>(null);
-
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
-
   const state = useSelector((state: RootState) => state.state);
 
-  const [showTutorialCard, setShowTutorialCard] = useState<boolean>(
-    getLocalStorage("showTutorialCard"),
-  );
-
-  const onCloseTutorialCard = () => {
-    posthog.capture("closedTutorialCard");
-    setLocalStorage("showTutorialCard", false);
-    setShowTutorialCard(false);
-  };
-
   const handleScroll = () => {
-    // Temporary fix to account for additional height when code blocks are added
     const OFFSET_HERUISTIC = 300;
     if (!topGuiDivRef.current) return;
 
@@ -234,7 +190,6 @@ function GUI() {
     if (!active || !topGuiDivRef.current) return;
 
     const scrollAreaElement = topGuiDivRef.current;
-
     scrollAreaElement.scrollTop =
       scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
 
@@ -250,13 +205,12 @@ function GUI() {
     }, 1);
 
     return () => {
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
       window.removeEventListener("scroll", handleScroll);
     };
   }, [topGuiDivRef.current]);
 
   useEffect(() => {
-    // Cmd + Backspace to delete current step
     const listener = (e: any) => {
       if (
         e.key === "Backspace" &&
@@ -272,8 +226,6 @@ function GUI() {
       window.removeEventListener("keydown", listener);
     };
   }, [active]);
-
-  // #endregion
 
   const { streamResponse } = useChatHandler(dispatch, ideMessenger);
 
@@ -294,74 +246,11 @@ function GUI() {
         }
       }
 
-      streamResponse(editorState, modifiers, ideMessenger);
+      streamResponse(editorState, modifiers, ideMessenger, undefined, 'continue');
 
-      // Increment localstorage counter for popup
       const currentCount = getLocalStorage("mainTextEntryCounter");
       if (currentCount) {
         setLocalStorage("mainTextEntryCounter", currentCount + 1);
-        // if (currentCount === 300) {
-        //   dispatch(
-        //     setDialogMessage(
-        //       <div className="text-center p-4">
-        //         👋 Thanks for using PearAI. We are always trying to improve
-        //         and love hearing from users. If you're interested in speaking,
-        //         enter your name and email. We won't use this information for
-        //         anything other than reaching out.
-        //         <br />
-        //         <br />
-        //         <form
-        //           onSubmit={(e: any) => {
-        //             e.preventDefault();
-        //             posthog?.capture("user_interest_form", {
-        //               name: e.target.elements[0].value,
-        //               email: e.target.elements[1].value,
-        //             });
-        //             dispatch(
-        //               setDialogMessage(
-        //                 <div className="text-center p-4">
-        //                   Thanks! We'll be in touch soon.
-        //                 </div>,
-        //               ),
-        //             );
-        //           }}
-        //           style={{
-        //             display: "flex",
-        //             flexDirection: "column",
-        //             gap: "10px",
-        //           }}
-        //         >
-        //           <input
-        //             style={{ padding: "10px", borderRadius: "5px" }}
-        //             type="text"
-        //             name="name"
-        //             placeholder="Name"
-        //             required
-        //           />
-        //           <input
-        //             style={{ padding: "10px", borderRadius: "5px" }}
-        //             type="email"
-        //             name="email"
-        //             placeholder="Email"
-        //             required
-        //           />
-        //           <button
-        //             style={{
-        //               padding: "10px",
-        //               borderRadius: "5px",
-        //               cursor: "pointer",
-        //             }}
-        //             type="submit"
-        //           >
-        //             Submit
-        //           </button>
-        //         </form>
-        //       </div>,
-        //     ),
-        //   );
-        //   dispatch(setDialogEntryOn(false));
-        //   dispatch(setShowDialog(true));
-        // }
       } else {
         setLocalStorage("mainTextEntryCounter", 1);
       }
@@ -376,7 +265,7 @@ function GUI() {
   );
 
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
-    useHistory(dispatch);
+    useHistory(dispatch, 'continue');
 
   useWebviewListener(
     "newSession",
@@ -388,12 +277,36 @@ function GUI() {
   );
 
   useWebviewListener(
+    "setActiveFilePath",
+    async (data) => {
+      dispatch(setActiveFilePath(data));
+    },
+    []
+  );
+
+  useWebviewListener(
     "loadMostRecentChat",
     async () => {
       await loadMostRecentChat();
       mainTextInputRef.current?.focus?.();
     },
     [loadMostRecentChat],
+  );
+
+  useWebviewListener("restFirstLaunchInGUI", async () => {
+    setLocalStorage("showTutorialCard", true);
+    localStorage.removeItem("onboardingSelectedTools");
+    localStorage.removeItem("importUserSettingsFromVSCode");
+    dispatch(setShowInteractiveContinueTutorial(true));
+  });
+
+  useWebviewListener(
+    "showInteractiveContinueTutorial",
+    async () => {
+      setLocalStorage("showTutorialCard", true);
+      dispatch(setShowInteractiveContinueTutorial(true));
+    },
+    [],
   );
 
   const isLastUserInput = useCallback(
@@ -412,6 +325,11 @@ function GUI() {
 
   return (
     <>
+      {!window.isPearOverlay && !!showTutorialCard && 
+        <TutorialCardDiv >
+            <OnboardingTutorial onClose={onCloseTutorialCard}/>
+        </TutorialCardDiv>
+      }
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
           <StepsDiv>
@@ -421,7 +339,7 @@ function GUI() {
                   <ErrorBoundary
                     FallbackComponent={fallbackRender}
                     onReset={() => {
-                      dispatch(newSession());
+                      dispatch(newSession({session: undefined, source: 'continue'}));
                     }}
                   >
                     {item.message.role === "user" ? (
@@ -444,29 +362,14 @@ function GUI() {
                         <TimelineItem
                           item={item}
                           iconElement={
-                            false ? (
-                              <CodeBracketSquareIcon
-                                width="16px"
-                                height="16px"
-                              />
-                            ) : false ? (
-                              <ExclamationTriangleIcon
-                                width="16px"
-                                height="16px"
-                                color="red"
-                              />
-                            ) : (
-                              <ChatBubbleOvalLeftIcon
-                                width="16px"
-                                height="16px"
-                              />
-                            )
+                            <ChatBubbleOvalLeftIcon
+                              width="16px"
+                              height="16px"
+                            />
                           }
                           open={
                             typeof stepsOpen[index] === "undefined"
-                              ? false
-                                ? false
-                                : true
+                              ? true
                               : stepsOpen[index]!
                           }
                           onToggle={() => {}}
@@ -498,15 +401,19 @@ function GUI() {
                                 {
                                   messageType: "userInput",
                                   data: {
-                                    input:
-                                      "Keep going.",
+                                    input: "Keep going.",
                                   },
                                 },
                                 "*",
                               );
                             }}
                             onDelete={() => {
-                              dispatch(deleteMessage(index));
+                              dispatch(
+                                deleteMessage({
+                                  index: index,
+                                  source: "continue",
+                                }),
+                              );
                             }}
                             modelTitle={
                               item.promptLogs?.[0]?.completionOptions?.model ??
@@ -529,7 +436,6 @@ function GUI() {
             isMainInput={true}
             hidden={active}
           ></ContinueInputBox>
-
           {active ? (
             <>
               <br />
@@ -543,8 +449,9 @@ function GUI() {
                 }}
                 className="mr-auto"
               >
-                New Session ({getMetaKeyLabel()} {isJetBrains() ? "J" : "L"})
-              </NewSessionButton>{" "}
+                New Session
+                {` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
+              </NewSessionButton>
             </div>
           ) : (
             <>
@@ -561,16 +468,9 @@ function GUI() {
                   </NewSessionButton>
                 </div>
               ) : null}
-
-              {!!showTutorialCard && (
-                <div className="flex justify-center w-full">
-                  <TutorialCard onClose={onCloseTutorialCard} />
-                </div>
-              )}
             </>
           )}
         </div>
-
         <ChatScrollAnchor
           scrollAreaRef={topGuiDivRef}
           isAtBottom={isAtBottom}
@@ -586,7 +486,7 @@ function GUI() {
               state.history[state.history.length - 1]?.message.content
                 .length === 0
             ) {
-              dispatch(clearLastResponse());
+              dispatch(clearLastResponse("continue"));
             }
           }}
         >

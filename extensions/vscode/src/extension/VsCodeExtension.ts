@@ -16,7 +16,7 @@ import {
   StatusBarStatus,
 } from "../autocomplete/statusBar";
 import { registerAllCommands } from "../commands";
-import { ContinueGUIWebviewViewProvider } from "../ContinueGUIWebviewViewProvider";
+import { ContinueGUIWebviewViewProvider, PEAR_CONTINUE_VIEW_ID } from "../ContinueGUIWebviewViewProvider";
 import { registerDebugTracker } from "../debug/debug";
 import { DiffManager } from "../diff/horizontal";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
@@ -32,6 +32,7 @@ import { Battery } from "../util/battery";
 import { TabAutocompleteModel } from "../util/loadAutocompleteModel";
 import type { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { VsCodeMessenger } from "./VsCodeMessenger";
+import { startAiderProcess } from "../integrations/aider/aiderUtil";
 
 export class VsCodeExtension {
   // Currently some of these are public so they can be used in testing (test/test-suites)
@@ -77,16 +78,17 @@ export class VsCodeExtension {
     const configHandlerPromise = new Promise<ConfigHandler>((resolve) => {
       resolveConfigHandler = resolve;
     });
+
     this.sidebar = new ContinueGUIWebviewViewProvider(
       configHandlerPromise,
       this.windowId,
       this.extensionContext,
     );
 
-    // Sidebar
+    // Sidebar + Overlay
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
-        "pearai.continueGUIView",
+        PEAR_CONTINUE_VIEW_ID,
         this.sidebar,
         {
           webviewOptions: { retainContextWhenHidden: true },
@@ -96,9 +98,7 @@ export class VsCodeExtension {
     resolveWebviewProtocol(this.sidebar.webviewProtocol);
 
     // Config Handler with output channel
-    const outputChannel = vscode.window.createOutputChannel(
-      "PearAI",
-    );
+    const outputChannel = vscode.window.createOutputChannel("PearAI");
     const inProcessMessenger = new InProcessMessenger<
       ToCoreProtocol,
       FromCoreProtocol
@@ -137,6 +137,7 @@ export class VsCodeExtension {
     );
 
     // handleURI
+    // This is the entry point when user signs in from web app
     context.subscriptions.push(
       vscode.window.registerUriHandler({
         handleUri(uri: vscode.Uri) {
@@ -153,7 +154,6 @@ export class VsCodeExtension {
                 accessToken: queryParams.get("accessToken"),
                 refreshToken: queryParams.get("refreshToken"),
               };
-
               vscode.commands.executeCommand("pearai.updateUserAuth", data);
             }
           }
@@ -249,15 +249,20 @@ export class VsCodeExtension {
     });
 
     // Create a file system watcher
-    const watcher = vscode.workspace.createFileSystemWatcher('**/*', false, false, false);
+    const watcher = vscode.workspace.createFileSystemWatcher(
+      "**/*",
+      false,
+      false,
+      false,
+    );
 
     // Handle file creation
-    watcher.onDidCreate(uri => {
+    watcher.onDidCreate((uri) => {
       this.refreshContextProviders();
     });
 
     // Handle file deletion
-    watcher.onDidDelete(uri => {
+    watcher.onDidDelete((uri) => {
       this.refreshContextProviders();
     });
 
@@ -285,10 +290,7 @@ export class VsCodeExtension {
         }
       }
 
-      if (
-        filepath.endsWith(".pearairc.json") ||
-        filepath.endsWith(".prompt")
-      ) {
+      if (filepath.endsWith(".pearairc.json") || filepath.endsWith(".prompt")) {
         this.configHandler.reloadConfig();
       } else if (
         filepath.endsWith(".continueignore") ||
@@ -335,7 +337,7 @@ export class VsCodeExtension {
                   currentBranch !== this.PREVIOUS_BRANCH_FOR_WORKSPACE_DIR[dir]
                 ) {
                   // Trigger refresh of index only in this directory
-                  this.core.invoke("index/forceReIndex", dir);
+                  this.core.invoke("index/forceReIndex", { dir });
                 }
               }
 
@@ -365,9 +367,21 @@ export class VsCodeExtension {
       ),
     );
 
+    vscode.workspace.onDidCloseTextDocument(async () => {
+      const openFiles = vscode.workspace.textDocuments;
+      if (openFiles.length === 1) {
+        // the count is amount of last open files
+        this.sidebar.webviewProtocol.request("setActiveFilePath", "", [PEAR_CONTINUE_VIEW_ID]);
+      }
+    });
+
     this.ide.onDidChangeActiveTextEditor((filepath) => {
       this.core.invoke("didChangeActiveTextEditor", { filepath });
+      this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
     });
+
+    this.updateNewWindowActiveFilePath()
+    startAiderProcess(this.core);
   }
 
   static continueVirtualDocumentScheme = "pearai";
@@ -377,6 +391,11 @@ export class VsCodeExtension {
 
   private async refreshContextProviders() {
     this.sidebar.webviewProtocol.request("refreshSubmenuItems", undefined); // Refresh all context providers
+  }
+
+  private async updateNewWindowActiveFilePath() {
+    const currentFile = await this.ide.getCurrentFile();
+    this.sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
   }
 
   registerCustomContextProvider(contextProvider: IContextProvider) {

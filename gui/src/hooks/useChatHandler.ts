@@ -24,17 +24,25 @@ import {
   addPromptCompletionPair,
   clearLastResponse,
   initNewActiveMessage,
+  initNewActivePerplexityMessage,
+  initNewActiveAiderMessage,
   resubmitAtIndex,
   setInactive,
+  setPerplexityInactive,
+  setAiderInactive,
   setMessageAtIndex,
   streamUpdate,
+  streamAiderUpdate,
+  streamPerplexityUpdate,
+  setPerplexityCitations,
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
 
-function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
+function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source: 'perplexity' | 'aider' | 'continue'='continue') {
   const posthog = usePostHog();
 
   const defaultModel = useSelector(defaultModelSelector);
+  const useActiveFile = !!(useSelector((state: RootState) => state.uiState.activeFilePath));
 
   const slashCommands = useSelector(
     (store: RootState) => store.state.config.slashCommands || [],
@@ -44,14 +52,16 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
     (state: RootState) => state.state.contextItems,
   );
 
-  const history = useSelector((store: RootState) => store.state.history);
-  const active = useSelector((store: RootState) => store.state.active);
+  const state = useSelector((store: RootState) => store.state);
+  const history = source === 'perplexity' ? state.perplexityHistory : source === 'aider' ? state.aiderHistory : state.history;
+  // const history = useSelector((store: RootState) => store.state.history);
+  const active = source === 'perplexity' ? state.perplexityActive : source === 'aider' ? state.aiderActive : state.active;
   const activeRef = useRef(active);
   useEffect(() => {
     activeRef.current = active;
   }, [active]);
 
-  async function _streamNormalInput(messages: ChatMessage[]) {
+  async function _streamNormalInput(messages: ChatMessage[], source: 'perplexity' | 'aider' | 'continue'='continue') {
     const abortController = new AbortController();
     const cancelToken = abortController.signal;
 
@@ -62,25 +72,49 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
         messages,
       );
       let next = await gen.next();
+      if (source === 'perplexity') {
+        // Fetch all titles concurrently
+        const citations = ((next.value as ChatMessage).citations || []);
+        const citationsWithTitles = await Promise.all(
+          citations.map(async (url) => {
+            try {
+              const title = await ideMessenger.request("getUrlTitle", url);
+              return {
+                url,
+                title
+              };
+            } catch (error) {
+              console.error('Failed to fetch title for:', url);
+              return {
+                url,
+                title: new URL(url).hostname
+              };
+            }
+          })
+        );
+        
+        dispatch(setPerplexityCitations(citationsWithTitles));
+      }
 
       while (!next.done) {
         if (!activeRef.current) {
           abortController.abort();
           break;
         }
+        const stream = source === 'perplexity' ? streamPerplexityUpdate : source === 'aider' ? streamAiderUpdate : streamUpdate;
         dispatch(
-          streamUpdate(stripImages((next.value as ChatMessage).content)),
+          stream(stripImages((next.value as ChatMessage).content)),
         );
         next = await gen.next();
       }
 
       let returnVal = next.value as PromptLog;
       if (returnVal) {
-        dispatch(addPromptCompletionPair([returnVal]));
+        dispatch(addPromptCompletionPair({promptLogs: [returnVal], source: source}));
       }
     } catch (e) {
       // If there's an error, we should clear the response so there aren't two input boxes
-      dispatch(clearLastResponse());
+      dispatch(clearLastResponse(source));
     }
   }
 
@@ -145,8 +179,8 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
         abortController.abort();
         break;
       }
-      if (typeof update === "string") {
-        dispatch(streamUpdate(update));
+      if (typeof update.content === "string") {
+        dispatch(streamUpdate(update.content));
       }
     }
     clearInterval(checkActiveInterval);
@@ -156,13 +190,15 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
     editorState: JSONContent,
     modifiers: InputModifiers,
     ideMessenger: IIdeMessenger,
-    index?: number,
+    index?: number,  // only for when user enters a new prompt in earlier input box
+    source: 'perplexity' | 'aider' | 'continue'='continue'
   ) {
     try {
       if (typeof index === "number") {
-        dispatch(resubmitAtIndex({ index, editorState }));
+        dispatch(resubmitAtIndex({ index, editorState, source }));
       } else {
-        dispatch(initNewActiveMessage({ editorState }));
+        const init = source === 'perplexity' ? initNewActivePerplexityMessage : source === 'aider' ? initNewActiveAiderMessage : initNewActiveMessage;
+        dispatch(init({ editorState }));
       }
 
       // Resolve context providers and construct new history
@@ -173,7 +209,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
       );
 
       // Automatically use currently open file
-      if (!modifiers.noContext && (history.length === 0 || index === 0)) {
+      if (source === 'continue' && (!modifiers.noContext || useActiveFile) && (history.length === 0 || index === 0)) {
         const usingFreeTrial = defaultModel.provider === "free-trial";
 
         const currentFilePath = await ideMessenger.ide.getCurrentFile();
@@ -213,7 +249,6 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
         //   : contextItems,
         editorState,
       };
-
       let newHistory: ChatHistory = [...history.slice(0, index), historyItem];
       const historyIndex = index || newHistory.length - 1;
       dispatch(
@@ -221,6 +256,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
           message,
           index: historyIndex,
           contextItems,
+          source,
         }),
       );
 
@@ -239,7 +275,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
       let commandAndInput = getSlashCommandForInput(content);
 
       if (!commandAndInput) {
-        await _streamNormalInput(messages);
+        await _streamNormalInput(messages, source);
       } else {
         const [slashCommand, commandInput] = commandAndInput;
         posthog.capture("step run", {
@@ -260,7 +296,8 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger) {
         message: `Error streaming response: ${e.message}`,
       });
     } finally {
-      dispatch(setInactive());
+      const disableActive = source === 'perplexity' ? setPerplexityInactive : source === 'aider' ? setAiderInactive : setInactive;
+      dispatch(disableActive());
     }
   }
 

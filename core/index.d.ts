@@ -71,6 +71,8 @@ export interface ILLM extends LLMOptions {
   apiType?: string;
   region?: string;
   projectId?: string;
+  getCurrentDirectory?: (() => Promise<string>) | undefined | null;
+
 
   complete(prompt: string, options?: LLMFullCompletionOptions): Promise<string>;
 
@@ -193,8 +195,18 @@ export interface IContextProvider {
   loadSubmenuItems(args: LoadSubmenuItemsArgs): Promise<ContextSubmenuItem[]>;
 }
 
+export interface IntegrationHistoryMap {
+  perplexityHistory: 'perplexity';
+  aiderHistory: 'aider';
+  history: 'continue';
+}
+
+export type IntegrationType = IntegrationHistoryMap[keyof IntegrationHistoryMap];
+
 export interface PersistedSessionInfo {
   history: ChatHistory;
+  perplexityHistory: ChatHistory;
+  aiderHistory: ChatHistory;
   title: string;
   workspaceDirectory: string;
   sessionId: string;
@@ -205,6 +217,7 @@ export interface SessionInfo {
   title: string;
   dateCreated: string;
   workspaceDirectory: string;
+  integrationType: IntegrationType;
 }
 
 export interface RangeInFile {
@@ -258,6 +271,7 @@ export type MessageContent = string | MessagePart[];
 export interface ChatMessage {
   role: ChatMessageRole;
   content: MessageContent;
+  citations?: string[];
 }
 
 export interface ContextItemId {
@@ -265,6 +279,12 @@ export interface ContextItemId {
   itemId: string;
 }
 
+export type ContextItemUriTypes = "file" | "url";
+
+export interface ContextItemUri {
+  type: ContextItemUriTypes;
+  value: string;
+}
 export interface ContextItem {
   content: string;
   name: string;
@@ -272,6 +292,7 @@ export interface ContextItem {
   editing?: boolean;
   editable?: boolean;
   icon?: string;
+  uri?: ContextItemUri;
 }
 
 export interface ContextItemWithId {
@@ -282,6 +303,7 @@ export interface ContextItemWithId {
   editing?: boolean;
   editable?: boolean;
   icon?: string;
+  language?: string;
 }
 
 export interface InputModifiers {
@@ -295,12 +317,18 @@ export interface PromptLog {
   completion: string;
 }
 
+export interface Citation {
+  url: string;
+  title: string;
+}
+
 export interface ChatHistoryItem {
   message: ChatMessage;
   editorState?: any;
   modifiers?: InputModifiers;
   contextItems: ContextItemWithId[];
   promptLogs?: PromptLog[];
+  citations?: Citation[];
 }
 
 export type ChatHistory = ChatHistoryItem[];
@@ -354,6 +382,9 @@ export interface LLMOptions {
   watsonxUsername?: string;
   watsonxPassword?: string;
   watsonxProjectId?: string;
+  getCurrentDirectory?: (() => Promise<string>) | undefined | null;
+  getCredentials?: () => Promise<PearAuth | undefined>;
+  setCredentials?: (auth: PearAuth) => Promise<void>;
 }
 type RequireAtLeastOne<T, Keys extends keyof T = keyof T> = Pick<
   T,
@@ -503,6 +534,9 @@ export interface IDE {
   // Callbacks
   onDidChangeActiveTextEditor(callback: (filepath: string) => void): void;
   pathSep(): Promise<string>;
+
+  getCurrentDirectory(): Promise<string>;
+
 }
 
 // Slash Commands
@@ -542,6 +576,7 @@ type StepName =
   | "DraftIssueStep";
 
 type ContextProviderName =
+  | "file"
   | "diff"
   | "github"
   | "terminal"
@@ -561,7 +596,9 @@ type ContextProviderName =
   | "docs"
   | "gitlab-mr"
   | "os"
-  | "currentFile";
+  | "currentFile"
+  | "relativefilecontext"
+  | "relativegitfilecontext";
 
 type TemplateType =
   | "llama2"
@@ -611,6 +648,8 @@ type ModelProvider =
   | "msty"
   | "watsonx"
   | "pearai_server"
+  | "aider"
+  | "perplexity"
   | "other";
 
 export type ModelName =
@@ -683,7 +722,10 @@ export type ModelName =
   | "starcoder-3b"
   | "starcoder2-3b"
   | "stable-code-3b"
-  | "pearai_model";
+  // PearAI
+  | "pearai_model"
+  | "aider"
+  | "perplexity";
 
 export interface RequestOptions {
   timeout?: number;
@@ -993,6 +1035,7 @@ export interface ContinueConfig {
   experimental?: ExperimentalConfig;
   analytics?: AnalyticsConfig;
   docs?: SiteIndexingConfig[];
+  isBetaAccess?: boolean;
 }
 
 export interface BrowserSerializedContinueConfig {
@@ -1011,6 +1054,7 @@ export interface BrowserSerializedContinueConfig {
   reranker?: RerankerDescription;
   experimental?: ExperimentalConfig;
   analytics?: AnalyticsConfig;
+  isBetaAccess?: boolean;
 }
 
 export interface PearAuth {

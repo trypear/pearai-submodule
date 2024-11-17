@@ -1,4 +1,5 @@
 import {
+  ArrowLeftEndOnRectangleIcon,
   ArrowUturnLeftIcon,
   BarsArrowDownIcon,
   CubeIcon,
@@ -8,7 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ChatHistoryItem } from "core";
 import { stripImages } from "core/llm/images";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -16,15 +17,17 @@ import {
   lightGray,
   vscBackground,
   vscButtonBackground,
+  vscEditorBackground,
   vscInputBackground,
 } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import useUIConfig from "../../hooks/useUIConfig";
 import { RootState } from "../../redux/store";
-import { getFontSize } from "../../util";
+import { getMetaKeyLabel, getFontSize } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
+import { isAiderMode, isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
 
 interface StepContainerProps {
   item: ChatHistoryItem;
@@ -38,22 +41,49 @@ interface StepContainerProps {
   isLast: boolean;
   index: number;
   modelTitle?: string;
+  source?: "perplexity" | "aider" | "continue";
 }
 
 const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
   padding: 4px 0px 8px 0px;
   background-color: ${(props) =>
-    props.isUserInput ? vscInputBackground : vscBackground};
+    props.isUserInput
+      ? vscInputBackground
+      : window.isPearOverlay
+        ? "transparent"
+        : vscBackground};
   font-size: ${(props) => props.fontSize || getFontSize()}px;
   // border-radius: ${defaultBorderRadius};
   overflow: hidden;
 `;
 
-function StepContainer(props: StepContainerProps) {
-  const [isHovered, setIsHovered] = useState(false);
-  const isUserInput = props.item.message.role === "user";
-  const active = useSelector((store: RootState) => store.state.active);
+function StepContainer({
+  item,
+  onReverse,
+  onUserInput,
+  onRetry,
+  onContinueGeneration,
+  onDelete,
+  open,
+  isFirst,
+  isLast,
+  index,
+  modelTitle,
+  source = "continue",
+}: StepContainerProps) {
+  const isUserInput = item.message.role === "user";
+  const active =
+    source === "continue"
+      ? useSelector((store: RootState) => store.state.active)
+      : source === "perplexity"
+        ? useSelector((store: RootState) => store.state.perplexityActive)
+        : useSelector((store: RootState) => store.state.aiderActive);
   const ideMessenger = useContext(IdeMessengerContext);
+  const bareChatMode = isBareChatMode();
+  const isPerplexity = isPerplexityMode();
+  const isAider = isAiderMode();
+
+  const [numChanges, setNumChanges] = useState<number | null>(null);
 
   const [feedback, setFeedback] = useState<boolean | undefined>(undefined);
 
@@ -61,8 +91,8 @@ function StepContainer(props: StepContainerProps) {
 
   const sendFeedback = (feedback: boolean) => {
     setFeedback(feedback);
-    if (props.item.promptLogs?.length) {
-      for (const promptLog of props.item.promptLogs) {
+    if (item.promptLogs?.length) {
+      for (const promptLog of item.promptLogs) {
         ideMessenger.post("devdata/log", {
           tableName: "chat",
           data: { ...promptLog, feedback, sessionId },
@@ -71,13 +101,31 @@ function StepContainer(props: StepContainerProps) {
     }
   };
 
+  const fetchNumberOfChanges = async () => {
+    try {
+      const response = await ideMessenger.request("getNumberOfChanges", undefined);
+      if(typeof response === 'number') {
+        setNumChanges(response);
+      }
+    } catch (error) {
+      console.error("Failed to fetch number of changes:", error);
+    }
+  };
+  
+  useEffect(() => {
+    if (!active && isAider) {
+      fetchNumberOfChanges();
+    }
+  }, [active, isAider]);
+  
+
   const [truncatedEarly, setTruncatedEarly] = useState(false);
 
   const uiConfig = useUIConfig();
 
   useEffect(() => {
     if (!active) {
-      const content = stripImages(props.item.message.content).trim();
+      const content = stripImages(item.message.content).trim();
       const endingPunctuation = [".", "?", "!", "```"];
 
       // If not ending in punctuation or emoji, we assume the response got truncated
@@ -92,20 +140,33 @@ function StepContainer(props: StepContainerProps) {
         setTruncatedEarly(false);
       }
     }
-  }, [props.item.message.content, active]);
+  }, [item.message.content, active]);
+
+  // Add effect to handle keyboard shortcut
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g' && isLast && !active) {
+        if (isPerplexity) {
+          ideMessenger.post("addPerplexityContext", {
+            text: stripImages(item.message.content),
+            language: "",
+          });
+        } else if (isAider) {
+          ideMessenger.post("openAiderChanges", undefined);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isLast, active, isPerplexity, item.message.content, ideMessenger]);
 
   return (
-    <div
-      onMouseEnter={() => {
-        setIsHovered(true);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-      }}
-    >
+    <div>
       <div className="relative">
         <ContentDiv
-          hidden={!props.open}
+          className="max-w-4xl mx-auto"
+          hidden={!open}
           isUserInput={isUserInput}
           fontSize={getFontSize()}
         >
@@ -114,16 +175,46 @@ function StepContainer(props: StepContainerProps) {
               className="whitespace-pre-wrap break-words p-4 max-w-full overflow-x-auto"
               style={{ fontSize: getFontSize() - 2 }}
             >
-              {stripImages(props.item.message.content)}
+              {stripImages(item.message.content)}
             </pre>
           ) : (
             <StyledMarkdownPreview
-              source={stripImages(props.item.message.content)}
+              source={stripImages(item.message.content)}
               showCodeBorder={true}
+              isStreaming={active}
+              isLast={isLast}
+              messageIndex={index}
+              integrationSource={source}
+              citations={isPerplexity ? item.citations : undefined}
             />
           )}
         </ContentDiv>
-        {(isHovered || typeof feedback !== "undefined") && !active && (
+        {!active && isPerplexity && (
+          <HeaderButtonWithText
+            onClick={() => {
+              ideMessenger.post("addPerplexityContext", {
+                text: stripImages(item.message.content),
+                language: "",
+              });
+            }}
+          >
+            <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+            Add to PearAI chat context {isLast && <span className="ml-1 text-xs opacity-60"><kbd className="font-mono">{getMetaKeyLabel()}</kbd> <kbd className="font-mono bg-vscButtonBackground/10 px-1">G</kbd></span>}
+          </HeaderButtonWithText>
+        )}
+        {
+          !active && isAider && numChanges && (
+            <HeaderButtonWithText
+              onClick={() => {
+                ideMessenger.post("openAiderChanges", undefined);
+              }}
+            >
+              <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+              See {numChanges} changed file{numChanges === 1 ? '' : 's'} {isLast && <span className="ml-1 text-xs opacity-60"><kbd className="font-mono">{getMetaKeyLabel()}</kbd> <kbd className="font-mono bg-vscButtonBackground/10 px-1">G</kbd></span>}
+            </HeaderButtonWithText>
+          )
+        }
+        {!active && (
           <div
             className="flex gap-1 absolute -bottom-2 right-0"
             style={{
@@ -132,10 +223,10 @@ function StepContainer(props: StepContainerProps) {
               fontSize: getFontSize() - 3,
             }}
           >
-            {props.modelTitle && (
+            {modelTitle && (
               <div className="flex items-center">
                 <CubeIcon className="w-3 h-4 mr-1 flex-shrink-0" />
-                {props.modelTitle}
+                {modelTitle}
                 <div
                   style={{
                     backgroundColor: vscButtonBackground,
@@ -145,11 +236,11 @@ function StepContainer(props: StepContainerProps) {
                 />
               </div>
             )}
-            {truncatedEarly && (
+            {truncatedEarly && !bareChatMode && (
               <HeaderButtonWithText
                 text="Continue generation"
                 onClick={(e) => {
-                  props.onContinueGeneration();
+                  onContinueGeneration();
                 }}
               >
                 <BarsArrowDownIcon
@@ -161,28 +252,30 @@ function StepContainer(props: StepContainerProps) {
             )}
 
             <CopyButton
-              text={stripImages(props.item.message.content)}
+              text={stripImages(item.message.content)}
               color={lightGray}
             />
-            <HeaderButtonWithText
-              text="Regenerate"
-              onClick={(e) => {
-                props.onRetry();
-              }}
-            >
-              <ArrowUturnLeftIcon
-                color={lightGray}
-                width="1.2em"
-                height="1.2em"
-              />
-            </HeaderButtonWithText>
+            {!bareChatMode && (
+              <HeaderButtonWithText
+                text="Regenerate"
+                onClick={(e) => {
+                  onRetry();
+                }}
+              >
+                <ArrowUturnLeftIcon
+                  color={lightGray}
+                  width="1.2em"
+                  height="1.2em"
+                />
+              </HeaderButtonWithText>
+            )}
             <HeaderButtonWithText text="Delete Message">
               <TrashIcon
                 color={lightGray}
                 width="1.2em"
                 height="1.2em"
                 onClick={() => {
-                  props.onDelete();
+                  onDelete();
                 }}
               />
             </HeaderButtonWithText>

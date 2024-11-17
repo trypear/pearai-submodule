@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { defaultBorderRadius, lightGray, vscInputBackground } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
@@ -24,6 +24,7 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog";
+import { isAiderMode, isPerplexityMode } from "@/util/bareChatMode";
 
 const StyledListboxButton = styled(Listbox.Button)`
   font-family: inherit;
@@ -164,29 +165,44 @@ interface Option {
 function ModelSelect() {
   const dispatch = useDispatch();
   const defaultModel = useSelector(defaultModelSelector);
+  const perplexityMode = isPerplexityMode();
+  const aiderMode = isAiderMode();
   const allModels = useSelector(
     (state: RootState) => state.state.config.models,
   );
 
+  const location = useLocation();
   const navigate = useNavigate();
+  const ideMessenger = useContext(IdeMessengerContext);
 
   const [options, setOptions] = useState<Option[]>([]);
-
   const selectedProfileId = useSelector(
     (store: RootState) => store.state.selectedProfileId,
   );
 
   useEffect(() => {
     setOptions(
-      allModels.map((model) => {
-        return {
-          value: model.title,
-          title: modelSelectTitle(model),
-          isDefault: model?.isDefault,
-        };
-      }),
+      allModels
+        .filter((model) => {
+          if (aiderMode) {
+            // In Aider mode, only include models with "aider" in title
+            return model?.title?.toLowerCase().includes("creator");
+          }
+          // In normal mode, exclude aider and perplexity models
+          return (
+            !model?.title?.toLowerCase().includes("creator") &&
+            !model?.title?.toLowerCase().includes("perplexity")
+          );
+        })
+        .map((model) => {
+          return {
+            value: model.title,
+            title: modelSelectTitle(model),
+            isDefault: model?.isDefault,
+          };
+        }),
     );
-  }, [allModels]);
+  }, [allModels, aiderMode]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -225,14 +241,16 @@ function ModelSelect() {
           </span>
         </StyledListboxButton>
         <StyledListboxOptions>
-          {options.filter((option) => option.isDefault).map((option, idx) => (
-            <ModelOption
-              option={option}
-              idx={idx}
-              key={idx}
-              showDelete={!option.isDefault}
-            />
-          ))}
+          {options
+            .filter((option) => option.isDefault)
+            .map((option, idx) => (
+              <ModelOption
+                option={option}
+                idx={idx}
+                key={idx}
+                showDelete={!option.isDefault}
+              />
+            ))}
 
           {selectedProfileId === "local" && (
             <>
@@ -252,6 +270,10 @@ function ModelSelect() {
               <StyledListboxOption
                 key={options.length}
                 onClick={(e) => {
+                  if (aiderMode) {
+                    ideMessenger.post("openConfigJson", undefined);
+                    return;
+                  }
                   e.stopPropagation();
                   e.preventDefault();
                   navigate("/addModel");

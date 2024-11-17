@@ -11,6 +11,9 @@ import { useSelector } from "react-redux";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { selectContextProviderDescriptions } from "../redux/selectors";
 import { useWebviewListener } from "./useWebviewListener";
+import { store } from '../redux/store';
+import { shouldSkipContextProviders } from "../integrations/util/integrationSpecificContextProviders";
+import { defaultModelSelector } from "@/redux/selectors/modelSelectors";
 
 const MINISEARCH_OPTIONS = {
   prefix: true,
@@ -20,6 +23,7 @@ const MINISEARCH_OPTIONS = {
 const MAX_LENGTH = 70;
 
 function useSubmenuContextProviders() {
+  const defaultModel = useSelector(defaultModelSelector);
   const [minisearches, setMinisearches] = useState<{
     [id: string]: MiniSearch;
   }>({});
@@ -32,6 +36,7 @@ function useSubmenuContextProviders() {
   );
 
   const [loaded, setLoaded] = useState(false);
+  const [lastDefaultModelTitle, setLastDefaultModelTitle] = useState<string | undefined>(undefined);
 
   const ideMessenger = useContext(IdeMessengerContext);
 
@@ -192,39 +197,47 @@ function useSubmenuContextProviders() {
     [fallbackResults, getSubmenuSearchResults],
   );
 
-  useEffect(() => {
-    if (contextProviderDescriptions.length === 0 || loaded) {
-      return;
-    }
-    setLoaded(true);
-    contextProviderDescriptions.forEach(async (description) => {
-      const minisearch = new MiniSearch<ContextSubmenuItem>({
-        fields: ["title", "description"],
-        storeFields: ["id", "title", "description"],
-      });
-      const items = await ideMessenger.request("context/loadSubmenuItems", {
-        title: description.title,
-      });
-      minisearch.addAll(items);
-      setMinisearches((prev) => ({ ...prev, [description.title]: minisearch }));
+useEffect(() => {
+  if ((contextProviderDescriptions.length === 0 || loaded) && defaultModel?.title === lastDefaultModelTitle) {
+    return;
+  }
+  setMinisearches({});
+  setFallbackResults({});
+  setLoaded(true);
+  setLastDefaultModelTitle(defaultModel?.title);
 
-      if (description.title === "file") {
-        const openFiles = await getOpenFileItems();
-        setFallbackResults((prev) => ({
-          ...prev,
-          file: [
-            ...openFiles,
-            ...items.slice(0, MAX_LENGTH - openFiles.length),
-          ],
-        }));
-      } else {
-        setFallbackResults((prev) => ({
-          ...prev,
-          [description.title]: items.slice(0, MAX_LENGTH),
-        }));
-      }
+  contextProviderDescriptions.forEach(async (description) => {
+    // Check if we should use relative file paths by checking the default model title
+    if (shouldSkipContextProviders(defaultModel.title, description))
+      return;
+
+    const minisearch = new MiniSearch<ContextSubmenuItem>({
+      fields: ["title", "description"],
+      storeFields: ["id", "title", "description"],
     });
-  }, [contextProviderDescriptions, loaded]);
+    const items = await ideMessenger.request("context/loadSubmenuItems", {
+      title: description.title,
+    });
+    minisearch.addAll(items);
+    setMinisearches((prev) => ({ ...prev, [description.title]: minisearch }));
+
+    if (description.title === "file") {
+      const openFiles = await getOpenFileItems();
+      setFallbackResults((prev) => ({
+        ...prev,
+        file: [
+          ...openFiles,
+          ...items.slice(0, MAX_LENGTH - openFiles.length),
+        ],
+      }));
+    } else {
+      setFallbackResults((prev) => ({
+        ...prev,
+        [description.title]: items.slice(0, MAX_LENGTH),
+      }));
+    }
+  });
+}, [contextProviderDescriptions, loaded, defaultModel]);
 
   useWebviewListener("configUpdate", async () => {
     // When config is updated (for example switching to a different workspace)

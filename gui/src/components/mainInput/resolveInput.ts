@@ -11,6 +11,8 @@ import { IIdeMessenger } from "../../context/IdeMessenger";
 import { setDirectoryItems } from "../../redux/slices/stateSlice";
 import { RootState, store } from "../../redux/store";
 
+const EXCLUDE_DIR_STRUCTURE = ["aider", "perplexity", "search", "creator"];
+
 interface MentionAttrs {
   label: string;
   id: string;
@@ -116,21 +118,33 @@ async function resolveEditorContent(
     }
   }
 
-  const previousDirectoryItems = (store.getState() as any).state.directoryItems;
+  const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
+  const excludeDirStructure =
+    defaultModelTitle?.toLowerCase() &&
+    EXCLUDE_DIR_STRUCTURE.some((term) =>
+      defaultModelTitle.toLowerCase().includes(term),
+    );
 
-  // use directory structure
-  const directoryItems = await ideMessenger.request("context/getContextItems", {
-    name: "directory",
-    query: "",
-    fullInput: stripImages(parts),
-    selectedCode,
-  });
+  if (!excludeDirStructure) {
+    const previousDirectoryItems = (store.getState() as any).state
+      .directoryItems;
+    // use directory structure
+    const directoryItems = await ideMessenger.request(
+      "context/getContextItems",
+      {
+        name: "directory",
+        query: "",
+        fullInput: stripImages(parts),
+        selectedCode,
+      },
+    );
 
-  if (previousDirectoryItems !== directoryItems[0].content) {
-    store.dispatch(setDirectoryItems(directoryItems[0].content));
-    contextItems.push(...directoryItems);
-    for (const codebaseItem of directoryItems) {
-      contextItemsText += codebaseItem.content + "\n\n";
+    if (previousDirectoryItems !== directoryItems[0].content) {
+      store.dispatch(setDirectoryItems(directoryItems[0].content));
+      contextItems.push(...directoryItems);
+      for (const codebaseItem of directoryItems) {
+        contextItemsText += codebaseItem.content + "\n\n";
+      }
     }
   }
 
@@ -181,6 +195,8 @@ function findLastIndex<T>(
 }
 
 function resolveParagraph(p: JSONContent): [string, MentionAttrs[], string] {
+  const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
+  const isAiderMode = defaultModelTitle?.toLowerCase().includes("creator");
   let text = "";
   const contextItems = [];
   let slashCommand = undefined;
@@ -188,10 +204,12 @@ function resolveParagraph(p: JSONContent): [string, MentionAttrs[], string] {
     if (child.type === "text") {
       text += text === "" ? child.text.trimStart() : child.text;
     } else if (child.type === "mention") {
-      text +=
-        typeof child.attrs.renderInlineAs === "string"
-          ? child.attrs.renderInlineAs
-          : child.attrs.label;
+      if (!isAiderMode) {
+        text +=
+          typeof child.attrs.renderInlineAs === "string"
+            ? child.attrs.renderInlineAs
+            : child.attrs.label;
+      }
       contextItems.push(child.attrs);
     } else if (child.type === "slashcommand") {
       if (typeof slashCommand === "undefined") {

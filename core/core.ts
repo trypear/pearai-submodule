@@ -29,6 +29,12 @@ import { editConfigJson } from "./util/paths";
 import { Telemetry } from "./util/posthog";
 import { streamDiffLines } from "./util/verticalEdit";
 import PearAIServer from "./llm/llms/PearAIServer";
+import Aider from "./llm/llms/AiderLLM";
+import {
+  startAiderProcess,
+  killAiderProcess,
+} from "../extensions/vscode/src/integrations/aider/aiderUtil";
+
 
 export class Core {
   // implements IMessenger<ToCoreProtocol, FromCoreProtocol>
@@ -137,18 +143,18 @@ export class Core {
       );
 
       // Index on initialization
-      this.ide.getWorkspaceDirs().then(async (dirs) => {
+      void this.ide.getWorkspaceDirs().then(async (dirs) => {
         // Respect pauseCodebaseIndexOnStart user settings
         if (ideSettings.pauseCodebaseIndexOnStart) {
           await this.messenger.request("indexProgress", {
-            progress: 100,
+            progress: 1,
             desc: "Initial Indexing Skipped",
             status: "paused",
           });
           return;
         }
 
-        this.refreshCodebaseIndex(dirs);
+        void this.refreshCodebaseIndex(dirs);
       });
     });
 
@@ -377,16 +383,17 @@ export class Core {
           });
           break;
         }
-        yield { content: next.value.content };
+        yield { content: next.value.content, citations: next.value?.citations };
         next = await gen.next();
       }
 
       return { done: true, content: next.value };
     }
 
-    on("llm/streamChat", (msg) =>
-      llmStreamChat(this.configHandler, this.abortedMessageIds, msg),
-    );
+  on("llm/streamChat", (msg) => {
+    return llmStreamChat(this.configHandler, this.abortedMessageIds, msg);
+  });
+
 
     async function* llmStreamComplete(
       configHandler: ConfigHandler,
@@ -433,23 +440,40 @@ export class Core {
       return completion;
     });
 
-    on("llm/resetPearAICredentials", async (msg) => {
+    on("llm/setPearAICredentials", async (msg) => {
+      const { accessToken, refreshToken } = msg.data || {};
       const config = await this.configHandler.loadConfig();
       const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
+      const aiderModels = config.models.filter(model => model instanceof Aider) as Aider[];
 
       try {
         if (pearAIModels.length > 0) {
           pearAIModels.forEach(model => {
-            model.setPearAIAccessToken(undefined);
-            model.setPearAIRefreshToken(undefined);
+            model.setPearAIAccessToken(accessToken);
+            model.setPearAIRefreshToken(refreshToken);
           });
         }
-        return undefined;
       } catch (e) {
         console.warn(`Error resetting PearAI credentials: ${e}`);
         return undefined;
       }
+      // TODO @nang - handle this better
+      try {
+        if (aiderModels.length > 0) {
+          aiderModels.forEach(model => {
+            model.setPearAIAccessToken(accessToken);
+            model.setPearAIRefreshToken(refreshToken);
+          });
+        }
+      } catch (e) {
+        console.warn(`Error resetting PearAI credentials for aider: ${e}`);
+        return undefined;
+      }
     });
+    on("llm/startAiderProcess", () => startAiderProcess(this));
+
+    on("llm/killAiderProcess", () => killAiderProcess(this));
+
     on("llm/listModels", async (msg) => {
       const config = await this.configHandler.loadConfig();
       const model =
@@ -653,8 +677,12 @@ export class Core {
       const rows = await DevDataSqliteDb.getTokensPerModel();
       return rows;
     });
-    on("index/forceReIndex", async (msg) => {
-      const dirs = msg.data ? [msg.data] : await this.ide.getWorkspaceDirs();
+    on("index/forceReIndex", async ({ data }) => {
+      // if (data?.shouldClearIndexes) {
+      //   const codebaseIndexer = await this.codebaseIndexerPromise;
+      //   await codebaseIndexer.clearIndexes();
+      // }
+      const dirs = data?.dir ? [data.dir] : await this.ide.getWorkspaceDirs();
       await this.refreshCodebaseIndex(dirs);
     });
     on("index/setPaused", (msg) => {
@@ -688,6 +716,22 @@ export class Core {
 
   private indexingCancellationController: AbortController | undefined;
 
+  // private async refreshCodebaseIndex(dirs: string[]) {
+  //   if (this.indexingCancellationController) {
+  //     this.indexingCancellationController.abort();
+  //   }
+  //   this.indexingCancellationController = new AbortController();
+  //   for await (const update of (await this.codebaseIndexerPromise).refresh(
+  //     dirs,
+  //     this.indexingCancellationController.signal,
+  //   )) {
+  //     this.messenger.request("indexProgress", update);
+  //     this.indexingState = update;
+  //   }
+
+  //   this.messenger.send("refreshSubmenuItems", undefined);
+  // }
+
   private async refreshCodebaseIndex(dirs: string[]) {
     if (this.indexingCancellationController) {
       this.indexingCancellationController.abort();
@@ -697,10 +741,32 @@ export class Core {
       dirs,
       this.indexingCancellationController.signal,
     )) {
-      this.messenger.request("indexProgress", update);
-      this.indexingState = update;
-    }
+      let updateToSend = { ...update };
+      if (update.status === "failed") {
+        updateToSend.status = "done";
+        updateToSend.desc = "Indexing complete";
+        updateToSend.progress = 1.0;
+      }
 
+      void this.messenger.request("indexProgress", updateToSend);
+      this.indexingState = updateToSend;
+
+      if (update.status === "failed") {
+        console.debug(
+          "Indexing failed with error: ",
+          update.desc,
+          // update.debugInfo,
+        );
+        void Telemetry.capture(
+          "indexing_error",
+          {
+            error: update.desc,
+            // stack: update.debugInfo,
+          },
+          false,
+        );
+      }
+    }
     this.messenger.send("refreshSubmenuItems", undefined);
   }
 }

@@ -1,161 +1,77 @@
-import {
-  CheckBadgeIcon,
-  Cog6ToothIcon,
-  ComputerDesktopIcon,
-  GiftIcon,
-} from "@heroicons/react/24/outline";
-import { ToCoreFromIdeOrWebviewProtocol } from "core/protocol/core";
-import { useContext, useState } from "react";
+import { useContext, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { defaultBorderRadius, lightGray } from "../../components";
+import { lightGray } from "../../components";
 import ConfirmationDialog from "../../components/dialogs/ConfirmationDialog";
-import GitHubSignInButton from "../../components/modelSelection/quickSetup/GitHubSignInButton";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import {
   setDialogMessage,
   setShowDialog,
 } from "../../redux/slices/uiStateSlice";
-import { Div, StyledButton } from "./components";
+import { StyledButton } from "./components";
 import { useOnboarding } from "./utils";
-import { greenButtonColor } from "../../components";
 import styled from "styled-components";
-import { providers } from "../AddNewModel/configs/providers";
-import { setDefaultModel } from "../../redux/slices/stateSlice";
 import _ from "lodash";
 import { useWebviewListener } from "../../hooks/useWebviewListener";
+import { Button } from "@/components/ui/button";
 
-export const CustomModelButton = styled.div<{ disabled: boolean }>`
-  border: 1px solid ${lightGray};
-  border-radius: ${defaultBorderRadius};
-  padding: 4px 8px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.5s;
-
-  ${(props) =>
-    props.disabled
-      ? `
-    opacity: 0.5;
-    `
-      : `
-  &:hover {
-    border: 1px solid #be1b55;
-    background-color: #be1b5522;
-    cursor: pointer;
+const EllipsisContainer = styled.span`
+  display: inline-block;
+  text-align: left;
+  &::after {
+    content: '';
+    position: absolute;
+    animation: ellipsis 1.5s steps(4, end) infinite;
   }
-  `}
+
+  @keyframes ellipsis {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+  }
 `;
 
-enum ModelType {
-  PearAI,
-  Other,
-}
-
-type OnboardingMode =
-  ToCoreFromIdeOrWebviewProtocol["completeOnboarding"][0]["mode"];
-
 function Onboarding() {
-  const [hovered, setHovered] = useState(-1);
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const ideMessenger = useContext(IdeMessengerContext);
-
-  const [hasSignedIntoGh, setHasSignedIntoGh] = useState(false);
-  const [selectedOnboardingMode, setSlectedOnboardingMode] = useState<
-    OnboardingMode | undefined
-  >(undefined);
-
   const { completeOnboarding } = useOnboarding();
 
-  function onSubmit() {
-    ideMessenger.post("completeOnboarding", {
-      mode: "custom",
-    });
-
-    /**
-     * "completeOnboarding" above will update the config with our
-     * new embeddings provider. If it's not the default local provider,
-     * we need to re-index the codebase.
-     */
-    if (selectedOnboardingMode !== "local") {
-      ideMessenger.post("index/forceReIndex", undefined);
+  useEffect(() => {
+    if (window.isPearOverlay) {
+      // Overlay can skip login step because user will login from sidebar
+      navigate("/")
     }
-  }
+  }, [])
 
-  const handleSelect = (selectedModel: ModelType) => {
-    ideMessenger.post("completeOnboarding", {
-      mode: "custom",
-    });
-
-    switch (selectedModel) {
-      case ModelType.PearAI:
-        navigate("/addModel/provider/pearai_server", {
-          state: { referrer: "/onboarding" },
-        });
-        break;
-      case ModelType.Other:
-        navigate("/addModel/provider", {
-          state: { showOtherProviders: true, referrer: "/onboarding" },
-        });
-        break;
-      default:
-        break;
-    }
-  };
-
-  const modelInfo = providers["pearai_server"];
-
-  // this runs when user successfully logins pearai
-  useWebviewListener(
-    "addPearAIModel",
-    async () => {
-      const pkg = modelInfo.packages[0];
-      const dimensionChoices =
-        pkg.dimensions?.map((d) => Object.keys(d.options)[0]) || [];
-      const model = {
-        ...pkg.params,
-        ...modelInfo.params,
-        ..._.merge(
-          {},
-          ...(pkg.dimensions?.map((dimension, i) => {
-            if (!dimensionChoices?.[i]) {
-              return {};
-            }
-            return {
-              ...dimension.options[dimensionChoices[i]],
-            };
-          }) || []),
-        ),
-        provider: modelInfo.provider,
-      };
-      ideMessenger.post("config/addModel", { model });
-      dispatch(setDefaultModel({ title: model.title, force: true }));
-      navigate("/");
-    },
-    [modelInfo],
-  );
+  useWebviewListener("pearAISignedIn", async () => {
+    completeOnboarding()
+  });
 
   return (
-    <div className="max-w-96  mx-auto leading-normal">
+    <div className="max-w-96 mx-auto flex flex-col items-center justify-between pt-8">
+      <div className="flex flex-col items-center justify-center">
+      <img
+          src={`${window.vscMediaUrl}/logos/pearai-green.svg`}
+          height="24px"
+          style={{ marginRight: "5px" }}
+        />
       <h1 className="text-center">Welcome to PearAI!</h1>
-      <h3 className="mx-3 text-center">Begin your journey by logging in!</h3>
-      <CustomModelButton
-        className="m-5"
-        disabled={false}
+      <h3 className="mx-3 text-center flex">Begin your journey by logging in<EllipsisContainer /></h3>
+      <Button 
+        variant="animated"
+        size="lg"
+        className="m-5 flex flex-col justify-center items-center bg-button text-button-foreground"
         onClick={() => {
           ideMessenger.post("pearaiLogin", undefined);
         }}
       >
-        <h3 className="text-center my-2">Sign Up / Log In</h3>
-        <img
-          src={`${window.vscMediaUrl}/logos/${modelInfo?.icon}`}
-          height="24px"
-          style={{ marginRight: "5px" }}
-        />
-      </CustomModelButton>
-      <p style={{ color: lightGray }} className="mx-3">
+        <h3 className="font-medium">Log in</h3>
+
+      </Button>
+
+      <p className="mx-3">
         After login, the website should redirect you back here.
       </p>
       <small
@@ -176,29 +92,6 @@ function Onboarding() {
         </a>
         .
       </small>
-      {/* <div>
-        <Div
-          selected={false}
-          onClick={() => handleSelect(ModelType.PearAI)}
-          onMouseEnter={() => setHovered(ModelType.PearAI)}
-          onMouseLeave={() => setHovered(-1)}
-        >
-          <div className="flex items-center">
-            <img
-              src={`${window.vscMediaUrl}/logos/pearai-color.png`}
-              className="mr-1"
-              height="24px"
-            ></img>
-            <h3>PearAI Server </h3>
-          </div>
-          <p className="mt-0">
-            Convenient, fully-managed integration, with the current
-            best-in-market language models.
-          </p>
-          <p className="mt-0">Code is not stored.</p>
-        </Div>
-        <br></br>
-      </div> */}
       <div className="absolute bottom-4 right-4">
         <StyledButton
           onClick={(e) => {
@@ -218,6 +111,8 @@ function Onboarding() {
           Skip
         </StyledButton>
       </div>
+      </div>
+      <div></div>
     </div>
   );
 }

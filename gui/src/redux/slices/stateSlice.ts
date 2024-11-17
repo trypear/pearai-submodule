@@ -4,6 +4,7 @@ import {
   ChatHistory,
   ChatHistoryItem,
   ChatMessage,
+  Citation,
   ContextItemId,
   ContextItemWithId,
   PersistedSessionInfo,
@@ -14,6 +15,8 @@ import { stripImages } from "core/llm/images";
 import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
+import { getLocalStorage } from "@/util/localStorage";
+
 
 export const memoizedContextItemsSelector = createSelector(
   [(state: RootState) => state.state.history],
@@ -24,6 +27,21 @@ export const memoizedContextItemsSelector = createSelector(
     }, []);
   },
 );
+
+const integrationStatesMap = {
+  'perplexity': {
+    history: 'perplexityHistory',
+    active: 'perplexityActive'
+  },
+  'aider': {
+    history: 'aiderHistory',
+    active: 'aiderActive'
+  },
+  'continue': {
+    history: 'history',
+    active: 'active'
+  }
+} as const;
 
 const TEST_CONTEXT_ITEMS: ContextItemWithId[] = [
   {
@@ -97,8 +115,13 @@ fn bubble_sort<T: Ord>(values: &mut[T]) {
 
 type State = {
   history: ChatHistory;
+  perplexityHistory: ChatHistory;
+  aiderHistory: ChatHistory;
+  perplexityCitations: Citation[];
   contextItems: ContextItemWithId[];
   active: boolean;
+  perplexityActive: boolean;
+  aiderActive: boolean;
   config: BrowserSerializedContinueConfig;
   title: string;
   sessionId: string;
@@ -106,12 +129,22 @@ type State = {
   mainEditorContent?: JSONContent;
   selectedProfileId: string;
   directoryItems: string;
+  onboardingState: { 
+    visitedFeatures: number[]; 
+    visitedSteps: number[] 
+  };
+  showInteractiveContinueTutorial: boolean;
 };
 
 const initialState: State = {
   history: [],
+  perplexityHistory: [],
+  aiderHistory: [],
+  perplexityCitations: [],
   contextItems: [],
   active: false,
+  perplexityActive: false,
+  aiderActive: false,
   config: {
     slashCommands: [
       {
@@ -133,12 +166,18 @@ const initialState: State = {
     ],
     contextProviders: [],
     models: [],
+    isBetaAccess: false,
   },
   title: "New Session",
   sessionId: v4(),
   defaultModelTitle: "GPT-4",
   selectedProfileId: "local",
   directoryItems: "",
+  onboardingState: {
+    visitedFeatures: [0],
+    visitedSteps: [0]
+  },
+  showInteractiveContinueTutorial: getLocalStorage("showTutorialCard") ?? false,
 };
 
 export const stateSlice = createSlice({
@@ -159,28 +198,58 @@ export const stateSlice = createSlice({
     },
     addPromptCompletionPair: (
       state,
-      { payload }: PayloadAction<PromptLog[]>,
+      { payload }: PayloadAction<{promptLogs: PromptLog[], source: keyof typeof integrationStatesMap}>,
     ) => {
-      if (!state.history.length) {
+      const {promptLogs, source} = payload;
+      const { history: historyKey } = integrationStatesMap[source];
+      const currentHistory = state[historyKey];
+      if (!currentHistory.length) {
         return;
       }
-      const lastHistory = state.history[state.history.length - 1];
+      const lastHistory = currentHistory[currentHistory.length - 1];
 
       lastHistory.promptLogs = lastHistory.promptLogs
-        ? lastHistory.promptLogs.concat(payload)
-        : payload;
+        ? lastHistory.promptLogs.concat(promptLogs)
+        : promptLogs;
     },
     setActive: (state) => {
       state.active = true;
     },
-    clearLastResponse: (state) => {
-      if (state.history.length < 2) {
-        return;
-      }
-      state.mainEditorContent =
-        state.history[state.history.length - 2].editorState;
-      state.history = state.history.slice(0, -2);
+    setPerplexityActive: (state) => {
+      state.perplexityActive = true;
     },
+    setAiderActive: (state) => {
+      state.aiderActive = true;
+    },
+    setPerplexityCitations: (state, action: PayloadAction<Citation[]>) => {
+      state.perplexityHistory[state.perplexityHistory.length - 1].citations = action.payload;
+    },
+    clearLastResponse: (state, action?: PayloadAction<'perplexity' | 'aider' | 'continue'>) => {
+      if (action.payload === 'perplexity') {
+        if (state.perplexityHistory.length < 2) return;
+        state.mainEditorContent = state.perplexityHistory[state.perplexityHistory.length - 2].editorState;
+        state.perplexityHistory = state.perplexityHistory.slice(0, -2);
+      } else if (action.payload === 'aider') {
+        if (state.aiderHistory.length < 2) return;
+        state.mainEditorContent = state.aiderHistory[state.aiderHistory.length - 2].editorState;
+        state.aiderHistory = state.aiderHistory.slice(0, -2);
+      } else {
+        if (state.history.length < 2) {
+          return;
+        }
+        state.mainEditorContent =
+          state.history[state.history.length - 2].editorState;
+        state.history = state.history.slice(0, -2);
+      }
+    },
+    // clearLastResponse: (state) => {
+    //   if (state.history.length < 2) {
+    //     return;
+    //   }
+    //   state.mainEditorContent =
+    //     state.history[state.history.length - 2].editorState;
+    //   state.history = state.history.slice(0, -2);
+    // },
     consumeMainEditorContent: (state) => {
       state.mainEditorContent = undefined;
     },
@@ -224,42 +293,62 @@ export const stateSlice = createSlice({
       }: PayloadAction<{
         index: number;
         editorState: JSONContent;
+        source: keyof typeof integrationStatesMap;  // todo: put this into an interface
       }>,
     ) => {
-      const historyItem = state.history[payload.index];
-      if (!historyItem) {
-        return;
-      }
+      const source = payload.source || 'continue';
+      const { history: historyKey } = integrationStatesMap[source];
+      const currentHistory = state[historyKey];
+
+      // Early return if invalid index
+      const historyItem = currentHistory[payload.index];
+      if (!historyItem) return;
+
+      // Update history item
       historyItem.message.content = "";
       historyItem.editorState = payload.editorState;
 
-      // Cut off history after the resubmitted message
-      state.history = state.history.slice(0, payload.index + 1).concat({
-        message: {
-          role: "assistant",
-          content: "",
-        },
+      // Update history and set active
+      state[historyKey] = currentHistory.slice(0, payload.index + 1).concat({
+        message: { role: "assistant", content: "" },
         contextItems: [],
       });
-
-      // https://github.com/continuedev/continue/pull/1021
-      // state.contextItems = [];
-      state.active = true;
+      state[integrationStatesMap[source].active] = true;
     },
-    deleteMessage: (state, action: PayloadAction<number>) => {
-      const index = action.payload + 1;
+    // deleteMessage: (state, action: PayloadAction<number>) => {
+    //   const index = action.payload + 1;
 
-      if (index >= 0 && index < state.history.length) {
-        // Delete the current message
-        state.history.splice(index, 1);
+    //   if (index >= 0 && index < state.history.length) {
+    //     // Delete the current message
+    //     state.history.splice(index, 1);
 
-        // If the next message is an assistant message, delete it too
-        if (
-          index < state.history.length &&
-          state.history[index].message.role === "assistant"
-        ) {
-          state.history.splice(index, 1);
-        }
+    //     // If the next message is an assistant message, delete it too
+    //     if (
+    //       index < state.history.length &&
+    //       state.history[index].message.role === "assistant"
+    //     ) {
+    //       state.history.splice(index, 1);
+    //     }
+    //   }
+    // },
+    deleteMessage: (
+      state,
+      action: PayloadAction<{
+        index: number,
+        source: keyof typeof integrationStatesMap}>
+    ) => {
+      const { index, source = 'continue' } = action.payload;
+      const { history: historyKey } = integrationStatesMap[source];
+      const currentHistory = state[historyKey];
+
+      if (index >= 0 && index < currentHistory.length) {
+        currentHistory.splice(index, 1);
+          if (
+            index < currentHistory.length &&
+            currentHistory[index].message.role === "assistant"
+          ) {
+            currentHistory.splice(index, 1);
+          }
       }
     },
 
@@ -287,6 +376,51 @@ export const stateSlice = createSlice({
       // state.contextItems = [];
       state.active = true;
     },
+    initNewActivePerplexityMessage: (
+      state,
+      {
+        payload,
+      }: PayloadAction<{
+        editorState: JSONContent;
+      }>,
+    ) => {
+      state.perplexityHistory.push({
+        message: { role: "user", content: "" },
+        contextItems: state.contextItems,
+        editorState: payload.editorState,
+        citations: [],
+      });
+      state.perplexityHistory.push({
+        message: {
+          role: "assistant",
+          content: "",
+        },
+        contextItems: [],
+      });
+      state.perplexityActive = true;
+    },
+    initNewActiveAiderMessage: (
+      state,
+      {
+        payload,
+      }: PayloadAction<{
+        editorState: JSONContent;
+      }>,
+    ) => {
+      state.aiderHistory.push({
+        message: { role: "user", content: "" },
+        contextItems: state.contextItems,
+        editorState: payload.editorState,
+      });
+      state.aiderHistory.push({
+        message: {
+          role: "assistant",
+          content: "",
+        },
+        contextItems: [],
+      });
+      state.aiderActive = true;
+    },
     setMessageAtIndex: (
       state,
       {
@@ -295,10 +429,13 @@ export const stateSlice = createSlice({
         message: ChatMessage;
         index: number;
         contextItems?: ContextItemWithId[];
+        source: keyof typeof integrationStatesMap;
       }>,
     ) => {
-      if (payload.index >= state.history.length) {
-        state.history.push({
+      const { history: historyKey } = integrationStatesMap[payload.source];
+      const currentHistory = state[historyKey];
+      if (payload.index >= currentHistory.length) {
+        currentHistory.push({
           message: payload.message,
           editorState: {
             type: "doc",
@@ -313,8 +450,8 @@ export const stateSlice = createSlice({
         });
         return;
       }
-      state.history[payload.index].message = payload.message;
-      state.history[payload.index].contextItems = payload.contextItems || [];
+      currentHistory[payload.index].message = payload.message;
+      currentHistory[payload.index].contextItems = payload.contextItems || [];
     },
     addContextItemsAtIndex: (
       state,
@@ -334,22 +471,46 @@ export const stateSlice = createSlice({
     setInactive: (state) => {
       state.active = false;
     },
+    setPerplexityInactive: (state) => {
+      state.perplexityActive = false;
+    },
+    setAiderInactive: (state) => {
+      state.aiderActive = false;
+    },
     streamUpdate: (state, action: PayloadAction<string>) => {
       if (state.history.length) {
         state.history[state.history.length - 1].message.content +=
           action.payload;
       }
     },
+    streamPerplexityUpdate: (state, action: PayloadAction<string>) => {
+      if (state.perplexityHistory.length) {
+        state.perplexityHistory[state.perplexityHistory.length - 1].message.content +=
+          action.payload;
+      }
+    },
+    streamAiderUpdate: (state, action: PayloadAction<string>) => {
+      if (state.aiderHistory.length) {
+        state.aiderHistory[state.aiderHistory.length - 1].message.content +=
+          action.payload;
+      }
+    },
     newSession: (
       state,
-      { payload }: PayloadAction<PersistedSessionInfo | undefined>,
+      { payload }: PayloadAction<{
+        session: PersistedSessionInfo | undefined,
+        source: keyof typeof integrationStatesMap}>,
     ) => {
-      if (payload) {
-        state.history = payload.history;
-        state.title = payload.title;
-        state.sessionId = payload.sessionId;
+      const {session, source} = payload;
+      if (session) {
+        state.history = session.history;
+        state.perplexityHistory = session.perplexityHistory;
+        state.aiderHistory = session.aiderHistory;
+        state.title = session.title;
+        state.sessionId = session.sessionId;
       } else {
-        state.history = [];
+        const { history: historyKey } = integrationStatesMap[source];
+        state[historyKey] = [];
         state.contextItems = [];
         state.active = false;
         state.title = "New Session";
@@ -499,6 +660,12 @@ export const stateSlice = createSlice({
         selectedProfileId: payload,
       };
     },
+    setOnboardingState: (state, { payload }: PayloadAction<any>) => {
+      state.onboardingState = payload;
+    },  
+    setShowInteractiveContinueTutorial: (state, action: PayloadAction<boolean>) => {
+      state.showInteractiveContinueTutorial = action.payload;
+    },
   },
 });
 
@@ -507,7 +674,11 @@ export const {
   addContextItems,
   addContextItemsAtIndex,
   setInactive,
+  setPerplexityInactive,
+  setAiderInactive,
   streamUpdate,
+  streamPerplexityUpdate,
+  streamAiderUpdate,
   newSession,
   deleteContextWithIds,
   resubmitAtIndex,
@@ -518,12 +689,19 @@ export const {
   setConfig,
   addPromptCompletionPair,
   setActive,
+  setPerplexityActive,
+  setAiderActive,
+  setPerplexityCitations,
   setEditingContextItemAtIndex,
   initNewActiveMessage,
+  initNewActivePerplexityMessage,
+  initNewActiveAiderMessage,
   setMessageAtIndex,
   clearLastResponse,
   consumeMainEditorContent,
   setSelectedProfileId,
   deleteMessage,
+  setOnboardingState,
+  setShowInteractiveContinueTutorial,
 } = stateSlice.actions;
 export default stateSlice.reducer;

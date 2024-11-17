@@ -1,9 +1,25 @@
 import * as fs from "fs";
-import { PersistedSessionInfo, SessionInfo } from "../index.js";
+import { PersistedSessionInfo, SessionInfo, IntegrationType, IntegrationHistoryMap } from "../index.js";
 import { ListHistoryOptions } from "../protocol/core.js";
 import { getSessionFilePath, getSessionsListPath } from "./paths.js";
 
 class HistoryManager {
+  private readonly integrationHistoryTypes: IntegrationHistoryMap = {
+    history: 'continue',
+    perplexityHistory: 'perplexity',
+    aiderHistory: 'aider'
+  };
+
+  getHistoryType(session: PersistedSessionInfo): IntegrationType {
+    // Type-safe way to check histories
+    for (const key of Object.keys(this.integrationHistoryTypes) as (keyof IntegrationHistoryMap)[]) {
+      if (session[key]?.length > 0) {
+        return this.integrationHistoryTypes[key];
+      }
+    }
+    return 'continue'; // Default to main if no histories found
+  };
+
   list(options: ListHistoryOptions): SessionInfo[] {
     const filepath = getSessionsListPath();
     if (!fs.existsSync(filepath)) {
@@ -20,7 +36,6 @@ class HistoryManager {
       const offset = options.offset || 0;
       sessions = sessions.slice(offset, offset + options.limit);
     }
-
     return sessions;
   }
 
@@ -66,6 +81,8 @@ class HistoryManager {
       console.log(`Error loading session: ${e}`);
       return {
         history: [],
+        perplexityHistory: [],
+        aiderHistory: [],
         title: "Failed to load session",
         workspaceDirectory: "",
         sessionId: sessionId,
@@ -97,11 +114,13 @@ class HistoryManager {
         }
       }
 
+      // todo: add a parameter to indicate integration type of session
       let found = false;
       for (const sessionInfo of sessionsList) {
         if (sessionInfo.sessionId === session.sessionId) {
           sessionInfo.title = session.title;
           sessionInfo.workspaceDirectory = session.workspaceDirectory;
+          sessionInfo.integrationType = this.getHistoryType(session); // return integration type;
           found = true;
           break;
         }
@@ -113,6 +132,7 @@ class HistoryManager {
           title: session.title,
           dateCreated: String(Date.now()),
           workspaceDirectory: session.workspaceDirectory,
+          integrationType: this.getHistoryType(session),
         };
         sessionsList.push(sessionInfo);
       }

@@ -1,8 +1,11 @@
 import { debounce } from "lodash";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useUIConfig from "../../hooks/useUIConfig";
 import CodeBlockToolBar from "./CodeBlockToolbar";
 import FileCreateChip from "./FileCreateChip";
+import { useSelector } from "react-redux";
+import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
+import { isBareChatMode } from "../../util/bareChatMode";
 
 function childToText(child: any): string {
   if (typeof child === "string") {
@@ -87,6 +90,9 @@ function PreWithToolbar(props: {
   const [isCreateFile, setIsCreateFile] = useState(false);
   const [checkedForCreateFile, setCheckedForCreateFile] = useState(false);
 
+  const defaultModel = useSelector(defaultModelSelector);
+  const bareChatMode = isBareChatMode();
+
   useEffect(() => {
     const debouncedEffect = debounce(() => {
       setRawCodeBlock(childrenToText(props.children.props.children));
@@ -138,7 +144,7 @@ function PreWithToolbar(props: {
 
       {!collapsed && (
         <>
-          {!toolbarBottom && hovering && (
+          {!toolbarBottom && hovering && !bareChatMode && (
             <CodeBlockToolBar
               text={rawCodeBlock}
               bottom={toolbarBottom}

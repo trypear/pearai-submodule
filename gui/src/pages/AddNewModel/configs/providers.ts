@@ -39,6 +39,7 @@ export interface ProviderInfo {
   refPage?: string;
   apiKeyUrl?: string;
   downloadUrl?: string;
+  showInMenu?: boolean;
 }
 
 const completionParamsInputsConfigs = Object.values(completionParamsInputs);
@@ -65,15 +66,39 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
     icon: "pearai.png",
     tags: [ModelProviderTags.Recommended, ModelProviderTags.Hosted],
     packages: [models.pearai_model],
+    showInMenu: false,
+  },
+  aider: {
+    title: "Aider",
+    provider: "aider",
+    refPage: "aider",
+    description:
+      "Enjoy effortless integration and lower your costs with our reliable hosted services.",
+    icon: "",
+    tags: [],
+    packages: [models.aider],
+    showInMenu: false,
+  },
+  perplexity: {
+    title: "Perplexity",
+    provider: "perplexity",
+    refPage: "perplexity",
+    description:
+      "Enjoy effortless integration and lower your costs with our reliable hosted services.",
+    icon: "",
+    tags: [],
+    packages: [models.perplexity],
+    showInMenu: false,
   },
   other: {
     title: "Other",
     provider: "other",
-    description: "Use your own API key for different cloud, local, and other LLM providers (i.e. OpenAI).",
+    description:
+      "Use your own API key for different cloud, local, and other LLM providers (i.e. OpenAI).",
     icon: "openai.png",
     tags: [ModelProviderTags.RequiresApiKey],
-    packages: [
-    ],
+    packages: [],
+    showInMenu: false,
   },
   openai: {
     title: "OpenAI",

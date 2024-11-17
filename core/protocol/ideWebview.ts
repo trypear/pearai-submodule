@@ -1,3 +1,5 @@
+import { AiderState } from "../../extensions/vscode/src/integrations/aider/types/aiderTypes.js";
+import { ToolType } from "../../extensions/vscode/src/util/integrationUtils.js";
 import type { RangeInFileWithContents } from "../commands/util.js";
 import type { ContextSubmenuItem } from "../index.js";
 import { ToIdeFromWebviewOrCoreProtocol } from "./ide.js";
@@ -20,6 +22,15 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   showTutorial: [undefined, void];
   showFile: [{ filepath: string }, void];
   openConfigJson: [undefined, void];
+  highlightElement: [{elementSelectors: string[]}, void];
+  unhighlightElement: [{elementSelectors: string[]}, void];
+  perplexityMode: [undefined, void];
+  addPerplexityContext: [{text: string, language: string}, void]
+  addPerplexityContextinChat: [{ text: string, language: string }, void];
+  aiderMode: [undefined, void];
+  aiderCtrlC: [undefined, void];
+  aiderResetSession: [undefined, void];
+  refreshAiderProcessState: [undefined, void];
   toggleDevTools: [undefined, void];
   reloadWindow: [undefined, void];
   focusEditor: [undefined, void];
@@ -35,10 +46,25 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   openHistory: [undefined, void];
   appendSelected: [undefined, void];
   pearaiLogin: [undefined, void];
+  closePearAIOverlay: [undefined, void];
+  openAiderChanges: [undefined, void];
+  getNumberOfChanges: [undefined, number];
+  isAiderInstalled: [undefined, boolean];
+  installAider: [undefined, void];
+  uninstallAider: [undefined, void];
+  isSupermavenInstalled: [undefined, boolean];
+  uninstallVscodeExtension: [{ extensionId: string }, void];
+  completeWelcome: [undefined, void];
+  openInventory: [undefined, void];
+  getUrlTitle: [string, string];
+  pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setInactive: [undefined, void];
+  setActiveFilePath: [string | undefined, void];
+  restFirstLaunchInGUI: [undefined, void];
+  showInteractiveContinueTutorial: [undefined, void];
   submitMessage: [{ message: any }, void]; // any -> JSONContent from TipTap
   updateSubmenuItems: [
     { provider: string; submenuItems: ContextSubmenuItem[] },
@@ -61,6 +87,8 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   openSettings: [undefined, void];
   viewHistory: [undefined, void];
   newSession: [undefined, void];
+  quickEdit: [undefined, void];
+  acceptedOrRejectedDiff: [undefined, void]
   setTheme: [{ theme: any }, void];
   setThemeType: [{ themeType: string }, void];
   setColors: [{ [key: string]: string }, void];
@@ -69,4 +97,12 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setupLocalModel: [undefined, void];
   incrementFtc: [undefined, void];
   openOnboarding: [undefined, void];
+  addPerplexityContext: [{text: string, language: string}, void]
+  addPerplexityContextinChat: [{ text: string, language: string }, void];
+  navigateToCreator: [undefined, void];
+  navigateToSearch: [undefined, void];
+  navigateToInventory: [undefined, void];
+  navigateToInventoryHome: [undefined, void];
+  getCurrentTab: [undefined, string];
+  setAiderProcessStateInGUI: [AiderState, void];
 };

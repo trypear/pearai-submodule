@@ -65,7 +65,6 @@ import {
   getPromptFiles,
   slashCommandFromPromptFile,
 } from "./promptFile.js";
-import PearAIServer from "../llm/llms/PearAIServer.js";
 
 function resolveSerializedConfig(filepath: string): SerializedContinueConfig {
   let content = fs.readFileSync(filepath, "utf8");
@@ -241,22 +240,12 @@ async function intermediateToFinalConfig(
         writeLog,
         config.completionOptions,
         config.systemMessage,
+        ide.getCurrentDirectory.bind(ide),
+        async () => await ide.getPearAuth(),
+        async (auth: PearAuth) => await ide.updatePearCredentials(auth),
       );
       if (!llm) {
         continue;
-      }
-
-      // TODO: There is most definately a better way to do this
-      //       windows is bad so its hard to set this up locally - Ender
-      // inject callbacks to backend
-      if (llm instanceof PearAIServer) {
-        llm.getCredentials = async () => {
-          return await ide.getPearAuth();
-        };
-
-        llm.setCredentials = async (auth: PearAuth) => {
-          await ide.updatePearCredentials(auth);
-        };
       }
 
       if (llm.model === "AUTODETECT") {
@@ -362,16 +351,6 @@ async function intermediateToFinalConfig(
               config.systemMessage,
             );
 
-            if (llm instanceof PearAIServer) {
-              llm.getCredentials = async () => {
-                return await ide.getPearAuth();
-              };
-
-              llm.setCredentials = async (auth: PearAuth) => {
-                await ide.updatePearCredentials(auth);
-              };
-            }
-
             // if (llm?.providerName === "free-trial") {
             //   if (!allowFreeTrial) {
             //     // This shouldn't happen
@@ -391,9 +370,9 @@ async function intermediateToFinalConfig(
 
   // These context providers are always included, regardless of what, if anything,
   // the user has configured in config.json
-  const DEFAULT_CONTEXT_PROVIDERS = [
-    new FileContextProvider({}),
-    new CodebaseContextProvider({}),
+  const DEFAULT_CONTEXT_PROVIDERS : any[] = [
+    // new FileContextProvider({}),
+    // new CodebaseContextProvider({}),
   ];
 
   const DEFAULT_CONTEXT_PROVIDERS_TITLES = DEFAULT_CONTEXT_PROVIDERS.map(
@@ -518,6 +497,7 @@ function finalToBrowserConfig(
     embeddingsProvider: final.embeddingsProvider?.id,
     ui: final.ui,
     experimental: final.experimental,
+    isBetaAccess: final?.isBetaAccess,
   };
 }
 

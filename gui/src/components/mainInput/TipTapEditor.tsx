@@ -15,7 +15,7 @@ import {
 import { modelSupportsImages } from "core/llm/autodetect";
 import { getBasename, getRelativePath } from "core/util";
 import { usePostHog } from "posthog-js/react";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState, memo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import styled from "styled-components";
 import {
@@ -56,6 +56,12 @@ import {
   getSlashCommandDropdownOptions,
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
+import { useLocation } from "react-router-dom";
+import ActiveFileIndicator from "./ActiveFileIndicator";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import TopBar from "./TopBarIndicators";
+import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
+
 
 const InputBoxDiv = styled.div`
   resize: none;
@@ -70,7 +76,6 @@ const InputBoxDiv = styled.div`
   background-color: ${vscInputBackground};
   color: ${vscForeground};
   z-index: 1;
-  border: 0.5px solid ${vscInputBorder};
   outline: none;
   font-size: ${getFontSize()}px;
   &:focus {
@@ -115,6 +120,22 @@ const HoverTextDiv = styled.div`
   justify-content: center;
 `;
 
+
+const getPlaceholder = (historyLength: number, location: any) => {
+  if (location?.pathname === "/aiderMode" || location?.pathname === "/inventory/aiderMode") {
+    return historyLength === 0
+      ? "Ask me to create, change, or fix anything..."
+      : "Send a follow-up";
+  }
+  else if (location?.pathname === "/perplexityMode" || location?.pathname === "/inventory/perplexityMode") {
+    return historyLength === 0 ? "Ask for any information" : "Ask a follow-up";
+  }
+
+  return historyLength === 0
+    ? "Ask anything, '/' for slash commands, '@' to add context"
+    : "Ask a follow-up";
+};
+
 function getDataUrlForFile(file: File, img): string {
   const targetWidth = 512;
   const targetHeight = 512;
@@ -140,20 +161,43 @@ interface TipTapEditorProps {
   isMainInput: boolean;
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
+  source?: 'perplexity' | 'aider' | 'continue';
+  onChange?: (newState: JSONContent) => void;
 }
 
-function TipTapEditor(props: TipTapEditorProps) {
+const TipTapEditor = memo(function TipTapEditor({
+  availableContextProviders,
+  availableSlashCommands,
+  isMainInput,
+  onEnter,
+  editorState,
+  source = 'continue',
+  onChange,
+}: TipTapEditorProps) {
   const dispatch = useDispatch();
 
   const ideMessenger = useContext(IdeMessengerContext);
   const { getSubmenuContextItems } = useContext(SubmenuContextProvidersContext);
 
   const historyLength = useSelector(
-    (store: RootState) => store.state.history.length,
+    (store: RootState) => {
+      switch(source) {
+        case 'perplexity':
+          return store.state.perplexityHistory.length;
+        case 'aider':
+          return store.state.aiderHistory.length;
+        default:
+          return store.state.history.length;
+      }
+    }
   );
+
+  // Create a unique key for each editor instance
+  const editorKey = useMemo(() => `${(source || 'continue')}-editor`, [source]);
+
   const useActiveFile = useSelector(selectUseActiveFile);
 
-  const { saveSession } = useHistory(dispatch);
+  const { saveSession } = useHistory(dispatch, source);
 
   const posthog = usePostHog();
   const [isEditorFocused, setIsEditorFocused] = useState(false);
@@ -194,20 +238,26 @@ function TipTapEditor(props: TipTapEditorProps) {
   const contextItems = useSelector(
     (store: RootState) => store.state.contextItems,
   );
-
   const defaultModel = useSelector(defaultModelSelector);
-
   const getSubmenuContextItemsRef = useUpdatingRef(getSubmenuContextItems);
-  const availableContextProvidersRef = useUpdatingRef(
-    props.availableContextProviders,
-  );
+  const availableContextProvidersRef = useUpdatingRef(availableContextProviders)
 
   const historyLengthRef = useUpdatingRef(historyLength);
   const availableSlashCommandsRef = useUpdatingRef(
-    props.availableSlashCommands,
+    availableSlashCommands,
   );
 
-  const active = useSelector((state: RootState) => state.state.active);
+  const active = useSelector((store: RootState) => {
+    switch(source) {
+      case 'perplexity':
+        return store.state.perplexityActive;
+      case 'aider':
+        return store.state.aiderActive;
+      default:
+        return store.state.active;
+    }
+  });
+
   const activeRef = useUpdatingRef(active);
 
   async function handleImageFile(
@@ -256,6 +306,16 @@ function TipTapEditor(props: TipTapEditorProps) {
   );
 
   const { prevRef, nextRef, addRef } = useInputHistory();
+  const location = useLocation();
+
+  // Keep track of the last valid content
+  const lastContentRef = useRef(editorState);
+
+  useEffect(() => {
+    if (editorState) {
+      lastContentRef.current = editorState;
+    }
+  }, [editorState]);
 
   const editor: Editor = useEditor({
     extensions: [
@@ -299,10 +359,7 @@ function TipTapEditor(props: TipTapEditorProps) {
         },
       }),
       Placeholder.configure({
-        placeholder: () =>
-          historyLengthRef.current === 0
-            ? "Ask anything, '/' for slash commands, '@' to add context"
-            : "Ask a follow-up",
+        placeholder: () => getPlaceholder(historyLengthRef.current, location),
       }),
       Paragraph.extend({
         addKeyboardShortcuts() {
@@ -319,7 +376,7 @@ function TipTapEditor(props: TipTapEditorProps) {
               return true;
             },
 
-            "Cmd-Enter": () => {
+            "Mod-Enter": () => {
               onEnterRef.current({
                 useCodebase: true,
                 noContext: !useActiveFile,
@@ -336,7 +393,7 @@ function TipTapEditor(props: TipTapEditorProps) {
 
               return true;
             },
-            "Cmd-Backspace": () => {
+            "Mod-Backspace": () => {
               // If you press cmd+backspace wanting to cancel,
               // but are inside of a text box, it shouldn't
               // delete the text
@@ -433,48 +490,33 @@ function TipTapEditor(props: TipTapEditorProps) {
         style: `font-size: ${getFontSize()}px;`,
       },
     },
-    content: props.editorState || mainEditorContent || "",
+    content: lastContentRef.current,
+    editable: true,
     onFocus: () => setIsEditorFocused(true),
     onBlur: () => setIsEditorFocused(false),
-    onUpdate: ({ editor, transaction }) => {
-      // If /edit is typed and no context items are selected, select the first
-
-      if (contextItems.length > 0) {
-        return;
+    onCreate({ editor }) {
+      if (lastContentRef.current) {
+        editor.commands.setContent(lastContentRef.current);
       }
-
-      const json = editor.getJSON();
-      const codeBlock = json.content?.find((el) => el.type === "codeBlock");
-      if (!codeBlock) {
-        return;
-      }
-
-      // Search for slashcommand type
-      for (const p of json.content) {
-        if (
-          p.type !== "paragraph" ||
-          !p.content ||
-          typeof p.content === "string"
-        ) {
-          continue;
-        }
-        for (const node of p.content) {
-          if (
-            node.type === "slashcommand" &&
-            ["/edit", "/comment"].includes(node.attrs.label)
-          ) {
-            // Update context items
-            dispatch(
-              setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
-            );
-            return;
-          }
-        }
-      }
-    },
-  });
+    }
+  }, []);  // Remove dependencies to prevent recreation
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
+
+  const isPerplexity = isPerplexityMode();
+  const isAider = isAiderMode();
+
+  useEffect(() => {
+    const handleShowFile = (event: CustomEvent) => {
+      const filepath = event.detail.filepath;
+      ideMessenger.post("showFile", { filepath });
+    };
+
+    window.addEventListener('showFile', handleShowFile as EventListener);
+    return () => {
+      window.removeEventListener('showFile', handleShowFile as EventListener);
+    };
+  }, [ideMessenger]);
 
   useEffect(() => {
     if (isJetBrains()) {
@@ -562,15 +604,15 @@ function TipTapEditor(props: TipTapEditorProps) {
         return;
       }
 
-      props.onEnter(json, modifiers);
+      onEnter(json, modifiers);
 
-      if (props.isMainInput) {
+      if (isMainInput) {
         const content = editor.state.toJSON().doc;
         addRef.current(content);
         editor.commands.clearContent(true);
       }
     },
-    [props.onEnter, editor, props.isMainInput],
+    [onEnter, editor, isMainInput],
   );
 
   // This is a mechanism for overriding the IDE keyboard shortcut when inside of the webview
@@ -600,22 +642,66 @@ function TipTapEditor(props: TipTapEditorProps) {
 
   // Re-focus main input after done generating
   useEffect(() => {
-    if (editor && !active && props.isMainInput && document.hasFocus()) {
+    if (editor && !active && isMainInput && document.hasFocus()) {
       editor.commands.focus(undefined, { scrollIntoView: false });
     }
-  }, [props.isMainInput, active, editor]);
+  }, [isMainInput, active, editor]);
 
   // IDE event listeners
   useWebviewListener(
     "userInput",
     async (data) => {
-      if (!props.isMainInput) {
+      if (!isMainInput) {
         return;
       }
       editor?.commands.insertContent(data.input);
       onEnterRef.current({ useCodebase: false, noContext: true });
     },
-    [editor, onEnterRef.current, props.isMainInput],
+    [editor, onEnterRef.current, isMainInput],
+  );
+
+  useWebviewListener(
+    "addPerplexityContextinChat",
+    async (data) => {
+      if (!isMainInput || !editor) {
+        return;
+      }
+
+      const item: ContextItemWithId = {
+        content: data.text,
+        name: "Context from PearAI Search",
+        description: "Context from result of Perplexity AI",
+        id: {
+          providerTitle: "code",
+          itemId: data.text,
+        },
+        language: data.language,
+      };
+
+      let index = 0;
+      for (const el of editor.getJSON().content) {
+        if (el.type === "codeBlock") {
+          index += 2;
+        } else {
+          break;
+        }
+      }
+      editor
+        .chain()
+        .insertContentAt(index, {
+          type: "codeBlock",
+          attrs: {
+            item,
+          },
+        })
+        .run();
+
+      setTimeout(() => {
+          editor.commands.blur();
+          editor.commands.focus("end");
+      }, 20);
+    },
+    [editor, onEnterRef.current, isMainInput],
   );
 
   useWebviewListener("jetbrains/editorInsetRefresh", async () => {
@@ -625,7 +711,7 @@ function TipTapEditor(props: TipTapEditorProps) {
   useWebviewListener(
     "focusContinueInput",
     async (data) => {
-      if (!props.isMainInput) {
+      if (!isMainInput) {
         return;
       }
       if (historyLength > 0) {
@@ -636,26 +722,26 @@ function TipTapEditor(props: TipTapEditorProps) {
         editor?.commands.focus("end");
       }, 20);
     },
-    [historyLength, saveSession, editor, props.isMainInput],
+    [historyLength, saveSession, editor, isMainInput],
   );
 
   useWebviewListener(
     "focusContinueInputWithoutClear",
     async () => {
-      if (!props.isMainInput) {
+      if (!isMainInput) {
         return;
       }
       setTimeout(() => {
         editor?.commands.focus("end");
       }, 20);
     },
-    [editor, props.isMainInput],
+    [editor, isMainInput],
   );
 
   useWebviewListener(
     "focusContinueInputWithNewSession",
     async () => {
-      if (!props.isMainInput) {
+      if (!isMainInput) {
         return;
       }
       saveSession();
@@ -663,13 +749,13 @@ function TipTapEditor(props: TipTapEditorProps) {
         editor?.commands.focus("end");
       }, 20);
     },
-    [editor, props.isMainInput],
+    [editor, isMainInput],
   );
 
   useWebviewListener(
     "highlightedCode",
     async (data) => {
-      if (!props.isMainInput || !editor) {
+      if (!data.rangeInFileWithContents.contents || !isMainInput || !editor) {
         return;
       }
       if (!ignoreHighlightedCode) {
@@ -730,10 +816,10 @@ function TipTapEditor(props: TipTapEditorProps) {
     },
     [
       editor,
-      props.isMainInput,
+      isMainInput,
       historyLength,
       ignoreHighlightedCode,
-      props.isMainInput,
+      isMainInput,
       onEnterRef.current,
     ],
   );
@@ -741,10 +827,10 @@ function TipTapEditor(props: TipTapEditorProps) {
   useWebviewListener(
     "isContinueInputFocused",
     async () => {
-      return props.isMainInput && editorFocusedRef.current;
+      return isMainInput && editorFocusedRef.current;
     },
-    [editorFocusedRef, props.isMainInput],
-    !props.isMainInput,
+    [editorFocusedRef, isMainInput],
+    !isMainInput,
   );
 
   const [showDragOverMsg, setShowDragOverMsg] = useState(false);
@@ -774,6 +860,61 @@ function TipTapEditor(props: TipTapEditorProps) {
   }, []);
 
   const [optionKeyHeld, setOptionKeyHeld] = useState(false);
+
+  // Use onTransaction to track content changes
+  useEffect(() => {
+    if (editor) {
+      editor.on('transaction', () => {
+        const newContent = editor.getJSON();
+        lastContentRef.current = newContent;
+        onChange?.(newContent);
+
+        // If /edit is typed and no context items are selected, select the first
+
+        if (contextItems.length > 0) {
+          return;
+        }
+
+        const codeBlock = newContent.content?.find((el) => el.type === "codeBlock");
+        if (!codeBlock) {
+          return;
+        }
+
+        // Search for slashcommand type
+        for (const p of newContent.content) {
+          if (
+            p.type !== "paragraph" ||
+            !p.content ||
+            typeof p.content === "string"
+          ) {
+            continue;
+          }
+          for (const node of p.content) {
+            if (
+              node.type === "slashcommand" &&
+              ["/edit", "/comment"].includes(node.attrs.label)
+            ) {
+              // Update context items
+              dispatch(
+                setEditingContextItemAtIndex({ item: codeBlock.attrs.item }),
+              );
+              return;
+            }
+          }
+        }
+      });
+    }
+  }, [editor, onChange, contextItems, dispatch]);
+
+  // Prevent content flash during streaming
+  useEffect(() => {
+    if (editor && lastContentRef.current) {
+      const currentContent = editor.getJSON();
+      if (JSON.stringify(currentContent) !== JSON.stringify(lastContentRef.current)) {
+        editor.commands.setContent(lastContentRef.current);
+      }
+    }
+  }, [editor, source]);
 
   return (
     <InputBoxDiv
@@ -828,7 +969,8 @@ function TipTapEditor(props: TipTapEditorProps) {
         });
         event.preventDefault();
       }}
-    >
+    > 
+      {(!isPerplexity && !isAider) && <TopBar />}
       <EditorContent
         spellCheck={false}
         editor={editor}
@@ -838,11 +980,12 @@ function TipTapEditor(props: TipTapEditorProps) {
       />
       <InputToolbar
         showNoContext={optionKeyHeld}
-        hidden={!(editorFocusedRef.current || props.isMainInput)}
+        hidden={!(editorFocusedRef.current || isMainInput)}
         onAddContextItem={() => {
           if (editor.getText().endsWith("@")) {
           } else {
-            editor.commands.insertContent("@");
+            // Add space so that if there's text right before, it still activates the dropdown
+            editor.commands.insertContent(" @");
           }
         }}
         onEnter={onEnterRef.current}
@@ -871,6 +1014,6 @@ function TipTapEditor(props: TipTapEditorProps) {
         )}
     </InputBoxDiv>
   );
-}
+});
 
 export default TipTapEditor;
