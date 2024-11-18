@@ -37,26 +37,22 @@ const ScrollToBottomButton = styled.button<{ visible: boolean }>`
   bottom: 24px;
   right: 36px;
   background-color: ${vscBackground};
-  border: 1px solid ${lightGray};  // Make border more visible
+  border: 0.5px solid ${lightGray};
   border-radius: 10%;
-  width: 32px;  // Slightly larger
+  width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  opacity: ${props => props.visible ? 1 : 0};  // Full opacity when visible
+  opacity: ${props => props.visible ? 1 : 0};
   visibility: ${props => props.visible ? 'visible' : 'hidden'};
   transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);  // More prominent shadow
-  z-index: 99;  // Ensure it's above content
-  
-  &:hover {
-    background-color: ${lightGray}44;
-  }
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  z-index: 99;
 
   svg {
-    color: ${lightGray};  // Make icon more visible
+    color: ${lightGray};
   }
 `;
 
