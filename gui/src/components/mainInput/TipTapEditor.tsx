@@ -757,7 +757,7 @@ const TipTapEditor = memo(function TipTapEditor({
   useWebviewListener(
     "highlightedCode",
     async (data) => {
-      if (!isMainInput || !editor) {
+      if (!data.rangeInFileWithContents.contents || !isMainInput || !editor) {
         return;
       }
       if (!ignoreHighlightedCode) {
