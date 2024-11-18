@@ -57,6 +57,7 @@ const PROVIDER_SUPPORTS_IMAGES: ModelProvider[] = [
   "bedrock",
   "continue-proxy",
   "pearai_server",
+  "openrouter",
 ];
 
 const MODEL_SUPPORTS_IMAGES: string[] = [
