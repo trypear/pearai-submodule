@@ -335,7 +335,6 @@ const TipTapEditor = memo(function TipTapEditor({
 
                   // Only log and process if we actually have an image
                   if (hasImageItem) {
-                    console.log("Pasting image");
                     for (const item of items) {
                       if (!item.type.startsWith('image/')) continue;
                       
