@@ -10,6 +10,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -174,6 +175,10 @@ function GUI() {
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
+
+  const getIsFirstInSession = useMemo(() => {
+    return (idx: number) => idx === state.history.findIndex(item => item.message.role === "user");
+  }, [state.history]);
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -356,7 +361,7 @@ function GUI() {
                         isMainInput={false}
                         editorState={item.editorState}
                         contextItems={item.contextItems}
-                        isFirstInSession={index === state.history.findIndex(item => item.message.role === "user")}
+                        isFirstInSession={getIsFirstInSession(index)}
                       ></ContinueInputBox>
                     ) : (
                       <div className="thread-message">
