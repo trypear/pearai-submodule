@@ -31,7 +31,11 @@ const MenuButton = styled.div<{ offFocus: boolean }>`
   cursor: pointer;
 `;
 
-export default function TopBar() {
+interface TopBarProps {
+  isFirstInSession?: boolean;
+}
+
+export default function TopBar({ isFirstInSession }) {
   const ideMessenger = useContext(IdeMessengerContext);
 
   const handleClick = () => {
@@ -40,7 +44,7 @@ export default function TopBar() {
   return (
     <div className="flex justify-between items-center mb-2 text-xs w-full">
       <div className="flex items-center gap-1">
-      <ActiveFileIndicator />
+        <ActiveFileIndicator isFirstInSession={isFirstInSession} />
       </div>
         <MenuButton 
         offFocus={false}

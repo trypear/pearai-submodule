@@ -372,22 +372,23 @@ export class VsCodeExtension {
       const openFiles = vscode.workspace.textDocuments;
       if (openFiles.length === 1) {
         // the count is amount of last open files
-        this.sidebar.webviewProtocol.request("setActiveFilePath", "", [PEAR_CONTINUE_VIEW_ID]);
+        this.sidebar.webviewProtocol.request("setActiveFilePath", undefined, [PEAR_CONTINUE_VIEW_ID]);
       }
     });
 
     context.subscriptions.push(
       vscode.window.onDidChangeActiveTextEditor((event) => {
         if (!event) return;
+        
         const filepath = event.document.uri.fsPath;
+        
         if (isValidFilePath(filepath)) {
-          this.core.invoke("didChangeActiveTextEditor", { filepath });
+          this.ide.setActiveFilePath(filepath);
           this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
         }
       })
     );
 
-    this.updateNewWindowActiveFilePath();
     startAiderProcess(this.core);
   }
 
@@ -398,13 +399,6 @@ export class VsCodeExtension {
 
   private async refreshContextProviders() {
     this.sidebar.webviewProtocol.request("refreshSubmenuItems", undefined); // Refresh all context providers
-  }
-
-  private async updateNewWindowActiveFilePath() {
-    const currentFile = await this.ide.getCurrentFile();
-    if (currentFile && isValidFilePath(currentFile)) {
-      this.sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
-    }
   }
 
   registerCustomContextProvider(contextProvider: IContextProvider) {

@@ -60,8 +60,7 @@ export const uiStateSlice = createSlice({
       state.displayBottomMessageOnBottom = action.payload;
     },
     setActiveFilePath: (state, action: PayloadAction<UiState["activeFilePath"]>) => {
-      const filepath = action.payload ?? "";
-      state.activeFilePath = isValidFilePath(filepath) ? filepath : undefined;
+      state.activeFilePath = action.payload || undefined;
     },
   },
 });

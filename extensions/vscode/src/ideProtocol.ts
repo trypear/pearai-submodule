@@ -409,8 +409,14 @@ class VsCodeIde implements IDE {
     return await this.ideUtils.getOpenFiles();
   }
 
+  private activeFilePath: string | undefined;
+
   async getCurrentFile(): Promise<string | undefined> {
-    return vscode.window.activeTextEditor?.document.uri.fsPath;
+    return this.activeFilePath;
+  }
+  
+  setActiveFilePath(filepath: string | undefined): void {
+    this.activeFilePath = filepath;
   }
 
   async getPinnedFiles(): Promise<string[]> {
