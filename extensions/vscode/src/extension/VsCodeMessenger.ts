@@ -82,6 +82,11 @@ export class VsCodeMessenger {
     private readonly workOsAuthProvider: WorkOsAuthProvider,
   ) {
     /** WEBVIEW ONLY LISTENERS **/
+    this.onWebview("invokeVSCodeCommandById", (msg) => {
+      const commandId = msg.data.commandId;
+      const args = msg.data.args ?? [];
+      vscode.commands.executeCommand(commandId, ...args);
+    });
     // welcome stuff
     this.onWebview("markNewOnboardingComplete", (msg) => {
       vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
@@ -167,7 +172,6 @@ export class VsCodeMessenger {
       if (installExtensions) {
         vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
       }
-
       if (tools) {
         tools.forEach((tool: ToolType) => {
           const toolCommand = TOOL_COMMANDS[tool];

@@ -363,12 +363,12 @@ function AiderGUI() {
             <div className="max-w-2xl mx-auto w-full text-center">
               <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
                 <div className="flex-1" />
-                <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Creator</h1>
-                <div className="flex-1 flex items-center justify-start">
-                  <Badge variant="outline" className="lg:relative lg:top-[2px]">
-                    Beta (Powered by Aider*)
-                  </Badge>
-                </div>
+                  <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Creator</h1>
+                  <div className="flex-1 flex items-center justify-start">
+                    <Badge variant="outline" className="lg:relative lg:top-[2px]">
+                      Beta (Powered by Aider*)
+                    </Badge>
+                  </div>
               </div>
               <p className="text-sm text-foreground">
                 Ask for a feature, describe a bug to fix, or ask for a change to
