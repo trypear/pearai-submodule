@@ -82,6 +82,11 @@ export class VsCodeMessenger {
     private readonly workOsAuthProvider: WorkOsAuthProvider,
   ) {
     /** WEBVIEW ONLY LISTENERS **/
+    this.onWebview("invokeVSCodeCommandById", (msg) => {
+      const commandId = msg.data.commandId;
+      const args = msg.data.args ?? [];
+      vscode.commands.executeCommand(commandId, ...args);
+    });
     // welcome stuff
     this.onWebview("markNewOnboardingComplete", (msg) => {
       vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
@@ -167,19 +172,20 @@ export class VsCodeMessenger {
       if (installExtensions) {
         vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
       }
-
-      tools.forEach((tool: ToolType) => {
-        const toolCommand = TOOL_COMMANDS[tool];
-        if (toolCommand) {
-          if (toolCommand.args) {
-            vscode.commands.executeCommand(toolCommand.command, toolCommand.args);
+      if (tools) {
+        tools.forEach((tool: ToolType) => {
+          const toolCommand = TOOL_COMMANDS[tool];
+          if (toolCommand) {
+            if (toolCommand.args) {
+              vscode.commands.executeCommand(toolCommand.command, toolCommand.args);
+            } else {
+              vscode.commands.executeCommand(toolCommand.command);
+            }
           } else {
-            vscode.commands.executeCommand(toolCommand.command);
+            console.warn(`Unknown tool: ${tool}`);
           }
-        } else {
-          console.warn(`Unknown tool: ${tool}`);
-        }
-      });
+        });
+      }
     });
     this.onWebview("closePearAIOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.unlockOverlay");

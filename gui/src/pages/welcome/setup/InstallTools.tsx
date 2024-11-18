@@ -109,77 +109,88 @@ export default function InstallTools({
     }, []);
 
     return (
-        <div className="step-content flex w-full h-screen items-center justify-center bg-background text-foreground">
-            <div className="w-full max-w-[800px] flex flex-col items-center p-4">
-                <h5 className="text-xl md:text-2xl lg:text-2xl font-bold text-foreground mb-12 text-center">
-                    PearAI requires some extra installation for the following integrations
-                </h5>
-
-                <div className="w-full space-y-2 mb-4">
-                    {tools.map((tool) => (
-                        <Card key={tool.id} className={`p-4 flex items-center border-solid border-2 justify-between ${
-                            tool.preInstalled || attemptedInstalls.includes(tool.id) ? 'opacity-60' : ''
-                        }`}>
-                            <div className="flex items-center gap-4 flex-1">
-                                <div className="p-1 bg-muted rounded-lg">
-                                    {typeof tool.icon === 'string' ?
-                                    <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-[80px]" />
-                                    : tool.icon}
-                                </div>
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                        <div className="font-semibold text-lg">{tool.name}</div>
-                                        {(tool.preInstalled || attemptedInstalls.includes(tool.id)) && (
-                                            <span className="text-xs ml-2 bg-foreground text-white px-2 py-1 rounded-md">
-                                                {tool.preInstalled ? 'Pre-installed' : 'Setup initiated'}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <p className="text-sm text-muted-foreground">{tool.description}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center h-5 ml-4">
-                                <input
-                                    type="checkbox"
-                                    checked={checkedTools[tool.id] || false}
-                                    onChange={() => handleCheckboxChange(tool.id)}
-                                    disabled={tool.preInstalled || attemptedInstalls.includes(tool.id)}
-                                    className="h-5 w-5 rounded-sm cursor-pointer focus:outline-none"
-                                    style={{
-                                        accentColor: 'var(--button-background)',
-                                    }}
-                                />
-                            </div>
-                        </Card>
-                    ))}
+        <div className="flex flex-col min-h-screen bg-primary text-foreground">
+          <div className="flex-1 flex items-center justify-center p-4 pb-32">
+            <div className="w-full max-w-[800px] flex flex-col">
+              <h5 className="text-xl md:text-2xl lg:text-2xl font-bold text-foreground mb-8 text-center">
+                PearAI requires some extra installation for the following integrations
+              </h5>
+    
+              <div className="flex-1 overflow-y-auto max-h-[calc(100vh-300px)] mb-8">
+                <div className="w-full space-y-2">
+                  {tools.map((tool) => (
+                    <Card
+                      key={tool.id}
+                      className={`p-4 flex items-center border-solid border-2 justify-between ${
+                        tool.preInstalled || attemptedInstalls.includes(tool.id) ? 'opacity-60' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="p-1 bg-muted rounded-lg">
+                          {typeof tool.icon === 'string' ? (
+                            <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-[80px]" />
+                          ) : (
+                            tool.icon
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <div className="font-semibold text-lg">{tool.name}</div>
+                            {(tool.preInstalled || attemptedInstalls.includes(tool.id)) && (
+                              <span className="text-xs ml-2 bg-foreground text-white px-2 py-1 rounded-md">
+                                {tool.preInstalled ? 'Pre-installed' : 'Setup initiated'}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground">{tool.description}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center h-5 ml-4">
+                        <input
+                          type="checkbox"
+                          checked={checkedTools[tool.id] || false}
+                          onChange={() => handleCheckboxChange(tool.id)}
+                          disabled={tool.preInstalled || attemptedInstalls.includes(tool.id)}
+                          className="h-5 w-5 rounded-sm cursor-pointer focus:outline-none"
+                          style={{
+                            accentColor: 'var(--button-background)',
+                          }}
+                        />
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-                <div className="absolute bottom-8 right-8 flex items-center gap-4">
-                <div
-                    onClick={handleSkip}
-                    className="flex items-center gap-2 cursor-pointer"
-                >
-                    Skip
+              </div>
+            </div>
+          </div>
+    
+          <div className="absolute bottom-0 right-0 p-4 bg-primary">
+            <div className="flex flex-col items-end">
+              <div className="flex items-center justify-end gap-4 mb-2">
+                <div onClick={handleSkip} className="flex items-center gap-2 cursor-pointer">
+                  Skip
                 </div>
                 <Button
-                    className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
-                    onClick={handleInstallChecked}
+                  className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
+                  onClick={handleInstallChecked}
                 >
-                    {getButtonText()}
+                  {getButtonText()}
                 </Button>
-                </div>
-                <div className="text-[10px] z-[100] hover:cursor-pointer  text-muted-foreground mt-4 flex justify-end pr-4 pb-4">
-                    *View PearAI Disclaimer page{" "}
-                    <a
-                        href="https://trypear.ai/disclaimer/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-muted-foreground hover:cursor-pointer hover:text-primary hover:underline ml-1"
-                    >
-                        here
-                    </a>
-                    .
-                </div>
+              </div>
+              <div className="text-[8px] text-muted-foreground">
+                *View PearAI Disclaimer page
+                <a
+                  href="https://trypear.ai/disclaimer/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground hover:cursor-pointer hover:text-primary hover:underline ml-1"
+                >
+                  here
+                </a>
+                .
+              </div>
             </div>
+          </div>
         </div>
-    );
-}
+      )
+    }

@@ -102,6 +102,15 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   closeOverlay: [undefined, void];
   lockOverlay: [undefined, void];
   unlockOverlay: [undefined, void];
+
+  /* dont overuse invokeVSCodeCommandById, use it only for devving, 
+  and if you find yourself writing redundant code just to invoke a 
+  command not related to pearai. (workbench, other extension)
+  */
+  invokeVSCodeCommandById: [
+    { commandId: string; args?: any[] },
+    any | undefined,
+  ];
 };
 
 export type ToWebviewOrCoreFromIdeProtocol = {

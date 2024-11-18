@@ -280,14 +280,15 @@ const Layout = () => {
     [navigate],
   );
 
-  useEffect(() => {
-    if (
-      shouldBeginOnboarding() &&
-      (location.pathname === "/" || location.pathname === "/index.html")
-    ) {
-      navigate("/onboarding");
-    }
-  }, [location]);
+  // login and onboarding happens from overlay now.
+  // useEffect(() => {
+  //   if (
+  //     shouldBeginOnboarding() &&
+  //     (location.pathname === "/" || location.pathname === "/index.html")
+  //   ) {
+  //     navigate("/onboarding");
+  //   }
+  // }, [location]);
 
   const [indexingState, setIndexingState] = useState<IndexingProgressUpdate>({
     desc: "Loading indexing config",

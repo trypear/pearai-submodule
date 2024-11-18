@@ -1,13 +1,4 @@
 import { ReactElement, useContext, useState, useEffect } from "react";
-
-enum AIToolID {
-  SEARCH = "1",
-  CHAT = "2",
-  AUTOCOMPLETE = "3",
-  CREATOR = "4",
-  PAINTER = "5",
-  MEMORY = "6",
-}
 import { Search, Star } from "lucide-react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { Input } from "@/components/ui/input";
@@ -26,6 +17,15 @@ import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
+
+enum AIToolID {
+  SEARCH = "search",
+  SIDEBARCHAT = "sidebarchat",
+  AUTOCOMPLETE = "autocomplete",
+  CREATOR = "aider",
+  PAINTER = "painter",
+  MEMORY = "memory",
+}
 
 interface AITool {
   id: string;
@@ -46,7 +46,7 @@ interface AITool {
 
 const suggestedBuild = [
   AIToolID.SEARCH,
-  AIToolID.CHAT,
+  AIToolID.SIDEBARCHAT,
   AIToolID.CREATOR,
   AIToolID.MEMORY,
 ]; // IDs of suggested tools
@@ -148,6 +148,7 @@ function AIToolCard({
 
 export default function AIToolInventory() {
   const ideMessenger = useContext(IdeMessengerContext);
+  const navigate = useNavigate();
 
   // const aiderProcessState = useSelector(
   //   (state: RootState) => state.state.aiderProcessState,
@@ -231,7 +232,7 @@ export default function AIToolInventory() {
       enabled: true,
     },
     {
-      id: AIToolID.CHAT,
+      id: AIToolID.SIDEBARCHAT,
       name: "Chat",
       description: (
         <span>AI pair programmer for flexible coding assistance.</span>
@@ -422,6 +423,33 @@ export default function AIToolInventory() {
     // TODO: implement install
   };
 
+  const handleOpen = (tool: AITool) => {
+    console.dir("handleOpen");
+    console.dir(tool);
+    switch (tool.id) {
+      case AIToolID.CREATOR:
+        navigate("/inventory/aiderMode");
+        break;
+      case AIToolID.SEARCH:
+        navigate("/inventory/perplexityMode");
+        break;
+      case AIToolID.AUTOCOMPLETE:
+        ideMessenger.post("invokeVSCodeCommandById", {
+          commandId: "supermaven.newConversationTab", // supermaven new chat command
+        });
+        ideMessenger.post("closeOverlay", undefined);
+        break;
+      case AIToolID.SIDEBARCHAT:
+        ideMessenger.post("invokeVSCodeCommandById", {
+          commandId: "pearai.pearAIChatView.focus", // pearai focus chat
+        });
+        ideMessenger.post("closeOverlay", undefined);
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <TooltipProvider>
       <div className="flex flex-col h-[73vh] overflow-y-auto text-foreground">
@@ -507,24 +535,28 @@ export default function AIToolInventory() {
                     ))}
                   </ul>
                 </div>
-                {focusedTool.installNeeded && (
-                  <div className="mt-2 flex flex-col items-start gap-2 sticky bottom-0 bg-background p-2">
-                    {focusedTool?.note && (
-                      <p className="text-sm text-muted-foreground">
-                        Note: {focusedTool.note}
-                      </p>
-                    )}
+                <div className="mt-2 flex flex-col items-start gap-2 sticky bottom-0 bg-background p-2">
+                  {focusedTool?.note && (
+                    <p className="text-sm text-muted-foreground">
+                      Note: {focusedTool.note}
+                    </p>
+                  )}
+                  <div className="flex justify-between w-full">
                     <Button
-                      onClick={() => focusedTool.installCommand()}
-                      disabled={!focusedTool.installNeeded}
-                      // variant={focusedTool.isInstalled ? "destructive" : "default"}
+                      onClick={() => handleOpen(focusedTool)}
+                      className="mr-2"
                     >
-                      {focusedTool.isInstalled
-                        ? "Uninstall"
-                        : "Click to install"}
+                      Open
                     </Button>
+                    {focusedTool.installNeeded && (
+                      <Button
+                        onClick={() => focusedTool.installCommand()}
+                        disabled={!focusedTool.installNeeded}
+                      >
+                        {focusedTool.isInstalled ? "Uninstall" : "Click to install"}
+                      </Button>)}
                   </div>
-                )}
+                </div>
                 <div className="text-[10px] text-muted-foreground mt-4">
                   *View PearAI Disclaimer page{" "}
                   <Link
