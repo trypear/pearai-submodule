@@ -154,21 +154,21 @@ export default function InstallTools({
                     ))}
                 </div>
                 <div className="absolute bottom-8 right-8 flex items-center gap-4">
-                <div
-                    onClick={handleSkip}
-                    className="flex items-center gap-2 cursor-pointer"
-                >
-                    Skip
+                    <div
+                        onClick={handleSkip}
+                        className="flex items-center gap-2 cursor-pointer"
+                    >
+                        Skip
+                    </div>
+                    <Button
+                        className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
+                        onClick={handleInstallChecked}
+                    >
+                        {getButtonText()}
+                    </Button>
                 </div>
-                <Button
-                    className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer"
-                    onClick={handleInstallChecked}
-                >
-                    {getButtonText()}
-                </Button>
-                </div>
-                <div className="text-[10px] z-[100] hover:cursor-pointer  text-muted-foreground mt-4 flex justify-end pr-4 pb-4">
-                    *View PearAI Disclaimer page{" "}
+                <div className="absolute bottom-2 right-2 text-[8px] text-muted-foreground flex justify-end">
+                *View PearAI Disclaimer page{" "}
                     <a
                         href="https://trypear.ai/disclaimer/"
                         target="_blank"
