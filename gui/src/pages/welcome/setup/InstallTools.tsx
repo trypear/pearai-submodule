@@ -178,7 +178,7 @@ export default function InstallTools({
                 </Button>
               </div>
               <div className="text-[8px] text-muted-foreground">
-                *View PearAI Disclaimer page{' '}
+                *View PearAI Disclaimer page
                 <a
                   href="https://trypear.ai/disclaimer/"
                   target="_blank"
