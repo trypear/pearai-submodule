@@ -13,7 +13,7 @@ const AiderManualInstallation: React.FC = () => {
         <h3>For macOS/Linux:</h3>
         <ol>
           <li>
-            <strong>Install Homebrew - </strong> If not already installed, run:
+            <strong>Install Homebrew (if not already installed) - </strong> Run:
             <pre>
               <code>
                 /bin/bash -c "$(curl -fsSL
@@ -22,7 +22,7 @@ const AiderManualInstallation: React.FC = () => {
             </pre>
           </li>
           <li>
-            <strong>Install Python - </strong> Please run:
+            <strong>Install Python (if not already installed) - </strong> Run:
             <pre>
               <code>brew install python@3</code>
             </pre>
@@ -51,7 +51,7 @@ const AiderManualInstallation: React.FC = () => {
         <h3>For Windows:</h3>
         <ol>
           <li>
-            <strong>Install Python - </strong> If not already installed, run:
+            <strong>Install Python (if not already installed) - </strong> Run:
             <pre>
               <code>winget install Python.Python.3.9</code>
             </pre>
