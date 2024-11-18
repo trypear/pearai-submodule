@@ -5,6 +5,7 @@ import SetupPage from "./SetupPage";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { WelcomeHeader } from "./WelcomeHeader";
 import InventoryPage from "@/inventory/pages/InventoryPage";
+import SplashScreen from "./splashScreen";
 
 export default function Welcome() {
   const ideMessenger = useContext(IdeMessengerContext);
@@ -21,7 +22,7 @@ export default function Welcome() {
   }, []);
 
   useEffect(() => {
-    if (step === 4) {
+    if (step === 3) {
       ideMessenger.post("unlockOverlay", undefined);
     }
   }, [step]);
@@ -49,18 +50,20 @@ export default function Welcome() {
   };
 
   const handleBackStep = () => {
-    setStep((prevStep) => Math.max(prevStep - 1, 0));
+    setStep((prevStep) => prevStep - 1);
   };
 
   const renderStep = () => {
     switch (step) {
       case 0:
-        return <Features onNext={handleNextStep} />;
+        return <SplashScreen onNext={handleNextStep} />;
       case 1:
-          return <SetupPage onNext={handleNextStep} />;
+        return <Features onNext={handleNextStep} />;
       case 2:
-        return <FinalStep onNext={handleNextStep} />;
+        return <SetupPage onNext={handleNextStep} />;
       case 3:
+        return <FinalStep onNext={handleNextStep} />;
+      case 4:
         return <InventoryPage />;
       default:
         return null;
