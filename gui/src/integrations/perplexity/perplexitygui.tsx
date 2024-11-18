@@ -1,3 +1,4 @@
+import React from "react";
 import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
@@ -124,7 +125,6 @@ function PerplexityGUI() {
         !e.shiftKey
       ) {
         saveSession();
-        ideMessenger.post("aiderResetSession", undefined);
       }
     };
     window.addEventListener("keydown", listener);
@@ -229,10 +229,13 @@ function PerplexityGUI() {
           {state.perplexityHistory.length === 0 ? (
             <div className="max-w-2xl mx-auto w-full text-center">
               <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
-                <h1 className="text-2xl font-bold">PearAI Search</h1>
-                <Badge variant="outline" className="lg:absolute lg:right-20 lg:translate-y-0">
-                  Beta (Powered by Perplexity*)
-                </Badge>
+                <div className="flex-1" />
+                  <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Search</h1>
+                  <div className="flex-1 flex items-center justify-start">
+                    <Badge variant="outline" className="lg:relative lg:top-[2px]">
+                      Beta (Powered by Perplexity*)
+                    </Badge>
+                  </div>
               </div>
               <p className="text-sm text-foreground">
                 Ask for anything. We'll retrieve up-to-date information in
@@ -319,7 +322,7 @@ function PerplexityGUI() {
                             }
                             active={active}
                           /> }
-                        <StepContainer
+                          <StepContainer
                           index={index}
                           isLast={
                             index === sessionState.perplexityHistory.length - 1

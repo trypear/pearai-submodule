@@ -19,6 +19,7 @@ import PreWithToolbar from "./PreWithToolbar";
 import { SyntaxHighlightedPre } from "./SyntaxHighlightedPre";
 import "./katex.css";
 import "./markdown.css";
+import { Citation } from "core";
 
 const StyledMarkdown = styled.div<{
   fontSize?: number;
@@ -94,6 +95,7 @@ interface StyledMarkdownPreviewProps {
   isLast?: boolean;
   messageIndex?: number;
   integrationSource?: "perplexity" | "aider" | "continue";
+  citations?: Citation[];
 }
 
 interface FadeInWordsProps extends StyledMarkdownPreviewProps {
@@ -211,6 +213,15 @@ const FadeInElement: React.FC<FadeInElementProps> = (props: FadeInElementProps) 
   return <ElementType {...otherProps}>{words}</ElementType>;
 };
 
+const processCitations = (text: string, citations?: Citation[]) => {
+  if (!citations) return text;
+  
+  return text.replace(/\[(\d+)\]/g, (match, num) => {
+    const citation = citations[parseInt(num) - 1];
+    if (!citation) return match;
+    return `[[${num}]](${citation.url})`;
+  });
+};
 
 
 const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
@@ -384,6 +395,11 @@ const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
   useEffect(() => {
     setMarkdownSource(props.source || "");
   }, [props.source]);
+
+  useEffect(() => {
+    const processedSource = processCitations(props.source || "", props.citations);
+    setMarkdownSource(processedSource);
+  }, [props.source, props.citations]);
 
   return (
     <StyledMarkdown fontSize={getFontSize()} showBorder={false}>

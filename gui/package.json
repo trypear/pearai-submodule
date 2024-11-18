@@ -38,6 +38,7 @@
     "core": "file:../core",
     "dompurify": "^3.0.6",
     "downshift": "^7.6.0",
+    "framer-motion": "^11.11.17",
     "lodash": "^4.17.21",
     "lucide-react": "^0.452.0",
     "minisearch": "^6.3.0",

@@ -101,6 +101,19 @@ async function addHighlightedCodeToContext(
   if (editor) {
     const selection = editor.selection;
     if (selection.isEmpty) {
+      const rangeInFileWithContents = {
+        filepath: editor.document.uri.fsPath,
+        contents: "",
+        range: {
+          start: { line: 0, character: 0, },
+          end: { line: 0, character: 0, },
+        },
+      };
+
+      webviewProtocol?.request("highlightedCode", {
+        rangeInFileWithContents,
+      }, ["pearai.pearAIChatView"]);
+      
       return;
     }
     // adjust starting position to include indentation
@@ -252,11 +265,12 @@ const commandsMap: (
       await importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
-      // vscode.window.showInformationMessage("Marking onboarding complete.");
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
+      await vscode.commands.executeCommand('pearai.unlockOverlay');
+      await vscode.commands.executeCommand('pearai.hideOverlay');
     },
-    "pearai.resetInteractiveContinueTutorial": async () => {
-      sidebar.webviewProtocol?.request("resetInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
+    "pearai.restFirstLaunchInGUI": async () => {
+      sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.showInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
@@ -386,7 +400,7 @@ const commandsMap: (
       await vscode.commands.executeCommand("pearai.showInteractiveContinueTutorial");
     },
     "pearai.developer.restFirstLaunch": async () => {
-      vscode.commands.executeCommand("pearai.resetInteractiveContinueTutorial");
+      vscode.commands.executeCommand("pearai.restFirstLaunchInGUI");
       extensionContext.globalState.update(FIRST_LAUNCH_KEY, false);
       vscode.window.showInformationMessage("Successfully reset PearAI first launch flag, RELOAD WINDOW TO SEE WELCOME PAGE", 'Reload Window')
         .then(selection => {
@@ -556,7 +570,7 @@ const commandsMap: (
       ide.runCommand(text);
     },
     "pearai.newSession": async () => {
-      sidebar.webviewProtocol?.request("newSession", undefined);
+      sidebar.webviewProtocol?.request("newSession", undefined, [PEAR_CONTINUE_VIEW_ID]);
       const currentFile = await ide.getCurrentFile();
       sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
     },

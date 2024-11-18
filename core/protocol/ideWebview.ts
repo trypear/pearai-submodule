@@ -1,4 +1,5 @@
 import { AiderState } from "../../extensions/vscode/src/integrations/aider/types/aiderTypes.js";
+import { ToolType } from "../../extensions/vscode/src/util/integrationUtils.js";
 import type { RangeInFileWithContents } from "../commands/util.js";
 import type { ContextSubmenuItem } from "../index.js";
 import { ToIdeFromWebviewOrCoreProtocol } from "./ide.js";
@@ -56,12 +57,13 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   completeWelcome: [undefined, void];
   openInventory: [undefined, void];
   getUrlTitle: [string, string];
+  pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setInactive: [undefined, void];
   setActiveFilePath: [string | undefined, void];
-  resetInteractiveContinueTutorial: [undefined, void];
+  restFirstLaunchInGUI: [undefined, void];
   showInteractiveContinueTutorial: [undefined, void];
   submitMessage: [{ message: any }, void]; // any -> JSONContent from TipTap
   updateSubmenuItems: [
