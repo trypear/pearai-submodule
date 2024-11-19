@@ -76,6 +76,21 @@ export const models: { [key: string]: ModelPackage } = {
     icon: "pearai.png",
     isOpenSource: false,
   },
+  openrouter: {
+    title: "OpenRouter",
+    description:
+      "OpenRouter offers a single API to access almost any language model.",
+    params: {
+      model: "",
+      contextLength: 128000,
+      title: "OpenRouter Model",
+      systemMessage:
+        "You are an expert software developer. You give helpful and concise responses based on latest documentation and software engineering best practices.",
+    },
+    providerOptions: ["openrouter"],
+    icon: "open-router.png",
+    isOpenSource: false,
+  },
   llama31Chat: {
     title: "Llama3.1 Chat",
     description: "The latest model from Meta, fine-tuned for chat",
