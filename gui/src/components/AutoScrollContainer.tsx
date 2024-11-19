@@ -19,7 +19,7 @@ const ScrollContainer = styled.div<{ inputBoxHeight: number }>`
 export const ScrollContent = styled.div<{ isActive?: boolean }>`
   contain: content;
   flex: 0 1 auto;
-  overflow-y: ${props => props.isActive ? 'hidden' : 'auto'};
+  overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
   z-index: 98;
@@ -28,20 +28,9 @@ export const ScrollContent = styled.div<{ isActive?: boolean }>`
   padding-top: 0;
   scroll-behavior: smooth;
   
-  &::-webkit-scrollbar {
-    width: ${props => props.isActive ? '0' : '0.5rem'};
-    transition: width 0.3s ease;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: ${lightGray};
-    border-radius: 0.25rem;
-    transition: background-color 0.2s ease;
-  }
-
-  &::-webkit-scrollbar-track {
-    background-color: transparent;
-  }
+  ${props => props.isActive && `
+    scrollbar-width: none;
+  `}
 `;
 
 const ScrollAnchor = styled.div`
@@ -76,7 +65,7 @@ const ScrollToBottomButton = styled.button<{ visible: boolean }>`
 const ResponseSpacer = styled.div<{ sidebarHeight?: number }>`
   height: ${props => `calc(100vh - ${props.sidebarHeight || 0}px - 12.5rem)`}; 
   flex-shrink: 1;
-  transition: height 0.2s ease;
+  transition: all 0.5s ease-out;
 `;
 
 interface AutoScrollContainerProps {
@@ -100,6 +89,7 @@ export const AutoScrollContainer = forwardRef<
   const [inputBoxHeight, setInputBoxHeight] = useState(140);
   const [showScrollButton, setShowScrollButton] = useState(false);
   const [sidebarHeight, setSidebarHeight] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const isAtBottom = useCallback(() => {
     const container = scrollRef.current;
@@ -171,9 +161,11 @@ export const AutoScrollContainer = forwardRef<
       if (!container) return;
   
       const scrollTarget = container.querySelector('.scroll-target');
-
       if (scrollTarget) {
-        scrollTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+        scrollTarget.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "start",
+        });
       }
     }
   }, []);
@@ -208,6 +200,11 @@ export const AutoScrollContainer = forwardRef<
   useEffect(() => {
     if (active) {
       userHasScrolled.current = false;
+      setIsTransitioning(true);
+    } else {
+      setTimeout(() => {
+        setIsTransitioning(false);
+      }, 500);
     }
   }, [active]);
 
@@ -264,7 +261,7 @@ export const AutoScrollContainer = forwardRef<
     if (!active) return;
   
     scrollToLatestResponse();
-    scrollInterval.current = setInterval(scrollToLatestResponse, 150);
+    scrollInterval.current = setInterval(scrollToLatestResponse, 200);
   
     return () => {
       if (scrollInterval.current) {
@@ -282,21 +279,23 @@ export const AutoScrollContainer = forwardRef<
     >
       <ScrollContent isActive={active}>
         {children}
-        {active && <ResponseSpacer sidebarHeight={sidebarHeight} />}
+        {(active || isTransitioning) && (
+          <ResponseSpacer sidebarHeight={sidebarHeight} />
+        )}
         <ScrollAnchor ref={anchorRef} />
       </ScrollContent>
       <ScrollToBottomButton 
         visible={showScrollButton}
         onClick={() => {
           const scrollContent = scrollRef.current?.firstElementChild as HTMLElement;
-
-          if (scrollContent) {
-            scrollContent.scrollTo({
-              top: scrollContent.scrollHeight,
-              behavior: 'smooth'
+          const anchor = anchorRef.current;
+          
+          if (scrollContent && anchor) {
+            userHasScrolled.current = true;
+            anchor.scrollIntoView({ 
+              behavior: "smooth", 
+              block: "end"
             });
-            
-            userHasScrolled.current = false;
           }
         }}
         aria-label="Scroll to bottom"
