@@ -1,5 +1,7 @@
 import React from "react";
 import { getPlatform } from "../../util";
+import { Link } from "react-router-dom";
+
 
 const AiderManualInstallation: React.FC = () => {
   const platform = getPlatform();
@@ -12,21 +14,32 @@ const AiderManualInstallation: React.FC = () => {
   return (
     <div className="flex items-center justify-center h-screen overflow-y-auto">
       <div className="p-6 bg-input rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold mb-4">Manual Installation Guide for PearAI Creator (Powered by aider)</h2>
-        <p className="mb-4">
-          Automatic installation of PearAI Creator (Powered by aider) was unsuccessful. Please follow the steps below to manually install it to get it working.
-        </p>
-        {instructions}
-        <p className="mt-4 bg-statusbar-background p-4 rounded-lg">
-          If you followed the above instructions correctly and restarted PearAI, then PearAI Creator should work! 
-          <br />
-          If not, please view{" "}
-          <a className="text-blue-500 hover:underline" href="https://trypear.ai/creator-troubleshooting">
-            PearAI Troubleshooting
-          </a>
-          , or contact PearAI Support on{" "}
-          <a className="text-blue-500 hover:underline" href="https://discord.gg/avc2y2Kqsa">Discord</a>.
-        </p>
+          <h2 className="text-2xl font-bold mb-4">Manual Installation Guide for PearAI Creator (Powered by aider*)</h2>
+          <p className="mb-4">
+            Automatic installation of PearAI Creator (Powered by aider*) was unsuccessful. Please follow the steps below to manually install it to get it working.
+          </p>
+          {instructions}
+          <p className="mt-4 bg-statusbar-background p-4 rounded-lg">
+            If you followed the above instructions correctly and restarted PearAI, then PearAI Creator should work! 
+            <br />
+            If not, please view{" "}
+            <a className="text-blue-500 hover:underline" href="https://trypear.ai/creator-troubleshooting">
+              PearAI Troubleshooting
+            </a>
+            , or contact PearAI Support on{" "}
+            <a className="text-blue-500 hover:underline" href="https://discord.gg/avc2y2Kqsa">Discord</a>.
+          </p>
+          <div className="text-[10px] text-muted-foreground mt-4">
+          *View PearAI Disclaimer page
+          <Link
+            to="https://trypear.ai/disclaimer/"
+            target="_blank"
+            className="text-muted-foreground no-underline hover:no-underline ml-1"
+          >
+            here
+          </Link>
+          .
+        </div>
       </div>
     </div>
   );
