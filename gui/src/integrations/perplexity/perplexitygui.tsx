@@ -45,6 +45,7 @@ import {
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import { cn } from "@/lib/utils";
 import { Citations } from './Citations';
+import { Button } from "@/components/ui/button";
 
 
 function PerplexityGUI() {
@@ -258,6 +259,16 @@ function PerplexityGUI() {
                   Chat, and is perfect for documentation lookups.
                 </p>
                 <div>
+                  <Button
+                    onClick={() => {
+                      navigate("/history", { state: { from: 'perplexity'} });
+                    }}
+                    className="mr-auto"
+                  >
+                    History
+                  </Button>
+                </div>
+                <div>
                   <NewSessionButton
                     onClick={() => {
                       saveSession();
@@ -299,7 +310,7 @@ function PerplexityGUI() {
                       editorState={item.editorState}
                       contextItems={item.contextItems}
                       source="perplexity"
-                    ></ContinueInputBox>
+                    />
                   ) : (
                     <div className="thread-message">
                       <TimelineItem

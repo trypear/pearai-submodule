@@ -96,7 +96,7 @@ function TableRow({
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location?.state?.from; // indicates where the user came from, todo: use with navigate below
+  const from = location?.state?.from === '/' ? 'continue' : location?.state?.from; // indicates where the user came from
   const apiUrl = window.serverUrl;
   const workspacePaths = window.workspacePaths || [""];
   const [hovered, setHovered] = useState(false);
@@ -104,6 +104,21 @@ function TableRow({
   const [sessionTitleEditValue, setSessionTitleEditValue] = useState(
     session.title,
   );
+
+  const navigateBack = () => {
+    if (from === 'continue') {
+      navigate(`/`);
+      return;
+    }
+    if (from === 'perplexity') {
+      navigate(`/perplexityMode`);
+      return;
+    }
+    if (from === "aider") {
+      navigate(`/aiderMode`);
+      return;
+    }
+  }
 
   const { saveSession, deleteSession, loadSession, getSession, updateSession } =
     useHistory(dispatch);
@@ -135,7 +150,7 @@ function TableRow({
             // Save current session
             saveSession();
             await loadSession(session.sessionId);
-            navigate("/");  //todo: use from variable to determine where to go back to, currently history only enabled for continue
+            navigateBack()
           }}
         >
           <div className="text-md w-100">
@@ -219,6 +234,21 @@ function History() {
       prev.filter((session) => session.sessionId !== sessionId),
     );
   };
+
+  const navigateBack = () => {
+    if (from === 'continue') {
+      navigate(`/`);
+      return;
+    }
+    if (from === 'perplexity') {
+      navigate(`/perplexityMode`);
+      return;
+    }
+    if (from === "aider") {
+      navigate(`/aiderMode`);
+      return;
+    }
+  }
 
   const [filteringByWorkspace, setFilteringByWorkspace] = useState(false);
   const stickyHistoryHeaderRef = React.useRef<HTMLDivElement>(null);
@@ -317,7 +347,7 @@ function History() {
           if (typeof from === "undefined") {
             return true;
           }
-          if (!session.integrationType) {
+          if (from == 'continue' && !session.integrationType) {
             return true;  // older history with no integration type
           }
           return session.integrationType === from;
@@ -364,7 +394,7 @@ function History() {
           <ArrowLeftIcon
             width="1.2em"
             height="1.2em"
-            onClick={() => navigate("/")}
+            onClick={navigateBack}
             className="inline-block ml-4 cursor-pointer"
           />
           <h3 className="text-lg font-bold m-2 inline-block">History</h3>
