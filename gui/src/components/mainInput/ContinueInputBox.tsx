@@ -1,7 +1,7 @@
 import { JSONContent } from "@tiptap/react";
 import { ContextItemWithId, InputModifiers } from "core";
 import { useDispatch, useSelector } from "react-redux";
-import styled, { keyframes } from "styled-components";
+import styled, { createGlobalStyle, keyframes } from "styled-components";
 import { defaultBorderRadius, lightGray, vscBackground } from "..";
 import { useWebviewListener } from "../../hooks/useWebviewListener";
 import { selectSlashCommands } from "../../redux/selectors";
@@ -32,7 +32,7 @@ const GradientBorder = styled.div<{
   loading: 0 | 1;
 }>`
   border-radius: ${(props) => props.borderRadius || "0"};
-  padding: 2px;
+  padding: 0.125rem;
   background: ${(props) =>
     props.borderColor
       ? props.borderColor
@@ -52,12 +52,12 @@ const GradientBorder = styled.div<{
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-top: 8px;
+  margin-top: 0.5rem;
 `;
 
 const wave = keyframes`
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-0.375rem); }
 `;
 
 const pulse = keyframes`
@@ -68,24 +68,28 @@ const pulse = keyframes`
 const LoadingContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 0.5rem;
+  margin-top: 1rem;
   color: ${lightGray};
   font-size: ${getFontSize() - 3}px;
   padding: 0 0.6rem;
   width: 100%;
+  position: sticky;
+  top: 0;
+  background-color: ${vscBackground};
+  z-index: 99;
 `;
 
 const DotsContainer = styled.div`
   display: flex;
-  gap: 4px;
+  gap: 0.25rem;
   align-items: center;
-  margin-top 8px;
+  margin-top 0.5rem;
 `;
 
 const Dot = styled.div<{ delay: number }>`
-  width: 3px;
-  height: 3px;
+  width: 0.1875rem;
+  height: 0.1875rem;
   background-color: #4DA587;
   border-radius: 50%;
   animation: ${wave} 1.5s ease-in-out infinite;
@@ -100,6 +104,12 @@ const Dot = styled.div<{ delay: number }>`
     border-radius: inherit;
     animation: ${pulse} 1.5s ease-in-out infinite;
     animation-delay: ${props => props.delay}s;
+  }
+`;
+
+const ScrollTargetStyle = createGlobalStyle`
+  .scroll-target {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 `;
 
@@ -201,14 +211,18 @@ const ContinueInputBox = memo(function ContinueInputBox({
         />
       </GradientBorder>
       {active && isLastUserInput && (
-        <LoadingContainer>
-          <DotsContainer>
-            {[0, 1, 2].map((i) => (
-              <Dot key={i} delay={i * 0.2} />
-            ))}
-          </DotsContainer>
-          <span style={{ marginTop: "4px" }}>Responding...</span>
-        </LoadingContainer>
+        <>
+          <ScrollTargetStyle />
+          <div className="scroll-target" />
+          <LoadingContainer className="scroll-target">
+            <DotsContainer>
+              {[0, 1, 2].map((i) => (
+                <Dot key={i} delay={i * 0.2} />
+              ))}
+            </DotsContainer>
+            <span style={{ marginTop: "0.25rem" }}>Responding...</span>
+          </LoadingContainer>
+        </>
       )}
       <ContextItemsPeek contextItems={contextItems}></ContextItemsPeek>
     </div>

@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import { ChevronDownIcon } from "@heroicons/react/24/outline"; // Add this import
 import { lightGray, vscBackground } from ".";
+import { debounce } from "lodash";
 
 const ScrollContainer = styled.div<{ inputBoxHeight: number }>`
   height: ${(props) => `calc(100% - ${props.inputBoxHeight}px)`};
@@ -15,16 +16,32 @@ const ScrollContainer = styled.div<{ inputBoxHeight: number }>`
   padding-top: 0;
 `;
 
-export const ScrollContent = styled.div`
+export const ScrollContent = styled.div<{ isActive?: boolean }>`
   contain: content;
   flex: 0 1 auto;
-  overflow-y: auto;
+  overflow-y: ${props => props.isActive ? 'hidden' : 'auto'};
   overflow-x: hidden;
   min-height: 0;
   z-index: 98;
   width: 100%;
   margin-top: 0;
   padding-top: 0;
+  scroll-behavior: smooth;
+  
+  &::-webkit-scrollbar {
+    width: ${props => props.isActive ? '0' : '0.5rem'};
+    transition: width 0.3s ease;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: ${lightGray};
+    border-radius: 0.25rem;
+    transition: background-color 0.2s ease;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
 `;
 
 const ScrollAnchor = styled.div`
@@ -56,6 +73,11 @@ const ScrollToBottomButton = styled.button<{ visible: boolean }>`
   }
 `;
 
+const ResponseSpacer = styled.div<{ sidebarHeight?: number }>`
+  height: ${props => `calc(100vh - ${props.sidebarHeight || 0}px - 12.5rem)`}; 
+  flex-shrink: 1;
+  transition: height 0.2s ease;
+`;
 
 interface AutoScrollContainerProps {
   children: React.ReactNode;
@@ -77,12 +99,13 @@ export const AutoScrollContainer = forwardRef<
 
   const [inputBoxHeight, setInputBoxHeight] = useState(140);
   const [showScrollButton, setShowScrollButton] = useState(false);
+  const [sidebarHeight, setSidebarHeight] = useState(0);
 
   const isAtBottom = useCallback(() => {
     const container = scrollRef.current;
     if (!container) return false;
 
-    const threshold = 50;
+    const threshold = 100;
 
     return (
       container.scrollHeight - container.scrollTop - container.clientHeight <
@@ -105,45 +128,69 @@ export const AutoScrollContainer = forwardRef<
     setShowScrollButton(hasScroll && !atBottom);
   }, []);
 
+  const debouncedScroll = useCallback(
+    debounce((e: Event) => {
+      const scrollContent = e.target as HTMLElement;
+      const currentScrollTop = scrollContent.scrollTop;
+      
+      if (currentScrollTop !== lastScrollTop.current) {
+        userHasScrolled.current = true;
+      }
+  
+      lastScrollTop.current = currentScrollTop;
+      updateScrollButtonVisibility();
+    }, 100),
+    [updateScrollButtonVisibility]
+  );
+
   const handleScroll = useCallback((e: Event) => {
     const scrollContent = e.target as HTMLElement;
     const currentScrollTop = scrollContent.scrollTop;
     
-    if (currentScrollTop < lastScrollTop.current) {
+    if (currentScrollTop !== lastScrollTop.current) {
       userHasScrolled.current = true;
-    } else if ((scrollContent.scrollHeight - currentScrollTop - scrollContent.clientHeight) < 50) {
-      userHasScrolled.current = false;
     }
-
+  
     lastScrollTop.current = currentScrollTop;
     updateScrollButtonVisibility();
   }, [updateScrollButtonVisibility]);
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
-      if (e.deltaY < 0) {
+      if (e.deltaY !== 0) {
         userHasScrolled.current = true;
-      } else if (e.deltaY > 0 && isAtBottom()) {
-        userHasScrolled.current = false;
       }
     },
     [isAtBottom],
   );
 
-  const scrollToBottom = useCallback(() => {
+  const scrollToLatestResponse = useCallback(() => {
     if (!userHasScrolled.current) {
-      anchorRef.current?.scrollIntoView({ behavior: "auto" });
+      const container = scrollRef.current?.firstElementChild as HTMLElement;
+  
+      if (!container) return;
+  
+      const scrollTarget = container.querySelector('.scroll-target');
+
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     }
   }, []);
 
-  const forceScrollToBottom = useCallback(() => {
-    const container = scrollRef.current;
+  useEffect(() => {
+    const measureSidebar = () => {
+      const sidebar = document.querySelector('.sidebar') as HTMLElement;
 
-    if (!container) return;
+      if (sidebar) {
+        setSidebarHeight(sidebar.offsetHeight);
+      }
+    };
+  
+    measureSidebar();
+    window.addEventListener('resize', measureSidebar);
     
-    container.scrollTop = container.scrollHeight;
-    anchorRef.current?.scrollIntoView({ behavior: "auto", block: "end" });
-    userHasScrolled.current = false;
+    return () => window.removeEventListener('resize', measureSidebar);
   }, []);
 
   useEffect(() => {
@@ -152,6 +199,7 @@ export const AutoScrollContainer = forwardRef<
     };
 
     window.addEventListener('inputBoxHeightChange', handleHeightChange as EventListener);
+
     return () => {
       window.removeEventListener('inputBoxHeightChange', handleHeightChange as EventListener);
     };
@@ -165,27 +213,13 @@ export const AutoScrollContainer = forwardRef<
 
   useEffect(() => {
     if (!active) return;
-
-    scrollToBottom();
-    scrollInterval.current = setInterval(scrollToBottom, 150);
-
-    return () => {
-      if (scrollInterval.current) {
-        clearInterval(scrollInterval.current);
-        scrollInterval.current = undefined;
-      }
-    };
-  }, [active, scrollToBottom]);
-
-  useEffect(() => {
-    if (!active) return;
-
+  
     const observer = new MutationObserver(() => {
       updateScrollButtonVisibility();
     });
     
     const container = scrollRef.current;
-
+  
     if (container) {
       observer.observe(container, {
         childList: true,
@@ -193,7 +227,7 @@ export const AutoScrollContainer = forwardRef<
         characterData: true,
       });
     }
-
+  
     return () => observer.disconnect();
   }, [active, updateScrollButtonVisibility]);
 
@@ -203,6 +237,7 @@ export const AutoScrollContainer = forwardRef<
     };
 
     window.addEventListener('resize', handleResize);
+
     return () => window.removeEventListener('resize', handleResize);
   }, [updateScrollButtonVisibility]);
 
@@ -210,27 +245,34 @@ export const AutoScrollContainer = forwardRef<
     const container = scrollRef.current;
 
     if (!container) return;
-
+  
     const scrollContent = container.firstElementChild as HTMLElement;
 
     if (!scrollContent) return;
-
-    updateScrollButtonVisibility();
-
-    scrollContent.addEventListener("scroll", handleScroll, { passive: true });
+  
+    scrollContent.addEventListener("scroll", debouncedScroll, { passive: true });
     scrollContent.addEventListener("wheel", handleWheel, { passive: true });
-
+  
     return () => {
-      scrollContent.removeEventListener("scroll", handleScroll);
+      scrollContent.removeEventListener("scroll", debouncedScroll);
       scrollContent.removeEventListener("wheel", handleWheel);
+      debouncedScroll.cancel();
     };
-  }, [handleScroll, handleWheel, updateScrollButtonVisibility]);
+  }, [debouncedScroll, handleWheel]);
 
   useEffect(() => {
-    if (!active) {
-      setTimeout(forceScrollToBottom, 100);
-    }
-  }, [active, forceScrollToBottom]);
+    if (!active) return;
+  
+    scrollToLatestResponse();
+    scrollInterval.current = setInterval(scrollToLatestResponse, 150);
+  
+    return () => {
+      if (scrollInterval.current) {
+        clearInterval(scrollInterval.current);
+        scrollInterval.current = undefined;
+      }
+    };
+  }, [active, scrollToLatestResponse]);
 
   return (
     <ScrollContainer
@@ -238,16 +280,22 @@ export const AutoScrollContainer = forwardRef<
       className={className}
       inputBoxHeight={inputBoxHeight}
     >
-      <ScrollContent>
+      <ScrollContent isActive={active}>
         {children}
+        {active && <ResponseSpacer sidebarHeight={sidebarHeight} />}
         <ScrollAnchor ref={anchorRef} />
       </ScrollContent>
       <ScrollToBottomButton 
         visible={showScrollButton}
         onClick={() => {
           const scrollContent = scrollRef.current?.firstElementChild as HTMLElement;
+
           if (scrollContent) {
-            scrollContent.scrollTop = scrollContent.scrollHeight;
+            scrollContent.scrollTo({
+              top: scrollContent.scrollHeight,
+              behavior: 'smooth'
+            });
+            
             userHasScrolled.current = false;
           }
         }}
