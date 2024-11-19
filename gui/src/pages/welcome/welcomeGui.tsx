@@ -46,7 +46,7 @@ export default function Welcome() {
   }, [ideMessenger]); // Dependency array ensures this runs once when the component mounts
 
   const handleNextStep = () => {
-    setStep((prevStep) => Math.min(prevStep + 1, 3));
+    setStep((prevStep) => Math.min(prevStep + 1, 4));
   };
 
   const handleBackStep = () => {
