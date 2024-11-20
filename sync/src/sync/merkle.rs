@@ -421,9 +421,9 @@ const GLOBAL_IGNORE_PATTERNS: &[&str] = &[
 
 fn global_ignore_path() -> PathBuf {
     let mut path = get_my_home().unwrap().unwrap();
-    path.push(".continue");
+    path.push(".pearai");
     path.push("index");
-    path.push(".globalcontinueignore");
+    path.push(".globalpearaiignore");
     path
 }
 
@@ -446,7 +446,7 @@ pub fn build_walk(dir: &Path) -> Walk {
     let path = create_global_ignore_file();
     // Make sure it sorts alphabetically by default
     let mut binding = WalkBuilder::new(dir);
-    let builder = binding.add_custom_ignore_filename(".continueignore");
+    let builder = binding.add_custom_ignore_filename(".pearaiignore");
 
     builder.add_ignore(path);
     builder.build()

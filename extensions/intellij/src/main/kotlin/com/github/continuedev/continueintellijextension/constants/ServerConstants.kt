@@ -74,7 +74,7 @@ export {
 """
 
 fun getContinueGlobalPath(): String {
-    val continuePath = Paths.get(System.getProperty("user.home"), ".continue")
+    val continuePath = Paths.get(System.getProperty("user.home"), ".pearai")
     if (Files.notExists(continuePath)) {
         Files.createDirectories(continuePath)
     }
