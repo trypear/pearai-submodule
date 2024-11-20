@@ -28,7 +28,7 @@ const SearchBar = styled.input`
   border-radius: ${defaultBorderRadius};
   border: 0.5px solid #888;
   outline: none;
-  width: 90vw;
+  width: calc(100% - 32px);
   max-width: 500px;
   margin: 8px auto;
   display: block;
@@ -87,16 +87,19 @@ function TableRow({
   date,
   onDelete,
   isSelected,
+  from,
+  onClose
 }: {
   session: SessionInfo;
   date: Date;
   onDelete: (sessionId: string) => void;
   isSelected: boolean;
+  from: string;
+  onClose: () => void;
 }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location?.state?.from; // indicates where the user came from, todo: use with navigate below
   const apiUrl = window.serverUrl;
   const workspacePaths = window.workspacePaths || [""];
   const [hovered, setHovered] = useState(false);
@@ -135,7 +138,11 @@ function TableRow({
             // Save current session
             saveSession();
             await loadSession(session.sessionId);
-            navigate("/");  //todo: use from variable to determine where to go back to, currently history only enabled for continue
+            if (from === 'continue') {
+              navigate("/");
+            } else {
+              onClose();
+            }
           }}
         >
           <div className="text-md w-100">
@@ -202,11 +209,17 @@ function lastPartOfPath(path: string): string {
   return path.split(sep).pop() || path;
 }
 
-function History() {
+export type HistorySource = 'continue' | 'perplexity' | 'aider';
+
+export function History({
+  from='continue',
+  onClose=() => {}
+}: {
+  from?: HistorySource,
+  onClose?: () => void
+}) {
   useNavigationListener();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location?.state?.from === '/' ? 'continue' : location?.state?.from; // indicates where the user came from
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
   const [filteredAndSortedSessions, setFilteredAndSortedSessions] = useState<
     SessionInfo[]
@@ -317,7 +330,7 @@ function History() {
           if (typeof from === "undefined") {
             return true;
           }
-          if (!session.integrationType) {
+          if (from == 'continue' && !session.integrationType) {
             return true;  // older history with no integration type
           }
           return session.integrationType === from;
@@ -350,6 +363,9 @@ function History() {
       tabIndex={0}
       ref={tableRef}
     >
+      {from === 'perplexity' ?
+        <h2>Search History</h2> 
+        :
       <div
         ref={stickyHistoryHeaderRef}
         className="sticky top-0"
@@ -369,16 +385,7 @@ function History() {
           />
           <h3 className="text-lg font-bold m-2 inline-block">History</h3>
         </div>
-        {/* {workspacePaths && workspacePaths.length > 0 && (
-          <CheckDiv
-            checked={filteringByWorkspace}
-            onClick={() => setFilteringByWorkspace((prev) => !prev)}
-            title={`Show only sessions from ${lastPartOfPath(
-              workspacePaths[workspacePaths.length - 1]
-            )}/`}
-          />
-        )} */}
-      </div>
+      </div>}
 
       <div>
         <SearchBar
@@ -405,19 +412,19 @@ function History() {
               const date = parseDate(session.dateCreated);
               return (
                 <Fragment key={index}>
-                  {index === 0 && date > yesterday && (
+                  {from === 'continue' && index === 0 && date > yesterday && (
                     <SectionHeader style={{ top: `${headerHeight - 1}px` }}>
                       Today
                     </SectionHeader>
                   )}
-                  {date < yesterday &&
+                  {from === 'continue' && date < yesterday &&
                     date > lastWeek &&
                     prevDate > yesterday && (
                       <SectionHeader style={{ top: `${headerHeight - 1}px` }}>
                         This Week
                       </SectionHeader>
                     )}
-                  {date < lastWeek &&
+                  {from === 'continue' && date < lastWeek &&
                     date > lastMonth &&
                     prevDate > lastWeek && (
                       <SectionHeader style={{ top: `${headerHeight - 1}px` }}>
@@ -433,6 +440,8 @@ function History() {
                       date={date}
                       onDelete={() => deleteSessionInUI(session.sessionId)}
                       isSelected={index === selectedIndex}
+                      from={from}
+                      onClose={onClose}
                     ></TableRow>
                   </Tr>
                 </Fragment>
