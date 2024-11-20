@@ -377,13 +377,12 @@ export function History({
             borderBottom: `0.5px solid ${lightGray}`,
           }}
         >
-        {from === 'continue' && 
           <ArrowLeftIcon
             width="1.2em"
             height="1.2em"
             onClick={() => navigate("/")}
             className="inline-block ml-4 cursor-pointer"
-          />}
+          />
           <h3 className="text-lg font-bold m-2 inline-block">History</h3>
         </div>
       </div>}
