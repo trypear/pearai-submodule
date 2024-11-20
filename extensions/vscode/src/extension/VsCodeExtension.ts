@@ -293,7 +293,7 @@ export class VsCodeExtension {
       if (filepath.endsWith(".pearairc.json") || filepath.endsWith(".prompt")) {
         this.configHandler.reloadConfig();
       } else if (
-        filepath.endsWith(".continueignore") ||
+        filepath.endsWith(".pearaiignore") ||
         filepath.endsWith(".gitignore")
       ) {
         // Reindex the workspaces
