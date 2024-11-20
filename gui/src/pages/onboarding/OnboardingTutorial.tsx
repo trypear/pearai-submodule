@@ -256,7 +256,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             </b>
           </p>
           <span>
-            Note: codebase indexing must finish before you can run this!
+            Note: codebase indexing must finish before you can run this! You can find the status at the very bottom of this sidebar.
           </span>
         </>
       ),
