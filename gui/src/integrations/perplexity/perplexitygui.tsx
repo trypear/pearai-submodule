@@ -3,6 +3,7 @@ import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
 import { usePostHog } from "posthog-js/react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import {
   Fragment,
   useCallback,
@@ -45,6 +46,8 @@ import {
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import { cn } from "@/lib/utils";
 import { Citations } from './Citations';
+import { Button } from "@/components/ui/button";
+import { HistorySidebar } from "@/components/HistorySidebar";
 
 
 function PerplexityGUI() {
@@ -52,6 +55,7 @@ function PerplexityGUI() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
+  const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
 
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
@@ -218,6 +222,41 @@ function PerplexityGUI() {
 
   return (
     <>
+    <div className="relative flex h-screen overflow-hidden">
+      <HistorySidebar 
+        isOpen={historySidebarOpen} 
+        onClose={() => {
+          setHistorySidebarOpen(false)}} 
+        from="perplexity"
+      />
+      
+      <div 
+        className={cn(
+          "flex-1 flex flex-col min-w-0",
+          "transition-all duration-300 ease-in-out",
+          historySidebarOpen ? "ml-72" : "ml-0"
+        )}
+      >
+        <div className="sticky top-0 z-10 p-0 bg-background">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setHistorySidebarOpen(prev => !prev)}
+            className="flex items-center gap-2"
+          >
+            {historySidebarOpen ? (
+                <>
+                  <ChevronLeftIcon className="h-3 w-3" />
+                  Close History
+                </>
+              ) : (
+                <>
+                  History
+                  <ChevronRightIcon className="h-3 w-3" />
+                </>
+              )}
+          </Button>
+        </div>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div
           className={cn(
@@ -236,7 +275,7 @@ function PerplexityGUI() {
                       Beta (Powered by Perplexity*)
                     </Badge>
                   </div>
-              </div>
+               </div>
               <p className="text-sm text-foreground">
                 Ask for anything. We'll retrieve up-to-date information in
                 real-time on the web. Search uses less credits than PearAI Chat,
@@ -257,6 +296,10 @@ function PerplexityGUI() {
                   real-time on the web. Search uses less credits than PearAI
                   Chat, and is perfect for documentation lookups.
                 </p>
+                <div>
+                  <div>
+                </div>
+                </div>
                 <div>
                   <NewSessionButton
                     onClick={() => {
@@ -299,7 +342,7 @@ function PerplexityGUI() {
                       editorState={item.editorState}
                       contextItems={item.contextItems}
                       source="perplexity"
-                    ></ContinueInputBox>
+                    />
                   ) : (
                     <div className="thread-message">
                       <TimelineItem
@@ -438,6 +481,8 @@ function PerplexityGUI() {
           trackVisibility={active}
         />
       </TopGuiDiv>
+      </div>
+    </div>
       {active && (
         <StopButton
           className="mt-auto mb-4 sticky bottom-4"
