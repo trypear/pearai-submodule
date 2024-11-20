@@ -9,7 +9,7 @@ import { isFirstLaunch } from "./copySettings";
 
 // The overlay's webview title/id is defined in pearai-app's PearOverlayParts.ts
 // A unique identifier is needed for the messaging protocol to distinguish the webviews.
-export const PEAR_OVERLAY_VIEW_ID = "pearai.pearOverlay"
+export const PEAR_OVERLAY_VIEW_ID = "pearai.pearOverlay";
 export const PEAR_CONTINUE_VIEW_ID = "pearai.pearAIChatView";
 
 export class ContinueGUIWebviewViewProvider
@@ -59,6 +59,11 @@ export class ContinueGUIWebviewViewProvider
       const timestamp = new Date().toISOString().split(".")[0];
       const logMessage = `[${timestamp}] [${message.level.toUpperCase()}] ${message.text}`;
       this.outputChannel.appendLine(logMessage);
+    } else if (message.type === 'copyText' || message.type === 'copy' || message.type === 'cut') {
+      await vscode.env.clipboard.writeText(message.text);
+    } else if (message.type === 'requestPaste') {
+      const text = await vscode.env.clipboard.readText();
+      this._webview?.postMessage({ type: 'paste', text });
     }
   }
 
@@ -88,7 +93,7 @@ export class ContinueGUIWebviewViewProvider
 
   public resetWebviewProtocolWebview(): void {
     if (this._webview) {
-      this.webviewProtocol.resetWebviewToDefault()
+      this.webviewProtocol.resetWebviewToDefault();
     } else {
       console.warn("no webview found during reset");
     }
@@ -162,6 +167,7 @@ export class ContinueGUIWebviewViewProvider
           extensionHostPort: 65433,
         },
       ],
+      enableForms: true
     };
 
     const nonce = getNonce();
@@ -248,6 +254,47 @@ export class ContinueGUIWebviewViewProvider
             : ""
         }
         ${page ? `<script>window.location.pathname = "${page}"</script>` : ""}
+        <script>
+          document.addEventListener('contextmenu', (e) => {
+            const selection = window.getSelection();
+            if (selection && !selection.isCollapsed) {
+              const selectedText = selection.toString().trim();
+              if (selectedText && e.target && !e.target.closest('.ProseMirror')) {
+                e.preventDefault();
+                const menu = document.createElement('div');
+                menu.style.position = 'fixed';
+                menu.style.left = e.clientX + 'px';
+                menu.style.top = e.clientY + 'px';
+                menu.style.backgroundColor = 'var(--vscode-menu-background)';
+                menu.style.color = 'var(--vscode-menu-foreground)';
+                menu.style.border = '1px solid var(--vscode-menu-border)';
+                menu.style.padding = '4px 0';
+                menu.style.zIndex = '1000';
+                menu.style.borderRadius = '3px';
+
+                const copyItem = document.createElement('div');
+                copyItem.style.padding = '4px 12px';
+                copyItem.style.cursor = 'pointer';
+                copyItem.textContent = 'Copy';
+                copyItem.addEventListener('mousedown', () => {
+                  vscode.postMessage({ type: 'copyText', text: selectedText });
+                  document.body.removeChild(menu);
+                });
+
+                menu.appendChild(copyItem);
+                document.body.appendChild(menu);
+
+                const closeMenu = (e) => {
+                  if (!menu.contains(e.target)) {
+                    document.body.removeChild(menu);
+                    document.removeEventListener('mousedown', closeMenu);
+                  }
+                };
+                document.addEventListener('mousedown', closeMenu);
+              }
+            }
+          });
+        </script>
       </body>
       ${isOverlay ? `
           <style>

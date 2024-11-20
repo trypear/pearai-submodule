@@ -489,6 +489,120 @@ const TipTapEditor = memo(function TipTapEditor({
         class: "outline-none -mt-1 mb-1 overflow-hidden",
         style: `font-size: ${getFontSize()}px;`,
       },
+      handleDOMEvents: {
+        contextmenu: (view, event) => {
+          event.preventDefault();
+          const hasSelection = !view.state.selection.empty;
+          const selectedText = hasSelection ? view.state.doc.textBetween(
+            view.state.selection.from,
+            view.state.selection.to,
+            '\n' // Preserve newlines
+          ) : '';
+
+          const menu = document.createElement('div');
+          menu.className = 'context-menu';
+          menu.style.position = 'fixed';
+          menu.style.left = `${event.clientX}px`;
+          menu.style.top = `${event.clientY}px`;
+          menu.style.backgroundColor = 'var(--vscode-menu-background)';
+          menu.style.color = 'var(--vscode-menu-foreground)';
+          menu.style.border = '1px solid var(--vscode-menu-border)';
+          menu.style.padding = '4px 0';
+          menu.style.borderRadius = '3px';
+          menu.style.zIndex = '1000';
+          menu.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+
+          const createMenuItem = (text: string, shortcut: string, action: () => void, enabled: boolean = true) => {
+            const item = document.createElement('div');
+            item.style.padding = '4px 12px';
+            item.style.cursor = enabled ? 'pointer' : 'default';
+            item.style.display = 'flex';
+            item.style.justifyContent = 'space-between';
+            item.style.fontSize = '13px';
+            item.style.opacity = enabled ? '1' : '0.5';
+            
+            const textSpan = document.createElement('span');
+            textSpan.textContent = text;
+            item.appendChild(textSpan);
+
+            const shortcutSpan = document.createElement('span');
+            shortcutSpan.textContent = shortcut;
+            shortcutSpan.style.marginLeft = '32px';
+            shortcutSpan.style.color = 'var(--vscode-menu-foreground)';
+            shortcutSpan.style.opacity = '0.8';
+            item.appendChild(shortcutSpan);
+
+            if (enabled) {
+              item.addEventListener('mouseenter', () => {
+                item.style.backgroundColor = 'var(--vscode-menu-selectionBackground)';
+                item.style.color = 'var(--vscode-menu-selectionForeground)';
+              });
+              item.addEventListener('mouseleave', () => {
+                item.style.backgroundColor = '';
+                item.style.color = '';
+              });
+              item.addEventListener('mousedown', () => {
+                action();
+                document.body.removeChild(menu);
+                document.removeEventListener('mousedown', closeMenu);
+                view.dom.removeEventListener('mousedown', closeMenu);
+              });
+            }
+            return item;
+          };
+
+          const isMac = navigator.platform.toLowerCase().includes('mac');
+          const ctrlKey = isMac ? '⌘' : 'Ctrl';
+
+          menu.appendChild(createMenuItem('Copy', `${ctrlKey}+C`, () => {
+            navigator.clipboard.writeText(selectedText);
+          }, hasSelection));
+
+          menu.appendChild(createMenuItem('Cut', `${ctrlKey}+X`, () => {
+            navigator.clipboard.writeText(selectedText);
+            const { state, dispatch } = view;
+            const tr = state.tr.deleteSelection();
+            dispatch(tr);
+          }, hasSelection));
+
+          menu.appendChild(createMenuItem('Paste', `${ctrlKey}+V`, async () => {
+            try {
+              const text = await navigator.clipboard.readText();
+              const { state, dispatch } = view;
+              const lines = text.split('\n');
+              const firstNode = state.schema.text(lines[0]);
+              const restNodes = lines.slice(1).map(line => 
+                state.schema.nodes.paragraph.create(null, state.schema.text(line))
+              );
+              dispatch(state.tr.replaceWith(
+                state.selection.from,
+                state.selection.to,
+                [firstNode, ...restNodes]
+              ));
+            } catch (err) {
+              console.error('Failed to paste:', err);
+            }
+          }, true));
+
+          document.body.appendChild(menu);
+
+          const closeMenu = (e: MouseEvent) => {
+            if (!menu.contains(e.target as Node)) {
+              if (menu.parentNode) {
+                document.body.removeChild(menu);
+              }
+              document.removeEventListener('mousedown', closeMenu);
+              view.dom.removeEventListener('mousedown', closeMenu);
+            }
+          };
+
+          // Use mousedown instead of click to handle the menu dismissal earlier
+          document.addEventListener('mousedown', closeMenu);
+          // Add listener specifically for the editor dom
+          view.dom.addEventListener('mousedown', closeMenu);
+          return true;
+        },
+      },
     },
     content: lastContentRef.current,
     editable: true,
@@ -534,23 +648,30 @@ const TipTapEditor = memo(function TipTapEditor({
           const selectedText = editor.state.doc.textBetween(
             editor.state.selection.from,
             editor.state.selection.to,
+            '\n' // Preserve newlines
           );
-          navigator.clipboard.writeText(selectedText);
-          editor.commands.deleteSelection();
+          const vscode = (window as any).acquireVsCodeApi();
+          vscode.postMessage({ type: 'cut', text: selectedText });
+          const { state, dispatch } = editor.view;
+          const tr = state.tr.deleteSelection();
+          dispatch(tr);
           event.preventDefault();
         } else if ((event.metaKey || event.ctrlKey) && event.key === "c") {
           // Copy
           const selectedText = editor.state.doc.textBetween(
             editor.state.selection.from,
             editor.state.selection.to,
+            '\n' // Preserve newlines
           );
-          navigator.clipboard.writeText(selectedText);
+          const vscode = (window as any).acquireVsCodeApi();
+          vscode.postMessage({ type: 'copy', text: selectedText });
           event.preventDefault();
         } else if ((event.metaKey || event.ctrlKey) && event.key === "v") {
           // Paste
           event.preventDefault(); // Prevent default paste behavior
-          const clipboardText = await navigator.clipboard.readText();
-          editor.commands.insertContent(clipboardText);
+          const vscode = (window as any).acquireVsCodeApi();
+          vscode.postMessage({ type: 'requestPaste' });
+          // The actual paste will be handled by the VSCode extension
         }
       };
 
@@ -567,15 +688,30 @@ const TipTapEditor = memo(function TipTapEditor({
       }
 
       if (event.metaKey && event.key === "x") {
-        document.execCommand("cut");
+        const vscode = (window as any).acquireVsCodeApi();
+        vscode.postMessage({ type: 'cut', text: editor.state.doc.textBetween(
+          editor.state.selection.from,
+          editor.state.selection.to,
+          '\n' // Preserve newlines
+        ) });
+        const { state, dispatch } = editor.view;
+        const tr = state.tr.deleteSelection();
+        dispatch(tr);
         event.stopPropagation();
         event.preventDefault();
       } else if (event.metaKey && event.key === "v") {
-        document.execCommand("paste");
+        const vscode = (window as any).acquireVsCodeApi();
+        vscode.postMessage({ type: 'requestPaste' });
+        // The actual paste will be handled by the VSCode extension
         event.stopPropagation();
         event.preventDefault();
       } else if (event.metaKey && event.key === "c") {
-        document.execCommand("copy");
+        const vscode = (window as any).acquireVsCodeApi();
+        vscode.postMessage({ type: 'copy', text: editor.state.doc.textBetween(
+          editor.state.selection.from,
+          editor.state.selection.to,
+          '\n' // Preserve newlines
+        ) });
         event.stopPropagation();
         event.preventDefault();
       }
@@ -587,6 +723,27 @@ const TipTapEditor = memo(function TipTapEditor({
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, [editor, editorFocusedRef]);
+
+  useEffect(() => {
+    const messageHandler = (event: MessageEvent) => {
+      if (event.data.type === 'paste') {
+        const text = event.data.text;
+        const lines = text.split('\n');
+        const firstNode = editor?.state.schema.text(lines[0]);
+        const restNodes = lines.slice(1).map(line => 
+          editor?.state.schema.nodes.paragraph.create(null, editor.state.schema.text(line))
+        );
+        editor?.view.dispatch(editor.state.tr.replaceWith(
+          editor.state.selection.from,
+          editor.state.selection.to,
+          [firstNode, ...restNodes].filter(Boolean)
+        ));
+      }
+    };
+
+    window.addEventListener('message', messageHandler);
+    return () => window.removeEventListener('message', messageHandler);
+  }, [editor]);
 
   useEffect(() => {
     if (mainEditorContent && editor) {
@@ -706,7 +863,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
   useWebviewListener("jetbrains/editorInsetRefresh", async () => {
     editor?.chain().clearContent().focus().run();
-  });
+  }, [editor]);
 
   useWebviewListener(
     "focusContinueInput",
