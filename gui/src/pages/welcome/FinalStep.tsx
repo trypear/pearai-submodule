@@ -34,9 +34,11 @@ export default function FinalStep({ onNext }: { onNext: () => void }) {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         handleOpenFolder();
+        onNext()
       }
       if (event.key === 'Escape') {
         initiateInstallations();
+        onNext()
       }
     };
     window.addEventListener('keydown', handleKeyPress);
