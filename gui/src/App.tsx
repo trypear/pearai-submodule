@@ -114,7 +114,7 @@ const router = createMemoryRouter(
         {
           path: "/welcome",
           element: <Welcome/>
-        }
+        },
       ],
     },
   ],
@@ -122,7 +122,7 @@ const router = createMemoryRouter(
   {
     initialEntries: [
       window.isPearOverlay
-        ? (window.isFirstLaunch ? "/welcome" : "/inventory")
+        ? (window.isFirstLaunch ? "/welcome" : "/inventory/home")
         : window.initialRoute
     ],
     // FOR DEV'ing welcome:

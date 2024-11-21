@@ -43,13 +43,13 @@ interface TabButtonProps {
 export default function Inventory() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("inventory");
-  const currentTab = location.pathname.split("/").pop() || "inventory";
+  const [activeTab, setActiveTab] = useState("home");
+  const currentTab = location.pathname.split("/").pop() || "home";
   const isMac = navigator.userAgent.toLowerCase().includes("mac");
   const modifierKey = isMac ? '⌘' : "Ctrl";
 
   useEffect(() => {
-    const tab = location.pathname.split("/").pop() || "inventory";
+    const tab = location.pathname.split("/").pop() || "home";
     setActiveTab(tab);
   }, [location]);
 
@@ -83,7 +83,7 @@ export default function Inventory() {
     <div className={`h-full w-full flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-background"}`}>
       <Tabs
         value={currentTab}
-        defaultValue="inventory"
+        defaultValue="home"
         onValueChange={handleTabChange}
         className="flex flex-col h-full"
       >
