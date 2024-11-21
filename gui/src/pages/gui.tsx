@@ -10,6 +10,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -52,7 +53,8 @@ import {
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
-import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { setActiveFilePath, setUseActiveFile } from "@/redux/slices/uiStateSlice";
+import { set } from "lodash";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
@@ -174,6 +176,7 @@ function GUI() {
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
+  const isFirstMessage = state.history.length === 0;
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -270,6 +273,7 @@ function GUI() {
   useWebviewListener(
     "newSession",
     async () => {
+      console.log("here===1")
       saveSession();
       mainTextInputRef.current?.focus?.();
     },
@@ -279,9 +283,12 @@ function GUI() {
   useWebviewListener(
     "setActiveFilePath",
     async (data) => {
-      dispatch(setActiveFilePath(data));
+      if (data.isNewSession) {
+        dispatch(setUseActiveFile(false));
+      }
+      dispatch(setActiveFilePath(data.path));
     },
-    []
+    [setActiveFilePath]
   );
 
   useWebviewListener(

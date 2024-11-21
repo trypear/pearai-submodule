@@ -572,7 +572,7 @@ const commandsMap: (
     "pearai.newSession": async () => {
       sidebar.webviewProtocol?.request("newSession", undefined, [PEAR_CONTINUE_VIEW_ID]);
       const currentFile = await ide.getCurrentFile();
-      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("setActiveFilePath", { path: currentFile, isNewSession: true }, [PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, [

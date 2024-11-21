@@ -13,13 +13,12 @@ import {
   getMetaKeyLabel,
 } from "../../util";
 
-const MenuButton = styled.div<{ offFocus: boolean }>`
+export const MenuButton = styled.div`
   padding: 2px 4px;
   display: flex;
   align-items: center;
 
-  background-color: ${(props) =>
-    props.offFocus ? undefined : lightGray + "33"};
+  background-color: ${lightGray + "33"};
   border-radius: ${defaultBorderRadius};
   color: ${vscForeground};
 
@@ -43,7 +42,6 @@ export default function TopBar() {
       <ActiveFileIndicator />
       </div>
         <MenuButton 
-        offFocus={false}
         onClick={handleClick}
       >
         {getMetaKeyLabel()}+1 Inventory

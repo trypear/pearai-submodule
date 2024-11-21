@@ -62,7 +62,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setInactive: [undefined, void];
-  setActiveFilePath: [string | undefined, void];
+  setActiveFilePath: [{ path: string | undefined, isNewSession: boolean }, void];
   restFirstLaunchInGUI: [undefined, void];
   showInteractiveContinueTutorial: [undefined, void];
   submitMessage: [{ message: any }, void]; // any -> JSONContent from TipTap

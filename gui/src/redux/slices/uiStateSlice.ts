@@ -7,6 +7,8 @@ type UiState = {
   dialogMessage: string | JSX.Element;
   dialogEntryOn: boolean;
   activeFilePath: string | undefined;
+  activeConversationActiveFile: string | undefined; // This is used to keep track of the active file in an active conversation
+  useActiveFile: boolean;
 };
 
 export const uiStateSlice = createSlice({
@@ -19,6 +21,8 @@ export const uiStateSlice = createSlice({
     dialogEntryOn: false,
     displayBottomMessageOnBottom: true,
     activeFilePath: undefined,
+    useActiveFile: false,
+    activeConversationActiveFile: undefined,
   } as UiState,
   reducers: {
     setBottomMessage: (
@@ -60,6 +64,12 @@ export const uiStateSlice = createSlice({
     setActiveFilePath: (state, action: PayloadAction<UiState["activeFilePath"]>) => {
       state.activeFilePath = action.payload ?? "";
     },
+    setUseActiveFile: (state, action: PayloadAction<UiState["useActiveFile"]>) => {
+      state.useActiveFile = action.payload;
+    },
+    setActiveConversationActiveFile: (state, action: PayloadAction<string>) => {
+      state.activeConversationActiveFile = action.payload ?? undefined;
+    },
   },
 });
 
@@ -71,5 +81,7 @@ export const {
   setShowDialog,
   setDisplayBottomMessageOnBottom,
   setActiveFilePath,
+  setUseActiveFile,
+  setActiveConversationActiveFile,
 } = uiStateSlice.actions;
 export default uiStateSlice.reducer;

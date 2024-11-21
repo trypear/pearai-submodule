@@ -90,6 +90,8 @@ a:focus {
         --statusbar-foreground: var(--vscode-statusBar-foreground, #93A1A1);
         --tab-active-background: var(--vscode-tab-activeBackground, #002B37);
         --tab-active-foreground: var(--vscode-tab-activeForeground, #d6dbdb);
+        --badge-background: var(--vscode-badge-background, #1bbe84);
+        --badge-foreground: var(--vscode-badge-foreground, #fff);
 
         /* Additional variables, from default taildwind adapted to VSCode PearAI Theme */
         --card: var(--vscode-editor-background, #002B36);

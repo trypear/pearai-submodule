@@ -19,9 +19,11 @@ const buttonVariants = cva(
         ghost: "bg-input hover:bg-input text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         animated: "bg-input text-foreground transition-all duration-200 text-[0.9rem] hover:-translate-y-[1px]",
+        menu: "bg-opacity-20 hover:bg-badge hover:text-badge-foreground bg-gray-300 text-foreground"
       },
       size: {
         default: "h-9 px-4 py-2",
+        xs: "h-5 rounded-[5px] text-xs",
         sm: "h-8 rounded-md px-3 text-xs",
         lg: "h-10 rounded-md px-8",
         icon: "h-9 w-9",
