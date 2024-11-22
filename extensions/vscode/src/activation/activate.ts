@@ -9,6 +9,8 @@ import { getExtensionUri } from "../util/vscode";
 import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
 import { isFirstLaunch } from "../copySettings";
+import { exec } from 'child_process';
+
 
 export async function isVSCodeExtensionInstalled(extensionId: string): Promise<boolean> {
   return vscode.extensions.getExtension(extensionId) !== undefined;
@@ -51,6 +53,36 @@ export async function attemptUninstallExtension(extensionId: string): Promise<vo
 }
 
 
+async function setProjectId(context: vscode.ExtensionContext) {
+  // this function sets a project id based on the root commit hash of the current git repository
+  // it can be used to uniquely identify a project and store personalization memories
+  try {
+      // check if already set
+      if (context.workspaceState.get('projectId')) {
+          console.dir("PROJECT ID ALREADY SET");
+          console.dir(context.workspaceState.get('projectId'));
+          return;
+      }
+      // Get the Git repository info
+      const gitRepo = vscode.workspace.workspaceFolders?.[0];
+      if (gitRepo) {
+          // Get the root commit hash
+          exec('git rev-list --max-parents=0 HEAD -n 1', { cwd: gitRepo.uri.fsPath }, (err, stdout) => {
+              if (!err) {
+                 // use root commit hash as project id because it remains constant for the entire life of the repo
+                  const rootCommitHash = stdout.trim();
+                  console.dir("GOT PROJECT ID");
+                  console.dir(rootCommitHash);
+                  context.workspaceState.update('projectId', rootCommitHash);  // store in workspace state
+              }
+          });
+      }  // if not git initialized, id will simply be user-id (uid)
+  } catch (error) {
+      console.error('Failed to initialize project ID:', error);
+  }
+}
+
+
 export async function activateExtension(context: vscode.ExtensionContext) {
   // Add necessary files
   getTsConfigPath();
@@ -79,6 +111,7 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   //   vscode.commands.executeCommand("pearai.startOnboarding");
   // }
 
+  setProjectId(context);
   if (isFirstLaunch(context)) {
     vscode.commands.executeCommand("pearai.startOnboarding");
     setupPearAPPLayout(context);
