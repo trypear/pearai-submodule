@@ -19,6 +19,8 @@ import {
   pruneRawPromptFromTop,
 } from "./../countTokens.js";
 import { PearAICredentials } from "../../pearaiServer/PearAICredentials.js";
+import { editConfigJson } from "../../util/paths.js";
+
 
 class PearAIServer extends BaseLLM {
   private credentials: PearAICredentials;
@@ -53,9 +55,19 @@ class PearAIServer extends BaseLLM {
     // no-op
   }
 
+  private _getIntegrations(): any {
+    let integrations = {};
+    editConfigJson((config) => {
+      integrations = config.integrations || {};
+      return config;
+    });
+    return integrations;
+  }
+
   private _convertArgs(options: CompletionOptions): any {
     return {
       model: options.model,
+      integrations: this._getIntegrations(),
       frequency_penalty: options.frequencyPenalty,
       presence_penalty: options.presencePenalty,
       max_tokens: options.maxTokens,

@@ -803,6 +803,12 @@ export interface ModelDescription {
   isDefault?: boolean;
 }
 
+export interface IntegrationDescription {
+  name: string;
+  description?: string;
+  enabled: boolean;
+}
+
 export type EmbeddingsProviderName =
   | "huggingface-tei"
   | "transformers.js"
@@ -945,6 +951,7 @@ export interface SerializedContinueConfig {
   env?: string[];
   allowAnonymousTelemetry?: boolean;
   models: ModelDescription[];
+  integrations: IntegrationDescription[];
   systemMessage?: string;
   completionOptions?: BaseCompletionOptions;
   requestOptions?: RequestOptions;
