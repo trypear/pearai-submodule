@@ -137,7 +137,7 @@ function AiderGUI() {
 
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
-    
+
     if (aiderProcessState.state === "starting") {
       timeoutId = setTimeout(() => {
         if (aiderProcessState.state === "starting") {
@@ -244,40 +244,7 @@ function AiderGUI() {
         </>
       );
     }
-    if (aiderProcessState.state === "stopped") {
-      msg = (
-        <>
-          PearAI Creator (Powered By aider) process is not running. Please view{" "}
-          <a
-            href="https://trypear.ai/creator-troubleshooting"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline text-foreground"
-          >
-            troubleshooting
-          </a>
-          .
-        </>
-      );
-    }
-    if (aiderProcessState.state === "crashed") {
-      msg = (
-        <>
-          PearAI Creator (Powered By aider) process has failed. Please ensure a
-          folder is open, and view troubleshooting{" "}
-          <a
-            href="https://trypear.ai/creator-troubleshooting"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline text-foreground"
-          >
-            here
-          </a>
-          .
-        </>
-      );
-    }
-    if (aiderProcessState.state === "uninstalled") {
+    if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
       return <AiderManualInstallation />;
     }
     if (aiderProcessState.state === "starting") {
@@ -324,7 +291,7 @@ function AiderGUI() {
         </div> */}
       </>)
     }
-    
+
     return (
       <div className="h-[calc(100%-200px)] p-40 bg-opacity-50 z-10 flex items-center justify-center">
         <div className="text-2xl text-center">
