@@ -298,7 +298,7 @@ function AiderGUI() {
           <div className="spinner" role="status">
             <span>{msg}</span>
           </div>
-          {(aiderProcessState.state === "stopped" ||
+          {/* {(aiderProcessState.state === "stopped" ||
             aiderProcessState.state === "crashed") && (
             <div className="flex justify-center mt-4">
               <button
@@ -310,7 +310,7 @@ function AiderGUI() {
                 Restart
               </button>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     );
