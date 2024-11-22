@@ -20,7 +20,7 @@ const AiderManualInstallation: React.FC = () => {
           </p>
           {instructions}
           <p className="mt-4 bg-statusbar-background p-4 rounded-lg">
-            If you followed the above instructions correctly and restarted PearAI, then PearAI Creator should work! 
+            If you followed the above instructions correctly and restarted PearAI, then PearAI Creator should work!
             <br />
             If not, please view{" "}
             <a className="text-blue-500 hover:underline" href="https://trypear.ai/creator-troubleshooting">
@@ -57,7 +57,7 @@ const WindowsManualInstallation: React.FC = () => {
           <strong>Open a Command Prompt or PowerShell window</strong>
         </li>
         <li className="mb-2">
-          <strong>Install Python - </strong> If not already installed, run:
+          <strong>Install Python (if not already installed) - </strong> Run:
           <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
             <div className="flex justify-between items-center flex-wrap">
               <span className="font-mono">{pythonCmd}</span>
@@ -99,7 +99,7 @@ const MacManualInstallation: React.FC = () => {
           <strong>Open a new terminal window</strong>
         </li>
         <li className="mb-2">
-          <strong>Install Homebrew - </strong> If not already installed, run:
+          <strong>Install Homebrew (if not already installed) - </strong> Run:
           <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
             <div className="flex justify-between items-center flex-wrap">
               <span className="font-mono text-wrap">{homebrewCmd}</span>
@@ -110,7 +110,7 @@ const MacManualInstallation: React.FC = () => {
           </pre>
         </li>
         <li className="mb-2">
-          <strong>Install Python - </strong> Please run:
+          <strong>Install Python (if not already installed) - </strong> Run:
           <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
             <div className="flex justify-between items-center flex-wrap">
               <span className="font-mono text-wrap">{pythonCmd}</span>
@@ -132,7 +132,7 @@ const MacManualInstallation: React.FC = () => {
           </pre>
         </li>
         <li className="mt-4">
-          <strong>Finally, please close and reopen PearAI</strong>
+          <strong>Finally, please restart PearAI</strong>
         </li>
       </ol>
     </div>
