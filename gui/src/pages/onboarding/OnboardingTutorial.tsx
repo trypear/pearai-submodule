@@ -365,9 +365,6 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
   useWebviewListener(
     "navigateToInventoryHome",
     async () => {
-      console.dir("im here and current page:")
-      console.dir(currentPage)
-
       if (currentPage === pages.length - 1) {
         onClose();
       }
@@ -378,8 +375,6 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
   useWebviewListener(
     "navigateToInventory",
     async () => {
-      console.dir("im here and current page:")
-      console.dir(currentPage)
       if (currentPage === pages.length - 1) {
         onClose();
       }
