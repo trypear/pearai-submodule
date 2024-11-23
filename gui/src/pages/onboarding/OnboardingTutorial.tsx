@@ -274,6 +274,11 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             Lastly, press{" "}
             <b>
               <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
+              &nbsp;<kbd className="font-mono">1</kbd>
+            </b>{" "}
+            / {" "}
+            <b>
+              <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
               &nbsp;<kbd className="font-mono">E</kbd>
             </b>{" "}
             to toggle <b>PearAI Inventory</b>, and try out{" "}
