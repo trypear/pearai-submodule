@@ -97,7 +97,6 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   installVscodeExtension: [{ extensionId: string }, void];
   is_vscode_extension_installed: [{ extensionId: string }, boolean];
   isAiderInstalled: [undefined, boolean];
-  // gitInit: [undefined, void];
 
   // overlay
   closeOverlay: [undefined, void];
