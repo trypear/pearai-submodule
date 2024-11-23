@@ -909,13 +909,14 @@ const commandsMap: (
     },
     "pearai.freeModelSwitch": (msg) => {
       const warnMsg = msg.warningMsg;
-      if (!warnMsg && extensionContext.globalState.get("freeModelSwitched")) {
+      const flagSet = extensionContext.globalState.get("freeModelSwitched");
+      if (!warnMsg && flagSet) {
         // credit restored
         vscode.window.showInformationMessage("Credit restored. Switched back to PearAI Pro model.");
         extensionContext.globalState.update("freeModelSwitched", false);
         return;
       }
-      if (warnMsg &&!extensionContext.globalState.get("freeModelSwitched")) {
+      if (warnMsg && !flagSet) {
         // limit reached, switching to free model
         vscode.window.showInformationMessage(msg.warningMsg);
         extensionContext.globalState.update("freeModelSwitched", true);
