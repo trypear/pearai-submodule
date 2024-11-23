@@ -300,15 +300,6 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       saveSession();
     }
 
-    // If moving to the last page, trigger the tutorial completion
-    if (nextPageNum === pages.length - 1) {
-      console.dir("IM HERE")
-      setLocalStorage("showTutorialCard", false);
-      setTimeout(() => {
-        onClose();
-      }, 60000); // Wait for the transition to complete
-    }
-
     setTimeout(() => setIsTransitioning(false), 600);
   };
 
@@ -369,6 +360,31 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       }
     },
     [currentPage],
+  );
+
+  useWebviewListener(
+    "navigateToInventoryHome",
+    async () => {
+      console.dir("im here and current page:")
+      console.dir(currentPage)
+
+      if (currentPage === pages.length - 1) {
+        onClose();
+      }
+    },
+    [currentPage, onClose, pages.length]
+  );
+
+  useWebviewListener(
+    "navigateToInventory",
+    async () => {
+      console.dir("im here and current page:")
+      console.dir(currentPage)
+      if (currentPage === pages.length - 1) {
+        onClose();
+      }
+    },
+    [currentPage, onClose, pages.length]
   );
 
   useEffect(() => {
