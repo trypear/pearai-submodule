@@ -56,6 +56,10 @@ module.exports = {
           activeBackground: "var(--tab-active-background)",
           activeForeground: "var(--tab-active-foreground)",
         },
+        badge: {
+          background: "var(--badge-background)",
+          foreground: "var(--badge-foreground)",
+        },
 
         /* Tailwind default configs */
         card: {
