@@ -1,5 +1,4 @@
 import { useContext } from "react";
-import ActiveFileIndicator from "./ActiveFileIndicator";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import styled from "styled-components";
 import {
@@ -40,14 +39,14 @@ export default function TopBar() {
   return (
     <div className="flex justify-between items-center mb-2 text-xs w-full">
       <div className="flex items-center gap-1">
-      <ActiveFileIndicator />
-      </div>
-        <MenuButton 
+      <MenuButton
         offFocus={false}
         onClick={handleClick}
       >
         {getMetaKeyLabel()}+1 Inventory
       </MenuButton>
+      </div>
+
     </div>
   );
 };

@@ -118,35 +118,36 @@ async function resolveEditorContent(
     }
   }
 
-  const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
-  const excludeDirStructure =
-    defaultModelTitle?.toLowerCase() &&
-    EXCLUDE_DIR_STRUCTURE.some((term) =>
-      defaultModelTitle.toLowerCase().includes(term),
-    );
+  // Depreciated DirStructure on every request (-nang)
+  // const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
+  // const excludeDirStructure =
+  //   defaultModelTitle?.toLowerCase() &&
+  //   EXCLUDE_DIR_STRUCTURE.some((term) =>
+  //     defaultModelTitle.toLowerCase().includes(term),
+  //   );
 
-  if (!excludeDirStructure) {
-    const previousDirectoryItems = (store.getState() as any).state
-      .directoryItems;
-    // use directory structure
-    const directoryItems = await ideMessenger.request(
-      "context/getContextItems",
-      {
-        name: "directory",
-        query: "",
-        fullInput: stripImages(parts),
-        selectedCode,
-      },
-    );
+  // if (!excludeDirStructure) {
+  //   const previousDirectoryItems = (store.getState() as any).state
+  //     .directoryItems;
+  //   // use directory structure
+  //   const directoryItems = await ideMessenger.request(
+  //     "context/getContextItems",
+  //     {
+  //       name: "directory",
+  //       query: "",
+  //       fullInput: stripImages(parts),
+  //       selectedCode,
+  //     },
+  //   );
 
-    if (previousDirectoryItems !== directoryItems[0].content) {
-      store.dispatch(setDirectoryItems(directoryItems[0].content));
-      contextItems.push(...directoryItems);
-      for (const codebaseItem of directoryItems) {
-        contextItemsText += codebaseItem.content + "\n\n";
-      }
-    }
-  }
+  //   if (previousDirectoryItems !== directoryItems[0].content) {
+  //     store.dispatch(setDirectoryItems(directoryItems[0].content));
+  //     contextItems.push(...directoryItems);
+  //     for (const codebaseItem of directoryItems) {
+  //       contextItemsText += codebaseItem.content + "\n\n";
+  //     }
+  //   }
+  // }
 
   // cmd+enter to use codebase
   if (modifiers.useCodebase) {
