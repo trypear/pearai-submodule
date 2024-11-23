@@ -907,6 +907,20 @@ const commandsMap: (
     "pearai.macResizeAuxiliaryBarWidth": () => {
       vscode.commands.executeCommand("pearai.resizeAuxiliaryBarWidth");
     },
+    "pearai.freeModelSwitch": (msg) => {
+      const warnMsg = msg.warningMsg;
+      if (!warnMsg && extensionContext.globalState.get("freeModelSwitched")) {
+        // credit restored
+        vscode.window.showInformationMessage("Credit restored. Switched back to PearAI Pro model.");
+        extensionContext.globalState.update("freeModelSwitched", false);
+        return;
+      }
+      if (warnMsg &&!extensionContext.globalState.get("freeModelSwitched")) {
+        // limit reached, switching to free model
+        vscode.window.showInformationMessage(msg.warningMsg);
+        extensionContext.globalState.update("freeModelSwitched", true);
+      }
+    },
     "pearai.patchWSL": async () => {
       if (process.platform !== 'win32') {
         vscode.window.showWarningMessage("WSL is for Windows only.");
