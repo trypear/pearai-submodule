@@ -968,7 +968,7 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     >
-      {(!isPerplexity && !isAider) && <TopBar />}
+      {/* {(!isPerplexity && !isAider) && <TopBar />} */}
       <EditorContent
         spellCheck={false}
         editor={editor}

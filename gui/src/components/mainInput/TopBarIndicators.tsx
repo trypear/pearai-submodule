@@ -34,7 +34,7 @@ export default function TopBar() {
   const ideMessenger = useContext(IdeMessengerContext);
 
   const handleClick = () => {
-    ideMessenger.post("openInventory", undefined);
+    ideMessenger.post("openInventoryHome", undefined);
 }
   return (
     <div className="flex justify-between items-center mb-2 text-xs w-full">
