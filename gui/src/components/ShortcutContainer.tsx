@@ -126,6 +126,12 @@ const ShortcutContainer = () => {
   const shortcuts = [
     {
       modifiers: [modifier],
+      keyCode: "E",
+      description: "Open Inventory",
+      onClick: () => ideMessenger.post("openInventoryHome", undefined),
+    },
+    {
+      modifiers: [modifier],
       keyCode: "\\",
       description: "Big",
       onClick: () => ideMessenger.post("bigChat", undefined),
