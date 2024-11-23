@@ -6,6 +6,7 @@ import {
 import DelayedMessage from "@/components/DelayedMessage";
 import CopyButtonWithText from "@/components/markdown/CopyButtonWithText";
 import { Button } from "@/components/ui/button";
+import { setLocalStorage } from "@/util/localStorage";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import useHistory from "@/hooks/useHistory";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
@@ -248,7 +249,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       description: (
         <>
           <p>
-            Try asking anything about your entire codebase by typing in prompt then 
+            Try asking anything about your entire codebase by typing in prompt then
             pressing{" "}
             <b>
               <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
@@ -256,7 +257,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             </b>
           </p>
           <span>
-            Note: codebase indexing must finish before you can run this!
+            Note: codebase indexing must finish before you can run this! You can find the status at the very bottom of this sidebar.
           </span>
         </>
       ),
@@ -271,6 +272,11 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
         <>
           <p>
             Lastly, press{" "}
+            <b>
+              <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
+              &nbsp;<kbd className="font-mono">1</kbd>
+            </b>{" "}
+            / {" "}
             <b>
               <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
               &nbsp;<kbd className="font-mono">E</kbd>
@@ -292,10 +298,13 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
   const nextPage = () => {
     setIsTransitioning(true);
     setSlideDirection("right");
-    setCurrentPage((prev) => Math.min(prev + 1, pages.length - 1));
+    const nextPageNum = Math.min(currentPage + 1, pages.length - 1);
+    setCurrentPage(nextPageNum);
+
     if (currentPage === 1) {
       saveSession();
     }
+
     setTimeout(() => setIsTransitioning(false), 600);
   };
 
@@ -356,6 +365,26 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
       }
     },
     [currentPage],
+  );
+
+  useWebviewListener(
+    "navigateToInventoryHome",
+    async () => {
+      if (currentPage === pages.length - 1) {
+        onClose();
+      }
+    },
+    [currentPage, onClose, pages.length]
+  );
+
+  useWebviewListener(
+    "navigateToInventory",
+    async () => {
+      if (currentPage === pages.length - 1) {
+        onClose();
+      }
+    },
+    [currentPage, onClose, pages.length]
   );
 
   useEffect(() => {
@@ -451,7 +480,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                         />
                       ))}
                     </div>
-                    <div className="text-xs mt-3">copy prompts by clicking them</div> 
+                    <div className="text-xs mt-3">copy prompts by clicking them</div>
                   </ExamplesSection>
                 )}
               </ContentWrapper>

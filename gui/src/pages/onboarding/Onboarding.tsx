@@ -28,10 +28,6 @@ function Onboarding() {
     }
   }, [])
 
-  useWebviewListener("pearAISignedIn", async () => {
-    completeOnboarding()
-  });
-
   return (
     <div className="max-w-96 mx-auto flex flex-col items-center justify-between pt-8">
       <div className="flex flex-col items-center justify-center">

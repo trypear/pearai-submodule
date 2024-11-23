@@ -16,7 +16,6 @@ export default function SignIn({
 
   useWebviewListener("pearAISignedIn", async () => {
     onNext();
-    return Promise.resolve();
   });
 
   const handleSignIn = () => {
