@@ -45,10 +45,6 @@ function Onboarding() {
     }
   }, [])
 
-  useWebviewListener("pearAISignedIn", async () => {
-    completeOnboarding()
-  });
-
   return (
     <div className="max-w-96 mx-auto flex flex-col items-center justify-between pt-8">
       <div className="flex flex-col items-center justify-center">
@@ -59,7 +55,7 @@ function Onboarding() {
         />
       <h1 className="text-center">Welcome to PearAI!</h1>
       <h3 className="mx-3 text-center flex">Begin your journey by logging in<EllipsisContainer /></h3>
-      <Button 
+      <Button
         variant="animated"
         size="lg"
         className="m-5 flex flex-col justify-center items-center bg-button text-button-foreground"
