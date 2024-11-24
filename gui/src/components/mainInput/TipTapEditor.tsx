@@ -589,9 +589,20 @@ const TipTapEditor = memo(function TipTapEditor({
           event.preventDefault();
         } else if ((event.metaKey || event.ctrlKey) && event.key === "v") {
           // Paste
-          event.preventDefault(); // Prevent default paste behavior
-          const clipboardText = await navigator.clipboard.readText();
-          editor.commands.insertContent(clipboardText);
+          // Let the paste event handlers deal with it if there's data in the clipboard
+          const clipboardItems = await navigator.clipboard.read();
+          const hasImage = await Promise.all(
+            clipboardItems.map(async item => {
+              return item.types.some(type => type.startsWith('image/'));
+            })
+          ).then(results => results.some(Boolean));
+
+          if (!hasImage) {
+            // Only handle text if there's no image
+            event.preventDefault();
+            const clipboardText = await navigator.clipboard.readText();
+            editor.commands.insertContent(clipboardText);
+          }
         }
       };
 
