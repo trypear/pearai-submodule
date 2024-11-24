@@ -576,13 +576,13 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       } else if ((event.metaKey || event.ctrlKey) && event.key === "c") {
         document.execCommand("copy");
-        event.stopPropagation(); 
+        event.stopPropagation();
         event.preventDefault();
       }
     };
-  
+
     document.addEventListener("keydown", handleKeyDown);
-  
+
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
