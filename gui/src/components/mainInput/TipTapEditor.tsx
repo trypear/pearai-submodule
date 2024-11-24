@@ -561,9 +561,9 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }
     };
-  
+
     document.addEventListener("keydown", handleKeyDown);
-  
+
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
