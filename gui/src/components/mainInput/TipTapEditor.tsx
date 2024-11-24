@@ -560,81 +560,29 @@ const TipTapEditor = memo(function TipTapEditor({
   }, [ideMessenger]);
 
   useEffect(() => {
-    if (isJetBrains()) {
-      // This is only for VS Code .ipynb files
-      return;
-    }
-
-    if (isWebEnvironment()) {
-      const handleKeyDown = async (event: KeyboardEvent) => {
-        if (!editor || !editorFocusedRef.current) {
-          return;
-        }
-        if ((event.metaKey || event.ctrlKey) && event.key === "x") {
-          // Cut
-          const selectedText = editor.state.doc.textBetween(
-            editor.state.selection.from,
-            editor.state.selection.to,
-          );
-          navigator.clipboard.writeText(selectedText);
-          editor.commands.deleteSelection();
-          event.preventDefault();
-        } else if ((event.metaKey || event.ctrlKey) && event.key === "c") {
-          // Copy
-          const selectedText = editor.state.doc.textBetween(
-            editor.state.selection.from,
-            editor.state.selection.to,
-          );
-          navigator.clipboard.writeText(selectedText);
-          event.preventDefault();
-        } else if ((event.metaKey || event.ctrlKey) && event.key === "v") {
-          // Paste
-          // Let the paste event handlers deal with it if there's data in the clipboard
-          const clipboardItems = await navigator.clipboard.read();
-          const hasImage = await Promise.all(
-            clipboardItems.map(async item => {
-              return item.types.some(type => type.startsWith('image/'));
-            })
-          ).then(results => results.some(Boolean));
-
-          if (!hasImage) {
-            // Only handle text if there's no image
-            event.preventDefault();
-            const clipboardText = await navigator.clipboard.readText();
-            editor.commands.insertContent(clipboardText);
-          }
-        }
-      };
-
-      document.addEventListener("keydown", handleKeyDown);
-
-      return () => {
-        document.removeEventListener("keydown", handleKeyDown);
-      };
-    }
-
     const handleKeyDown = async (event: KeyboardEvent) => {
       if (!editor || !editorFocusedRef.current) {
         return;
       }
-
-      if (event.metaKey && event.key === "x") {
+      if ((event.metaKey || event.ctrlKey) && event.key === "v") {
+        // Let the native paste event handle it if there are images
+        // This allows the paste handler in editorProps to process images
+        return;
+      }
+      // Handle other keyboard shortcuts...
+      if ((event.metaKey || event.ctrlKey) && event.key === "x") {
         document.execCommand("cut");
         event.stopPropagation();
         event.preventDefault();
-      } else if (event.metaKey && event.key === "v") {
-        document.execCommand("paste");
-        event.stopPropagation();
-        event.preventDefault();
-      } else if (event.metaKey && event.key === "c") {
+      } else if ((event.metaKey || event.ctrlKey) && event.key === "c") {
         document.execCommand("copy");
-        event.stopPropagation();
+        event.stopPropagation(); 
         event.preventDefault();
       }
     };
-
+  
     document.addEventListener("keydown", handleKeyDown);
-
+  
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
