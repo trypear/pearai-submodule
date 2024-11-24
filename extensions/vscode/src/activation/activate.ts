@@ -5,11 +5,9 @@ import * as vscode from "vscode";
 import { VsCodeExtension } from "../extension/VsCodeExtension";
 import registerQuickFixProvider from "../lang-server/codeActions";
 import { getExtensionVersion } from "../util/util";
-import { getExtensionUri } from "../util/vscode";
 import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
 import { isFirstLaunch } from "../copySettings";
-import { exec } from 'child_process';
 
 
 export async function isVSCodeExtensionInstalled(extensionId: string): Promise<boolean> {
