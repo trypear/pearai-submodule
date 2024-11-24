@@ -239,6 +239,7 @@ const TipTapEditor = memo(function TipTapEditor({
     (store: RootState) => store.state.contextItems,
   );
   const defaultModel = useSelector(defaultModelSelector);
+  const defaultModelRef = useUpdatingRef(defaultModel);
   const getSubmenuContextItemsRef = useUpdatingRef(getSubmenuContextItems);
   const availableContextProvidersRef = useUpdatingRef(availableContextProviders)
 
@@ -321,54 +322,9 @@ const TipTapEditor = memo(function TipTapEditor({
     extensions: [
       Document,
       History,
-      Image.extend({
-        addProseMirrorPlugins() {
-          const plugin = new Plugin({
-            props: {
-              handleDOMEvents: {
-                paste(view, event) {
-                  const items = event.clipboardData.items;
-
-                  const hasImageItem = Array.from(items).some(
-                    item => item.type.startsWith('image/')
-                  );
-
-                  // Only log and process if we actually have an image
-                  if (hasImageItem) {
-                    for (const item of items) {
-                      if (!item.type.startsWith('image/')) continue;
-                      
-                      const file = item.getAsFile();
-                      if (!file) continue;
-      
-                      if (modelSupportsImages(
-                        defaultModel.provider,
-                        defaultModel.model,
-                        defaultModel.title,
-                        defaultModel.capabilities,
-                      )) {
-                        event.preventDefault();
-                        
-                        handleImageFile(file).then((resp) => {
-                          if (!resp) return;
-                          
-                          const [img, dataUrl] = resp;
-                          const { schema } = view.state;
-                          const node = schema.nodes.image.create({
-                            src: dataUrl,
-                          });
-                          const tr = view.state.tr.insert(0, node);
-                          view.dispatch(tr);
-                        });
-                      }
-                    }
-                  }
-                }
-              },
-            },
-          });
-          return [plugin];
-        },
+      Image.configure({
+        inline: true,
+        allowBase64: true,
       }),
       Placeholder.configure({
         placeholder: () => getPlaceholder(historyLengthRef.current, location),
@@ -502,18 +458,48 @@ const TipTapEditor = memo(function TipTapEditor({
         class: "outline-none -mt-1 mb-1 overflow-hidden",
         style: `font-size: ${getFontSize()}px;`,
       },
-      handlePaste(view, event) {
-        const items = event.clipboardData.items;
-        const hasImageItem = Array.from(items).some(item => item.type.startsWith('image/'));
-        
-        if (!hasImageItem) {
+      handlePaste: (view, event) => {
+        const items = event.clipboardData?.items;
+        const currentModel = defaultModelRef.current;
+        if (!items || !currentModel) return false;
+
+        // Check for image items and model support
+        for (const item of items) {
+          if (item.type.startsWith('image/') && 
+              modelSupportsImages(
+                currentModel.provider,
+                currentModel.model,
+                currentModel.title,
+                currentModel.capabilities
+              )) {
+            event.preventDefault();
+            const file = item.getAsFile();
+            if (!file) continue;
+
+            // Handle image file asynchronously but return synchronously
+            handleImageFile(file).then(result => {
+              if (result) {
+                const [image, dataUrl] = result;
+                const { state } = view;
+                const { tr } = state;
+                const pos = state.selection.from;
+                tr.replaceSelectionWith(state.schema.nodes.image.create({ src: dataUrl }));
+                view.dispatch(tr);
+              }
+            });
+            return true;
+          }
+        }
+
+        // Handle text paste
+        const text = event.clipboardData.getData('text/plain');
+        if (text) {
           event.preventDefault();
-          const text = event.clipboardData.getData('text/plain');
           const lines = text.split(/\r?\n/);
           const { tr } = view.state;
           const { schema } = view.state;
           let pos = view.state.selection.from;
-  
+
           // Delete the selected text before inserting new text
           tr.delete(view.state.selection.from, view.state.selection.to);
 
@@ -524,10 +510,11 @@ const TipTapEditor = memo(function TipTapEditor({
             tr.insertText(line, pos);
             pos += line.length;
           });
-  
+
           view.dispatch(tr);
           return true;
         }
+
         return false;
       },
     },
@@ -564,12 +551,6 @@ const TipTapEditor = memo(function TipTapEditor({
       if (!editor || !editorFocusedRef.current) {
         return;
       }
-      if ((event.metaKey || event.ctrlKey) && event.key === "v") {
-        // Let the native paste event handle it if there are images
-        // This allows the paste handler in editorProps to process images
-        return;
-      }
-      // Handle other keyboard shortcuts...
       if ((event.metaKey || event.ctrlKey) && event.key === "x") {
         document.execCommand("cut");
         event.stopPropagation();
@@ -580,9 +561,9 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }
     };
-
+  
     document.addEventListener("keydown", handleKeyDown);
-
+  
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
