@@ -4,17 +4,11 @@ import {
   LLMOptions,
   ModelProvider,
 } from "../../index.js";
-import { SERVER_URL } from "../../util/parameters.js";
 import { BaseLLM } from "../index.js";
-import { streamSse, streamJSON } from "../stream.js";
-import { checkTokens } from "../../db/token.js";
 import { stripImages } from "../images.js";
 import { countTokens } from "../countTokens.js";
-import * as cp from "child_process";
 import * as process from "process";
 import { PearAICredentials } from "../../pearaiServer/PearAICredentials.js";
-import { getHeaders } from "../../pearaiServer/stubs/headers.js";
-import * as vscode from "vscode";
 import type { AiderState } from "../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
 import { AiderProcessManager } from "../../../extensions/vscode/src/integrations/aider/aiderProcess"
 
@@ -193,7 +187,6 @@ class Aider extends BaseLLM {
           role: "assistant",
           content: escapeDollarSigns(newOutput),
         };
-        //}
 
         // Safety check
         // if (this.aiderProcess?.killed) {

@@ -5,16 +5,11 @@ import { execSync } from "child_process";
 import { AiderState } from "./types/aiderTypes";
 import { PearAICredentials } from "core/pearaiServer/PearAICredentials";
 import {
-  checkAiderInstallation,
-  checkBrewInstallation,
   checkCredentials,
   checkGitRepository,
-  checkPythonInstallation,
-  getCurrentWorkingDirectory,
   getUserPath,
   getUserShell
 } from "./aiderUtil";
-import { access } from "fs";
 import { SERVER_URL } from "core/util/parameters";
 
 // Constants
@@ -47,7 +42,6 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
     "--subtree-only"
   ];
 
-  // Add all flags to the command
   aiderCommand.push(...aiderFlags);
 
   if (model === "pearai_model") {
@@ -55,10 +49,8 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
     aiderCommand.push("--openai-api-base", `${SERVER_URL}/integrations/aider`);
   } else if (model.includes("claude")) {
     aiderCommand.push("--model", model);
-    aiderCommand.push("--anthropic");
   } else if (model.includes("gpt")) {
     aiderCommand.push("--model", model);
-    aiderCommand.push("--openai");
   }
 
   if (UDIFF_FLAG) {
@@ -78,16 +70,16 @@ export async function startAiderProcess(
   const shell = getUserShell();
   const userPath = getUserPath();
 
-  const env = {
+  const env: NodeJS.ProcessEnv = {
     ...process.env,
     PATH: userPath,
   };
 
   if (apiKey) {
     if (model.includes("claude")) {
-      // env.ANTHROPIC_API_KEY = apiKey;
+      env.ANTHROPIC_API_KEY = apiKey;
     } else if (model.includes("gpt")) {
-      // env.OPENAI_API_KEY = apiKey;
+      env.OPENAI_API_KEY = apiKey;
     }
   }
 
@@ -152,7 +144,7 @@ export class AiderProcessManager {
   private aiderProcess: cp.ChildProcess | null = null;
   private apiKey?: string | undefined = undefined;
   private model?: string;
-  private _state: AiderState = { state: "stopped" };
+  private _state: AiderState = { state: "starting" };
   private credentials: PearAICredentials;
   public aiderOutput: string = "";
   private lastProcessedIndex: number = 0;
