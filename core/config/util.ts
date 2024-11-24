@@ -52,7 +52,7 @@ export function deleteModel(title: string) {
 
 export function toggleIntegration(name: string) {
   editConfigJson((config) => {
-    const integration = config.integrations.find((i: any) => i.name === name);
+    const integration = config!.integrations!.find((i: any) => i.name === name);
     if (integration) {
       integration.enabled = !integration.enabled;
     }

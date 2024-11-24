@@ -20,6 +20,9 @@ import {
 } from "./../countTokens.js";
 import { PearAICredentials } from "../../pearaiServer/PearAICredentials.js";
 import { editConfigJson } from "../../util/paths.js";
+import { execSync } from "child_process";
+import * as vscode from "vscode";
+
 
 
 class PearAIServer extends BaseLLM {
@@ -64,10 +67,30 @@ class PearAIServer extends BaseLLM {
     return integrations;
   }
 
+  private _getRepoId(): string {
+    try {
+        const gitRepo = vscode.workspace.workspaceFolders?.[0];
+        if (gitRepo) {
+            // Get the root commit hash
+            const rootCommitHash = execSync(
+              "git rev-list --max-parents=0 HEAD -n 1", 
+              { cwd: gitRepo.uri.fsPath }
+          ).toString().trim();
+          return rootCommitHash;
+        }  // if not git initialized, id will simply be user-id (uid)
+        return "";
+    } catch (error) {
+        console.error("Failed to initialize project ID:", error);
+        console.error("Using user ID as project ID");
+        return "";
+    }
+  }
+
   private _convertArgs(options: CompletionOptions): any {
     return {
       model: options.model,
       integrations: this._getIntegrations(),
+      repoId: this._getRepoId(),
       frequency_penalty: options.frequencyPenalty,
       presence_penalty: options.presencePenalty,
       max_tokens: options.maxTokens,
