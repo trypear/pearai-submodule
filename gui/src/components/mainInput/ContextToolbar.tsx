@@ -19,25 +19,19 @@ import { getFontSize } from "../../util";
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
   padding: 4px 0;
-  display: flex;
+  display: ${(props) => (props.isHidden ? "none" : "flex")};
   justify-content: flex-start;
   gap: 6px;
   align-items: flex-end;
   z-index: 50;
   font-size: ${getFontSize()}px;
   cursor: ${(props) => (props.isHidden ? "default" : "text")};
-  opacity: ${(props) => (props.isHidden ? 0 : 1)};
   pointer-events: ${(props) => (props.isHidden ? "none" : "auto")};
 
   & > * {
     flex: 0 0 auto;
   }
 
-  @media (max-width: 400px) {
-    & > span:last-child {
-      display: none;
-    }
-  }
 `;
 
 interface ContextToolbarProps {

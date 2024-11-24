@@ -19,6 +19,7 @@ import {
   pruneRawPromptFromTop,
 } from "./../countTokens.js";
 import { PearAICredentials } from "../../pearaiServer/PearAICredentials.js";
+import * as vscode from "vscode";
 
 class PearAIServer extends BaseLLM {
   private credentials: PearAICredentials;
@@ -135,10 +136,15 @@ class PearAIServer extends BaseLLM {
     });
 
     let completion = "";
+    let warningMsg = "";
 
     for await (const value of streamJSON(response)) {
       if (value.metadata && Object.keys(value.metadata).length > 0) {
         console.log("Metadata received:", value.metadata);
+        if (value.metadata.ui_only) {
+          warningMsg += value.content;
+          continue;
+        }
       }
       if (value.content) {
         yield {
@@ -149,6 +155,8 @@ class PearAIServer extends BaseLLM {
         completion += value.content;
       }
     }
+    
+    vscode.commands.executeCommand("pearai.freeModelSwitch", {warningMsg});
     this._countTokens(completion, args.model, false);
   }
 
