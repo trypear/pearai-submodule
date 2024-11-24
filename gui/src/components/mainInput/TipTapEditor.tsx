@@ -57,8 +57,6 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
-import ActiveFileIndicator from "./ActiveFileIndicator";
-import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 import TopBar from "./TopBarIndicators";
 import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 import HardBreak from '@tiptap/extension-hard-break';
@@ -950,8 +948,8 @@ const TipTapEditor = memo(function TipTapEditor({
         });
         event.preventDefault();
       }}
-    > 
-      {(!isPerplexity && !isAider) && <TopBar />}
+    >
+      {/* {(!isPerplexity && !isAider) && <TopBar />} */}
       <EditorContent
         spellCheck={false}
         editor={editor}

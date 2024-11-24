@@ -103,8 +103,8 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   lockOverlay: [undefined, void];
   unlockOverlay: [undefined, void];
 
-  /* dont overuse invokeVSCodeCommandById, use it only for devving, 
-  and if you find yourself writing redundant code just to invoke a 
+  /* dont overuse invokeVSCodeCommandById, use it only for devving,
+  and if you find yourself writing redundant code just to invoke a
   command not related to pearai. (workbench, other extension)
   */
   invokeVSCodeCommandById: [
