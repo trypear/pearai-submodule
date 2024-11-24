@@ -135,23 +135,23 @@ function AiderGUI() {
     return () => window.removeEventListener("keydown", listener);
   }, [active]);
 
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+  // useEffect(() => {
+  //   let timeoutId: NodeJS.Timeout;
 
-    if (aiderProcessState.state === "starting") {
-      timeoutId = setTimeout(() => {
-        if (aiderProcessState.state === "starting") {
-          setShowReloadButton(true);
-        }
-      }, 15000); // 15 seconds
-    } else {
-      setShowReloadButton(false);
-    }
+  //   if (aiderProcessState.state === "starting") {
+  //     timeoutId = setTimeout(() => {
+  //       if (aiderProcessState.state === "starting") {
+  //         setShowReloadButton(true);
+  //       }
+  //     }, 15000); // 15 seconds
+  //   } else {
+  //     setShowReloadButton(false);
+  //   }
 
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [aiderProcessState.state, aiderProcessState.timeStamp]);
+  //   return () => {
+  //     if (timeoutId) clearTimeout(timeoutId);
+  //   };
+  // }, [aiderProcessState.state, aiderProcessState.timeStamp]);
 
   const { streamResponse } = useChatHandler(dispatch, ideMessenger, "aider");
 
@@ -201,7 +201,7 @@ function AiderGUI() {
   );
 
   useEffect(() => {
-    ideMessenger.request("refreshAiderProcessState", undefined);
+    ideMessenger.request("sendAiderProcessStateToGUI", undefined);
   }, []);
 
   useWebviewListener("setAiderProcessStateInGUI", async (data) => {
@@ -209,6 +209,30 @@ function AiderGUI() {
       setAiderProcessState({state: data.state, timeStamp: Date.now()});
     }
   });
+
+  // Add effect to re-fetch state periodically only if not ready
+useEffect(() => {
+  let interval: NodeJS.Timeout | undefined;
+
+  const fetchState = () => {
+    ideMessenger.request("sendAiderProcessStateToGUI", undefined);
+  };
+
+  // Only set up polling if state is not "ready"
+  if (aiderProcessState.state !== "ready") {
+    // Initial fetch
+    fetchState();
+
+    // Set up periodic polling as a fallback
+    interval = setInterval(fetchState, 2000);
+  }
+
+  return () => {
+    if (interval) {
+      clearInterval(interval);
+    }
+  };
+}, [aiderProcessState.state]); // Add aiderProcessState.state as dependency
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {

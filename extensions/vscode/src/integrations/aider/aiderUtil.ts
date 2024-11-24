@@ -31,7 +31,7 @@ export async function startAiderProcess(core: Core) {
   // Check if current workspace is a git repo
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders || workspaceFolders.length === 0) {
-    await aiderModel.setAiderState("notgitrepo");
+    await aiderModel.setAiderState({state: "notgitrepo"});
     // vscode.window.showErrorMessage('Please open a workspace folder to use PearAI Creator.');
     return;
   }
@@ -39,14 +39,14 @@ export async function startAiderProcess(core: Core) {
   const isGitRepo = await isGitRepository(workspaceFolders[0].uri.fsPath);
   if (!isGitRepo) {
     console.dir("setting state to notgitrepo");
-    await aiderModel.setAiderState("notgitrepo");
+    await aiderModel.setAiderState({state: "notgitrepo"});
     return;
   }
 
   const isAiderInstalled = await checkAiderInstallation();
 
   if (!isAiderInstalled) {
-    await aiderModel.setAiderState("uninstalled");
+    await aiderModel.setAiderState({state: "uninstalled"});
     return;
   }
 
@@ -57,8 +57,11 @@ export async function startAiderProcess(core: Core) {
   }
 }
 
-export async function refreshAiderProcessState(core: Core, webviewProtocol: VsCodeWebviewProtocol) {
+export async function sendAiderProcessStateToGUI(core: Core, webviewProtocol: VsCodeWebviewProtocol) {
   const config = await core.configHandler.loadConfig();
+
+  const aiderMatches = config.models.filter((model) => model instanceof Aider);
+  console.dir(`Number of Aider model matches: ${aiderMatches.length}`);
   const aiderModel = config.models.find((model) => model instanceof Aider) as
     | Aider
     | undefined;
@@ -69,7 +72,11 @@ export async function refreshAiderProcessState(core: Core, webviewProtocol: VsCo
     return;
   }
 
-  webviewProtocol?.request("setAiderProcessStateInGUI", { state: aiderModel.getAiderState().state }, [PEAR_OVERLAY_VIEW_ID]);
+  console.dir("IM SENDING AIDER PROCESS STATE TO GUI")
+  console.dir(aiderModel.getAiderState().state)
+  console.dir(aiderModel.getAiderState().timeStamp)
+
+  webviewProtocol?.request("setAiderProcessStateInGUI", aiderModel.getAiderState(), [PEAR_OVERLAY_VIEW_ID]);
 }
 
 export async function killAiderProcess(core: Core) {

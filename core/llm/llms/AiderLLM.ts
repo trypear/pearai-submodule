@@ -88,8 +88,8 @@ class Aider extends BaseLLM {
     return this.aiderProcess.state;
   }
 
-  public setAiderState(arg0: string) {
-    throw new Error("Method not implemented.");
+  public setAiderState(state: AiderState) {
+    return this.aiderProcess.updateState(state);
   }
 
   public aiderCtrlC() {

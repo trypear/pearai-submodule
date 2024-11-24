@@ -97,9 +97,6 @@ export async function startAiderProcess(
     env: "***" // Mask sensitive data
     });
 
-    console.dir(command)
-
-
   const options: cp.SpawnOptions = {
     cwd: currentDir,
     env,
@@ -159,17 +156,18 @@ export class AiderProcessManager {
     return this._state;
   }
 
-  private updateState(newState: Omit<AiderState, "timeStamp">) {
+
+  public updateState(newState: Omit<AiderState, "timeStamp">) {
     this._state = {
       ...newState,
       timeStamp: Date.now()
     };
+    vscode.commands.executeCommand("pearai.setAiderProcessState", this._state);
     this.notifyStateChange();
   }
 
   private notifyStateChange() {
     console.log(`Aider state changed to: ${this._state.state}`);
-    vscode.commands.executeCommand("pearai.setAiderProcessState", this._state.state);
   }
 
   private captureAiderOutput(data: Buffer): void {
@@ -203,9 +201,6 @@ export class AiderProcessManager {
         this.updateState({ state: "notgitrepo" });
         throw new Error("Not a git repository");
       }
-
-      console.dir("IM HERE8888")
-      console.dir(this.credentials)
 
       if (!checkCredentials(model, this.credentials)) {
         this.updateState({ state: "signedOut" });

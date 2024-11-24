@@ -29,7 +29,7 @@ import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
-import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessState, installAider, uninstallAider } from './integrations/aider/aiderUtil';
+import { aiderCtrlC, aiderResetSession, openAiderPanel, sendAiderProcessStateToGUI, installAider, uninstallAider } from './integrations/aider/aiderUtil';
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
@@ -650,11 +650,11 @@ const commandsMap: (
     "pearai.aiderResetSession": async () => {
       await aiderResetSession(core);
     },
-    "pearai.refreshAiderProcessState": async () => {
-      await refreshAiderProcessState(core, sidebar.webviewProtocol);
+    "pearai.sendAiderProcessStateToGUI": async () => {
+      await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
     },
-    "pearai.setAiderProcessState": async (state: AiderState["state"]) => {
-      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", { state: state }, [PEAR_OVERLAY_VIEW_ID]);
+    "pearai.setAiderProcessState": async (state: AiderState) => {
+      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);
