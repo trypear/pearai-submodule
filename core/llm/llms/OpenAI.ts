@@ -91,7 +91,7 @@ class OpenAI extends BaseLLM {
 
   protected _convertArgs(options: any, messages: ChatMessage[]) {
     const url = new URL(this.apiBase!);
-    const finalOptions = {
+    const finalOptions: any = {
       messages: messages.map(this._convertMessage),
       model: this._convertModelName(options.model),
       max_tokens: options.maxTokens,
@@ -112,6 +112,13 @@ class OpenAI extends BaseLLM {
               ? options.stop?.slice(0, 4)
               : options.stop,
     };
+
+    if (options.model?.toLowerCase() === 'o1-mini') {
+      if (finalOptions.max_tokens !== undefined) {
+        finalOptions.max_completion_tokens = finalOptions.max_tokens;
+        delete finalOptions.max_tokens;
+      }
+    }
 
     return finalOptions;
   }
@@ -282,3 +289,4 @@ class OpenAI extends BaseLLM {
 }
 
 export default OpenAI;
+
