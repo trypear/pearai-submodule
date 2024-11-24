@@ -275,7 +275,16 @@ export class ContinueGUIWebviewViewProvider
                 const copyItem = document.createElement('div');
                 copyItem.style.padding = '4px 12px';
                 copyItem.style.cursor = 'pointer';
-                copyItem.textContent = 'Copy';
+                copyItem.style.display = 'flex';
+                copyItem.style.justifyContent = 'space-between';
+                const text = document.createElement('span');
+                text.textContent = 'Copy';
+                const shortcut = document.createElement('span');
+                shortcut.textContent = navigator.platform.toLowerCase().includes('mac') ? '⌘+C' : 'Ctrl+C';
+                shortcut.style.opacity = '0.8';
+                shortcut.style.marginLeft = '24px';
+                copyItem.appendChild(text);
+                copyItem.appendChild(shortcut);
                 copyItem.addEventListener('mousedown', () => {
                   vscode.postMessage({ type: 'copyText', text: selectedText });
                   document.body.removeChild(menu);
