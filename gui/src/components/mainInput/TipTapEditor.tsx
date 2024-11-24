@@ -977,7 +977,7 @@ const TipTapEditor = memo(function TipTapEditor({
       }}
     > 
       <ContextToolbar 
-        hidden={!(editorFocusedRef.current || isMainInput)}
+hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
         onImageFileSelected={(file) => {
           handleImageFile(file).then(([img, dataUrl]) => {
             const { schema } = editor.state;

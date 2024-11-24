@@ -1,11 +1,11 @@
-import { useEffect, useState, useRef } from "react";  // Add useRef
+import { useEffect, useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
     PhotoIcon as OutlinePhotoIcon,
     AtSymbolIcon,
     PlusIcon,
-    PhotoIcon as SolidPhotoIcon  // Add this import
+    PhotoIcon as SolidPhotoIcon,
 } from "@heroicons/react/24/outline";
 import styled from "styled-components";
 import {
@@ -16,6 +16,9 @@ import {
     vscInputBackground
 } from "..";
 import { getFontSize } from "../../util";
+import { modelSupportsImages } from "core/llm/autodetect"; // Updated import
+import { defaultModelSelector } from "../../redux/selectors/modelSelectors"; // Added import
+import { isPerplexityMode } from "../../util/bareChatMode"; // Added import
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
   padding: 4px 0;
@@ -31,18 +34,20 @@ const StyledDiv = styled.div<{ isHidden: boolean }>`
   & > * {
     flex: 0 0 auto;
   }
-
 `;
 
 interface ContextToolbarProps {
-    onAddContextItem?: () => void;
     hidden?: boolean;
     onClick?: () => void;
-    onImageFileSelected?: (file: File) => void;  // Add this prop
+    onAddContextItem?: () => void; // Added back this prop
+    onImageFileSelected?: (file: File) => void;
 }
+
 function ContextToolbar(props: ContextToolbarProps) {
     const [fileSelectHovered, setFileSelectHovered] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const defaultModel = useSelector(defaultModelSelector);
+    const perplexityMode = isPerplexityMode();
 
     return (
         <StyledDiv
@@ -55,15 +60,14 @@ function ContextToolbar(props: ContextToolbarProps) {
                 className="rounded-lg gap-1 h-7 px-2"
                 size="sm"
                 onClick={(e) => {
-                    props.onAddContextItem();
-                  }}
+                    props.onAddContextItem?.();
+                }}
             >
                 <AtSymbolIcon
                     width="16px"
                     height="16px"                    
                   />
                 Context
-                
             </Button>
             <Button
                 variant="secondary"
@@ -87,39 +91,51 @@ function ContextToolbar(props: ContextToolbarProps) {
                   />
                 Current file
             </Button>
-            
-            <span
-                className="cursor-pointer"
-                onMouseLeave={() => setFileSelectHovered(false)}
-                onMouseEnter={() => setFileSelectHovered(true)}
-            >
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{ display: "none" }}
-                    accept=".jpg,.jpeg,.png,.gif,.svg,.webp"
-                    onChange={(e) => {
-                        for (const file of e.target.files) {
-                            props.onImageFileSelected?.(file);
-                        }
-                    }}
-                />
-                <Button variant="ghost" size="icon" className="h-7" onClick={() => fileInputRef.current?.click()}>
-                    {fileSelectHovered ? (
-                        <SolidPhotoIcon
-                            width="16px"
-                            height="16px"
-                            color={lightGray}
+
+            {!perplexityMode && defaultModel &&
+                modelSupportsImages(
+                    defaultModel.provider,
+                    defaultModel.model,
+                    defaultModel.title,
+                    defaultModel.capabilities,
+                ) && (
+                    <span
+                        onMouseLeave={() => setFileSelectHovered(false)}
+                        onMouseEnter={() => setFileSelectHovered(true)}
+                    >
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: "none" }}
+                            accept=".jpg,.jpeg,.png,.gif,.svg,.webp"
+                            onChange={(e) => {
+                                for (const file of e.target.files) {
+                                    props.onImageFileSelected?.(file);
+                                }
+                            }}
                         />
-                    ) : (
-                        <OutlinePhotoIcon
-                            width="16px"
-                            height="16px"
-                            color={lightGray}
-                        />
-                    )}
-                </Button>
-            </span>
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7" 
+                            onClick={() => fileInputRef.current?.click()}
+                        >
+                            {fileSelectHovered ? (
+                                <SolidPhotoIcon
+                                    width="16px"
+                                    height="16px"
+                                    color={lightGray}
+                                />
+                            ) : (
+                                <OutlinePhotoIcon
+                                    width="16px"
+                                    height="16px"
+                                    color={lightGray}
+                                />
+                            )}
+                        </Button>
+                    </span>
+                )}
         </StyledDiv>
     );
 }
