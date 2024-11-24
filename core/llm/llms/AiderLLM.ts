@@ -40,6 +40,7 @@ export const AIDER_END_MARKER = "───────────────�
 const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
 
 class Aider extends BaseLLM {
+
   getCurrentDirectory: (() => Promise<string>) | null = null;
   static providerName: ModelProvider = "aider";
   private aiderOutput: string = '';
@@ -68,6 +69,7 @@ class Aider extends BaseLLM {
     console.log("Aider constructor called");
     this.model = options.model;
     this.apiKey = options.apiKey;
+    this.credentials.checkAndUpdateCredentials();
     this.aiderProcess = new AiderProcessManager(this.apiKey, this.model, this.credentials);
 
   }
@@ -80,23 +82,28 @@ class Aider extends BaseLLM {
     this.credentials.setRefreshToken(value);
   }
 
-  private getUserShell(): string {
-    if (IS_WINDOWS) {
-      return process.env.COMSPEC || "cmd.exe";
-    }
-    return process.env.SHELL || "/bin/sh";
+  public startAiderChat(model: string, apiKey: string | undefined) {
+    return this.aiderProcess.startAiderChat(model, apiKey);
   }
 
-  private _convertArgs(options: CompletionOptions): any {
-    return {
-      model: options.model,
-      frequency_penalty: options.frequencyPenalty,
-      presence_penalty: options.presencePenalty,
-      max_tokens: options.maxTokens,
-      stop: options.stop?.slice(0, 2),
-      temperature: options.temperature,
-      top_p: options.topP,
-    };
+  public killAiderProcess() {
+    return this.aiderProcess.killAiderProcess();
+  }
+
+  public getAiderState(): AiderState {
+    return this.aiderProcess.state;
+  }
+
+  public setAiderState(arg0: string) {
+    throw new Error("Method not implemented.");
+  }
+
+  public aiderCtrlC() {
+    return this.aiderProcess.aiderCtrlC();
+  }
+
+  public aiderResetSession(model: string, apiKey: string | undefined) {
+    return this.aiderProcess.resetSession(model, apiKey);
   }
 
   protected async *_streamComplete(
@@ -147,7 +154,6 @@ class Aider extends BaseLLM {
     console.dir(lastMessage);
     this.aiderProcess.sendToAiderChat(lastMessage);
 
-    this.aiderOutput = "";
     let lastProcessedIndex = 0;
     let responseComplete = false;
     let potentialCompletion = false;
@@ -162,7 +168,7 @@ class Aider extends BaseLLM {
 
     while (!responseComplete) {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const newOutput = this.aiderOutput.slice(lastProcessedIndex);
+      const newOutput = this.aiderProcess.aiderOutput.slice(lastProcessedIndex);
 
       if (newOutput) {
         if (potentialCompletionTimeout) {
@@ -182,7 +188,7 @@ class Aider extends BaseLLM {
           }
         }
 
-        lastProcessedIndex = this.aiderOutput.length;
+        lastProcessedIndex = this.aiderProcess.aiderOutput.length;
         yield {
           role: "assistant",
           content: escapeDollarSigns(newOutput),
@@ -206,7 +212,7 @@ class Aider extends BaseLLM {
     }
 
     // Reset the output after capturing a complete response
-    this.aiderOutput = "";
+    this.aiderProcess.aiderOutput = "";
   }
 
   async listModels(): Promise<string[]> {

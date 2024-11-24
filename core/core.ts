@@ -33,7 +33,7 @@ import Aider from "./llm/llms/AiderLLM";
 import {
   startAiderProcess,
   killAiderProcess,
-} from "../extensions/vscode/src/integrations/aider/aiderUtil";
+} from "../extensions/vscode/src/integrations/aider/aiderProcess";
 
 
 export class Core {
@@ -470,9 +470,9 @@ export class Core {
         return undefined;
       }
     });
-    on("llm/startAiderProcess", () => startAiderProcess(this));
+    // on("llm/startAiderProcess", () => startAiderProcess(this));
 
-    on("llm/killAiderProcess", () => killAiderProcess(this));
+    // on("llm/killAiderProcess", () => killAiderProcess(this));
 
     on("llm/listModels", async (msg) => {
       const config = await this.configHandler.loadConfig();

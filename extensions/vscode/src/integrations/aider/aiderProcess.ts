@@ -1,12 +1,23 @@
 import * as cp from "child_process";
 import * as vscode from "vscode";
-import { Core } from "core/core";
 import * as os from "os";
 import { execSync } from "child_process";
 import { AiderState } from "./types/aiderTypes";
 import { PearAICredentials } from "core/pearaiServer/PearAICredentials";
-import { checkAiderInstallation, checkBrewInstallation, checkCredentials, checkGitRepository, checkPythonInstallation, getCurrentWorkingDirectory } from "./aiderUtil";
+import {
+  checkAiderInstallation,
+  checkBrewInstallation,
+  checkCredentials,
+  checkGitRepository,
+  checkPythonInstallation,
+  getCurrentWorkingDirectory,
+  getUserPath,
+  getUserShell
+} from "./aiderUtil";
+import { access } from "fs";
+import { SERVER_URL } from "core/util/parameters";
 
+// Constants
 export const PLATFORM = process.platform;
 export const IS_WINDOWS = PLATFORM === "win32";
 export const IS_MAC = PLATFORM === "darwin";
@@ -15,51 +26,33 @@ export const EDIT_FORMAT: string = "normal"; // options ["normal", "udiff"]
 export const UDIFF_FLAG = EDIT_FORMAT === "udiff";
 export const AIDER_READY_FLAG = UDIFF_FLAG ? "udiff> " : "> ";
 export const END_MARKER = IS_WINDOWS
-  ? UDIFF_FLAG
-    ? "\r\nudiff> "
-    : "\r\n> "
-  : UDIFF_FLAG
-    ? "\nudiff> "
-    : "\n> ";
+  ? UDIFF_FLAG ? "\r\nudiff> " : "\r\n> "
+  : UDIFF_FLAG ? "\nudiff> " : "\n> ";
 export const READY_PROMPT_REGEX = />[^\S\r\n]*(?:[\r\n]|\s)*(?:\s+)(?:[\r\n]|\s)*$/;
 export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
 export const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
 
-export function getUserShell(): string {
-  if (IS_WINDOWS) {
-    return process.env.COMSPEC || "cmd.exe";
-  }
-  return process.env.SHELL || "/bin/sh";
-}
-
-export function getUserPath(): string {
-  try {
-    let pathCommand: string;
-    const shell = getUserShell();
-
-    if (os.platform() === "win32") {
-      // For Windows, we'll use a PowerShell command
-      pathCommand =
-        "powershell -Command \"[Environment]::GetEnvironmentVariable('Path', 'User') + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine')\"";
-    } else {
-      // For Unix-like systems (macOS, Linux)
-      pathCommand = `${shell} -ilc 'echo $PATH'`;
-    }
-
-    return execSync(pathCommand, { encoding: "utf8" }).trim();
-  } catch (error) {
-    console.error("Error getting user PATH:", error);
-    return process.env.PATH || "";
-  }
-}
-
 export function buildAiderCommand(model: string, accessToken: string | undefined): string[] {
   const aiderCommand = ["aider"];
 
-  // Add command line arguments based on model
+  let aiderFlags = [
+    "--no-pretty",
+    "--yes-always",
+    "--no-auto-commits",
+    "--no-suggest-shell-commands",
+    "--no-check-update",
+    "--no-auto-lint",
+    "--map-tokens", "2048",
+    "--subtree-only"
+  ];
+
+  // Add all flags to the command
+  aiderCommand.push(...aiderFlags);
+
   if (model === "pearai_model") {
-    aiderCommand.push("--pearai-api");
+    aiderCommand.push("--openai-api-key", accessToken || "");
+    aiderCommand.push("--openai-api-base", `${SERVER_URL}/integrations/aider`);
   } else if (model.includes("claude")) {
     aiderCommand.push("--model", model);
     aiderCommand.push("--anthropic");
@@ -70,11 +63,6 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
 
   if (UDIFF_FLAG) {
     aiderCommand.push("--edit-format", "udiff");
-  }
-
-  // Add access token if provided
-  if (accessToken) {
-    aiderCommand.push("--pearai-api-key", accessToken);
   }
 
   return aiderCommand;
@@ -103,13 +91,29 @@ export async function startAiderProcess(
     }
   }
 
+    // Add environment variable logging
+    console.log("Environment variables:", {
+    PATH: userPath,
+    OPENAI_API_KEY: apiKey && model.includes("gpt") ? "***" : undefined,
+    ANTHROPIC_API_KEY: apiKey && model.includes("claude") ? "***" : undefined
+    });
+
+    // Log spawn options
+    console.log("Spawn options:", {
+    cwd: currentDir,
+    shell: shell,
+    env: "***" // Mask sensitive data
+    });
+
+    console.dir(command)
+
+
   const options: cp.SpawnOptions = {
     cwd: currentDir,
     env,
     shell: true,
   };
 
-  // For Windows, we need to handle the shell differently
   if (IS_WINDOWS) {
     options.shell = shell;
   }
@@ -144,69 +148,14 @@ export function aiderCtrlC(process: cp.ChildProcess) {
   }
 }
 
-export async function installAider(core: Core) {
-    const isPythonInstalled = await checkPythonInstallation();
-    const isBrewInstalled =
-      IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
-    const isAiderInstalled = await checkAiderInstallation();
-
-    if (isAiderInstalled) {
-      return false;
-    }
-
-    if (!isAiderInstalled) {
-      // if brew or python is not installed, then user must install manually
-      if (!isBrewInstalled || !isPythonInstalled) {
-        vscode.window.showInformationMessage(
-          "Please follow manual installation steps to install Aider.",
-        );
-        return;
-      }
-
-      vscode.window.showInformationMessage("Installing Aider...");
-
-      let command = "";
-      if (IS_WINDOWS) {
-        command += "python -m pip install -U aider-chat;";
-        command += 'echo "`nAider installation complete."';
-      } else {
-        command += "brew install aider;";
-        command += "echo '\nAider installation complete.'";
-      }
-
-      try {
-        execSync(command);
-        // If execution was successful, start the Aider process
-        core.invoke("llm/startAiderProcess", undefined);
-        return false;
-      } catch (error) {
-        // Handle the error case
-        console.error("Failed to execute Aider command:", error);
-        return true;
-      }
-    }
-  }
-
-  export async function uninstallAider(core: Core) {
-    const isAiderInstalled = await checkAiderInstallation();
-    if (!isAiderInstalled) {
-      return;
-    }
-    vscode.window.showInformationMessage("Uninstalling Aider...");
-    if (IS_WINDOWS) {
-      execSync("python -m pip uninstall -y aider-chat");
-    } else {
-      execSync("brew uninstall aider");
-    }
-  }
-
 export class AiderProcessManager {
   private aiderProcess: cp.ChildProcess | null = null;
-  private apiKey?: string | undefined = undefined
+  private apiKey?: string | undefined = undefined;
   private model?: string;
-//   private getCurrentDirectory: (() => Promise<string>) | undefined;
   private _state: AiderState = { state: "stopped" };
   private credentials: PearAICredentials;
+  public aiderOutput: string = "";
+  private lastProcessedIndex: number = 0;
 
   constructor(apiKey: string | undefined, model: string, credentials: PearAICredentials) {
     this.apiKey = apiKey;
@@ -214,51 +163,63 @@ export class AiderProcessManager {
     this.credentials = credentials;
   }
 
-  // Getter for state
   get state(): AiderState {
     return this._state;
   }
 
-  // Method to update state
   private updateState(newState: Omit<AiderState, "timeStamp">) {
     this._state = {
       ...newState,
       timeStamp: Date.now()
     };
-
-    // Optional: Emit an event or notify listeners about state change
     this.notifyStateChange();
   }
 
-  // Method to notify state change (can be implemented based on your architecture)
   private notifyStateChange() {
-    // Emit event or call callback
     console.log(`Aider state changed to: ${this._state.state}`);
+    vscode.commands.executeCommand("pearai.setAiderProcessState", this._state.state);
   }
 
-  async startAiderChat(
-    model: string,
-    apiKey: string | undefined,
-  ): Promise<void> {
-    // Set state to starting
+  private captureAiderOutput(data: Buffer): void {
+    const output = data.toString();
+    console.log("Raw Aider output: ", JSON.stringify(output));
+
+    let cleanOutput = output.replace(/\x1B\[[0-9;]*[JKmsu]/g, "");
+    const specialLoadingChars = /⠋|⠙|⠹|⠸|⠼|⠴|⠦|⠧|⠇|⠏/g;
+    cleanOutput = cleanOutput.replace(specialLoadingChars, "");
+    cleanOutput = cleanOutput.replace(/Updating repo map/g, "Updating repo map...");
+
+    this.aiderOutput += cleanOutput;
+  }
+
+  async startAiderChat(model: string, apiKey: string | undefined): Promise<void> {
     this.updateState({ state: "starting" });
 
     try {
-      // Check git repository
-      const isGitRepo = await checkGitRepository();
+        // Check if current workspace is a git repo
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders || workspaceFolders.length === 0) {
+            this.updateState({ state: "notgitrepo" });
+            vscode.window.showErrorMessage('Please open a workspace folder to use PearAI Creator.');
+            return;
+        }
+        const currentDir = workspaceFolders[0].uri.fsPath;
+
+
+      const isGitRepo = await checkGitRepository(currentDir);
       if (!isGitRepo) {
         this.updateState({ state: "notgitrepo" });
         throw new Error("Not a git repository");
       }
 
-      // Credential checks
+      console.dir("IM HERE8888")
+      console.dir(this.credentials)
+
       if (!checkCredentials(model, this.credentials)) {
         this.updateState({ state: "signedOut" });
         throw new Error("User not logged in");
       }
 
-      // Build and start the Aider process
-      const currentDir = await getCurrentWorkingDirectory();
       const command = buildAiderCommand(model, this.credentials.getAccessToken());
 
       this.aiderProcess = await startAiderProcess(
@@ -269,19 +230,12 @@ export class AiderProcessManager {
         this.credentials.getAccessToken()
       );
 
-      // Set up process event listeners
       this.setupProcessListeners();
-
-      // Update state to ready
-      this.updateState({ state: "ready" });
-
+      this.setupExtendedProcessHandlers();
     } catch (error) {
       console.error("Error in startAiderChat:", error);
-
-      // Determine appropriate error state
       const errorState = this.determineErrorState(error);
       this.updateState({ state: errorState });
-
       throw error;
     }
   }
@@ -289,20 +243,72 @@ export class AiderProcessManager {
   private setupProcessListeners() {
     if (!this.aiderProcess) return;
 
-    // Handle process exit
+    if (this.aiderProcess.stdout) {
+      this.aiderProcess.stdout.on("data", (data: Buffer) => {
+        this.captureAiderOutput(data);
+        const output = data.toString();
+        if (READY_PROMPT_REGEX.test(output)) {
+          this.updateState({ state: "ready" });
+        }
+      });
+    }
+
     this.aiderProcess.on('exit', (code, signal) => {
       console.log(`Aider process exited with code ${code}, signal ${signal}`);
-
-      // Determine state based on exit code/signal
       const newState = code === 0 ? "stopped" : "crashed";
       this.updateState({ state: newState });
     });
 
-    // Handle process error
     this.aiderProcess.on('error', (err) => {
       console.error("Aider process error:", err);
-      this.updateState({ state: "crashed" });
+      this.handleProcessError(err);
     });
+  }
+
+  private setupExtendedProcessHandlers() {
+    if (!this.aiderProcess) return;
+
+    this.aiderProcess.on('disconnect', () => {
+      console.log("Aider process disconnected");
+      this.updateState({ state: "stopped" });
+    });
+
+    this.aiderProcess.on('spawn', () => {
+      console.log("Aider process spawned successfully");
+    });
+
+    if (this.aiderProcess.stdout) {
+      this.aiderProcess.stdout.on('close', () => {
+        console.log("Aider stdout closed");
+      });
+    }
+
+    if (this.aiderProcess.stderr) {
+      this.aiderProcess.stderr.on('close', () => {
+        console.log("Aider stderr closed");
+      });
+    }
+
+    if (this.aiderProcess.stdin) {
+      this.aiderProcess.stdin.on('error', (error) => {
+        console.error("Error writing to Aider stdin:", error);
+        this.handleProcessError(error);
+      });
+    }
+  }
+
+  private handleProcessError(error: Error): void {
+    console.error("Aider process error:", error);
+
+    if (error.message.includes("authentication")) {
+      this.updateState({ state: "signedOut" });
+    } else if (error.message.includes("ENOENT")) {
+      this.updateState({ state: "uninstalled" });
+    } else {
+      this.updateState({ state: "crashed" });
+    }
+
+    this.cleanup();
   }
 
   sendToAiderChat(message: string): void {
@@ -337,7 +343,6 @@ export class AiderProcessManager {
   }
 
   private determineErrorState(error: any): AiderState["state"] {
-    // Map different error types to specific states
     if (error.message.includes("Not a git repository")) {
       return "notgitrepo";
     }
@@ -361,16 +366,10 @@ export class AiderProcessManager {
     }
   }
 
-  async resetSession(
-    model: string,
-    apiKey: string | undefined
-  ): Promise<void> {
+  async resetSession(model: string, apiKey: string | undefined): Promise<void> {
     console.log("Resetting Aider process...");
-
-    // Kill current process
     this.killAiderProcess();
 
-    // Restart the chat
     try {
       await this.startAiderChat(model, apiKey);
       console.log("Aider process reset successfully.");
@@ -380,8 +379,23 @@ export class AiderProcessManager {
     }
   }
 
-  // Getter for the current process state
+  cleanup(): void {
+    this.killAiderProcess();
+    this.aiderOutput = "";
+    this.lastProcessedIndex = 0;
+    this.aiderProcess = null;
+    this.updateState({ state: "stopped" });
+  }
+
   getAiderProcess(): cp.ChildProcess | null {
     return this.aiderProcess;
+  }
+
+  isProcessRunning(): boolean {
+    return this.aiderProcess !== null && !this.aiderProcess.killed;
+  }
+
+  isPipeActive(): boolean {
+    return this.isProcessRunning() && this.aiderProcess?.stdin !== null;
   }
 }
