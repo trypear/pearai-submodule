@@ -25,6 +25,7 @@ import {
   vscForeground,
   vscInputBackground,
   vscInputBorder,
+  vscSidebarBorder,
   vscBackground,
   vscEditorBackground,
   vscInputBorderFocus,
@@ -60,9 +61,6 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
-import ActiveFileIndicator from "./ActiveFileIndicator";
-import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
-import TopBar from "./TopBarIndicators";
 import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 
 
@@ -74,12 +72,11 @@ const InputBoxDiv = styled.div`
   border-radius: ${defaultBorderRadius};
   margin: 0;
   height: auto;
-  min-height: 180px;
   width: calc(100% - 18px);
   background-color: ${vscEditorBackground};
   color: ${vscForeground};
   z-index: 1;
-  outline: none;
+  outline: 1px solid ${vscSidebarBorder};
   font-size: ${getFontSize()}px;
   &:focus {
     outline: none;
@@ -96,7 +93,6 @@ const InputBoxDiv = styled.div`
 
   .ProseMirror {
     flex: 1;
-    min-height: 140px; /* accounting for padding */
   }
 `;
 
@@ -979,7 +975,7 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     > 
-            <ContextToolbar/>
+            <ContextToolbar hidden={!(editorFocusedRef.current || isMainInput)}/>
 
       <EditorContent
         spellCheck={false}

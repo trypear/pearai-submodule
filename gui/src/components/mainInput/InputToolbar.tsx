@@ -44,53 +44,19 @@ import { ShortcutButton } from "../ui/shortcutButton";
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
   padding: 4px 0;
-  display: flex;
+  display: ${(props) => (props.isHidden ? "none" : "flex")};
   justify-content: space-between;
   gap: 1px;
   align-items: flex-end;
   z-index: 50;
   font-size: ${getFontSize()}px;
   cursor: ${(props) => (props.isHidden ? "default" : "text")};
-  opacity: ${(props) => (props.isHidden ? 0 : 1)};
   pointer-events: ${(props) => (props.isHidden ? "none" : "auto")};
 
   & > * {
     flex: 0 0 auto;
   }
-
-  /* Add a media query to hide the right-hand set of components */
-  @media (max-width: 400px) {
-    & > span:last-child {
-      display: none;
-    }
-  }
 `;
-
-const StyledSpan = styled.span`
-  font-size: ${() => `${getFontSize() - 2}px`};
-  color: ${lightGray};
-`;
-
-const EnterButton = styled.div<{ offFocus: boolean }>`
-  display: flex;
-  padding: 6px 8px;
-  justify-content: center;
-  align-items: center;
-
-  background-color: ${(props) =>
-    props.offFocus ? undefined : vscButtonBackground};
-border-radius: 8px;
-  color: ${vscButtonForeground};
-
-  &:hover {
-    background-color: ${vscButtonBackground};
-    color: ${vscButtonForeground};
-    opacity: 0.7;
-  }
-
-  cursor: pointer;
-`;
-//TODO: Add button active color from color scheme
 
 interface InputToolbarProps {
   onEnter?: (modifiers: InputModifiers) => void;
@@ -143,12 +109,15 @@ function InputToolbar(props: InputToolbarProps) {
         id="input-toolbar"
       >
         <div className="flex gap-4 items-center">
-          {!bareChatMode && (
+          {!perplexityMode && (
             <>
               <ShortcutButton
                 keys={["⎇", "⏎"]}
                 label="Use file"
-                
+                onClick={() => ({
+                  // useCodebase: false,
+                  // noContext: !useActiveFile, 
+                })}
               />
                {/* TODO:  add onClick to add file*/}
               <ShortcutButton
