@@ -25,6 +25,8 @@ import {
   vscForeground,
   vscInputBackground,
   vscInputBorder,
+  vscBackground,
+  vscEditorBackground,
   vscInputBorderFocus,
 } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
@@ -49,6 +51,7 @@ import {
 import CodeBlockExtension from "./CodeBlockExtension";
 import { SlashCommand } from "./CommandsExtension";
 import InputToolbar from "./InputToolbar";
+import ContextToolbar from "./ContextToolbar";
 import { Mention } from "./MentionExtension";
 import "./TipTapEditor.css";
 import {
@@ -65,15 +68,15 @@ import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 
 const InputBoxDiv = styled.div`
   resize: none;
-
-  padding: 8px 12px;
-  padding-bottom: 4px;
+  gap: 12px;
+  padding: 12px 12px;
   font-family: inherit;
   border-radius: ${defaultBorderRadius};
   margin: 0;
   height: auto;
+  min-height: 180px;
   width: calc(100% - 18px);
-  background-color: ${vscInputBackground};
+  background-color: ${vscEditorBackground};
   color: ${vscForeground};
   z-index: 1;
   outline: none;
@@ -90,6 +93,11 @@ const InputBoxDiv = styled.div`
 
   display: flex;
   flex-direction: column;
+
+  .ProseMirror {
+    flex: 1;
+    min-height: 140px; /* accounting for padding */
+  }
 `;
 
 const HoverDiv = styled.div`
@@ -917,6 +925,7 @@ const TipTapEditor = memo(function TipTapEditor({
   }, [editor, source]);
 
   return (
+    
     <InputBoxDiv
       onKeyDown={(e) => {
         if (e.key === "Alt") {
@@ -970,7 +979,8 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     > 
-      {(!isPerplexity && !isAider) && <TopBar />}
+            <ContextToolbar/>
+
       <EditorContent
         spellCheck={false}
         editor={editor}
