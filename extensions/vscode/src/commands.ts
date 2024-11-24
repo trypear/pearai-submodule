@@ -113,7 +113,7 @@ async function addHighlightedCodeToContext(
       webviewProtocol?.request("highlightedCode", {
         rangeInFileWithContents,
       }, ["pearai.pearAIChatView"]);
-      
+
       return;
     }
     // adjust starting position to include indentation
@@ -376,16 +376,16 @@ const commandsMap: (
       core.invoke("context/indexDocs", { reIndex: true });
     },
     "pearai.toggleCreator": async () => {
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleSearch": async () => {
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleInventory": async () => {
-      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.toggleInventoryHome": async () => {
-      await handleIntegrationShortcutKey("navigateToInventoryHome", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToInventoryHome", "home", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.startOnboarding": async () => {
       if (isFirstLaunch(extensionContext)) {
@@ -642,7 +642,7 @@ const commandsMap: (
     },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.aiderCtrlC": async () => {
       await aiderCtrlC(core);
@@ -658,7 +658,7 @@ const commandsMap: (
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.addPerplexityContext": (msg) => {
       const fullScreenTab = getFullScreenTab();
@@ -888,9 +888,6 @@ const commandsMap: (
       sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
       core.invoke("llm/startAiderProcess", undefined);
-      if (isFirstLaunch(extensionContext)) {
-        vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
-      }
     },
     "pearai.closeChat": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
@@ -909,6 +906,21 @@ const commandsMap: (
     },
     "pearai.macResizeAuxiliaryBarWidth": () => {
       vscode.commands.executeCommand("pearai.resizeAuxiliaryBarWidth");
+    },
+    "pearai.freeModelSwitch": (msg) => {
+      const warnMsg = msg.warningMsg;
+      const flagSet = extensionContext.globalState.get("freeModelSwitched");
+      if (!warnMsg && flagSet) {
+        // credit restored
+        vscode.window.showInformationMessage("Credit restored. Switched back to PearAI Pro model.");
+        extensionContext.globalState.update("freeModelSwitched", false);
+        return;
+      }
+      if (warnMsg && !flagSet) {
+        // limit reached, switching to free model
+        vscode.window.showInformationMessage(msg.warningMsg);
+        extensionContext.globalState.update("freeModelSwitched", true);
+      }
     },
     "pearai.patchWSL": async () => {
       if (process.platform !== 'win32') {

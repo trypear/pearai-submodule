@@ -34,9 +34,9 @@ export function getIntegrationTab(webviewName: string) {
     });
 }
 
-export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProtocol, integrationName: string, sidebar: ContinueGUIWebviewViewProvider, webview: string) {
+export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProtocol, integrationName: string, sidebar: ContinueGUIWebviewViewProvider, webviews: string[]) {
   const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
-  const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, [webview]);
+  const currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, webviews);
 
   if (isOverlayVisible && currentTab === integrationName) {
     // close overlay
@@ -50,6 +50,6 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
   }
 
   // Navigate to creator tab via webview protocol
-  await sidebar.webviewProtocol?.request(protocol, undefined, [webview]);
+  await sidebar.webviewProtocol?.request(protocol, undefined, webviews);
 }
 

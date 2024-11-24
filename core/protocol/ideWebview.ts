@@ -55,7 +55,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   isSupermavenInstalled: [undefined, boolean];
   uninstallVscodeExtension: [{ extensionId: string }, void];
   completeWelcome: [undefined, void];
-  openInventory: [undefined, void];
+  openInventoryHome: [undefined, void];
   getUrlTitle: [string, string];
   pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
 };

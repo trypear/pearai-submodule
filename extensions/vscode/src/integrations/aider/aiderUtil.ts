@@ -257,7 +257,7 @@ export async function installAider(core: Core) {
     // if brew or python is not installed, then user must install manually
     if (!isBrewInstalled || !isPythonInstalled) {
       vscode.window.showInformationMessage(
-        "Plese follow manual installation steps to install Aider.",
+        "Please follow manual installation steps to install Aider.",
       );
       return;
     }
