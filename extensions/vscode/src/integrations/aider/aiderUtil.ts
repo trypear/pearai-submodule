@@ -59,9 +59,6 @@ export async function startAiderProcess(core: Core) {
 
 export async function sendAiderProcessStateToGUI(core: Core, webviewProtocol: VsCodeWebviewProtocol) {
   const config = await core.configHandler.loadConfig();
-
-  const aiderMatches = config.models.filter((model) => model instanceof Aider);
-  console.dir(`Number of Aider model matches: ${aiderMatches.length}`);
   const aiderModel = config.models.find((model) => model instanceof Aider) as
     | Aider
     | undefined;
@@ -71,11 +68,6 @@ export async function sendAiderProcessStateToGUI(core: Core, webviewProtocol: Vs
     webviewProtocol?.request("setAiderProcessStateInGUI", { state: "stopped" }, [PEAR_OVERLAY_VIEW_ID]);
     return;
   }
-
-  console.dir("IM SENDING AIDER PROCESS STATE TO GUI")
-  console.dir(aiderModel.getAiderState().state)
-  console.dir(aiderModel.getAiderState().timeStamp)
-
   webviewProtocol?.request("setAiderProcessStateInGUI", aiderModel.getAiderState(), [PEAR_OVERLAY_VIEW_ID]);
 }
 
