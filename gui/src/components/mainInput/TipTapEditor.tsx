@@ -92,6 +92,7 @@ const InputBoxDiv = styled.div`
   flex-direction: column;
 
   .ProseMirror {
+    min-height: 40px;
     flex: 1;
   }
 `;
@@ -975,7 +976,26 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     > 
-            <ContextToolbar hidden={!(editorFocusedRef.current || isMainInput)}/>
+      <ContextToolbar 
+        hidden={!(editorFocusedRef.current || isMainInput)}
+        onImageFileSelected={(file) => {
+          handleImageFile(file).then(([img, dataUrl]) => {
+            const { schema } = editor.state;
+            const node = schema.nodes.image.create({ src: dataUrl });
+            editor.commands.command(({ tr }) => {
+              tr.insert(0, node);
+              return true;
+            });
+          });
+        }}
+        onAddContextItem={() => {
+          if (editor.getText().endsWith("@")) {
+          } else {
+            // Add space so that if there's text right before, it still activates the dropdown
+            editor.commands.insertContent(" @");
+          }
+        }}
+      />
 
       <EditorContent
         spellCheck={false}

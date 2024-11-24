@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";  // Add useRef
 import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
     PhotoIcon as OutlinePhotoIcon,
     AtSymbolIcon,
     PlusIcon,
-    
-  } from "@heroicons/react/24/outline";
+    PhotoIcon as SolidPhotoIcon  // Add this import
+} from "@heroicons/react/24/outline";
 import styled from "styled-components";
 import {
     defaultBorderRadius,
@@ -35,11 +35,15 @@ const StyledDiv = styled.div<{ isHidden: boolean }>`
 `;
 
 interface ContextToolbarProps {
+    onAddContextItem?: () => void;
     hidden?: boolean;
     onClick?: () => void;
+    onImageFileSelected?: (file: File) => void;  // Add this prop
 }
-
 function ContextToolbar(props: ContextToolbarProps) {
+    const [fileSelectHovered, setFileSelectHovered] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     return (
         <StyledDiv
             isHidden={props.hidden}
@@ -50,19 +54,21 @@ function ContextToolbar(props: ContextToolbarProps) {
                 variant="secondary"
                 className="rounded-lg gap-1 h-7 px-2"
                 size="sm"
-                // style={{ backgroundColor: vscInputBackground }}
+                onClick={(e) => {
+                    props.onAddContextItem();
+                  }}
             >
                 <AtSymbolIcon
                     width="16px"
                     height="16px"                    
                   />
                 Context
+                
             </Button>
             <Button
                 variant="secondary"
                 className="rounded-lg gap-1 h-7 px-2"
                 size="sm"
-                // style={{ backgroundColor: vscInputBackground }}
             >
                 <PlusIcon
                     width="16px"
@@ -74,7 +80,6 @@ function ContextToolbar(props: ContextToolbarProps) {
                 variant="secondary"
                 className="rounded-lg gap-1 h-7 px-2"
                 size="sm"
-                // style={{ backgroundColor: vscInputBackground }}
             >
                 <PlusIcon
                     width="16px"
@@ -82,15 +87,39 @@ function ContextToolbar(props: ContextToolbarProps) {
                   />
                 Current file
             </Button>
-            <Button variant="ghost" size="icon" className="h-7">
-                
-                <OutlinePhotoIcon
-                    width="16px"
-                    height="16px"                    
-                  />
-
-            </Button>
-
+            
+            <span
+                className="cursor-pointer"
+                onMouseLeave={() => setFileSelectHovered(false)}
+                onMouseEnter={() => setFileSelectHovered(true)}
+            >
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    accept=".jpg,.jpeg,.png,.gif,.svg,.webp"
+                    onChange={(e) => {
+                        for (const file of e.target.files) {
+                            props.onImageFileSelected?.(file);
+                        }
+                    }}
+                />
+                <Button variant="ghost" size="icon" className="h-7" onClick={() => fileInputRef.current?.click()}>
+                    {fileSelectHovered ? (
+                        <SolidPhotoIcon
+                            width="16px"
+                            height="16px"
+                            color={lightGray}
+                        />
+                    ) : (
+                        <OutlinePhotoIcon
+                            width="16px"
+                            height="16px"
+                            color={lightGray}
+                        />
+                    )}
+                </Button>
+            </span>
         </StyledDiv>
     );
 }
