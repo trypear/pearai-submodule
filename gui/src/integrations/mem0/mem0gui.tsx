@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import * as React from "react";
 import HeaderButtonWithText from "@/components/HeaderButtonWithText";
-import { TrashIcon, Pencil2Icon } from "@radix-ui/react-icons";
+import { TrashIcon, Pencil2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 
 interface Memory {
   id: string;
@@ -15,29 +15,70 @@ interface Memory {
 
 // todo: fetch memories from API and show max 4 per page
 const DUMMY_MEMORIES: Memory[] = [
-  {
-    id: "1",
-    content: "Frequently uses Axios for HTTP requests and Lodash for utility functions.",
-    timestamp: "Yesterday"
-  },
-  {
-    id: "2",
-    content: "Often encounters issues with async/await syntax, particularly in error handling.",
-    timestamp: "Yesterday"
-  },
-  {
-    id: "3",
-    content: "Prefers writing unit tests with Jest and follows the AAA (Arrange, Act, Assert) pattern.",
-    timestamp: "Yesterday"
-  }
-];
+    {
+      id: "1",
+      content: "Frequently uses Axios for HTTP requests and Lodash for utility functions.",
+      timestamp: "Yesterday"
+    },
+    {
+      id: "2",
+      content: "Often encounters issues with async/await syntax, particularly in error handling.",
+      timestamp: "Yesterday"
+    },
+    {
+      id: "3",
+      content: "Prefers writing unit tests with Jest and follows the AAA (Arrange, Act, Assert) pattern.",
+      timestamp: "Yesterday"
+    },
+    {
+      id: "4",
+      content: "Uses Z-shell with custom aliases for git commands and directory navigation.",
+      timestamp: "Yesterday"
+    },
+    {
+      id: "5",
+      content: "Prefers using VS Code's built-in debugger instead of logging statements for troubleshooting.",
+      timestamp: "Yesterday"
+    },
+    {
+      id: "6",
+      content: "Regular user of Docker for development environment consistency.",
+      timestamp: "2 days ago"
+    },
+    {
+      id: "7",
+      content: "Familiar with React hooks, especially useState and useEffect.",
+      timestamp: "2 days ago"
+    }
+  ];
 
 export const lightGray = "#999998";
 
 export default function Mem0GUI() {
+  const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("");
   const [isExpanded, setIsExpanded] = React.useState(false)
   const searchRef = React.useRef<HTMLDivElement>(null)
+  const memoriesPerPage = 4;
+  const totalPages = Math.ceil(DUMMY_MEMORIES.length / memoriesPerPage);
+
+  const getCurrentPageMemories = () => {
+    const startIndex = (currentPage - 1) * memoriesPerPage;
+    const endIndex = startIndex + memoriesPerPage;
+    return DUMMY_MEMORIES.slice(startIndex, endIndex);
+  }
+
+  const handlePrevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  }
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  }
 
   const onDelete = () => {
     // todo
@@ -85,12 +126,12 @@ export default function Mem0GUI() {
             </div>
         </div>
 
-      <div className="flex-1 overflow-y-auto space-y-2">
-        {DUMMY_MEMORIES.map((memory) => (
-          <Card key={memory.id} className="p-4 bg-input hover:bg-input/90 transition-colors">
+        <div className="flex-1 overflow-y-auto space-y-2">
+        {getCurrentPageMemories().map((memory) => (
+          <Card key={memory.id} className="p-3 bg-input hover:bg-input/90 transition-colors max-w-[900px] mx-auto">
             <div className="flex justify-between items-start">
               <p className="text-sm text-foreground">{memory.content}</p>
-              <div className="flex gap-1">
+              <div className="flex gap-1 ml-4">
                 <HeaderButtonWithText text="Edit Memory">
                     <Pencil2Icon
                         color={lightGray}
@@ -114,8 +155,32 @@ export default function Mem0GUI() {
         ))}
       </div>
 
-      <div className="flex justify-between mt-4">
-        <p className="text-sm text-muted-foreground">1 of 3</p>
+      <div className="flex justify-between mt-2 mb-2">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <HeaderButtonWithText
+            disabled={currentPage === 1}
+            className={`px-2 py-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
+          >
+            <ChevronLeftIcon
+                color={lightGray} 
+                width="1.2em"
+                height="1.2em"
+                onClick={handlePrevPage}
+            />
+          </HeaderButtonWithText>
+          <span>{currentPage} of {totalPages}</span>
+          <HeaderButtonWithText
+            disabled={currentPage === totalPages}
+            className={`px-2 py-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
+           >
+            <ChevronRightIcon
+                color={lightGray} 
+                width="1.2em"
+                height="1.2em"
+                onClick={handleNextPage}
+            />
+          </HeaderButtonWithText>
+        </div>
         <div className="flex gap-2">
             {/* todo: onclick for cancel -> go back */}
           <Button variant="outline" size="sm">Cancel</Button>
