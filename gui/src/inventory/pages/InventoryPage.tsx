@@ -96,12 +96,11 @@ function AIToolCard({
                   checked={tool.enabled}
                   onClick={handleSwitchClick}
                   aria-label={`Toggle ${tool.name}`}
-                  className={`${tool.enabled ? "bg-button" : ""} text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out`}
+                  className={`${tool.enabled ? "bg-button" : "bg-background"} text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out`}
                 />
               </TooltipTrigger>
             </Tooltip>)}
         </CardContent>
-
       </Card>
     </TooltipProvider>
   );
@@ -148,7 +147,7 @@ function AIToolCard({
 export default function AIToolInventory() {
   const ideMessenger = useContext(IdeMessengerContext);
   const navigate = useNavigate();
-
+  const integrations = useSelector((state: RootState) => state.state.config.integrations || []);
   // const aiderProcessState = useSelector(
   //   (state: RootState) => state.state.aiderProcessState,
   // );
@@ -165,6 +164,9 @@ export default function AIToolInventory() {
         } else if (tool.id === AIToolID.AUTOCOMPLETE) {
           // Supermaven's ID
           return { ...tool, isInstalled: isSuperMavenInstalled };
+        } else if (tool.id === AIToolID.MEMORY) {
+          const mem0Integration = integrations.find(i => i.name === 'mem0');
+          return { ...tool, enabled: mem0Integration?.enabled ?? false };
         } else {
           return tool;
         }

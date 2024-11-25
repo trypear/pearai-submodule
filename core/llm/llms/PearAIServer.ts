@@ -75,8 +75,8 @@ class PearAIServer extends BaseLLM {
             const rootCommitHash = execSync(
               "git rev-list --max-parents=0 HEAD -n 1", 
               { cwd: gitRepo.uri.fsPath }
-          ).toString().trim();
-          return rootCommitHash;
+            ).toString().trim().substring(0, 7);
+            return rootCommitHash;
         }  // if not git initialized, id will simply be user-id (uid)
         return "";
     } catch (error) {
