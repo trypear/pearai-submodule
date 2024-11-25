@@ -62,6 +62,85 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
   return aiderCommand;
 }
 
+async function spawnAiderProcessWindows(
+  currentDir: string,
+  command: string[],
+  model: string,
+  apiKey: string | undefined,
+  accessToken: string | undefined,
+  userPath: string
+): Promise<cp.ChildProcess> {
+  const envSetCommands = [
+    "setx PYTHONIOENCODING utf-8",
+    "setx AIDER_SIMPLE_OUTPUT 1",
+    "chcp 65001",
+  ];
+  if (model.includes("claude")) {
+    envSetCommands.push(`setx ANTHROPIC_API_KEY ${apiKey}`);
+  } else if (model.includes("gpt")) {
+    envSetCommands.push(`setx OPENAI_API_KEY ${apiKey}`);
+  } else {
+    envSetCommands.push(`setx OPENAI_API_KEY ${accessToken}`);
+  }
+
+  // Execute setx commands in the background
+  for (const cmd of envSetCommands) {
+    await new Promise((resolve, reject) => {
+      cp.exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing ${cmd}: ${error}`);
+          reject(error);
+        } else {
+          console.log(`Executed: ${cmd}`);
+          resolve(stdout);
+        }
+      });
+    });
+  }
+
+  return cp.spawn("cmd.exe", ["/c", ...command], {
+    stdio: ["pipe", "pipe", "pipe"],
+    cwd: currentDir,
+    env: {
+      ...process.env,
+      PATH: userPath,
+      PYTHONIOENCODING: "utf-8",
+      AIDER_SIMPLE_OUTPUT: "1",
+    },
+    windowsHide: true,
+  });
+}
+
+function spawnAiderProcessUnix(
+  currentDir: string,
+  command: string[],
+  model: string,
+  apiKey: string | undefined,
+  accessToken: string | undefined,
+  userPath: string,
+  userShell: string
+): cp.ChildProcess {
+  let envVars = "";
+  if (model.includes("claude")) {
+    envVars = `export ANTHROPIC_API_KEY=${apiKey};`;
+  } else if (model.includes("gpt")) {
+    envVars = `export OPENAI_API_KEY=${apiKey};`;
+  } else {
+    envVars = `export OPENAI_API_KEY=${accessToken};`;
+  }
+
+  return cp.spawn(userShell, ["-c", `${envVars} ${command.join(" ")}`], {
+    stdio: ["pipe", "pipe", "pipe"],
+    cwd: currentDir,
+    env: {
+      ...process.env,
+      PATH: userPath,
+      PYTHONIOENCODING: "utf-8",
+      AIDER_SIMPLE_OUTPUT: "1",
+    },
+  });
+}
+
 export async function startAiderProcess(
   currentDir: string,
   command: string[],
@@ -69,76 +148,21 @@ export async function startAiderProcess(
   apiKey: string | undefined,
   accessToken: string | undefined
 ): Promise<cp.ChildProcess | null> {
-  const shell = getUserShell();
   const userPath = getUserPath();
-
-  let env: { [key: string]: string | undefined }= {
-    ...process.env,
-    PATH: userPath,
-  };
-
-  if (apiKey) {
-    if (model.includes("claude")) {
-        env = {
-            ...process.env,
-            PATH: userPath,
-            ANTHROPIC_API_KEY: apiKey
-          };
-    } else if (model.includes("gpt")) {
-        env = {
-            ...process.env,
-            PATH: userPath,
-            OPENAI_API_KEY: apiKey
-          };
-    }
-  }
-
-    // Add environment variable logging
-    console.log("Environment variables:", {
-    PATH: userPath,
-    OPENAI_API_KEY: apiKey && model.includes("gpt") ? "***" : undefined,
-    ANTHROPIC_API_KEY: apiKey && model.includes("claude") ? "***" : undefined
-    });
-
-    // Log spawn options
-    console.log("Spawn options:", {
-    cwd: currentDir,
-    shell: shell,
-    env: env// Mask sensitive data
-    });
-
-    // Log spawn options
-    console.log("command:", {
-      command: command.join(" "),
-        });
-
-  const options: cp.SpawnOptions = {
-    cwd: currentDir,
-    env,
-    shell: true,
-  };
-
-  if (IS_WINDOWS) {
-    options.shell = shell;
-  }
+  const userShell = getUserShell();
 
   try {
-    const childProcess = cp.spawn(shell, ["-c", command.join(" ")], {
-        stdio: ["pipe", "pipe", "pipe"],
-        cwd: currentDir,
-        env: {
-          ...process.env,
-          PATH: userPath,
-          PYTHONIOENCODING: "utf-8",
-          AIDER_SIMPLE_OUTPUT: "1",
-        },
-      });
-    return childProcess;
+    if (IS_WINDOWS) {
+      return await spawnAiderProcessWindows(currentDir, command, model, apiKey, accessToken, userPath);
+    } else {
+      return spawnAiderProcessUnix(currentDir, command, model, apiKey, accessToken, userPath, userShell);
+    }
   } catch (error) {
     console.error("Error spawning Aider process:", error);
     return null;
   }
 }
+
 
 export function killAiderProcess(process: cp.ChildProcess, onKill?: () => void) {
   if (process && !process.killed) {
