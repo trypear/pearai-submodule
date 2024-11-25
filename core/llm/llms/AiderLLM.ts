@@ -199,7 +199,7 @@ class Aider extends BaseLLM {
         };
 
         // Safety check
-        // if (this.aiderProcess?.killed) {
+        // if (Aider.aiderProcess?.killed) {
         //   if (potentialCompletionTimeout) {
         //     clearTimeout(potentialCompletionTimeout);
         //   }

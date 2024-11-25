@@ -196,7 +196,7 @@ export class AiderProcessManager {
   private lastProcessedIndex: number = 0;
 
   private constructor(apiKey: string | undefined, model: string, credentials: PearAICredentials) {
-    console.dir("INITIALIZING AIDER PROCESS MANAGER")
+    console.dir("Initializing Aider Process Manager");
     this.apiKey = apiKey;
     this.model = model;
     this.credentials = credentials;

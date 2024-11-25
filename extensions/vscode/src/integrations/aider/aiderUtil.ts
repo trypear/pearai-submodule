@@ -17,6 +17,7 @@ const IS_LINUX = PLATFORM === "linux";
 let aiderPanel: vscode.WebviewPanel | undefined;
 
 // Aider process management functions
+// startAiderProcess is in util because if it is in aiderProcess, it introduces circular dependencies between aiderProcess.ts and aiderLLM.ts
 export async function startAiderProcess(core: Core) {
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as
@@ -68,7 +69,7 @@ export async function sendAiderProcessStateToGUI(core: Core, webviewProtocol: Vs
     webviewProtocol?.request("setAiderProcessStateInGUI", { state: "stopped" }, [PEAR_OVERLAY_VIEW_ID]);
     return;
   }
-  console.dir("SENDING TO GUI")
+  console.dir("Sending state to Aider GUI:");
   console.dir(aiderModel.getAiderState())
   webviewProtocol?.request("setAiderProcessStateInGUI", aiderModel.getAiderState(), [PEAR_OVERLAY_VIEW_ID]);
 }
