@@ -208,16 +208,19 @@ export class AiderProcessManager {
 
 
   public updateState(newState: Omit<AiderState, "timeStamp">) {
+    console.log(`Aider state changing from ${this._state.state} to ${newState.state}`);
+
+    // TODO: probably handle this better. Crashed happens because we send a SIGINT to the process needed to reset. @nang
+    if (this._state.state === "restarting" && newState.state === "crashed") {
+    console.log("Blocking state change from 'restarting' to 'crashed'");
+
+      return;
+    }
     this._state = {
       ...newState,
       timeStamp: Date.now()
     };
     vscode.commands.executeCommand("pearai.setAiderProcessState", this._state);
-    this.notifyStateChange();
-  }
-
-  private notifyStateChange() {
-    console.log(`Aider state changed to: ${this._state.state}`);
   }
 
   private captureAiderOutput(data: Buffer): void {
@@ -232,8 +235,10 @@ export class AiderProcessManager {
     this.aiderOutput += cleanOutput;
   }
 
-  async startAiderChat(model: string, apiKey: string | undefined): Promise<void> {
+async startAiderChat(model: string, apiKey: string | undefined, isRestarting: boolean = false): Promise<void> {
+  if (!isRestarting) {
     this.updateState({ state: "starting" });
+  }
 
     try {
         // Check if current workspace is a git repo
@@ -405,10 +410,14 @@ export class AiderProcessManager {
 
   async resetSession(model: string, apiKey: string | undefined): Promise<void> {
     console.log("Resetting Aider process...");
-    this.killAiderProcess();
+    if (this.aiderProcess) {
+      killAiderProcess(this.aiderProcess);
+      this.aiderProcess = null;
+      this.updateState({ state: "restarting" });
+    }
 
     try {
-      await this.startAiderChat(model, apiKey);
+      await this.startAiderChat(model, apiKey, true);
       console.log("Aider process reset successfully.");
     } catch (error) {
       console.error("Error resetting Aider process:", error);

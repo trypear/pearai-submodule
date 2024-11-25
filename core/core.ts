@@ -451,7 +451,7 @@ export class Core {
       const { accessToken, refreshToken } = msg.data || {};
       const config = await this.configHandler.loadConfig();
       const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
-      const aiderModels = config.models.filter(model => model instanceof Aider) as Aider[];
+      const aiderModel = config.models.find(model => model instanceof Aider) as Aider;
 
       try {
         if (pearAIModels.length > 0) {
@@ -464,13 +464,10 @@ export class Core {
         console.warn(`Error resetting PearAI credentials: ${e}`);
         return undefined;
       }
-      // TODO @nang - handle this better
       try {
-        if (aiderModels.length > 0) {
-          aiderModels.forEach(model => {
-            model.setPearAIAccessToken(accessToken);
-            model.setPearAIRefreshToken(refreshToken);
-          });
+        if (aiderModel) {
+          aiderModel.setPearAIAccessToken(accessToken);
+          aiderModel.setPearAIRefreshToken(refreshToken);
         }
       } catch (e) {
         console.warn(`Error resetting PearAI credentials for aider: ${e}`);
