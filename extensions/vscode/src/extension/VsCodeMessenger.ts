@@ -220,8 +220,8 @@ export class VsCodeMessenger {
     this.onWebview("aiderResetSession", (msg) => {
       vscode.commands.executeCommand("pearai.aiderResetSession");
     });
-    this.onWebview("refreshAiderProcessState", (msg) => {
-      vscode.commands.executeCommand("pearai.refreshAiderProcessState");
+    this.onWebview("sendAiderProcessStateToGUI", (msg) => {
+      vscode.commands.executeCommand("pearai.sendAiderProcessStateToGUI");
     }),
     this.onWebview("toggleDevTools", (msg) => {
       vscode.commands.executeCommand("workbench.action.toggleDevTools");
