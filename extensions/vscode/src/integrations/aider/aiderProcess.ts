@@ -28,7 +28,7 @@ export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
 export const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
 
-export function buildAiderCommand(model: string, accessToken: string | undefined): string[] {
+export function buildAiderCommand(model: string, accessToken: string | undefined, apiKey: string | undefined): string[] {
   const aiderCommand = ["aider"];
 
   let aiderFlags = [
@@ -48,8 +48,10 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
     aiderCommand.push("--openai-api-key", accessToken || "");
     aiderCommand.push("--openai-api-base", `${SERVER_URL}/integrations/aider`);
   } else if (model.includes("claude")) {
+    aiderCommand.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
     aiderCommand.push("--model", model);
   } else if (model.includes("gpt")) {
+    aiderCommand.unshift(`export OPENAI_API_KEY=${apiKey};`);
     aiderCommand.push("--model", model);
   }
 
@@ -70,16 +72,24 @@ export async function startAiderProcess(
   const shell = getUserShell();
   const userPath = getUserPath();
 
-  const env: NodeJS.ProcessEnv = {
+  let env: { [key: string]: string | undefined }= {
     ...process.env,
     PATH: userPath,
   };
 
   if (apiKey) {
     if (model.includes("claude")) {
-      env.ANTHROPIC_API_KEY = apiKey;
+        env = {
+            ...process.env,
+            PATH: userPath,
+            ANTHROPIC_API_KEY: apiKey
+          };
     } else if (model.includes("gpt")) {
-      env.OPENAI_API_KEY = apiKey;
+        env = {
+            ...process.env,
+            PATH: userPath,
+            OPENAI_API_KEY: apiKey
+          };
     }
   }
 
@@ -94,8 +104,13 @@ export async function startAiderProcess(
     console.log("Spawn options:", {
     cwd: currentDir,
     shell: shell,
-    env: "***" // Mask sensitive data
+    env: env// Mask sensitive data
     });
+
+    // Log spawn options
+    console.log("command:", {
+      command: command.join(" "),
+        });
 
   const options: cp.SpawnOptions = {
     cwd: currentDir,
@@ -108,7 +123,16 @@ export async function startAiderProcess(
   }
 
   try {
-    const childProcess = cp.spawn(command[0], command.slice(1), options);
+    const childProcess = cp.spawn(shell, ["-c", command.join(" ")], {
+        stdio: ["pipe", "pipe", "pipe"],
+        cwd: currentDir,
+        env: {
+          ...process.env,
+          PATH: userPath,
+          PYTHONIOENCODING: "utf-8",
+          AIDER_SIMPLE_OUTPUT: "1",
+        },
+      });
     return childProcess;
   } catch (error) {
     console.error("Error spawning Aider process:", error);
@@ -141,7 +165,7 @@ export class AiderProcessManager {
   private aiderProcess: cp.ChildProcess | null = null;
   private apiKey?: string | undefined = undefined;
   private model?: string;
-  private _state: AiderState = { state: "starting" };
+  private _state: AiderState = { state: "undefined" };
   private credentials: PearAICredentials;
   public aiderOutput: string = "";
   private lastProcessedIndex: number = 0;
@@ -207,7 +231,7 @@ export class AiderProcessManager {
         throw new Error("User not logged in");
       }
 
-      const command = buildAiderCommand(model, this.credentials.getAccessToken());
+      const command = buildAiderCommand(model, this.credentials.getAccessToken(), apiKey);
 
       this.aiderProcess = await startAiderProcess(
         currentDir,

@@ -60,7 +60,7 @@ class Aider extends BaseLLM {
       options.getCredentials,
       options.setCredentials || (async () => {}),
     );
-    console.log("Aider constructor called");
+    console.dir("Aider constructor called");
     this.model = options.model;
     this.apiKey = options.apiKey;
     this.credentials.checkAndUpdateCredentials();
@@ -142,7 +142,7 @@ class Aider extends BaseLLM {
     messages: ChatMessage[],
     options: CompletionOptions,
   ): AsyncGenerator<ChatMessage> {
-    console.log("Inside Aider _streamChat");
+    console.dir("Inside Aider _streamChat");
     const lastMessage = messages[messages.length - 1].content.toString();
     console.dir("Sending to PearAI Creator:");
     console.dir(lastMessage);

@@ -148,13 +148,13 @@ export const defaultConfig: SerializedContinueConfig = {
       provider: "pearai_server",
       isDefault: true,
     },
-    {
-      model: "pearai_model",
-      contextLength: 300000,
-      title: "pearai_model (PearAI Creator)",
-      provider: "aider",
-      isDefault: true,
-    },
+    // {
+    //   model: "pearai_model",
+    //   contextLength: 300000,
+    //   title: "pearai_model (PearAI Creator)",
+    //   provider: "aider",
+    //   isDefault: true,
+    // },
     {
       model: "o1-mini",
       title: "GPTo1 Mini (PearAI annual only)",

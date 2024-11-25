@@ -68,6 +68,8 @@ export async function sendAiderProcessStateToGUI(core: Core, webviewProtocol: Vs
     webviewProtocol?.request("setAiderProcessStateInGUI", { state: "stopped" }, [PEAR_OVERLAY_VIEW_ID]);
     return;
   }
+  console.dir("SENDING TO GUI")
+  console.dir(aiderModel.getAiderState())
   webviewProtocol?.request("setAiderProcessStateInGUI", aiderModel.getAiderState(), [PEAR_OVERLAY_VIEW_ID]);
 }
 

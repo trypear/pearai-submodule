@@ -376,6 +376,7 @@ const commandsMap: (
       core.invoke("context/indexDocs", { reIndex: true });
     },
     "pearai.toggleCreator": async () => {
+      await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
       await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleSearch": async () => {
