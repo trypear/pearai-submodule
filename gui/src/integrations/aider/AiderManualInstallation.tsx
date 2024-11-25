@@ -114,7 +114,7 @@ const MacManualInstallation: React.FC = () => {
   const homebrewCmd = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
   const pythonCmd = "brew install python@3";
   const pipxInstallCmd = "brew install pipx";
-  const pipxEnsureCmd = "pipx ensurepath";
+  const pipxEnsureCmd = "sudo pipx ensurepath --global";
   const aiderCmd = "pipx install aider-chat";
 
   return (
