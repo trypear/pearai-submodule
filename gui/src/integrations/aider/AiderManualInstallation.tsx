@@ -89,7 +89,7 @@ const WindowsManualInstallation: React.FC = () => {
 const MacManualInstallation: React.FC = () => {
   const homebrewCmd = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
   const pythonCmd = "brew install python@3";
-  const aiderCmd = "python -m pip install -U aider-chat";
+  const aiderCmd = "brew install aider";
 
   return (
     <div className="p-4 bg-statusbar-background rounded-lg shadow-md flex-wrap text-wrap">
