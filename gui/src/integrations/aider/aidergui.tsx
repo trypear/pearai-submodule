@@ -271,7 +271,7 @@ useEffect(() => {
     if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
       return <AiderManualInstallation />;
     }
-    if (aiderProcessState.state === "starting") {
+    if (aiderProcessState.state === "starting" || aiderProcessState.state === "restarting") {
       msg = (
         <>
           Spinning up PearAI Creator (Powered By aider), please give it a second...

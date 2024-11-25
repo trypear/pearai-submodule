@@ -113,17 +113,13 @@ export async function aiderCtrlC(core: Core) {
 
 export async function aiderResetSession(core: Core) {
   const config = await core.configHandler.loadConfig();
-  const aiderModels = config.models.filter(
-    (model) => model instanceof Aider,
-  ) as Aider[];
+  const aiderModel = config.models.find(
+    (model) => model instanceof Aider
+  ) as Aider | undefined;
 
   try {
-    if (aiderModels.length > 0) {
-      aiderModels.forEach((model) => {
-        if (Aider.aiderProcess) {
-          model.aiderResetSession(model.model, model.apiKey);
-        }
-      });
+    if (aiderModel && Aider.aiderProcess) {
+      aiderModel.aiderResetSession(aiderModel.model, aiderModel.apiKey);
     }
   } catch (e) {
     console.warn(`Error resetting Aider session: ${e}`);
