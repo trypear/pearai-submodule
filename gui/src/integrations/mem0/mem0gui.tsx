@@ -60,12 +60,27 @@ export default function Mem0GUI() {
   const [isExpanded, setIsExpanded] = React.useState(false)
   const searchRef = React.useRef<HTMLDivElement>(null)
   const memoriesPerPage = 4;
-  const totalPages = Math.ceil(DUMMY_MEMORIES.length / memoriesPerPage);
+//   const totalPages = Math.ceil(DUMMY_MEMORIES.length / memoriesPerPage);
+
+  // Filter memories based on search query
+  const filteredMemories = React.useMemo(() => {
+    return DUMMY_MEMORIES.filter(memory => 
+      memory.content.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
+
+  // Get total pages based on filtered results
+  const totalPages = Math.ceil(filteredMemories.length / memoriesPerPage);
+
+  // Reset to first page when search query changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
 
   const getCurrentPageMemories = () => {
     const startIndex = (currentPage - 1) * memoriesPerPage;
     const endIndex = startIndex + memoriesPerPage;
-    return DUMMY_MEMORIES.slice(startIndex, endIndex);
+    return filteredMemories.slice(startIndex, endIndex);
   }
 
   const handlePrevPage = () => {
@@ -89,8 +104,6 @@ export default function Mem0GUI() {
     // todo
     console.dir("edit pressed")
   }
-
-  // todo: handle search query by filtering the results
 
   // Handle clicking outside of search to collapse it
   React.useEffect(() => {
@@ -168,7 +181,7 @@ export default function Mem0GUI() {
                 onClick={handlePrevPage}
             />
           </HeaderButtonWithText>
-          <span>{currentPage} of {totalPages}</span>
+          {filteredMemories.length > 0 ? `${currentPage} of ${totalPages}` : '0 of 0'}
           <HeaderButtonWithText
             disabled={currentPage === totalPages}
             className={`px-2 py-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
