@@ -166,6 +166,10 @@ class Aider extends BaseLLM {
       return text.replace(/([\\$])/g, "\\$1");
     };
 
+    if (Aider.aiderProcess) {
+      Aider.aiderProcess.aiderOutput = "";
+    }
+
     while (!responseComplete) {
       await new Promise((resolve) => setTimeout(resolve, 100));
       const newOutput = Aider.aiderProcess?.aiderOutput.slice(lastProcessedIndex);
