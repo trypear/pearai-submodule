@@ -113,14 +113,15 @@ class OpenAI extends BaseLLM {
               : options.stop,
     };
 
-    if (options.model?.toLowerCase() === 'o1-mini') {
-      if (finalOptions.max_tokens !== undefined) {
+    if (options.model?.toLowerCase() === "o1-mini") {
+      if (typeof finalOptions.max_tokens !== 'undefined') {
         finalOptions.max_completion_tokens = finalOptions.max_tokens;
         delete finalOptions.max_tokens;
       }
     }
-
+    
     return finalOptions;
+  
   }
 
   protected _getHeaders() {
