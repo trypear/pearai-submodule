@@ -99,7 +99,7 @@ export async function aiderCtrlC(core: Core) {
   try {
     if (aiderModels.length > 0) {
       aiderModels.forEach((model) => {
-        if (model.aiderProcess) {
+        if (Aider.aiderProcess) {
           model.aiderCtrlC();
         }
       });
@@ -119,7 +119,7 @@ export async function aiderResetSession(core: Core) {
   try {
     if (aiderModels.length > 0) {
       aiderModels.forEach((model) => {
-        if (model.aiderProcess) {
+        if (Aider.aiderProcess) {
           model.aiderResetSession(model.model, model.apiKey);
         }
       });

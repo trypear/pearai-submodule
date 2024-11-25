@@ -186,6 +186,7 @@ export function aiderCtrlC(process: cp.ChildProcess) {
 }
 
 export class AiderProcessManager {
+  private static instance: AiderProcessManager | null = null;
   private aiderProcess: cp.ChildProcess | null = null;
   private apiKey?: string | undefined = undefined;
   private model?: string;
@@ -194,7 +195,8 @@ export class AiderProcessManager {
   public aiderOutput: string = "";
   private lastProcessedIndex: number = 0;
 
-  constructor(apiKey: string | undefined, model: string, credentials: PearAICredentials) {
+  private constructor(apiKey: string | undefined, model: string, credentials: PearAICredentials) {
+    console.dir("INITIALIZING AIDER PROCESS MANAGER")
     this.apiKey = apiKey;
     this.model = model;
     this.credentials = credentials;
@@ -433,4 +435,15 @@ export class AiderProcessManager {
   isPipeActive(): boolean {
     return this.isProcessRunning() && this.aiderProcess?.stdin !== null;
   }
+  public static getInstance(apiKey: string | undefined, model: string, credentials: PearAICredentials): AiderProcessManager {
+    if (!AiderProcessManager.instance) {
+      AiderProcessManager.instance = new AiderProcessManager(apiKey, model, credentials);
+    }
+    // Update credentials and API key if they've changed
+    AiderProcessManager.instance.credentials = credentials;
+    AiderProcessManager.instance.apiKey = apiKey;
+    AiderProcessManager.instance.model = model;
+    return AiderProcessManager.instance;
+  }
 }
+
