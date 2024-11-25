@@ -29,8 +29,8 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   addPerplexityContextinChat: [{ text: string, language: string }, void];
   aiderMode: [undefined, void];
   aiderCtrlC: [undefined, void];
+  sendAiderProcessStateToGUI: [undefined, void];
   aiderResetSession: [undefined, void];
-  refreshAiderProcessState: [undefined, void];
   toggleDevTools: [undefined, void];
   reloadWindow: [undefined, void];
   focusEditor: [undefined, void];
