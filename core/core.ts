@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import { v4 as uuidv4 } from "uuid";
-import type { ContextItemId, IDE, IndexingProgressUpdate } from ".";
+import type { ChatMessage, ContextItemId, IDE, IndexingProgressUpdate } from ".";
 import { CompletionProvider } from "./autocomplete/completionProvider";
 import { ConfigHandler } from "./config/ConfigHandler";
 import {
@@ -383,7 +383,14 @@ export class Core {
           });
           break;
         }
-        yield { content: next.value.content, citations: next.value?.citations };
+        // Assert that next.value is a ChatMessage
+        const chatMessage = next.value as ChatMessage;
+
+        yield {
+          content: chatMessage.content,
+          citations: chatMessage.citations
+        };
+
         next = await gen.next();
       }
 

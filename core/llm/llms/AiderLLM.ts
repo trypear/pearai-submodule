@@ -198,23 +198,20 @@ class Aider extends BaseLLM {
           content: escapeDollarSigns(newOutput),
         };
 
-        // Safety check
-        // if (Aider.aiderProcess?.killed) {
-        //   if (potentialCompletionTimeout) {
-        //     clearTimeout(potentialCompletionTimeout);
-        //   }
-        //   this.setAiderState("stopped");
-        //   break;
-        // }
+        if (Aider.aiderProcess?.state.state === "stopped" || Aider.aiderProcess?.state.state === "crashed") {
+          if (potentialCompletionTimeout) {
+            clearTimeout(potentialCompletionTimeout);
+          }
+          this.setAiderState({ state: "stopped" });
+          break;
+        }
       }
     }
 
-    // Clean up any remaining timeout
     if (potentialCompletionTimeout) {
       clearTimeout(potentialCompletionTimeout);
     }
 
-    // Reset the output after capturing a complete response
     if (Aider.aiderProcess) {
       Aider.aiderProcess.aiderOutput = "";
     }
