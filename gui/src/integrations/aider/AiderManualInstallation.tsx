@@ -13,23 +13,23 @@ const AiderManualInstallation: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center h-screen overflow-y-auto">
-      <div className="p-6 bg-input rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold mb-4">Manual Installation Guide for PearAI Creator (Powered by aider*)</h2>
-          <p className="mb-4">
-            Automatic installation of PearAI Creator (Powered by aider*) was unsuccessful. Please follow the steps below to manually install it to get it working.
-          </p>
-          {instructions}
-          <p className="mt-4 bg-statusbar-background p-4 rounded-lg">
-            If you followed the above instructions correctly and restarted PearAI, then PearAI Creator should work!
-            <br />
-            If not, please view{" "}
-            <a className="text-blue-500 hover:underline" href="https://trypear.ai/creator-troubleshooting">
-              PearAI Troubleshooting
-            </a>
-            , or contact PearAI Support on{" "}
-            <a className="text-blue-500 hover:underline" href="https://discord.gg/avc2y2Kqsa">Discord</a>.
-          </p>
-          <div className="text-[10px] text-muted-foreground mt-4">
+      <div className="px-6 py-2 bg-input rounded-lg shadow-md">
+        <h2 className="text-2xl font-bold mb-4">Manual Installation Guide for PearAI Creator (Powered by aider*)</h2>
+        <p className="mb-4">
+          Automatic installation of PearAI Creator (Powered by aider*) was unsuccessful. Please follow the steps below to manually install it to get it working.
+        </p>
+        {instructions}
+        <p className="mt-4 bg-statusbar-background p-4 rounded-lg">
+          If you followed the above instructions correctly and restarted PearAI, then PearAI Creator should work!
+          <br />
+          If not, please view{" "}
+          <a className="text-blue-500 hover:underline" href="https://trypear.ai/creator-troubleshooting">
+            PearAI Troubleshooting
+          </a>
+          , or contact PearAI Support on{" "}
+          <a className="text-blue-500 hover:underline" href="https://discord.gg/avc2y2Kqsa">Discord</a>.
+        </p>
+        <div className="text-[10px] text-muted-foreground mt-4">
           *View PearAI Disclaimer page
           <Link
             to="https://trypear.ai/disclaimer/"
@@ -47,10 +47,12 @@ const AiderManualInstallation: React.FC = () => {
 
 const WindowsManualInstallation: React.FC = () => {
   const pythonCmd = "winget install Python.Python.3.9";
-  const aiderCmd = "python -m pip install -U aider-chat";
+  const pipxInstallCmd = "python -m pip install pipx";
+  const pipxEnsureCmd = "pipx ensurepath";
+  const aiderCmd = "pipx install aider-chat";
 
   return (
-    <div className="p-4 bg-statusbar-background rounded-lg shadow-md">
+    <div className="px-4 py-1 bg-statusbar-background rounded-lg shadow-md">
       <h3 className="text-xl font-semibold mb-2">For Windows:</h3>
       <ol className="list-decimal list-inside">
         <li className="mb-2">
@@ -63,6 +65,28 @@ const WindowsManualInstallation: React.FC = () => {
               <span className="font-mono">{pythonCmd}</span>
               <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
                 onClick={() => navigator.clipboard.writeText(pythonCmd)}
+              >copy</span>
+            </div>
+          </pre>
+        </li>
+        <li>
+          <strong>Install pipx (if not already installed)</strong>
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono">{pipxInstallCmd}</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText(pipxInstallCmd)}
+              >copy</span>
+            </div>
+          </pre>
+        </li>
+        <li>
+          <strong>Ensure pipx is in your PATH</strong>
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono">{pipxEnsureCmd}</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText(pipxEnsureCmd)}
               >copy</span>
             </div>
           </pre>
@@ -89,10 +113,12 @@ const WindowsManualInstallation: React.FC = () => {
 const MacManualInstallation: React.FC = () => {
   const homebrewCmd = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
   const pythonCmd = "brew install python@3";
-  const aiderCmd = "brew install aider";
+  const pipxInstallCmd = "brew install pipx";
+  const pipxEnsureCmd = "pipx ensurepath";
+  const aiderCmd = "pipx install aider-chat";
 
   return (
-    <div className="p-4 bg-statusbar-background rounded-lg shadow-md flex-wrap text-wrap">
+    <div className="px-4 py-1 bg-statusbar-background rounded-lg shadow-md flex-wrap text-wrap">
       <h3 className="text-xl font-semibold mb-2">For macOS/Linux:</h3>
       <ol className="list-decimal list-inside">
         <li className="mb-4">
@@ -116,6 +142,28 @@ const MacManualInstallation: React.FC = () => {
               <span className="font-mono text-wrap">{pythonCmd}</span>
               <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
                 onClick={() => navigator.clipboard.writeText(pythonCmd)}
+              >copy</span>
+            </div>
+          </pre>
+        </li>
+        <li className="mb-2">
+          <strong>Install pipx (if not already installed)</strong>
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono text-wrap">{pipxInstallCmd}</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText(pipxInstallCmd)}
+              >copy</span>
+            </div>
+          </pre>
+        </li>
+        <li className="mb-2">
+          <strong>Ensure pipx is in your PATH</strong>
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono text-wrap">{pipxEnsureCmd}</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText(pipxEnsureCmd)}
               >copy</span>
             </div>
           </pre>

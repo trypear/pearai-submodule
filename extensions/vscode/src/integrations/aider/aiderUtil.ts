@@ -151,10 +151,13 @@ export async function installAider(core: Core) {
 
     let command = "";
     if (IS_WINDOWS) {
-      command += "python -m pip install -U aider-chat;";
+      command += "python -m pip install pipx;";
+      command += "pipx ensurepath;";
+      command += "pipx install aider-chat;";
       command += 'echo "`nAider installation complete."';
     } else {
-      command += "brew install aider;";
+      command += "brew install pipx;";
+      command += "pipx install aider-chat;";
       command += "echo '\nAider installation complete.'";
     }
 
