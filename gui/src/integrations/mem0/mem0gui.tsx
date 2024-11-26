@@ -66,6 +66,7 @@ export default function Mem0GUI() {
   const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
 
   const searchRef = React.useRef<HTMLDivElement>(null)
+  const editCardRef = React.useRef<HTMLDivElement>(null);
   const memoriesPerPage = 4;
 
   const handleAddNewMemory = () => {
@@ -114,12 +115,39 @@ export default function Mem0GUI() {
     setEditedContent("");
   }
 
-    // Update filteredMemories to use memories state
-    const filteredMemories = React.useMemo(() => {
-        return memories.filter(memory => 
-        memory.content.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [searchQuery, memories]);
+  // Handle click outside
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (editCardRef.current && !editCardRef.current.contains(event.target as Node)) {
+        if (editingId) {
+            const memory = memories.find(m => m.id === editingId);
+            handleCancelEdit(memory);
+        }
+      }
+    }
+
+    if (editingId) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [editingId]);
+
+  // Handle key press
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (editedContent.trim()) {
+        handleSaveEdit();
+      }
+    }
+  };
+
+   // Update filteredMemories to use memories state
+  const filteredMemories = React.useMemo(() => {
+    return memories.filter(memory => 
+    memory.content.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery, memories]);
   
 
   // Get total pages based on filtered results
@@ -203,7 +231,7 @@ export default function Mem0GUI() {
           <Card key={memory.id} className="p-2 bg-input hover:bg-input/90 transition-colors mx-auto">
             <div className="flex justify-between items-start">
             {editingId === memory.id ? (
-                <div className="flex-1">
+                <div ref={editCardRef} className="flex-1">
                     <div className="mr-6">
                         <Input
                         value={editedContent}
@@ -211,6 +239,7 @@ export default function Mem0GUI() {
                         className="w-full bg-background text-foreground border border-input"
                         placeholder="Write a memory..."
                         autoFocus
+                        onKeyDown={handleKeyPress}
                     />
                     </div>
                   <div className="flex justify-end gap-2 mt-2">
