@@ -1,7 +1,7 @@
 import * as cp from "child_process";
 import * as vscode from "vscode";
 import * as os from "os";
-import { execSync } from "child_process";
+import { execSync, exec } from "child_process";
 import { AiderState } from "./types/aiderTypes";
 import { PearAICredentials } from "core/pearaiServer/PearAICredentials";
 import {
@@ -28,19 +28,51 @@ export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
 export const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
 
+function getAiderVersion(): string {
+  try {
+    const versionOutput = execSync('aider --version').toString().trim();
+    // Extract version number from output (e.g., "aider v0.64.2" -> "0.64.2")
+    const match = versionOutput.match(/v?(\d+\.\d+\.\d+)/);
+    return match ? match[1] : "0.0.0";
+  } catch (error) {
+    console.error("Error getting aider version:", error);
+    return "0.0.0";
+  }
+}
+
+function compareVersions(v1: string, v2: string): number {
+  const parts1 = v1.split('.').map(Number);
+  const parts2 = v2.split('.').map(Number);
+  
+  for (let i = 0; i < 3; i++) {
+    if (parts1[i] > parts2[i]) return 1;
+    if (parts1[i] < parts2[i]) return -1;
+  }
+  return 0;
+}
+
 export function buildAiderCommand(model: string, accessToken: string | undefined, apiKey: string | undefined): string[] {
   const aiderCommand = ["aider"];
+
+  const currentVersion = getAiderVersion();
+  console.dir("CURRENT VERSION")
+  console.dir(currentVersion)
+  const minVersionForNoDetectUrls = "0.64.2";
 
   let aiderFlags = [
     "--no-pretty",
     "--yes-always",
     "--no-auto-commits",
     "--no-suggest-shell-commands",
-    "--no-check-update",
     "--no-auto-lint",
     "--map-tokens", "2048",
-    "--subtree-only"
+    "--subtree-only",
   ];
+
+  // Add --no-detect-urls flag if version is >= 0.64.2
+  if (compareVersions(currentVersion, minVersionForNoDetectUrls) >= 0) {
+    aiderFlags.push("--no-detect-urls");
+  }
 
   aiderCommand.push(...aiderFlags);
 
