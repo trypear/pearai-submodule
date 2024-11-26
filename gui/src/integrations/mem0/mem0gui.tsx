@@ -131,10 +131,13 @@ export default function Mem0GUI() {
     }
   }
 
-  const onDelete = () => {
-    // todo
-    console.dir("delete pressed")
-  }
+  const handleDelete = (memoryId: string) => {
+    // Show confirmation dialog before deleting
+    console.dir("In handleDelete");
+    // Remove from local state
+    setMemories(prevMemories => 
+    prevMemories.filter(memory => memory.id !== memoryId))
+  };
 
   // Handle clicking outside of search to collapse it
   React.useEffect(() => {
@@ -218,7 +221,7 @@ export default function Mem0GUI() {
                       color={lightGray}
                       width="1.2em"
                       height="1.2em"
-                      onClick={onDelete}
+                      onClick={() => handleDelete(memory.id)}
                     />
                   </HeaderButtonWithText>
                 </div>
@@ -229,7 +232,7 @@ export default function Mem0GUI() {
         ))}
       </div>
 
-      <div className="flex justify-between mt-2 mb-2">
+      <div className="flex justify-end mt-2 mb-2">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <HeaderButtonWithText
             disabled={currentPage === 1}
@@ -254,12 +257,6 @@ export default function Mem0GUI() {
                 onClick={handleNextPage}
             />
           </HeaderButtonWithText>
-        </div>
-        <div className="flex gap-2">
-            {/* todo: onclick for cancel -> go back */}
-          <Button variant="outline" size="sm">Cancel</Button>
-          {/* todo: onclick for save -> shoot api calls to make changes. Can mem0 do batch update? */}
-          <Button size="sm">Save</Button>
         </div>
       </div>
     </div>
