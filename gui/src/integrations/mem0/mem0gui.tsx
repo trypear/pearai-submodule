@@ -385,7 +385,10 @@ export default function Mem0GUI() {
                       color={lightGray}
                       width="1.2em"
                       height="1.2em"
-                      onClick={() => onEdit(memory)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(memory)
+                    }}
                     />
                   </HeaderButtonWithText>
                   <HeaderButtonWithText text="Delete Memory">
@@ -393,7 +396,10 @@ export default function Mem0GUI() {
                       color={lightGray}
                       width="1.2em"
                       height="1.2em"
-                      onClick={() => handleDelete(memory.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(memory.id);
+                      }}
                     />
                   </HeaderButtonWithText>
                 </div>
