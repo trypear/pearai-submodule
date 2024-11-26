@@ -73,6 +73,7 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
     "--no-auto-commits",
     "--no-suggest-shell-commands",
     "--no-auto-lint",
+    "--no-check-update",
     "--map-tokens", "2048",
     "--subtree-only",
     "--no-show-release-notes",
