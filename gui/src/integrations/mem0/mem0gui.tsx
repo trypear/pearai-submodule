@@ -176,21 +176,6 @@ export default function Mem0GUI() {
     setEditedContent("");
   };
 
-  // Handle save edit
-//   const handleSaveEdit = () => {
-//     setMemories(prevMemories => 
-//       prevMemories.map(memory => 
-//         memory.id === editingId
-//           ? { ...memory, content: editedContent }
-//           : memory
-//       )
-//     );
-    
-    // Reset editing state
-//     setEditingId(null);
-//     setEditedContent("");
-//   }
-
   // Handle cancel edit
   const handleCancelEdit = (memory: Memory) => {
     if (memory.content === "") {
@@ -369,11 +354,14 @@ export default function Mem0GUI() {
                 <div className="flex flex-col flex-1">
                     <p className="text-sm text-foreground ml-2">
                     {memory.content}
-                    {memory.isModified && (
+                    {memory.isNew && (
+                        <span className="ml-2 text-xs text-green-500">(new)</span>
+                    )}
+                    {!memory.isNew && memory.isModified && (
                         <span className="ml-2 text-xs text-yellow-500">(modified)</span>
                     )}
                     {memory.isDeleted && (
-                        <span className="ml-2 text-xs text-gray-500">(deleted)</span>
+                        <span className="ml-2 text-xs text-red-500">(deleted)</span>
                     )}
                     </p>
                 </div>
