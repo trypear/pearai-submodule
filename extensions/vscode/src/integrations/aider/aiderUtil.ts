@@ -9,6 +9,8 @@ import { isFirstPearAICreatorLaunch } from "../../copySettings";
 import { VsCodeWebviewProtocol } from "../../webviewProtocol";
 import * as os from "os";
 
+export const PEARAI_AIDER_VERSION = "0.64.0";
+
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
 const IS_MAC = PLATFORM === "darwin";
@@ -151,12 +153,12 @@ export async function installAider(core: Core) {
     if (IS_WINDOWS) {
       command += "python -m pip install pipx;";
       command += "pipx ensurepath;";
-      command += "pipx install aider-chat;";
-      command += 'echo "`nAider installation complete."';
+      command += `pipx install aider-chat==${PEARAI_AIDER_VERSION};`;
+      command += `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`;
     } else {
       command += "brew install pipx;";
-      command += "pipx install aider-chat;";
-      command += "echo '\nAider installation complete.'";
+      command += `pipx install aider-chat==${PEARAI_AIDER_VERSION};`;
+      command += `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`;
     }
 
     try {
