@@ -314,7 +314,7 @@ export default function Mem0GUI() {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3">
-        {filteredMemories.length === 0 ? <NoMemoriesCard /> :
+        {memories.length === 0 ? <NoMemoriesCard /> :
         getCurrentPageMemories().map((memory: Memory) => (
           <Card 
           key={memory.id} 
