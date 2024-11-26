@@ -67,6 +67,7 @@ function NoMemoriesCard() {
   return (
     <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
       <div className="flex flex-col items-center space-y-4">
+
         <div className="relative">
           <Brain className="w-16 h-16" />
           <Sparkles className="w-6 h-6 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
@@ -82,6 +83,22 @@ function NoMemoriesCard() {
     </Card>
   )
 }
+
+function NoSearchResultsCard() {
+    return (
+      <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            <Search className="w-16 h-16" />
+          </div>
+          <h3 className="text-xl font-semibold text-foreground">No Memories Found</h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
+            No memories match your search.
+          </p>
+        </div>
+      </Card>
+    )
+  }
 
 export default function Mem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -313,7 +330,8 @@ export default function Mem0GUI() {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3">
-        {memories.length === 0 ? <NoMemoriesCard /> :
+        {memories.length === 0 ? <NoMemoriesCard /> : 
+        filteredMemories.length === 0 ? <NoSearchResultsCard /> :
         getCurrentPageMemories().map((memory: Memory) => (
           <Card 
           key={memory.id} 
@@ -422,7 +440,7 @@ export default function Mem0GUI() {
         
             <div className="flex flex-1 justify-end">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {filteredMemories.length > 0 ? (
+                    {filteredMemories.length > 0 && (
                         <>
                             <HeaderButtonWithText
                                 disabled={currentPage === 1}
@@ -448,7 +466,7 @@ export default function Mem0GUI() {
                                 />
                             </HeaderButtonWithText>
                         </>
-                    ) : 'No memories found'}
+                    )}
                 </div>
             </div>
         </div>
