@@ -431,7 +431,7 @@ export default function Mem0GUI() {
       </div>
     
       
-        <div className="mt-4 mb-6 flex items-center">
+        <div className="mt-6 mb-4 flex items-center">
             {/* Centered Save/Cancel buttons */}
             {unsavedChanges.length > 0 && (
                 <div className="absolute left-1/2 transform -translate-x-1/2 gap-2">
