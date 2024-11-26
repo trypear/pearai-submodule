@@ -330,7 +330,6 @@ async startAiderChat(model: string, apiKey: string | undefined, isRestarting: bo
       this.aiderProcess.stdout.on("data", (data: Buffer) => {
         this.captureAiderOutput(data);
         const output = data.toString();
-        console.log('Raw Aider stdout:', JSON.stringify(output));
         if (READY_PROMPT_REGEX.test(output)) {
           this.updateState({ state: "ready" });
         }
