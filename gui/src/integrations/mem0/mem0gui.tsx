@@ -53,11 +53,7 @@ const DUMMY_MEMORIES: Memory[] = [
   ];
 
 export const lightGray = "#999998";
-interface Memory {
-    id: string;
-    content: string;
-    timestamp: string;
-}
+
 
 export default function Mem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -132,8 +128,6 @@ export default function Mem0GUI() {
   }
 
   const handleDelete = (memoryId: string) => {
-    // Show confirmation dialog before deleting
-    console.dir("In handleDelete");
     // Remove from local state
     setMemories(prevMemories => 
     prevMemories.filter(memory => memory.id !== memoryId))
@@ -227,7 +221,7 @@ export default function Mem0GUI() {
                 </div>
               )}
             </div>
-            {editingId != memory.id && <p className="text-xs text-muted-foreground mt-1 ml-2">{memory.timestamp}</p>}
+            {editingId !== memory.id && <p className="text-xs text-muted-foreground mt-1 ml-2">{memory.timestamp}</p>}
           </Card>
         ))}
       </div>
