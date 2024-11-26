@@ -88,10 +88,8 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
     aiderCommand.push("--openai-api-key", accessToken || "");
     aiderCommand.push("--openai-api-base", `${SERVER_URL}/integrations/aider`);
   } else if (model.includes("claude")) {
-    aiderCommand.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
     aiderCommand.push("--model", model);
   } else if (model.includes("gpt")) {
-    aiderCommand.unshift(`export OPENAI_API_KEY=${apiKey};`);
     aiderCommand.push("--model", model);
   }
 
