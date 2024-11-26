@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import HeaderButtonWithText from "@/components/HeaderButtonWithText";
 import { TrashIcon, Pencil2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { Badge } from "../../components/ui/badge";
+import { useContext } from 'react';
+import { IdeMessengerContext } from '../../context/IdeMessenger';
 
 
 interface Memory {
@@ -108,6 +110,8 @@ export default function Mem0GUI() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
   const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
+  const ideMessenger = useContext(IdeMessengerContext);
+  const [isLoading, setIsLoading] = useState(false);
 
   // for batch edits
   const [unsavedChanges, setUnsavedChanges] = useState<MemoryChange[]>([]);
@@ -116,6 +120,42 @@ export default function Mem0GUI() {
   const searchRef = useRef<HTMLDivElement>(null)
   const editCardRef = useRef<HTMLDivElement>(null);
   const memoriesPerPage = 4;
+
+//   export interface Memory {
+//     id: string;
+//     name: string;
+//     created_at: string;
+//     updated_at: string;
+//     total_memories: number;
+//     owner: string;
+//     organization: string;
+//     metadata: any;
+//     type: string;
+//   }
+
+  const fetchMemories = async () => {
+    try {
+        setIsLoading(true);
+        // get all memories
+      const response = await ideMessenger.request('mem0/getMemories', undefined);
+
+      const memories = response.map((memory) => ({
+        id: memory.id,
+        content: memory.name,
+        timestamp: memory.updated_at || memory.created_at,
+        isModified: false,
+        isDeleted: false,
+        isNew: false
+      }));
+
+      setMemories(memories);
+    //   setTotalPages(Math.ceil(response.total / memoriesPerPage));
+    } catch (error) {
+      console.error('Failed to fetch memories:', error);
+    } finally {
+        setIsLoading(false);
+    }
+  };
 
   const handleAddNewMemory = () => {
     const newMemory: Memory = {
@@ -144,6 +184,25 @@ export default function Mem0GUI() {
     // await api.saveMemoryChanges(unsavedChanges);
     console.dir("UNSAVED CHANGES:");
     console.dir(unsavedChanges);
+
+    // try {
+    //     const response = await ideMessenger.request('mem0/saveMemories', {
+    //       changes: unsavedChanges
+    //     });
+        
+    //     if (response) {
+    //       setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
+    //         ...memory,
+    //         isModified: false,
+    //         isDeleted: false,
+    //         isNew: false
+    //       })));
+    //       setOriginalMemories(memories);
+    //       setUnsavedChanges([]);
+    //     }
+    //   } catch (error) {
+    //     console.error('Failed to save memories:', error);
+    //   }
 
     setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
         ...memory,
@@ -247,6 +306,10 @@ export default function Mem0GUI() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
+
+  useEffect(() => {
+    fetchMemories();
+  }, []);
 
   const getCurrentPageMemories = () => {
     const startIndex = (currentPage - 1) * memoriesPerPage;

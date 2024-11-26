@@ -13,6 +13,24 @@ export interface ToolCommand {
   args?: any;
 }
 
+export interface Memory {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+  total_memories: number;
+  owner: string;
+  organization: string;
+  metadata: any;
+  type: string;
+}
+
+export interface MemoryChange {
+  type: 'edit' | 'delete';
+  id: string;
+  content?: string;
+}
+
 export type ToolType = typeof InstallableTool[keyof typeof InstallableTool];
 
 export const TOOL_COMMANDS: Record<ToolType, ToolCommand> = {
