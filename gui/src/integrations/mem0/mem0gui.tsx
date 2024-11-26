@@ -400,56 +400,57 @@ export default function Mem0GUI() {
       </div>
     
       
-      <div className="mt-4 mb-6 flex items-center">
-        {/* Centered Save/Cancel buttons */}
-        {unsavedChanges.length > 0 && (
-            <div className="absolute left-1/2 transform -translate-x-1/2 gap-2">
-            <Button
-                variant="outline"
-                onClick={handleCancelAllChanges}
-                className="text-sm"
-            >
-                Cancel Changes
-            </Button>
-            <Button
-                onClick={handleSaveAllChanges}
-                className="text-sm"
-            >
-                Save All Changes
-            </Button>
-            </div>
-        )}
+        <div className="mt-4 mb-6 flex items-center">
+            {/* Centered Save/Cancel buttons */}
+            {unsavedChanges.length > 0 && (
+                <div className="absolute left-1/2 transform -translate-x-1/2 gap-2">
+                <Button
+                    variant="outline"
+                    onClick={handleCancelAllChanges}
+                    className="text-sm"
+                >
+                    Cancel Changes
+                </Button>
+                <Button
+                    onClick={handleSaveAllChanges}
+                    className="text-sm"
+                >
+                    Save All Changes
+                </Button>
+                </div>
+            )}
         
-        {/* Pagination on the right */}
-        {filteredMemories.length > 0 && (
             <div className="flex flex-1 justify-end">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <HeaderButtonWithText
-                disabled={currentPage === 1}
-                className={`px-2 py-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
-                >
-                <ChevronLeftIcon
-                    color={lightGray} 
-                    width="1.2em"
-                    height="1.2em"
-                    onClick={handlePrevPage}
-                />
-                </HeaderButtonWithText>
-                {filteredMemories.length > 0 ? `${currentPage} of ${totalPages}` : '0 of 0'}
-                <HeaderButtonWithText
-                disabled={currentPage === totalPages}
-                className={`px-2 py-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
-                >
-                <ChevronRightIcon
-                    color={lightGray} 
-                    width="1.2em"
-                    height="1.2em"
-                    onClick={handleNextPage}
-                />
-                </HeaderButtonWithText>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    {filteredMemories.length > 0 ? (
+                        <>
+                            <HeaderButtonWithText
+                                disabled={currentPage === 1}
+                                className={`px-2 py-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
+                            >
+                                <ChevronLeftIcon
+                                    color={lightGray} 
+                                    width="1.2em"
+                                    height="1.2em"
+                                    onClick={handlePrevPage}
+                                />
+                            </HeaderButtonWithText>
+                            {`${currentPage} of ${totalPages}`}
+                            <HeaderButtonWithText
+                                disabled={currentPage === totalPages}
+                                className={`px-2 py-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
+                            >
+                                <ChevronRightIcon
+                                    color={lightGray} 
+                                    width="1.2em"
+                                    height="1.2em"
+                                    onClick={handleNextPage}
+                                />
+                            </HeaderButtonWithText>
+                        </>
+                    ) : 'No memories found'}
+                </div>
             </div>
-            </div>
-        )}
         </div>
     </div>
   );
