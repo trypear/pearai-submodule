@@ -8,7 +8,8 @@ import {
   checkCredentials,
   checkGitRepository,
   getUserPath,
-  getUserShell
+  getUserShell,
+  PEARAI_AIDER_VERSION,
 } from "./aiderUtil";
 import { SERVER_URL } from "core/util/parameters";
 
@@ -27,6 +28,17 @@ export const READY_PROMPT_REGEX = />[^\S\r\n]*(?:[\r\n]|\s)*(?:\s+)(?:[\r\n]|\s)
 export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
 export const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
+
+function updateAiderVersion() {
+  try {
+    if (compareVersions(getAiderVersion(), PEARAI_AIDER_VERSION) != 0) {
+      console.log(`Upgrading aider-chat to version: ${PEARAI_AIDER_VERSION}`);  
+      execSync(`pipx install --force aider-chat==${PEARAI_AIDER_VERSION}`);
+    }
+  } catch (error) {
+    console.error("Error updating Aider version:", error);
+  }
+}
 
 function getAiderVersion(): string {
   try {
@@ -53,11 +65,7 @@ function compareVersions(v1: string, v2: string): number {
 
 export function buildAiderCommand(model: string, accessToken: string | undefined, apiKey: string | undefined): string[] {
   const aiderCommand = ["aider"];
-
-  const currentVersion = getAiderVersion();
-  console.dir("CURRENT VERSION")
-  console.dir(currentVersion)
-  const minVersionForNoDetectUrls = "0.64.2";
+  updateAiderVersion()
 
   let aiderFlags = [
     "--no-pretty",
@@ -67,12 +75,10 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
     "--no-auto-lint",
     "--map-tokens", "2048",
     "--subtree-only",
+    "--no-show-release-notes",
+    // "--no-detect-urls" // TODO: Add with aider update
   ];
 
-  // Add --no-detect-urls flag if version is >= 0.64.2
-  if (compareVersions(currentVersion, minVersionForNoDetectUrls) >= 0) {
-    aiderFlags.push("--no-detect-urls");
-  }
 
   aiderCommand.push(...aiderFlags);
 
@@ -182,6 +188,9 @@ export async function startAiderProcess(
 ): Promise<cp.ChildProcess | null> {
   const userPath = getUserPath();
   const userShell = getUserShell();
+  
+  console.log("Trying Aider command:", command.join(" "));
+  
 
   try {
     if (IS_WINDOWS) {
@@ -321,6 +330,7 @@ async startAiderChat(model: string, apiKey: string | undefined, isRestarting: bo
       this.aiderProcess.stdout.on("data", (data: Buffer) => {
         this.captureAiderOutput(data);
         const output = data.toString();
+        console.log('Raw Aider stdout:', JSON.stringify(output));
         if (READY_PROMPT_REGEX.test(output)) {
           this.updateState({ state: "ready" });
         }
