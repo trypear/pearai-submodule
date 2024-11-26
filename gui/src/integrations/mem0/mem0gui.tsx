@@ -205,7 +205,7 @@ export default function Mem0GUI() {
   }, [editingId]);
 
   // Handle key press
-  const handleKeyPress = (e: KeyboardEvent) => {
+  const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (editedContent.trim()) {
