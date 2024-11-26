@@ -32,8 +32,9 @@ export const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
 function updateAiderVersion() {
   try {
     if (compareVersions(getAiderVersion(), PEARAI_AIDER_VERSION) != 0) {
-      console.log(`Upgrading aider-chat to version: ${PEARAI_AIDER_VERSION}`);  
-      execSync(`pipx install --force aider-chat==${PEARAI_AIDER_VERSION}`);
+      console.log(`Upgrading aider-chat to version: ${PEARAI_AIDER_VERSION}`); 
+      execSync(`pipx uninstall aider-chat`); 
+      execSync(`pipx install aider-chat==${PEARAI_AIDER_VERSION}`);
     }
   } catch (error) {
     console.error("Error updating Aider version:", error);
@@ -344,7 +345,7 @@ async startAiderChat(model: string, apiKey: string | undefined, isRestarting: bo
     });
 
     this.aiderProcess.on('error', (err) => {
-      console.error("Aider process error:", err);
+      console.log("Aider process error:", err);
       this.handleProcessError(err);
     });
   }
