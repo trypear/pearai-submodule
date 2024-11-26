@@ -53,21 +53,57 @@ const DUMMY_MEMORIES: Memory[] = [
   ];
 
 export const lightGray = "#999998";
+interface Memory {
+    id: string;
+    content: string;
+    timestamp: string;
+}
 
 export default function Mem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("");
   const [isExpanded, setIsExpanded] = React.useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editedContent, setEditedContent] = useState("");
+  const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
+
   const searchRef = React.useRef<HTMLDivElement>(null)
   const memoriesPerPage = 4;
-//   const totalPages = Math.ceil(DUMMY_MEMORIES.length / memoriesPerPage);
 
-  // Filter memories based on search query
-  const filteredMemories = React.useMemo(() => {
-    return DUMMY_MEMORIES.filter(memory => 
-      memory.content.toLowerCase().includes(searchQuery.toLowerCase())
+  // Handle edit button click
+  const onEdit = (memory: Memory) => {
+    setEditingId(memory.id);
+    setEditedContent(memory.content);
+  }
+
+  // Handle save edit
+  const handleSaveEdit = () => {
+    setMemories(prevMemories => 
+      prevMemories.map(memory => 
+        memory.id === editingId
+          ? { ...memory, content: editedContent }
+          : memory
+      )
     );
-  }, [searchQuery]);
+    
+    // Reset editing state
+    setEditingId(null);
+    setEditedContent("");
+  }
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditedContent("");
+  }
+
+    // Update filteredMemories to use memories state
+    const filteredMemories = React.useMemo(() => {
+        return memories.filter(memory => 
+        memory.content.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [searchQuery, memories]);
+  
 
   // Get total pages based on filtered results
   const totalPages = Math.ceil(filteredMemories.length / memoriesPerPage);
@@ -98,11 +134,6 @@ export default function Mem0GUI() {
   const onDelete = () => {
     // todo
     console.dir("delete pressed")
-  }
-
-  const onEdit = () => {
-    // todo
-    console.dir("edit pressed")
   }
 
   // Handle clicking outside of search to collapse it
@@ -139,31 +170,61 @@ export default function Mem0GUI() {
             </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto space-y-2">
-        {getCurrentPageMemories().map((memory) => (
-          <Card key={memory.id} className="p-3 bg-input hover:bg-input/90 transition-colors max-w-[900px] mx-auto">
+        <div className="flex-1 overflow-y-auto space-y-3">
+        {getCurrentPageMemories().map((memory: Memory) => (
+          <Card key={memory.id} className="p-2 bg-input hover:bg-input/90 transition-colors mx-auto">
             <div className="flex justify-between items-start">
-              <p className="text-sm text-foreground">{memory.content}</p>
-              <div className="flex gap-1 ml-4">
-                <HeaderButtonWithText text="Edit Memory">
+            {editingId === memory.id ? (
+                <div className="flex-1">
+                    <div className="mr-6">
+                        <Input
+                        value={editedContent}
+                        onChange={(e) => setEditedContent(e.target.value)}
+                        className="w-full bg-background text-foreground border border-input"
+                        autoFocus
+                    />
+                    </div>
+                  <div className="flex justify-end gap-2 mt-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={handleCancelEdit}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveEdit}
+                    >
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground ml-2">{memory.content}</p>
+              )}
+              {!editingId && (
+                <div className="flex gap-1 ml-4">
+                  <HeaderButtonWithText text="Edit Memory">
                     <Pencil2Icon
-                        color={lightGray}
-                        width="1.2em"
-                        height="1.2em"
-                        onClick={onEdit}
+                      color={lightGray}
+                      width="1.2em"
+                      height="1.2em"
+                      onClick={() => onEdit(memory)}
                     />
-                </HeaderButtonWithText>
-                <HeaderButtonWithText text="Delete Memory">
+                  </HeaderButtonWithText>
+                  <HeaderButtonWithText text="Delete Memory">
                     <TrashIcon
-                        color={lightGray}
-                        width="1.2em"
-                        height="1.2em"
-                        onClick={onDelete}
+                      color={lightGray}
+                      width="1.2em"
+                      height="1.2em"
+                      onClick={onDelete}
                     />
-                </HeaderButtonWithText>
-              </div>
+                  </HeaderButtonWithText>
+                </div>
+              )}
             </div>
-            <p className="text-xs text-muted-foreground mt-2">{memory.timestamp}</p>
+            {editingId != memory.id && <p className="text-xs text-muted-foreground mt-1 ml-2">{memory.timestamp}</p>}
           </Card>
         ))}
       </div>
