@@ -138,7 +138,11 @@ export default function Mem0GUI() {
   };
 
   const handleCancelAllChanges = () => {
-    setMemories(originalMemories);
+    setMemories(originalMemories.map(memory => ({
+        ...memory,
+        isModified: false,
+        isDeleted: false
+      })));
     setUnsavedChanges([]);
     setEditingId(null);
     setEditedContent("");
