@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Search } from "lucide-react";
+import { Search, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import * as React from "react";
 import HeaderButtonWithText from "@/components/HeaderButtonWithText";
@@ -61,10 +61,27 @@ export default function Mem0GUI() {
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newMemoryContent, setNewMemoryContent] = useState("");
   const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
 
   const searchRef = React.useRef<HTMLDivElement>(null)
   const memoriesPerPage = 4;
+
+  const handleAddNewMemory = () => {
+    const newMemory: Memory = {
+      id: Date.now().toString(), // temporary ID generation
+      content: "",
+      timestamp: "Just now"
+    };
+    
+    setMemories(prev => [newMemory, ...prev]); // Add to beginning of list
+    setEditedContent(""); // Clear edited content
+    setEditingId(newMemory.id); // Automatically enter edit mode
+
+    // todo: api call to add memory in mem0
+  };
+
 
   // Handle edit button click
   const onEdit = (memory: Memory) => {
@@ -88,7 +105,11 @@ export default function Mem0GUI() {
   }
 
   // Handle cancel edit
-  const handleCancelEdit = () => {
+  const handleCancelEdit = (memory: Memory) => {
+    if (memory.content === "") {
+        // If this was a new memory, remove it
+        setMemories(prev => prev.filter(m => m.id !== memory.id));
+      }
     setEditingId(null);
     setEditedContent("");
   }
@@ -149,22 +170,32 @@ export default function Mem0GUI() {
     <div className="flex flex-col h-full bg-background p-4">
         <div className="flex items-center justify-between gap-4 mb-4">
             <h2 className="text-xl font-semibold">PearAI Memory Control Panel</h2>
-            <div
+            <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleAddNewMemory}
+            className="hover:bg-input/90"
+          >
+            <Plus className="h-5 w-5" />
+          </Button>
+          <div
             ref={searchRef}
-            className={`relative transition-all duration-200 ease-in-out mr-14 ${
-            isExpanded ? "w-[250px]" : "w-[120px]"
+            className={`relative transition-all duration-200 ease-in-out mr-12 ${
+              isExpanded ? "w-[250px]" : "w-[120px]"
             }`}
-        >   
+          >   
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2" size={18} />
             <Input
-                type="text"
-                placeholder="Search memories"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 pl-10 text-foreground bg-input rounded-xl"
-                onFocus={() => setIsExpanded(true)}
+              type="text"
+              placeholder="Search memories"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-8 pl-10 text-foreground bg-input rounded-xl"
+              onFocus={() => setIsExpanded(true)}
             />
-            </div>
+          </div>
+        </div>
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3">
@@ -178,6 +209,7 @@ export default function Mem0GUI() {
                         value={editedContent}
                         onChange={(e) => setEditedContent(e.target.value)}
                         className="w-full bg-background text-foreground border border-input"
+                        placeholder="Write a memory..."
                         autoFocus
                     />
                     </div>
@@ -185,7 +217,7 @@ export default function Mem0GUI() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={handleCancelEdit}
+                      onClick={() => handleCancelEdit(memory)}
                     >
                       Cancel
                     </Button>
