@@ -50,6 +50,7 @@ export async function startAiderProcess(core: Core) {
     await aiderModel.setAiderState({state: "uninstalled"});
     return;
   }
+  
 
   try {
     await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
