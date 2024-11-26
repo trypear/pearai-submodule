@@ -131,7 +131,8 @@ export default function Mem0GUI() {
     setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
         ...memory,
         isModified: false,
-        isDeleted: false
+        isDeleted: false,
+        isNew: false
       })));
     setOriginalMemories(memories);
     setUnsavedChanges([]);
@@ -141,7 +142,8 @@ export default function Mem0GUI() {
     setMemories(originalMemories.map(memory => ({
         ...memory,
         isModified: false,
-        isDeleted: false
+        isDeleted: false,
+        isNew: false
       })));
     setUnsavedChanges([]);
     setEditingId(null);
