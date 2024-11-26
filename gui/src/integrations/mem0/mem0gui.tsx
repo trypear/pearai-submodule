@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Search, Plus, Brain, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import * as React from "react";
 import HeaderButtonWithText from "@/components/HeaderButtonWithText";
 import { TrashIcon, Pencil2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 
@@ -87,7 +86,7 @@ function NoMemoriesCard() {
 export default function Mem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("");
-  const [isExpanded, setIsExpanded] = React.useState(false)
+  const [isExpanded, setIsExpanded] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
   const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
@@ -96,8 +95,8 @@ export default function Mem0GUI() {
   const [unsavedChanges, setUnsavedChanges] = useState<MemoryChange[]>([]);
   const [originalMemories, setOriginalMemories] = useState<Memory[]>(DUMMY_MEMORIES);
 
-  const searchRef = React.useRef<HTMLDivElement>(null)
-  const editCardRef = React.useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLDivElement>(null)
+  const editCardRef = useRef<HTMLDivElement>(null);
   const memoriesPerPage = 4;
 
   const handleAddNewMemory = () => {
@@ -189,7 +188,7 @@ export default function Mem0GUI() {
   }
 
   // Handle click outside
-  React.useEffect(() => {
+  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (editCardRef.current && !editCardRef.current.contains(event.target as Node)) {
         if (editingId) {
@@ -206,7 +205,7 @@ export default function Mem0GUI() {
   }, [editingId]);
 
   // Handle key press
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (editedContent.trim()) {
@@ -216,7 +215,7 @@ export default function Mem0GUI() {
   };
 
    // Update filteredMemories to use memories state
-  const filteredMemories = React.useMemo(() => {
+  const filteredMemories = useMemo(() => {
     return memories.filter(memory => 
     memory.content.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -227,7 +226,7 @@ export default function Mem0GUI() {
   const totalPages = Math.ceil(filteredMemories.length / memoriesPerPage);
 
   // Reset to first page when search query changes
-  React.useEffect(() => {
+  useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery]);
 
@@ -259,7 +258,7 @@ export default function Mem0GUI() {
   };
 
   // Handle clicking outside of search to collapse it
-  React.useEffect(() => {
+  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
         setIsExpanded(false)
