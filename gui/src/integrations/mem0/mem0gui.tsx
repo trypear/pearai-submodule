@@ -354,18 +354,18 @@ export default function Mem0GUI() {
                 </div>
               ) : (
                 <div className="flex flex-col flex-1">
-                    <p className="text-sm text-foreground ml-2">
-                    {memory.content}
-                    {memory.isNew && (
-                        <span className="ml-2 text-xs text-green-500">(new)</span>
-                    )}
-                    {!memory.isNew && memory.isModified && (
-                        <span className="ml-2 text-xs text-yellow-500">(modified)</span>
-                    )}
-                    {memory.isDeleted && (
-                        <span className="ml-2 text-xs text-red-500">(deleted)</span>
-                    )}
-                    </p>
+                    <div className="flex items-center gap-2 ml-2">
+                        <p className="text-sm text-foreground">{memory.content}</p>
+                        {memory.isNew && (
+                            <span className="text-xs text-green-500">(new)</span>
+                        )}
+                        {!memory.isNew && memory.isModified && (
+                            <span className="text-xs text-yellow-500">(modified)</span>
+                        )}
+                        {memory.isDeleted && (
+                            <span className="text-xs text-red-500">(deleted)</span>
+                        )}
+                    </div>
                 </div>
               )}
               {!editingId && (
