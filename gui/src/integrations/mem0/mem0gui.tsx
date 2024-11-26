@@ -12,6 +12,15 @@ interface Memory {
   id: string;
   content: string;
   timestamp: string;
+  isNew?: boolean;
+  isModified?: boolean;
+  isDeleted?: boolean;
+}
+
+interface MemoryChange {
+    type: 'edit' | 'delete';
+    id: string;
+    content?: string; // For edits
 }
 
 // todo: fetch memories from API and show max 4 per page
@@ -83,15 +92,20 @@ export default function Mem0GUI() {
   const [editedContent, setEditedContent] = useState("");
   const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
 
+  // for batch edits
+  const [unsavedChanges, setUnsavedChanges] = useState<MemoryChange[]>([]);
+  const [originalMemories, setOriginalMemories] = useState<Memory[]>(DUMMY_MEMORIES);
+
   const searchRef = React.useRef<HTMLDivElement>(null)
   const editCardRef = React.useRef<HTMLDivElement>(null);
   const memoriesPerPage = 4;
 
   const handleAddNewMemory = () => {
     const newMemory: Memory = {
-      id: Date.now().toString(), // temporary ID generation
+      id: Date.now().toString(), // temporary ID generation, this should be the id value returned from the API
       content: "",
-      timestamp: "Just now"
+      timestamp: "Just now",
+      isNew: true  // handle creation on BE
     };
     
     setMemories(prev => [newMemory, ...prev]); // Add to beginning of list
@@ -108,20 +122,70 @@ export default function Mem0GUI() {
     setEditedContent(memory.content);
   }
 
-  // Handle save edit
-  const handleSaveEdit = () => {
+  const handleSaveAllChanges = async () => {
+    // TODO: Send unsavedChanges to backend
+    // await api.saveMemoryChanges(unsavedChanges);
+    console.dir("UNSAVED CHANGES:");
+    console.dir(unsavedChanges);
+
+    setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
+        ...memory,
+        isModified: false,
+        isDeleted: false
+      })));
+    setOriginalMemories(memories);
+    setUnsavedChanges([]);
+  };
+
+  const handleCancelAllChanges = () => {
+    setMemories(originalMemories);
+    setUnsavedChanges([]);
+    setEditingId(null);
+    setEditedContent("");
+  };
+
+  // batch edit
+  const handleUnsavedEdit = () => {
+    if (!editingId) return;
+    const memory = memories.find(m => m.id === editingId);
+    if (editedContent === memory.content) {
+        setEditingId(null);
+        setEditedContent("");
+        return
+    };
+    
+    setUnsavedChanges(prev => [...prev, { 
+      type: 'edit', 
+      id: editingId, 
+      content: editedContent 
+    }]);
+    
     setMemories(prevMemories => 
       prevMemories.map(memory => 
         memory.id === editingId
-          ? { ...memory, content: editedContent }
+          ? { ...memory, content: editedContent, isModified: true }
           : memory
       )
     );
     
-    // Reset editing state
     setEditingId(null);
     setEditedContent("");
-  }
+  };
+
+  // Handle save edit
+//   const handleSaveEdit = () => {
+//     setMemories(prevMemories => 
+//       prevMemories.map(memory => 
+//         memory.id === editingId
+//           ? { ...memory, content: editedContent }
+//           : memory
+//       )
+//     );
+    
+    // Reset editing state
+//     setEditingId(null);
+//     setEditedContent("");
+//   }
 
   // Handle cancel edit
   const handleCancelEdit = (memory: Memory) => {
@@ -155,7 +219,7 @@ export default function Mem0GUI() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       if (editedContent.trim()) {
-        handleSaveEdit();
+        handleUnsavedEdit();
       }
     }
   };
@@ -195,9 +259,12 @@ export default function Mem0GUI() {
   }
 
   const handleDelete = (memoryId: string) => {
-    // Remove from local state
-    setMemories(prevMemories => 
-    prevMemories.filter(memory => memory.id !== memoryId))
+    setUnsavedChanges(prev => [...prev, { type: 'delete', id: memoryId }]);
+    setMemories(prev => prev.map(memory => 
+        memory.id === memoryId 
+          ? { ...memory, isDeleted: true }
+          : memory
+      ));
   };
 
   // Handle clicking outside of search to collapse it
@@ -216,6 +283,17 @@ export default function Mem0GUI() {
     <div className="flex flex-col h-full bg-background p-4">
         <div className="flex items-center justify-between gap-4 mb-4">
             <h2 className="text-xl font-semibold">PearAI Memory</h2>
+            {unsavedChanges.length > 0 && (
+                <div className="w-[300px] bg-yellow-100 dark:bg-yellow-900/30 rounded-xl items-center justify-center flex text-sm text-yellow-700 dark:text-yellow-200">
+                    <div className="flex justify-between">
+                    <div className="flex-1">
+                        <p className="text-sm text-yellow-700 dark:text-yellow-200">
+                        You have unsaved changes to memories
+                        </p>
+                    </div>
+                    </div>
+                </div>
+                )}
             <div className="flex items-center gap-2">
           <Button
             variant="ghost"
@@ -247,7 +325,13 @@ export default function Mem0GUI() {
         <div className="flex-1 overflow-y-auto space-y-3">
         {filteredMemories.length === 0 ? <NoMemoriesCard /> :
         getCurrentPageMemories().map((memory: Memory) => (
-          <Card key={memory.id} className="p-2 bg-input hover:bg-input/90 transition-colors mx-auto">
+          <Card 
+          key={memory.id} 
+          className={`p-2 bg-input hover:bg-input/90 hover:cursor-pointer transition-colors mx-auto
+            ${memory.isDeleted ? 'opacity-50' : ''}
+            ${memory.isModified ? 'border-l-4 border-l-yellow-500' : ''}`}
+            onClick={() => editingId !== memory.id && onEdit(memory)}
+          >
             <div className="flex justify-between items-start">
             {editingId === memory.id ? (
                 <div ref={editCardRef} className="flex-1">
@@ -271,14 +355,24 @@ export default function Mem0GUI() {
                     </Button>
                     <Button
                       size="sm"
-                      onClick={handleSaveEdit}
+                      onClick={handleUnsavedEdit}
                     >
-                      Save
+                      Save Draft
                     </Button>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-foreground ml-2">{memory.content}</p>
+                <div className="flex flex-col flex-1">
+                    <p className="text-sm text-foreground ml-2">
+                    {memory.content}
+                    {memory.isModified && (
+                        <span className="ml-2 text-xs text-yellow-500">(modified)</span>
+                    )}
+                    {memory.isDeleted && (
+                        <span className="ml-2 text-xs text-gray-500">(deleted)</span>
+                    )}
+                    </p>
+                </div>
               )}
               {!editingId && (
                 <div className="flex gap-1 ml-4">
@@ -306,8 +400,30 @@ export default function Mem0GUI() {
         ))}
       </div>
     
-      {filteredMemories.length > 0 && 
-        <div className="flex justify-end mt-2 mb-2">
+      
+      <div className="mt-4 mb-6 flex items-center">
+        {/* Centered Save/Cancel buttons */}
+        {unsavedChanges.length > 0 && (
+            <div className="absolute left-1/2 transform -translate-x-1/2 gap-2">
+            <Button
+                variant="outline"
+                onClick={handleCancelAllChanges}
+                className="text-sm"
+            >
+                Cancel Changes
+            </Button>
+            <Button
+                onClick={handleSaveAllChanges}
+                className="text-sm"
+            >
+                Save All Changes
+            </Button>
+            </div>
+        )}
+        
+        {/* Pagination on the right */}
+        {filteredMemories.length > 0 && (
+            <div className="flex flex-1 justify-end">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <HeaderButtonWithText
                 disabled={currentPage === 1}
@@ -333,8 +449,9 @@ export default function Mem0GUI() {
                 />
                 </HeaderButtonWithText>
             </div>
+            </div>
+        )}
         </div>
-        }
     </div>
   );
 }
