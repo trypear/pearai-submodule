@@ -35,9 +35,9 @@ const tabs = [
   },
   {
     id: "mem0Mode",
-    name: "Memories Control Panel",
+    name: "Memory",
     component: <Mem0GUI />,
-    shortcut: <><kbd className="ml-[1.5px]">SHIFT</kbd><kbd className="ml-[1.5px]">4</kbd></>,
+    shortcut: <kbd className="ml-[1.5px]">4</kbd> 
   }
 ];
 
@@ -63,6 +63,7 @@ export default function Inventory() {
   useWebviewListener("navigateToInventoryHome", () => handleTabChange("home"), []);
   useWebviewListener("navigateToCreator", () => handleTabChange("aiderMode"), []);
   useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
+  useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
   useWebviewListener("navigateToInventory", () => handleTabChange("inventory"), []);
   useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
 
@@ -103,6 +104,7 @@ export default function Inventory() {
               <div className="flex gap-1">
                 <TabButton {...tabs[1]} />
                 <TabButton {...tabs[2]} />
+                <TabButton {...tabs[4]} />
               </div>
               <div className="flex">
                 <TabButton {...tabs[3]} />

@@ -197,7 +197,7 @@ export default function Mem0GUI() {
   return (
     <div className="flex flex-col h-full bg-background p-4">
         <div className="flex items-center justify-between gap-4 mb-4">
-            <h2 className="text-xl font-semibold">PearAI Memory Control Panel</h2>
+            <h2 className="text-xl font-semibold">PearAI Memory</h2>
             <div className="flex items-center gap-2">
           <Button
             variant="ghost"

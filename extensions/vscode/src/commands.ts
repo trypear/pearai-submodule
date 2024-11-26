@@ -381,6 +381,9 @@ const commandsMap: (
     "pearai.toggleSearch": async () => {
       await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
+    "pearai.toggleMem0": async () => {
+      await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, PEAR_OVERLAY_VIEW_ID);
+    },
     "pearai.toggleInventory": async () => {
       await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
     },
