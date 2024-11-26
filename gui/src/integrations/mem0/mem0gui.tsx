@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Brain, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import * as React from "react";
 import HeaderButtonWithText from "@/components/HeaderButtonWithText";
 import { TrashIcon, Pencil2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
+
 
 interface Memory {
   id: string;
@@ -54,6 +55,25 @@ const DUMMY_MEMORIES: Memory[] = [
 
 export const lightGray = "#999998";
 
+function NoMemoriesCard() {
+  return (
+    <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
+      <div className="flex flex-col items-center space-y-4">
+        <div className="relative">
+          <Brain className="w-16 h-16" />
+          <Sparkles className="w-6 h-6 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
+        </div>
+        <h3 className="text-xl font-semibold text-foreground">No Memories Yet</h3>
+        <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
+          PearAI will automatically generate memories by learning about your coding style and preferences as we chat!
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
+            You can also add memories manually by clicking the + button above!
+        </p>
+      </div>
+    </Card>
+  )
+}
 
 export default function Mem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -61,8 +81,6 @@ export default function Mem0GUI() {
   const [isExpanded, setIsExpanded] = React.useState(false)
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newMemoryContent, setNewMemoryContent] = useState("");
   const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
 
   const searchRef = React.useRef<HTMLDivElement>(null)
@@ -227,7 +245,8 @@ export default function Mem0GUI() {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3">
-        {getCurrentPageMemories().map((memory: Memory) => (
+        {filteredMemories.length === 0 ? <NoMemoriesCard /> :
+        getCurrentPageMemories().map((memory: Memory) => (
           <Card key={memory.id} className="p-2 bg-input hover:bg-input/90 transition-colors mx-auto">
             <div className="flex justify-between items-start">
             {editingId === memory.id ? (
@@ -286,34 +305,36 @@ export default function Mem0GUI() {
           </Card>
         ))}
       </div>
-
-      <div className="flex justify-end mt-2 mb-2">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <HeaderButtonWithText
-            disabled={currentPage === 1}
-            className={`px-2 py-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
-          >
-            <ChevronLeftIcon
-                color={lightGray} 
-                width="1.2em"
-                height="1.2em"
-                onClick={handlePrevPage}
-            />
-          </HeaderButtonWithText>
-          {filteredMemories.length > 0 ? `${currentPage} of ${totalPages}` : '0 of 0'}
-          <HeaderButtonWithText
-            disabled={currentPage === totalPages}
-            className={`px-2 py-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
-           >
-            <ChevronRightIcon
-                color={lightGray} 
-                width="1.2em"
-                height="1.2em"
-                onClick={handleNextPage}
-            />
-          </HeaderButtonWithText>
+    
+      {filteredMemories.length > 0 && 
+        <div className="flex justify-end mt-2 mb-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <HeaderButtonWithText
+                disabled={currentPage === 1}
+                className={`px-2 py-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
+                >
+                <ChevronLeftIcon
+                    color={lightGray} 
+                    width="1.2em"
+                    height="1.2em"
+                    onClick={handlePrevPage}
+                />
+                </HeaderButtonWithText>
+                {filteredMemories.length > 0 ? `${currentPage} of ${totalPages}` : '0 of 0'}
+                <HeaderButtonWithText
+                disabled={currentPage === totalPages}
+                className={`px-2 py-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
+                >
+                <ChevronRightIcon
+                    color={lightGray} 
+                    width="1.2em"
+                    height="1.2em"
+                    onClick={handleNextPage}
+                />
+                </HeaderButtonWithText>
+            </div>
         </div>
-      </div>
+        }
     </div>
   );
 }
