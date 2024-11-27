@@ -210,13 +210,15 @@ export default function Mem0GUI() {
     //     console.error('Failed to save memories:', error);
     //   }
 
-    setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
+    const updatedMemories = memories.filter(memory => !memory.isDeleted).map(memory => ({
         ...memory,
         isModified: false,
         isDeleted: false,
         isNew: false
-      })));
-    setOriginalMemories(memories);
+    }));
+
+    setMemories(updatedMemories);
+    setOriginalMemories(updatedMemories);
     setUnsavedChanges([]);
   };
 
@@ -484,7 +486,30 @@ export default function Mem0GUI() {
                         memory.isNew ? (
                             <span className="text-xs text-green-500">(new)</span>
                         ) : memory.isDeleted ? (
-                            <span className="text-xs text-red-500">(deleted)</span>
+                            <div className="flex-row items-center gap-2">
+                                <span className="text-xs text-red-500">(deleted)</span>
+                                <Button 
+                                variant="ghost" 
+                                size="sm"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Remove the delete change
+                                    setUnsavedChanges(prev => prev.filter(change => 
+                                    !(change.type === 'delete' && change.id === memory.id)
+                                    ));
+                                    
+                                    // Restore the memory
+                                    setMemories(prev => prev.map(m => 
+                                    m.id === memory.id 
+                                        ? { ...m, isDeleted: false }
+                                        : m
+                                    ));
+                                }}
+                                className="px-2 py-1 h-6 text-xs"
+                                >
+                                Undo
+                                </Button>
+                            </div>
                         ) : memory.isModified && <span className="text-xs text-yellow-500">(modified)</span>
                         }
                     </div>
