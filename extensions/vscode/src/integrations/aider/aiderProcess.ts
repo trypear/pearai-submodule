@@ -30,15 +30,27 @@ export const AIDER_END_MARKER = "───────────────�
 export const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
 
 function updateAiderVersion() {
+  let shouldUpgrade = false;
   try {
-    if (compareVersions(getAiderVersion(), PEARAI_AIDER_VERSION) != 0) {
+    const aiderVersion = getAiderVersion();
+    console.log(`Current aider version: ${aiderVersion}`);
+    if (compareVersions(aiderVersion, PEARAI_AIDER_VERSION) != 0) {
       console.log(`Upgrading aider-chat to version: ${PEARAI_AIDER_VERSION}`); 
       execSync(`pipx uninstall aider-chat`); 
       execSync(`pipx install aider-chat==${PEARAI_AIDER_VERSION}`);
     }
   } catch (error) {
     console.error("Error updating Aider version:", error);
+    shouldUpgrade = true;
   }
+  
+  if (shouldUpgrade) {
+  try {
+    execSync(`pipx upgrade aider-chat`); 
+  } catch (error) {
+    console.log(`Error upgrading aider-chat: ${error}`);
+  }
+}
 }
 
 function getAiderVersion(): string {
@@ -333,6 +345,12 @@ async startAiderChat(model: string, apiKey: string | undefined, isRestarting: bo
         if (READY_PROMPT_REGEX.test(output)) {
           this.updateState({ state: "ready" });
         }
+      });
+    }
+    
+    if (this.aiderProcess.stderr) {
+      this.aiderProcess.stderr.on('data', (data: Buffer) => {
+        console.error('Aider process stderr:', data.toString());
       });
     }
 
