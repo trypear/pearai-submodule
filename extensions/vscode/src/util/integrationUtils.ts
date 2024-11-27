@@ -43,11 +43,12 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
     await vscode.commands.executeCommand("pearai.hideOverlay");
     return;
   }
+  
+  await sidebar.webviewProtocol?.request(protocol, undefined, webviews);
 
   if (!isOverlayVisible) {
     // If overlay isn't open, open it first
     // Navigate to creator tab via webview protocol
-    await sidebar.webviewProtocol?.request(protocol, undefined, webviews);
     await vscode.commands.executeCommand("pearai.showOverlay");
   }
 }
