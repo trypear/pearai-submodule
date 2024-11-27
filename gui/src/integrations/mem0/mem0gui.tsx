@@ -236,11 +236,17 @@ export default function Mem0GUI() {
   const handleUnsavedEdit = () => {
     if (!editingId) return;
     const memory = memories.find(m => m.id === editingId);
-    if (editedContent === memory.content || editedContent === "") {
+    if (editedContent === memory.content) {
         setEditingId(null);
         setEditedContent("");
         return
     };
+    if (editedContent === '') {
+        handleDelete(memory.id);
+        setEditingId(null);
+        setEditedContent("");
+        return
+    }
     
     // setUnsavedChanges(prev => [...prev, { 
     //   type: 'edit', 
@@ -361,7 +367,7 @@ export default function Mem0GUI() {
         // Add the delete change
         return [...filteredChanges, { type: 'delete', id: memoryId }];
     });
-    
+
     setMemories(prev => prev.map(memory => 
         memory.id === memoryId 
           ? { ...memory, isDeleted: true }
