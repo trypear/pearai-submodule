@@ -20,7 +20,7 @@ interface Memory {
 }
 
 interface MemoryChange {
-    type: 'edit' | 'delete';
+    type: 'edit' | 'delete' | 'new';
     id: string;
     content?: string; // For edits
 }
@@ -166,6 +166,11 @@ export default function Mem0GUI() {
     };
     
     setMemories(prev => [newMemory, ...prev]); // Add to beginning of list
+    setUnsavedChanges(prev => [...prev, {
+        type: 'new',
+        id: newMemory.id,
+        content: ""
+      }]);
     setEditedContent(""); // Clear edited content
     setEditingId(newMemory.id); // Automatically enter edit mode
 
@@ -191,6 +196,7 @@ export default function Mem0GUI() {
     //     });
         
     //     if (response) {
+    //          // TODO: FETCH ALL MEMORIES AGAIN, need to update new memories with actual ID (or replace those edited?)
     //       setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
     //         ...memory,
     //         isModified: false,
@@ -230,17 +236,38 @@ export default function Mem0GUI() {
   const handleUnsavedEdit = () => {
     if (!editingId) return;
     const memory = memories.find(m => m.id === editingId);
-    if (editedContent === memory.content) {
+    if (editedContent === memory.content || editedContent === "") {
         setEditingId(null);
         setEditedContent("");
         return
     };
     
-    setUnsavedChanges(prev => [...prev, { 
-      type: 'edit', 
-      id: editingId, 
-      content: editedContent 
-    }]);
+    // setUnsavedChanges(prev => [...prev, { 
+    //   type: 'edit', 
+    //   id: editingId, 
+    //   content: editedContent 
+    // }]);
+
+    // Update or add to unsaved changes
+    setUnsavedChanges(prev => {
+        const existingChangeIndex = prev.findIndex(change => change.id === editingId);
+        if (existingChangeIndex >= 0) {
+            // Update existing change
+            const newChanges = [...prev];
+            newChanges[existingChangeIndex] = {
+                ...newChanges[existingChangeIndex],
+                content: editedContent
+            };
+            return newChanges;
+        } else {
+            // Add new change
+            return [...prev, {
+                type: memory.isNew ? 'new' : 'edit',
+                id: editingId,
+                content: editedContent
+            }];
+        }
+    });
     
     setMemories(prevMemories => 
       prevMemories.map(memory => 
@@ -285,9 +312,7 @@ export default function Mem0GUI() {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      if (editedContent.trim()) {
-        handleUnsavedEdit();
-      }
+      handleUnsavedEdit();
     }
   };
 
@@ -330,7 +355,13 @@ export default function Mem0GUI() {
   }
 
   const handleDelete = (memoryId: string) => {
-    setUnsavedChanges(prev => [...prev, { type: 'delete', id: memoryId }]);
+    setUnsavedChanges(prev => {
+        // Remove any existing changes for this memory ID
+        const filteredChanges = prev.filter(change => change.id !== memoryId);
+        // Add the delete change
+        return [...filteredChanges, { type: 'delete', id: memoryId }];
+    });
+    
     setMemories(prev => prev.map(memory => 
         memory.id === memoryId 
           ? { ...memory, isDeleted: true }
@@ -449,15 +480,13 @@ export default function Mem0GUI() {
                 <div className="flex flex-col flex-1">
                     <div className="flex items-center gap-2 ml-2">
                         <p className="text-sm text-foreground">{memory.content}</p>
-                        {memory.isNew && (
+                        {
+                        memory.isNew ? (
                             <span className="text-xs text-green-500">(new)</span>
-                        )}
-                        {!memory.isNew && memory.isModified && (
-                            <span className="text-xs text-yellow-500">(modified)</span>
-                        )}
-                        {memory.isDeleted && (
+                        ) : memory.isDeleted ? (
                             <span className="text-xs text-red-500">(deleted)</span>
-                        )}
+                        ) : memory.isModified && <span className="text-xs text-yellow-500">(modified)</span>
+                        }
                     </div>
                 </div>
               )}
