@@ -247,12 +247,6 @@ export default function Mem0GUI() {
         setEditedContent("");
         return
     }
-    
-    // setUnsavedChanges(prev => [...prev, { 
-    //   type: 'edit', 
-    //   id: editingId, 
-    //   content: editedContent 
-    // }]);
 
     // Update or add to unsaved changes
     setUnsavedChanges(prev => {
