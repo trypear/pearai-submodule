@@ -28,7 +28,9 @@ import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
+import { getMem0Memories } from "../integrations/mem0/mem0Service";
 import { TOOL_COMMANDS, ToolType } from "../util/integrationUtils";
+import PearAIServer from "core/llm/llms/PearAIServer";
 
 /**
  * A shared messenger class between Core and Webview
@@ -121,6 +123,11 @@ export class VsCodeMessenger {
       console.log("Aider installation status:", isAiderInstalled);
       return isAiderInstalled;
     });
+    this.onWebview("mem0/getMemories", async (msg) => {
+
+      const memories = await getMem0Memories(PearAIServer._getRepoId());
+      return memories;
+    }); 
     this.onWebview("is_vscode_extension_installed", async (msg) => {
       const isInstalled = await isVSCodeExtensionInstalled(msg.data.extensionId);
       console.log("VSCode extension installation status:", isInstalled);

@@ -67,7 +67,7 @@ class PearAIServer extends BaseLLM {
     return integrations;
   }
 
-  private _getRepoId(): string {
+  public static _getRepoId(): string {
     try {
         const gitRepo = vscode.workspace.workspaceFolders?.[0];
         if (gitRepo) {
@@ -90,7 +90,7 @@ class PearAIServer extends BaseLLM {
     return {
       model: options.model,
       integrations: this._getIntegrations(),
-      repoId: this._getRepoId(),
+      repoId: PearAIServer._getRepoId(),
       frequency_penalty: options.frequencyPenalty,
       presence_penalty: options.presencePenalty,
       max_tokens: options.maxTokens,

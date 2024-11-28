@@ -103,6 +103,22 @@ function NoSearchResultsCard() {
     )
   }
 
+function LoadingMemoriesCard() {
+    return (
+      <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative">
+            <Brain className="w-16 h-16 animate-pulse" />
+          </div>
+          <h3 className="text-xl font-semibold text-foreground">Loading Memories...</h3>
+          <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
+            Please wait while we fetch your memories.
+          </p>
+        </div>
+      </Card>
+    )
+  }
+
 function formatTimestamp(timestamp: string): string {
     const date = new Date(timestamp);
     const now = new Date();
@@ -153,22 +169,18 @@ export default function Mem0GUI() {
     try {
         setIsLoading(true);
         // get all memories
-        console.dir("FETCHING MEMORIES IN GUI")
-      const response = await ideMessenger.request('mem0/getMemories', undefined);
-        console.dir(response);
-      const memories = response.map((memory) => ({
-        id: memory.id,
-        content: memory.memory,
-        timestamp: memory.updated_at || memory.created_at,
-        isModified: false,
-        isDeleted: false,
-        isNew: false
-      }));
-
-      setMemories(memories);
-    //   setTotalPages(Math.ceil(response.total / memoriesPerPage));
+        const response = await ideMessenger.request('mem0/getMemories', undefined);
+        const memories = response.map((memory) => ({
+            id: memory.id,
+            content: memory.memory,
+            timestamp: memory.updated_at || memory.created_at,
+            isModified: false,
+            isDeleted: false,
+            isNew: false
+        }));
+        setMemories(memories);
     } catch (error) {
-      console.error('Failed to fetch memories:', error);
+        console.error('Failed to fetch memories:', error);
     } finally {
         setIsLoading(false);
     }
@@ -177,7 +189,6 @@ export default function Mem0GUI() {
   const handleAddNewMemory = () => {
     // reset search query if any
     setSearchQuery('');
-    // todo
     setIsExpanded(false);
 
     const newMemory: Memory = {
@@ -462,7 +473,8 @@ export default function Mem0GUI() {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3">
-        {memories.length === 0 ? <NoMemoriesCard /> : 
+        {isLoading ? <LoadingMemoriesCard /> : 
+        memories.length === 0 ? <NoMemoriesCard /> : 
         filteredMemories.length === 0 ? <NoSearchResultsCard /> :
         getCurrentPageMemories().map((memory: Memory) => (
           <Card 
