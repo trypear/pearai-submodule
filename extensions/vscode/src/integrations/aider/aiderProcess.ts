@@ -121,7 +121,7 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
     "--map-tokens", "2048",
     "--subtree-only",
     "--no-show-release-notes",
-    // "--no-detect-urls" // TODO: Add with aider update
+    "--no-detect-urls"
   ];
 
 
