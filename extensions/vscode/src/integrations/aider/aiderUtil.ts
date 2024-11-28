@@ -149,26 +149,53 @@ export async function installAider(core: Core) {
 
     vscode.window.showInformationMessage("Installing Aider...");
 
-    let command = "";
+    let success = false;
+    
     if (IS_WINDOWS) {
-      command += "python -m pip install pipx;";
-      command += "pipx ensurepath;";
-      command += `pipx install aider-chat==${PEARAI_AIDER_VERSION};`;
-      command += `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`;
+      const command = [
+        "python -m pip install pipx",
+        "pipx ensurepath",
+        `pipx install aider-chat==${PEARAI_AIDER_VERSION}`,
+        `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`
+      ].join(";");
+
+      try {
+        execSync(command);
+        success = true;
+      } catch (error) {
+        console.error("Failed to install Aider via pipx on Windows:", error);
+        return true;
+      }
     } else {
-      command += "brew install pipx;";
-      command += `pipx install aider-chat==${PEARAI_AIDER_VERSION};`;
-      command += `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`;
+      // For Mac/Linux, try pipx first
+      try {
+        const pipxCommand = [
+          "brew install pipx",
+          `pipx install aider-chat==${PEARAI_AIDER_VERSION}`,
+          `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`
+        ].join(";");
+        
+        execSync(pipxCommand);
+        success = true;
+      } catch (pipxError) {
+        console.log("Failed to install Aider via pipx, trying brew...");
+        
+        // If pipx fails, try installing directly with brew
+        try {
+          execSync("brew install aider");
+          success = true;
+        } catch (brewError) {
+          console.error("Failed to install Aider via brew:", brewError);
+          return true;
+        }
+      }
     }
 
-    try {
-      execSync(command);
+    if (success) {
       core.invoke("llm/startAiderProcess", undefined);
       return false;
-    } catch (error) {
-      console.error("Failed to execute Aider command:", error);
-      return true;
     }
+    return true;
   }
 }
 
