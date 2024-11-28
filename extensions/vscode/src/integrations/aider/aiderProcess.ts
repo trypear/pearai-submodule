@@ -73,6 +73,7 @@ async function updateUsingPackageManager() {
     try {
       await method.command();
       console.log(`Successfully updated using ${method.name}`);
+      vscode.commands.executeCommand("pearai.aiderResetSession");
       return;
     } catch (error) {
       console.log(`${method.name} failed:`, error);
