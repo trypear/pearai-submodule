@@ -15,7 +15,7 @@ export interface ToolCommand {
 
 export interface Memory {
   id: string;
-  name: string;
+  memory: string;
   created_at: string;
   updated_at: string;
   total_memories: number;

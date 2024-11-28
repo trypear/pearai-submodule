@@ -27,41 +27,41 @@ interface MemoryChange {
 
 // todo: fetch memories from API and show max 4 per page
 const DUMMY_MEMORIES: Memory[] = [
-    {
-      id: "1",
-      content: "Frequently uses Axios for HTTP requests and Lodash for utility functions.",
-      timestamp: "Yesterday"
-    },
-    {
-      id: "2",
-      content: "Often encounters issues with async/await syntax, particularly in error handling.",
-      timestamp: "Yesterday"
-    },
-    {
-      id: "3",
-      content: "Prefers writing unit tests with Jest and follows the AAA (Arrange, Act, Assert) pattern.",
-      timestamp: "Yesterday"
-    },
-    {
-      id: "4",
-      content: "Uses Z-shell with custom aliases for git commands and directory navigation.",
-      timestamp: "Yesterday"
-    },
-    {
-      id: "5",
-      content: "Prefers using VS Code's built-in debugger instead of logging statements for troubleshooting.",
-      timestamp: "Yesterday"
-    },
-    {
-      id: "6",
-      content: "Regular user of Docker for development environment consistency.",
-      timestamp: "2 days ago"
-    },
-    {
-      id: "7",
-      content: "Familiar with React hooks, especially useState and useEffect.",
-      timestamp: "2 days ago"
-    }
+    // {
+    //   id: "1",
+    //   content: "Frequently uses Axios for HTTP requests and Lodash for utility functions.",
+    //   timestamp: "Yesterday"
+    // },
+    // {
+    //   id: "2",
+    //   content: "Often encounters issues with async/await syntax, particularly in error handling.",
+    //   timestamp: "Yesterday"
+    // },
+    // {
+    //   id: "3",
+    //   content: "Prefers writing unit tests with Jest and follows the AAA (Arrange, Act, Assert) pattern.",
+    //   timestamp: "Yesterday"
+    // },
+    // {
+    //   id: "4",
+    //   content: "Uses Z-shell with custom aliases for git commands and directory navigation.",
+    //   timestamp: "Yesterday"
+    // },
+    // {
+    //   id: "5",
+    //   content: "Prefers using VS Code's built-in debugger instead of logging statements for troubleshooting.",
+    //   timestamp: "Yesterday"
+    // },
+    // {
+    //   id: "6",
+    //   content: "Regular user of Docker for development environment consistency.",
+    //   timestamp: "2 days ago"
+    // },
+    // {
+    //   id: "7",
+    //   content: "Familiar with React hooks, especially useState and useEffect.",
+    //   timestamp: "2 days ago"
+    // }
   ];
 
 export const lightGray = "#999998";
@@ -103,6 +103,34 @@ function NoSearchResultsCard() {
     )
   }
 
+function formatTimestamp(timestamp: string): string {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const oneWeekAgo = new Date(now);
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  
+    // Check if same day
+    if (date.toDateString() === now.toDateString()) {
+      return 'Today';
+    }
+    // Check if yesterday
+    if (date.toDateString() === yesterday.toDateString()) {
+      return 'Yesterday';
+    }
+    // Check if within last week
+    if (date > oneWeekAgo) {
+      return 'This week';
+    }
+    // Otherwise return formatted date
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+
 export default function Mem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("");
@@ -121,27 +149,16 @@ export default function Mem0GUI() {
   const editCardRef = useRef<HTMLDivElement>(null);
   const memoriesPerPage = 4;
 
-//   export interface Memory {
-//     id: string;
-//     name: string;
-//     created_at: string;
-//     updated_at: string;
-//     total_memories: number;
-//     owner: string;
-//     organization: string;
-//     metadata: any;
-//     type: string;
-//   }
-
   const fetchMemories = async () => {
     try {
         setIsLoading(true);
         // get all memories
+        console.dir("FETCHING MEMORIES IN GUI")
       const response = await ideMessenger.request('mem0/getMemories', undefined);
-
+        console.dir(response);
       const memories = response.map((memory) => ({
         id: memory.id,
-        content: memory.name,
+        content: memory.memory,
         timestamp: memory.updated_at || memory.created_at,
         isModified: false,
         isDeleted: false,
@@ -158,6 +175,11 @@ export default function Mem0GUI() {
   };
 
   const handleAddNewMemory = () => {
+    // reset search query if any
+    setSearchQuery('');
+    // todo
+    setIsExpanded(false);
+
     const newMemory: Memory = {
       id: Date.now().toString(), // temporary ID generation, this should be the id value returned from the API
       content: "",
@@ -416,6 +438,7 @@ export default function Mem0GUI() {
             size="icon"
             onClick={handleAddNewMemory}
             className="hover:bg-input/90"
+            disabled={!!searchQuery || isExpanded}
           >
             <Plus className="h-5 w-5" />
           </Button>
@@ -542,8 +565,8 @@ export default function Mem0GUI() {
                 </div>
               )}
             </div>
-            {editingId !== memory.id && <p className="text-xs text-muted-foreground mt-1 ml-2">{memory.timestamp}</p>}
-          </Card>
+            {editingId !== memory.id && <p className="text-xs text-muted-foreground mt-1 ml-2">{formatTimestamp(memory.timestamp)}</p>}
+            </Card>
         ))}
       </div>
     
