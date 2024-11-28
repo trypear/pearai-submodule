@@ -158,6 +158,7 @@ class Aider extends BaseLLM {
     let responseComplete = false;
     let potentialCompletion = false;
     let potentialCompletionTimeout: NodeJS.Timeout | null = null;
+    let startedListening = false;
 
     const escapeDollarSigns = (text: string | undefined) => {
       if (!text) {
@@ -182,6 +183,7 @@ class Aider extends BaseLLM {
           potentialCompletion = false;
         }
 
+
         if (READY_PROMPT_REGEX.test(newOutput)) {
           // Instead of marking complete immediately, set up potential completion
           if (!potentialCompletion) {
@@ -193,10 +195,18 @@ class Aider extends BaseLLM {
         }
 
         lastProcessedIndex = Aider.aiderProcess?.aiderOutput.length || 0;
-        yield {
-          role: "assistant",
-          content: escapeDollarSigns(newOutput),
-        };
+        
+        // Start listening once we see a newline-prefixed message
+        if (!startedListening && newOutput.startsWith('\n')) {
+          startedListening = true;
+        }
+
+        if (startedListening) {
+          yield {
+            role: "assistant",
+            content: escapeDollarSigns(newOutput),
+          };
+        }
 
         if (Aider.aiderProcess?.state.state === "stopped" || Aider.aiderProcess?.state.state === "crashed") {
           if (potentialCompletionTimeout) {

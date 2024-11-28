@@ -29,17 +29,61 @@ export const AIDER_QUESTION_MARKER = "[Yes]\\:";
 export const AIDER_END_MARKER = "─────────────────────────────────────";
 export const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
 
-function updateAiderVersion() {
+async function updateAiderVersion() {
   try {
-    if (compareVersions(getAiderVersion(), PEARAI_AIDER_VERSION) != 0) {
-      console.log(`Upgrading aider-chat to version: ${PEARAI_AIDER_VERSION}`); 
-      execSync(`pipx uninstall aider-chat`); 
-      execSync(`pipx install aider-chat==${PEARAI_AIDER_VERSION}`);
+    const aiderVersion = getAiderVersion();
+    console.log(`Current aider version: ${aiderVersion}`);
+    
+    if (compareVersions(aiderVersion, PEARAI_AIDER_VERSION) === 0) {
+      return; // Already on correct version
     }
+
+    console.log(`Upgrading aider-chat to version: ${PEARAI_AIDER_VERSION}`);
+    await updateUsingPackageManager();
   } catch (error) {
     console.error("Error updating Aider version:", error);
   }
 }
+
+async function updateUsingPackageManager() {
+  const updateMethods = [
+    {
+      name: 'pipx reinstall',
+      command: async () => {
+        await execSync(`pipx uninstall aider-chat`);
+        await execSync(`pipx install aider-chat==${PEARAI_AIDER_VERSION}`);
+      }
+    },
+    {
+      name: 'pipx upgrade',
+      command: async () => await execSync(`pipx upgrade aider-chat`)
+    },
+    {
+      name: 'brew upgrade',
+      condition: () => IS_MAC || IS_LINUX,
+      command: async () => await execSync(`brew upgrade aider`)
+    }
+  ];
+
+  for (const method of updateMethods) {
+    if (method.condition && !method.condition()) {
+      continue;
+    }
+
+    try {
+      await method.command();
+      console.log(`Successfully updated using ${method.name}`);
+      vscode.commands.executeCommand("pearai.aiderResetSession");
+      return;
+    } catch (error) {
+      console.log(`${method.name} failed:`, error);
+      // Continue to next method
+    }
+  }
+
+  throw new Error('All update methods failed');
+}
+
 
 function getAiderVersion(): string {
   try {
@@ -78,7 +122,7 @@ export function buildAiderCommand(model: string, accessToken: string | undefined
     "--map-tokens", "2048",
     "--subtree-only",
     "--no-show-release-notes",
-    // "--no-detect-urls" // TODO: Add with aider update
+    "--no-detect-urls"
   ];
 
 
@@ -333,6 +377,12 @@ async startAiderChat(model: string, apiKey: string | undefined, isRestarting: bo
         if (READY_PROMPT_REGEX.test(output)) {
           this.updateState({ state: "ready" });
         }
+      });
+    }
+    
+    if (this.aiderProcess.stderr) {
+      this.aiderProcess.stderr.on('data', (data: Buffer) => {
+        console.error('Aider process stderr:', data.toString());
       });
     }
 
