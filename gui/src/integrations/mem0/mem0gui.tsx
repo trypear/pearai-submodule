@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSelector, useDispatch } from 'react-redux';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Search, Plus, Brain, Sparkles, ExternalLink } from "lucide-react";
@@ -8,9 +9,11 @@ import { TrashIcon, Pencil2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radi
 import { Badge } from "../../components/ui/badge";
 import { useContext } from 'react';
 import { IdeMessengerContext } from '../../context/IdeMessenger';
+import { setMem0Memories } from "@/redux/slices/stateSlice";
+import { RootState, store } from "@/redux/store";
 
 
-interface Memory {
+export interface Memory {
   id: string;
   content: string;
   timestamp: string;
@@ -24,45 +27,6 @@ interface MemoryChange {
     id: string;
     content?: string; // For edits
 }
-
-// todo: fetch memories from API and show max 4 per page
-const DUMMY_MEMORIES: Memory[] = [
-    // {
-    //   id: "1",
-    //   content: "Frequently uses Axios for HTTP requests and Lodash for utility functions.",
-    //   timestamp: "Yesterday"
-    // },
-    // {
-    //   id: "2",
-    //   content: "Often encounters issues with async/await syntax, particularly in error handling.",
-    //   timestamp: "Yesterday"
-    // },
-    // {
-    //   id: "3",
-    //   content: "Prefers writing unit tests with Jest and follows the AAA (Arrange, Act, Assert) pattern.",
-    //   timestamp: "Yesterday"
-    // },
-    // {
-    //   id: "4",
-    //   content: "Uses Z-shell with custom aliases for git commands and directory navigation.",
-    //   timestamp: "Yesterday"
-    // },
-    // {
-    //   id: "5",
-    //   content: "Prefers using VS Code's built-in debugger instead of logging statements for troubleshooting.",
-    //   timestamp: "Yesterday"
-    // },
-    // {
-    //   id: "6",
-    //   content: "Regular user of Docker for development environment consistency.",
-    //   timestamp: "2 days ago"
-    // },
-    // {
-    //   id: "7",
-    //   content: "Familiar with React hooks, especially useState and useEffect.",
-    //   timestamp: "2 days ago"
-    // }
-  ];
 
 export const lightGray = "#999998";
 
@@ -135,14 +99,18 @@ export default function Mem0GUI() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
-  const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
   const ideMessenger = useContext(IdeMessengerContext);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const dispatch = useDispatch();
+  const memories = useSelector(
+    (store: RootState) => store.state.memories,
+  );
+
   // for batch edits
   const [unsavedChanges, setUnsavedChanges] = useState<MemoryChange[]>([]);
-  const [originalMemories, setOriginalMemories] = useState<Memory[]>(DUMMY_MEMORIES);
+  const [originalMemories, setOriginalMemories] = useState<Memory[]>([]);
 
   const searchRef = useRef<HTMLDivElement>(null)
   const editCardRef = useRef<HTMLDivElement>(null);
@@ -161,7 +129,7 @@ export default function Mem0GUI() {
             isDeleted: false,
             isNew: false
         }));
-        setMemories(memories);
+        dispatch(setMem0Memories(memories));
         setOriginalMemories(memories);
     } catch (error) {
         console.error('Failed to fetch memories:', error);
@@ -181,8 +149,7 @@ export default function Mem0GUI() {
       timestamp: "Just now",
       isNew: true  // handle creation on BE
     };
-    
-    setMemories(prev => [newMemory, ...prev]); // Add to beginning of list
+    dispatch(setMem0Memories([newMemory, ...memories])); // Add to beginning of list for edit mode on new memory
     setUnsavedChanges(prev => [...prev, {
         type: 'new',
         id: newMemory.id,
@@ -190,8 +157,6 @@ export default function Mem0GUI() {
       }]);
     setEditedContent(""); // Clear edited content
     setEditingId(newMemory.id); // Automatically enter edit mode
-
-    // todo: api call to add memory in mem0
   };
 
 
@@ -202,11 +167,6 @@ export default function Mem0GUI() {
   }
 
   const handleSaveAllChanges = async () => {
-    // TODO: Send unsavedChanges to backend
-    // await api.saveMemoryChanges(unsavedChanges);
-    console.dir("UNSAVED CHANGES:");
-    console.dir(unsavedChanges);
-
     try {
         setUnsavedChanges([]);
         setIsUpdating(true);
@@ -216,16 +176,7 @@ export default function Mem0GUI() {
         });
         
         if (response) {
-        // TODO: FETCH ALL MEMORIES AGAIN, need to update new memories with actual ID (or replace those edited?)
-        //   setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
-        //     ...memory,
-        //     isModified: false,
-        //     isDeleted: false,
-        //     isNew: false
-        //   })));
-        //   setOriginalMemories(memories);
-        //   setUnsavedChanges([]);
-        await fetchMemories();
+            await fetchMemories();
         }
       } catch (error) {
         console.error('Failed to save memories:', error);
@@ -234,27 +185,18 @@ export default function Mem0GUI() {
         setIsUpdating(false);
       }
 
-    // const updatedMemories = memories.filter(memory => !memory.isDeleted).map(memory => ({
-    //     ...memory,
-    //     isModified: false,
-    //     isDeleted: false,
-    //     isNew: false
-    // }));
-
-    // setMemories(updatedMemories);
-    // setOriginalMemories(updatedMemories);
-    // setUnsavedChanges([]);
     setEditingId(null);
     setEditedContent("");
   };
 
   const handleCancelAllChanges = () => {
-    setMemories(originalMemories.map(memory => ({
+    dispatch(setMem0Memories(originalMemories.map(memory => ({
         ...memory,
         isModified: false,
         isDeleted: false,
         isNew: false
-      })));
+      }))));
+
     setUnsavedChanges([]);
     setEditingId(null);
     setEditedContent("");
@@ -297,13 +239,13 @@ export default function Mem0GUI() {
         }
     });
     
-    setMemories(prevMemories => 
-      prevMemories.map(memory => 
+    dispatch(setMem0Memories(
+      memories.map(memory => 
         memory.id === editingId
           ? { ...memory, content: editedContent, isModified: true }
           : memory
       )
-    );
+    ));
     
     setEditingId(null);
     setEditedContent("");
@@ -313,7 +255,8 @@ export default function Mem0GUI() {
   const handleCancelEdit = (memory: Memory) => {
     if (memory.content === "") {
         // If this was a new memory, remove it
-        setMemories(prev => prev.filter(m => m.id !== memory.id));
+        // setMemories(prev => prev.filter(m => m.id !== memory.id));
+        dispatch(setMem0Memories(memories.filter(m => m.id !== memory.id)));
       }
     setEditingId(null);
     setEditedContent("");
@@ -361,7 +304,9 @@ export default function Mem0GUI() {
   }, [searchQuery]);
 
   useEffect(() => {
-    fetchMemories();
+    if (memories.length === 0) {
+      fetchMemories();
+    }
   }, []);
 
   const getCurrentPageMemories = () => {
@@ -390,11 +335,11 @@ export default function Mem0GUI() {
         return [...filteredChanges, { type: 'delete', id: memoryId }];
     });
 
-    setMemories(prev => prev.map(memory => 
+    dispatch(setMem0Memories(memories.map(memory =>
         memory.id === memoryId 
-          ? { ...memory, isDeleted: true }
-          : memory
-      ));
+            ? { ...memory, isDeleted: true }
+            : memory
+        )));
   };
 
   // Handle clicking outside of search to collapse it
@@ -556,11 +501,11 @@ export default function Mem0GUI() {
                                     ));
                                     
                                     // Restore the memory
-                                    setMemories(prev => prev.map(m => 
+                                    dispatch(setMem0Memories(memories.map(m => 
                                     m.id === memory.id 
                                         ? { ...m, isDeleted: false }
                                         : m
-                                    ));
+                                    )));
                                 }}
                                 className="px-2 py-1 h-6 text-xs"
                                 >
