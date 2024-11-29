@@ -157,13 +157,13 @@ export const defaultConfig: SerializedContinueConfig = {
     },
     {
       model: "o1-mini",
-      title: "GPTo1 Mini (PearAI annual only)",
+      title: "GPT o1-mini",
       provider: "pearai_server",
       isDefault: true,
     },
     {
       model: "o1-preview",
-      title: "GPTo1 Preview (PearAI annual only)",
+      title: "GPT o1-preview (high cost)",
       provider: "pearai_server",
       isDefault: true,
     },
