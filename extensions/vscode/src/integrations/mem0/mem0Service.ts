@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { SERVER_URL } from "core/util/parameters";
 import { getHeaders } from "core/pearaiServer/stubs/headers";
+import { MemoryChange } from "../../util/integrationUtils";
 import * as vscode from 'vscode';
 
-export async function getMem0Memories(memory_id: string) {
+export async function getMem0Memories(repo_id: string) {
     try {
       const baseHeaders = await getHeaders();
       const auth: any = await vscode.commands.executeCommand("pearai.getPearAuth");
-      const response = await fetch(`${SERVER_URL}/integrations/memory/${memory_id}`, {
+      const response = await fetch(`${SERVER_URL}/integrations/memory/${repo_id}`, {
         method: "GET",
         headers: {
           ...baseHeaders,
@@ -30,17 +31,24 @@ export async function getMem0Memories(memory_id: string) {
     }
   }
 
-// export async function saveMem0Memory(changes: MemoryChange[]) {
-//   const baseHeaders = await getHeaders();
-//   const response = await fetch(`${SERVER_URL}/mem0/saveMemories`, {
-//     method: "POST",
-//     headers: {
-//       ...baseHeaders,
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify({
-//       changes: changes,
-//     }),
-//   });
-//   return await response.json();
-// }
+export async function updateMem0memories(repo_id: string, changes: MemoryChange[]) {
+  const baseHeaders = await getHeaders();
+  const auth: any = await vscode.commands.executeCommand("pearai.getPearAuth");
+
+  console.dir("IN MEM0 SERVICE");
+  console.dir(changes);
+
+  const response = await fetch(`${SERVER_URL}/integrations/memory/update`, {
+    method: "POST",
+    headers: {
+      ...baseHeaders,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${auth.accessToken}`,
+    },
+    body: JSON.stringify({
+      id: repo_id,
+      updatedMemories: changes,
+    }),
+  });
+  return await response.json();
+}

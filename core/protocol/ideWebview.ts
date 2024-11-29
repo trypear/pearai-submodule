@@ -59,7 +59,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   getUrlTitle: [string, string];
   pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
   "mem0/getMemories": [undefined, Memory[]];
-  "mem0/saveMemories": [{ changes: MemoryChange[] }, boolean];
+  "mem0/updateMemories": [{ changes: MemoryChange[] }, boolean];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {

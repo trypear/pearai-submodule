@@ -66,54 +66,36 @@ const DUMMY_MEMORIES: Memory[] = [
 
 export const lightGray = "#999998";
 
-function NoMemoriesCard() {
-  return (
-    <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
-      <div className="flex flex-col items-center space-y-4">
-
-        <div className="relative">
-          <Brain className="w-16 h-16" />
-          <Sparkles className="w-6 h-6 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
-        </div>
-        <h3 className="text-xl font-semibold text-foreground">No Memories Yet</h3>
-        <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
-          PearAI will automatically generate memories by learning about your coding style and preferences as we chat!
-        </p>
-        <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
-            You can also add memories manually by clicking the + button above!
-        </p>
-      </div>
-    </Card>
-  )
+interface StatusCardProps {
+    title: string;
+    description: string;
+    icon: 'brain' | 'search';
+    showSparkles?: boolean;
+    animate?: boolean;
+    secondaryDescription?: string;
 }
 
-function NoSearchResultsCard() {
+function StatusCard({ title, description, icon, showSparkles = false, animate = false, secondaryDescription = "" }: StatusCardProps) {
     return (
       <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
         <div className="flex flex-col items-center space-y-4">
           <div className="relative">
-            <Search className="w-16 h-16" />
+            {icon === 'brain' ? (
+              <Brain className={`w-16 h-16 ${animate ? 'animate-pulse' : ''}`} />
+            ) : (
+              <Search className="w-16 h-16" />
+            )}
+            {showSparkles && (
+              <Sparkles className="w-6 h-6 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
+            )}
           </div>
-          <h3 className="text-xl font-semibold text-foreground">No Memories Found</h3>
+          <h3 className="text-xl font-semibold text-foreground">{title}</h3>
           <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
-            No memories match your search.
+            {description}
           </p>
-        </div>
-      </Card>
-    )
-  }
-
-function LoadingMemoriesCard() {
-    return (
-      <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="relative">
-            <Brain className="w-16 h-16 animate-pulse" />
-          </div>
-          <h3 className="text-xl font-semibold text-foreground">Loading Memories...</h3>
-          <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
-            Please wait while we fetch your memories.
-          </p>
+          {secondaryDescription && <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
+            {secondaryDescription}
+          </p>}
         </div>
       </Card>
     )
@@ -156,6 +138,7 @@ export default function Mem0GUI() {
   const [memories, setMemories] = useState<Memory[]>(DUMMY_MEMORIES);
   const ideMessenger = useContext(IdeMessengerContext);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // for batch edits
   const [unsavedChanges, setUnsavedChanges] = useState<MemoryChange[]>([]);
@@ -179,6 +162,7 @@ export default function Mem0GUI() {
             isNew: false
         }));
         setMemories(memories);
+        setOriginalMemories(memories);
     } catch (error) {
         console.error('Failed to fetch memories:', error);
     } finally {
@@ -223,36 +207,45 @@ export default function Mem0GUI() {
     console.dir("UNSAVED CHANGES:");
     console.dir(unsavedChanges);
 
-    // try {
-    //     const response = await ideMessenger.request('mem0/saveMemories', {
-    //       changes: unsavedChanges
-    //     });
+    try {
+        setUnsavedChanges([]);
+        setIsUpdating(true);
+        setIsLoading(true);
+        const response = await ideMessenger.request('mem0/updateMemories', {
+          changes: unsavedChanges
+        });
         
-    //     if (response) {
-    //          // TODO: FETCH ALL MEMORIES AGAIN, need to update new memories with actual ID (or replace those edited?)
-    //       setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
-    //         ...memory,
-    //         isModified: false,
-    //         isDeleted: false,
-    //         isNew: false
-    //       })));
-    //       setOriginalMemories(memories);
-    //       setUnsavedChanges([]);
-    //     }
-    //   } catch (error) {
-    //     console.error('Failed to save memories:', error);
-    //   }
+        if (response) {
+        // TODO: FETCH ALL MEMORIES AGAIN, need to update new memories with actual ID (or replace those edited?)
+        //   setMemories(prev => prev.filter(memory => !memory.isDeleted).map(memory => ({
+        //     ...memory,
+        //     isModified: false,
+        //     isDeleted: false,
+        //     isNew: false
+        //   })));
+        //   setOriginalMemories(memories);
+        //   setUnsavedChanges([]);
+        await fetchMemories();
+        }
+      } catch (error) {
+        console.error('Failed to save memories:', error);
+      } finally {
+        setIsLoading(false);
+        setIsUpdating(false);
+      }
 
-    const updatedMemories = memories.filter(memory => !memory.isDeleted).map(memory => ({
-        ...memory,
-        isModified: false,
-        isDeleted: false,
-        isNew: false
-    }));
+    // const updatedMemories = memories.filter(memory => !memory.isDeleted).map(memory => ({
+    //     ...memory,
+    //     isModified: false,
+    //     isDeleted: false,
+    //     isNew: false
+    // }));
 
-    setMemories(updatedMemories);
-    setOriginalMemories(updatedMemories);
-    setUnsavedChanges([]);
+    // setMemories(updatedMemories);
+    // setOriginalMemories(updatedMemories);
+    // setUnsavedChanges([]);
+    setEditingId(null);
+    setEditedContent("");
   };
 
   const handleCancelAllChanges = () => {
@@ -473,9 +466,38 @@ export default function Mem0GUI() {
         </div>
 
         <div className="flex-1 overflow-y-auto space-y-3">
-        {isLoading ? <LoadingMemoriesCard /> : 
-        memories.length === 0 ? <NoMemoriesCard /> : 
-        filteredMemories.length === 0 ? <NoSearchResultsCard /> :
+        {isLoading ? (
+            isUpdating ? (
+                <StatusCard
+                title="Updating Memories..."
+                description="Please wait while we save your changes."
+                icon="brain"
+                showSparkles
+                animate
+                />
+            ) : (
+                <StatusCard
+                title="Loading Memories..."
+                description="Please wait while we fetch your memories."
+                icon="brain"
+                animate
+                />
+            )
+            ) : memories.length === 0 ? (
+            <StatusCard
+                title="No Memories Yet"
+                description="PearAI will automatically generate memories by learning about your coding style and preferences as we chat! "
+                icon="brain"
+                showSparkles
+                secondaryDescription="You can also add memories manually by clicking the + button above!"
+            />
+            ) : filteredMemories.length === 0 ? (
+            <StatusCard
+                title="No Memories Found"
+                description="No memories match your search."
+                icon="search"
+            />
+            )  :
         getCurrentPageMemories().map((memory: Memory) => (
           <Card 
           key={memory.id} 

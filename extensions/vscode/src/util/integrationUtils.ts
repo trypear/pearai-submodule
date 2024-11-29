@@ -26,7 +26,7 @@ export interface Memory {
 }
 
 export interface MemoryChange {
-  type: 'edit' | 'delete';
+  type: 'edit' | 'delete' | 'new';
   id: string;
   content?: string;
 }
