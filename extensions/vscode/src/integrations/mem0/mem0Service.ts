@@ -31,7 +31,7 @@ export async function getMem0Memories(repo_id: string) {
     }
   }
 
-export async function updateMem0memories(repo_id: string, changes: MemoryChange[]) {
+export async function updateMem0Memories(repo_id: string, changes: MemoryChange[]) {
   const baseHeaders = await getHeaders();
   const auth: any = await vscode.commands.executeCommand("pearai.getPearAuth");
 
