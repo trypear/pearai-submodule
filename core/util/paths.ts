@@ -187,6 +187,15 @@ export function editConfigJson(
   }
 }
 
+export function readConfigJson(): any {
+  const config = fs.readFileSync(getConfigJsonPath(), "utf8");
+  const configJson = JSONC.parse(config);
+  if (typeof configJson === "object" && configJson !== null) {
+    return configJson;
+  }
+  throw new Error("config.json is not a valid object");
+}
+
 function getMigrationsFolderPath(): string {
   const migrationsPath = path.join(getContinueGlobalPath(), ".migrations");
   if (!fs.existsSync(migrationsPath)) {
