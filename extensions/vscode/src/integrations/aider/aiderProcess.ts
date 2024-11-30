@@ -34,8 +34,8 @@ async function updateAiderVersion() {
     const aiderVersion = getAiderVersion();
     console.log(`Current aider version: ${aiderVersion}`);
     
-    if (compareVersions(aiderVersion, PEARAI_AIDER_VERSION) === 0) {
-      return; // Already on correct version
+    if (compareVersions(aiderVersion, PEARAI_AIDER_VERSION) >= 0) {
+      return; // Already on correct or later version
     }
 
     console.log(`Upgrading aider-chat to version: ${PEARAI_AIDER_VERSION}`);
