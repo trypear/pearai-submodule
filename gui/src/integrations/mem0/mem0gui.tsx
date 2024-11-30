@@ -10,7 +10,8 @@ import { Badge } from "../../components/ui/badge";
 import { useContext } from 'react';
 import { IdeMessengerContext } from '../../context/IdeMessenger';
 import { setMem0Memories } from "@/redux/slices/stateSlice";
-import { RootState, store } from "@/redux/store";
+import { RootState } from "@/redux/store";
+import { useNavigate } from "react-router-dom";
 
 
 export interface Memory {
@@ -102,11 +103,13 @@ export default function Mem0GUI() {
   const ideMessenger = useContext(IdeMessengerContext);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const navigate = useNavigate();
 
   const dispatch = useDispatch();
   const memories = useSelector(
     (store: RootState) => store.state.memories,
   );
+  const isEnabled = (useSelector((state: RootState) => state.state.config.integrations || [])).find(i => i.name === 'mem0').enabled;
 
   // for batch edits
   const [unsavedChanges, setUnsavedChanges] = useState<MemoryChange[]>([]);
@@ -370,17 +373,28 @@ export default function Mem0GUI() {
                 <span className="text-xs text-muted-foreground">powered by mem0*</span>
             </div>
         </div>
-                {unsavedChanges.length > 0 && (
-                    <div className="w-[300px] bg-yellow-100 dark:bg-yellow-900/30 rounded-xl items-center justify-center flex text-sm text-yellow-700 dark:text-yellow-200">
+                {(unsavedChanges.length > 0 || !isEnabled) && (
+                    <div className="w-[300px] bg-yellow-100 dark:bg-yellow-900/30 rounded-xl items-center justify-center flex text-sm text-yellow-700 dark:text-yellow-200 px-2">
                         <div className="flex justify-between">
                         <div className="flex-1">
-                            <p className="text-sm text-yellow-700 dark:text-yellow-200">
-                            You have unsaved changes to memories
+                            <p className="text-sm text-yellow-700 dark:text-yellow-200 text-center">
+                            {unsavedChanges.length > 0 ? "You have unsaved changes to memories" : 
+                             <>
+                             PearAI Memory is disabled. You can enable it by toggling on Memory in{" "}
+                             <span 
+                                 className="cursor-pointer underline"
+                                 onClick={() => navigate("/inventory")}
+                             >
+                                 Inventory Settings
+                             </span>
+                             .
+                             </>}
                             </p>
                         </div>
                         </div>
                     </div>
-                )}
+                )
+              }
             <div className="flex items-center gap-2">
           <Button
             variant="ghost"
