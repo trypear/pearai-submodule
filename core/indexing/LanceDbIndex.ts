@@ -421,7 +421,7 @@ export class LanceDbIndex implements CodebaseIndex {
     let query = table.search(vector);
     if (directory) {
       // seems like lancedb is only post-filtering, so have to return a bunch of results and slice after
-      query = query.where(`path LIKE '${directory}%'`).limit(300);
+      query = query.where(`path LIKE '${directory}%'`).limit(n).prefilter(true);
     } else {
       query = query.limit(n);
     }
