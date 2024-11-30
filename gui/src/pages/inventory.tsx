@@ -3,6 +3,7 @@ import HomePage from "@/inventory/pages/HomePage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
 import AiderGUI from "@/integrations/aider/aidergui";
+import Mem0GUI from "@/integrations/mem0/mem0gui";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, ReactNode } from "react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
@@ -32,6 +33,12 @@ const tabs = [
     component: <InventoryPage />, 
     shortcut: <><kbd className="ml-[1.5px]">SHIFT</kbd><kbd className="ml-[1.5px]">1</kbd></> 
   },
+  {
+    id: "mem0Mode",
+    name: "Memory",
+    component: <Mem0GUI />,
+    shortcut: <kbd className="ml-[1.5px]">4</kbd> 
+  }
 ];
 
 interface TabButtonProps {
@@ -56,6 +63,7 @@ export default function Inventory() {
   useWebviewListener("navigateToInventoryHome", () => handleTabChange("home"), []);
   useWebviewListener("navigateToCreator", () => handleTabChange("aiderMode"), []);
   useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
+  useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
   useWebviewListener("toggleOverlay", () => handleTabChange("inventory"), []);
   useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
 
@@ -96,6 +104,7 @@ export default function Inventory() {
               <div className="flex gap-1">
                 <TabButton {...tabs[1]} />
                 <TabButton {...tabs[2]} />
+                <TabButton {...tabs[4]} />
               </div>
               <div className="flex">
                 <TabButton {...tabs[3]} />

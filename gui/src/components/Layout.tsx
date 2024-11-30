@@ -150,6 +150,7 @@ const HIDE_FOOTER_ON_PAGES = [
   "/inventory",
   "/inventory/aiderMode",
   "/inventory/perplexityMode",
+  "/inventory/mem0Mode",
   "/welcome"
 ];
 

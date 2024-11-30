@@ -171,6 +171,12 @@
         "group": "PearAI"
       },
       {
+        "command": "pearai.toggleMem0",
+        "category": "PearAI",
+        "title": "Toggle PearAI Memory",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.toggleOverlay",
         "category": "PearAI",
         "title": "Toggle PearAI Inventory",
@@ -374,6 +380,11 @@
         "command": "pearai.toggleSearch",
         "mac": "cmd+3",
         "key": "ctrl+3"
+      },
+      {
+        "command": "pearai.toggleMem0",
+        "mac": "cmd+4",
+        "key": "ctrl+4"
       },
       {
         "command": "pearai.focusContinueInput",
