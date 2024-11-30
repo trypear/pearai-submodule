@@ -49,3 +49,13 @@ export function deleteModel(title: string) {
     return config;
   });
 }
+
+export function toggleIntegration(name: string) {
+  editConfigJson((config) => {
+    const integration = config!.integrations!.find((i: any) => i.name === name);
+    if (integration) {
+      integration.enabled = !integration.enabled;
+    }
+    return config;
+  });
+}

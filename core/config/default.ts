@@ -184,6 +184,13 @@ export const defaultConfig: SerializedContinueConfig = {
   // },
   contextProviders: defaultContextProvidersVsCode,
   slashCommands: defaultSlashCommandsVscode,
+  integrations: [
+    {
+      name: "mem0",
+      description: "PearAI Personalized Chat powered by Mem0",
+      enabled: false,
+    }
+  ],
 };
 
 export const defaultCustomCommands: CustomCommand[] = [

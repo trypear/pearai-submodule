@@ -42,6 +42,7 @@ interface AITool {
   isInstalled?: boolean;
   installCommand?: () => Promise<void>;
   note?: string;
+  toggleable?: boolean;
 }
 
 const suggestedBuild = [
@@ -60,6 +61,11 @@ function AIToolCard({
   onClick: () => void;
   onToggle: () => void;
 }) {
+  const handleSwitchClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card click
+    onToggle();
+  };
+
   return (
     <TooltipProvider delayDuration={0}>
       <Card
@@ -67,26 +73,7 @@ function AIToolCard({
         onClick={tool.comingSoon ? undefined : onClick}
       >
         <CardContent className="px-3">
-          {/* TODO: removed unfinished feature */}
-          {/* <Tooltip>
-              <TooltipTrigger asChild>
-                <Switch
-                  checked={tool.comingSoon ? false : true} // always enabled
-                  aria-label={`Toggle ${tool.name}`}
-                  disabled={true} // disable toggle for now
-                  className={`bg-button text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out ${
-                    tool.comingSoon ? "opacity-50" : "opacity-100"
-                  }`}
-                />
-              </TooltipTrigger>
-              {!tool.comingSoon && (
-                <TooltipContent>
-                  <p className="text-xs bg-input p-1 px-2 rounded-xl">
-                    Toggling coming soon
-                  </p>
-                </TooltipContent>
-              )}
-            </Tooltip> */}
+          
           <h3
             className={`flex items-center gap-2 text-base font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
           >
@@ -102,6 +89,17 @@ function AIToolCard({
           >
             {tool.comingSoon ? "Coming soon" : tool.description}
           </p>
+          {tool.toggleable && !tool.comingSoon && (
+          <Tooltip>
+              <TooltipTrigger asChild>
+                <Switch
+                  checked={tool.enabled}
+                  onClick={handleSwitchClick}
+                  aria-label={`Toggle ${tool.name}`}
+                  className={`${tool.enabled ? "bg-button" : "bg-background"} text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out`}
+                />
+              </TooltipTrigger>
+            </Tooltip>)}
         </CardContent>
       </Card>
     </TooltipProvider>
@@ -149,7 +147,7 @@ function AIToolCard({
 export default function AIToolInventory() {
   const ideMessenger = useContext(IdeMessengerContext);
   const navigate = useNavigate();
-
+  const integrations = useSelector((state: RootState) => state.state.config.integrations || []);
   // const aiderProcessState = useSelector(
   //   (state: RootState) => state.state.aiderProcessState,
   // );
@@ -166,6 +164,9 @@ export default function AIToolInventory() {
         } else if (tool.id === AIToolID.AUTOCOMPLETE) {
           // Supermaven's ID
           return { ...tool, isInstalled: isSuperMavenInstalled };
+        } else if (tool.id === AIToolID.MEMORY) {
+          const mem0Integration = integrations.find(i => i.name === 'mem0');
+          return { ...tool, enabled: mem0Integration?.enabled ?? false };
         } else {
           return tool;
         }
@@ -355,15 +356,15 @@ export default function AIToolInventory() {
       name: "Memory",
       description: (
         <span>
-          Personalization: let the AI remember your past thoughts (coming soon)
+          Personalization: let PearAI get to know your coding preferences
         </span>
       ),
       icon: "inventory-mem0.svg",
       whenToUse: (
         <span>
           When you want the AI to remember insights from past prompts you've
-          given it. It can automatically remember details like what version of
-          for e.g. Python you're using, or other specific details of your
+          given it. It can automatically remember details such as
+          the Python version you're using, or other specific details of your
           codebase, like your coding styles, or your expertise level
         </span>
       ),
@@ -372,9 +373,10 @@ export default function AIToolInventory() {
         <span>Increase in accuracy of results due to personalization</span>,
       ],
       enabled: false,
-      comingSoon: true,
+      comingSoon: false,
       poweredBy: "Mem0",
       installNeeded: false,
+      toggleable: true,
     },
   ]);
 
@@ -398,6 +400,14 @@ export default function AIToolInventory() {
         tool.id === id ? { ...tool, enabled: !tool.enabled } : tool,
       ),
     );
+
+    switch(id) {
+      case AIToolID.MEMORY:
+        ideMessenger.post("config/toggleIntegration", {name: "mem0"});
+        break;
+      default:
+        break;
+    }
   };
 
   // TODO: Not used for now
@@ -424,14 +434,15 @@ export default function AIToolInventory() {
   };
 
   const handleOpen = (tool: AITool) => {
-    console.dir("handleOpen");
-    console.dir(tool);
     switch (tool.id) {
       case AIToolID.CREATOR:
         navigate("/inventory/aiderMode");
         break;
       case AIToolID.SEARCH:
         navigate("/inventory/perplexityMode");
+        break;
+      case AIToolID.MEMORY:
+        navigate("/inventory/mem0Mode");
         break;
       case AIToolID.AUTOCOMPLETE:
         ideMessenger.post("invokeVSCodeCommandById", {

@@ -51,6 +51,7 @@ import {
   getConfigTsPath,
   getContinueDotEnv,
   readAllGlobalPromptFiles,
+  editConfigJson
 } from "../util/paths.js";
 import {
   defaultConfig,
@@ -120,6 +121,11 @@ function loadSerializedConfig(
     config.allowAnonymousTelemetry = true;
   }
 
+  // If integrations doesn't exist in config, write it to config.json
+  if (!config.integrations) {
+    config.integrations = [];
+  }
+
   if (ideSettings.remoteConfigServerUrl) {
     try {
       const remoteConfigJson = resolveSerializedConfig(
@@ -175,7 +181,7 @@ async function serializedToIntermediateConfig(
   const promptFolder = initial.experimental?.promptPath;
 
   if (loadPromptFiles) {
-    let promptFiles: { path: string; content: string }[] = [];
+    let promptFiles: { path: string; content: string } [] = [];
     promptFiles = (
       await Promise.all(
         workspaceDirs.map((dir) =>
@@ -498,6 +504,7 @@ function finalToBrowserConfig(
     ui: final.ui,
     experimental: final.experimental,
     isBetaAccess: final?.isBetaAccess,
+    integrations: final.integrations || []
   };
 }
 
@@ -592,6 +599,26 @@ function addDefaults(config: SerializedContinueConfig): void {
   addDefaultCustomCommands(config);
   addDefaultContextProviders(config);
   addDefaultSlashCommands(config);
+  addDefaultIntegrations(config);
+}
+
+function addDefaultIntegrations(config: SerializedContinueConfig): void {
+  defaultConfig!.integrations!.forEach((defaultIntegration) => {
+    const integrationExists = config?.integrations?.some(
+      (configIntegration) =>
+        configIntegration.name === defaultIntegration.name
+    );
+    if (!integrationExists) {
+      config!.integrations!.push(defaultIntegration);
+      editConfigJson((configJson) => {
+        if (!configJson.integrations) {
+          configJson.integrations = [];
+        }
+        configJson.integrations.push(defaultIntegration);
+        return configJson;
+      });
+    }
+  });
 }
 
 function addDefaultModels(config: SerializedContinueConfig): void {

@@ -10,7 +10,7 @@ import {
   setupLocalMode,
 } from "./config/onboarding";
 import { createNewPromptFile } from "./config/promptFile";
-import { addModel, addOpenAIKey, deleteModel } from "./config/util";
+import { addModel, addOpenAIKey, deleteModel, toggleIntegration } from "./config/util";
 import { recentlyEditedFilesCache } from "./context/retrieval/recentlyEditedFilesCache";
 import { ContinueServerClient } from "./continueServer/stubs/client";
 import { getAuthUrlForTokenPage } from "./control-plane/auth/index";
@@ -240,6 +240,10 @@ export class Core {
 
     on("config/deleteModel", (msg) => {
       deleteModel(msg.data.title);
+      this.configHandler.reloadConfig();
+    });
+    on("config/toggleIntegration", (msg) => {
+      toggleIntegration(msg.data.name);
       this.configHandler.reloadConfig();
     });
 
