@@ -334,10 +334,11 @@ export class VsCodeMessenger {
     });
 
     this.onWebview("applyWithRelace", async (msg) => {
+      // Select the entire current file
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
         vscode.window.showErrorMessage(
-          "No active editor to apply edits to. Please open a file you'd like to apply the edits to first."
+          "No active editor to apply edits to. Please open a file you'd like to apply the edits to first.",
         );
         return;
       }
@@ -346,7 +347,7 @@ export class VsCodeMessenger {
         await vscode.window.withProgress(
           {
             location: vscode.ProgressLocation.Notification,
-            title: "Applying changes with Relace...",
+            title: "Getting Fast Apply changes...",
             cancellable: false,
           },
           async () => {
@@ -355,23 +356,46 @@ export class VsCodeMessenger {
               currentFileContent,
               msg.data.text,
             );
+            // let modifiedContent = "testing fast apply";
 
             modifiedContent = extractCodeFromMarkdown(modifiedContent);
 
-            // Replace the entire content of the file
-            const document = editor.document;
-            const fullRange = new vscode.Range(
-              document.positionAt(0),
-              document.positionAt(document.getText().length)
+            // Create and show a new untitled document with the modified content
+            const modifiedDoc = await vscode.workspace.openTextDocument({
+              content: modifiedContent,
+              language: editor.document.languageId // Preserve syntax highlighting
+            });
+
+            // Show the diff using the actual documents
+            await vscode.commands.executeCommand('vscode.diff',
+              editor.document.uri,
+              modifiedDoc.uri,
+              'Fast Apply Changes'
             );
 
-            await editor.edit(editBuilder => {
-              editBuilder.replace(fullRange, modifiedContent);
-            });
+            // Show accept/reject buttons
+            const action = await vscode.window.showInformationMessage(
+              'Review the changes and select an action',
+              'Apply Changes',
+              'Cancel'
+            );
+
+            if (action === 'Apply Changes') {
+              const fullRange = new vscode.Range(
+                editor.document.positionAt(0),
+                editor.document.positionAt(editor.document.getText().length)
+              );
+
+              await editor.edit(editBuilder => {
+                editBuilder.replace(fullRange, modifiedContent);
+              });
+
+              // Close diff view after applying changes
+              await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+              vscode.window.showInformationMessage("Fast Apply: Changes applied successfully!");
+            }
           }
         );
-
-        vscode.window.showInformationMessage("Fast Apply: Changes applied successfully!");
       } catch (error) {
         vscode.window.showErrorMessage(`Fast Apply failed: ${error}`);
       }
