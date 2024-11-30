@@ -29,8 +29,8 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   addPerplexityContextinChat: [{ text: string, language: string }, void];
   aiderMode: [undefined, void];
   aiderCtrlC: [undefined, void];
+  sendAiderProcessStateToGUI: [undefined, void];
   aiderResetSession: [undefined, void];
-  refreshAiderProcessState: [undefined, void];
   toggleDevTools: [undefined, void];
   reloadWindow: [undefined, void];
   focusEditor: [undefined, void];
@@ -55,7 +55,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   isSupermavenInstalled: [undefined, boolean];
   uninstallVscodeExtension: [{ extensionId: string }, void];
   completeWelcome: [undefined, void];
-  openInventory: [undefined, void];
+  openInventoryHome: [undefined, void];
   getUrlTitle: [string, string];
   pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
   "mem0/getMemories": [undefined, Memory[]];
@@ -104,7 +104,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   navigateToCreator: [undefined, void];
   navigateToSearch: [undefined, void];
   navigateToMem0: [undefined, void];
-  navigateToInventory: [undefined, void];
+  toggleOverlay: [undefined, void];
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
   setAiderProcessStateInGUI: [AiderState, void];

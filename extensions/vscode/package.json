@@ -3,7 +3,7 @@
   "name": "pearai",
   "publisher": "pearai",
   "icon": "media/icon.png",
-  "version": "1.5.1",
+  "version": "1.5.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/trypear/pearai-submodule"
@@ -177,7 +177,7 @@
         "group": "PearAI"
       },
       {
-        "command": "pearai.toggleInventory",
+        "command": "pearai.toggleOverlay",
         "category": "PearAI",
         "title": "Toggle PearAI Inventory",
         "group": "PearAI"
@@ -367,7 +367,7 @@
         "key": "ctrl+1"
       },
       {
-        "command": "pearai.toggleInventory",
+        "command": "pearai.toggleOverlay",
         "mac": "cmd+shift+1",
         "key": "ctrl+shift+1"
       },
@@ -495,7 +495,7 @@
           "command": "pearai.toggleSearch"
         },
         {
-          "command": "pearai.toggleInventory"
+          "command": "pearai.toggleOverlay"
         },
         {
           "command": "pearai.focusContinueInput"
