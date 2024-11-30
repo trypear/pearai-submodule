@@ -29,8 +29,9 @@ import { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
 import { getMem0Memories, updateMem0Memories } from "../integrations/mem0/mem0Service";
-import { TOOL_COMMANDS, ToolType } from "../util/integrationUtils";
+import { TOOL_COMMANDS, ToolType, extractCodeFromMarkdown } from "../util/integrationUtils";
 import PearAIServer from "core/llm/llms/PearAIServer";
+import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
 
 /**
  * A shared messenger class between Core and Webview
@@ -330,6 +331,50 @@ export class VsCodeMessenger {
         (await this.webviewProtocol.request("getDefaultModelTitle", undefined));
 
       verticalDiffManager.streamEdit(prompt, modelTitle);
+    });
+
+    this.onWebview("applyWithRelace", async (msg) => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showErrorMessage(
+          "No active editor to apply edits to. Please open a file you'd like to apply the edits to first."
+        );
+        return;
+      }
+
+      try {
+        await vscode.window.withProgress(
+          {
+            location: vscode.ProgressLocation.Notification,
+            title: "Applying changes with Relace...",
+            cancellable: false,
+          },
+          async () => {
+            const currentFileContent = editor.document.getText();
+            let modifiedContent = await getFastApplyChangesWithRelace(
+              currentFileContent,
+              msg.data.text,
+            );
+
+            modifiedContent = extractCodeFromMarkdown(modifiedContent);
+
+            // Replace the entire content of the file
+            const document = editor.document;
+            const fullRange = new vscode.Range(
+              document.positionAt(0),
+              document.positionAt(document.getText().length)
+            );
+
+            await editor.edit(editBuilder => {
+              editBuilder.replace(fullRange, modifiedContent);
+            });
+          }
+        );
+
+        vscode.window.showInformationMessage("Fast Apply: Changes applied successfully!");
+      } catch (error) {
+        vscode.window.showErrorMessage(`Fast Apply failed: ${error}`);
+      }
     });
 
     this.onWebview("showTutorial", async (msg) => {

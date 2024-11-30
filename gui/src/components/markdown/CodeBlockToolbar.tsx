@@ -2,6 +2,7 @@ import {
   ArrowLeftEndOnRectangleIcon,
   CheckIcon,
   PlayIcon,
+  BoltIcon,
 } from "@heroicons/react/24/outline";
 import { useContext, useState } from "react";
 import styled from "styled-components";
@@ -76,6 +77,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
 
   const [copied, setCopied] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [fastApplying, setFastApplying] = useState(false);
 
   return (
     <TopDiv>
@@ -90,39 +92,60 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
           <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
         </HeaderButtonWithText>}
         {isJetBrains() || !isPerplexityMode() && (
-          <HeaderButtonWithText
-            text={
-              isTerminalCodeBlock(props.language, props.text)
-                ? "Run in terminal"
-                : applying
-                  ? "Applying..."
-                  : "Apply to current file"
-            }
-            disabled={applying}
-            onClick={() => {
-              if (isTerminalCodeBlock(props.language, props.text)) {
-                let text = props.text;
-                if (text.startsWith("$ ")) {
-                  text = text.slice(2);
-                }
-                ideMessenger.ide.runCommand(text);
-                return;
+          <>
+            <HeaderButtonWithText
+              text={
+                isTerminalCodeBlock(props.language, props.text)
+                  ? "Run in terminal"
+                  : applying
+                    ? "Applying..."
+                    : "Apply to current file"
               }
+              disabled={applying || fastApplying}
+              onClick={() => {
+                if (isTerminalCodeBlock(props.language, props.text)) {
+                  let text = props.text;
+                  if (text.startsWith("$ ")) {
+                    text = text.slice(2);
+                  }
+                  ideMessenger.ide.runCommand(text);
+                  return;
+                }
 
-              if (applying) return;
-              ideMessenger.post("applyToCurrentFile", {
-                text: props.text,
-              });
-              setApplying(true);
-              setTimeout(() => setApplying(false), 2000);
-            }}
-          >
-            {applying ? (
-              <CheckIcon className="w-4 h-4 text-green-500" />
-            ) : (
-              <PlayIcon className="w-4 h-4" />
-            )}
-          </HeaderButtonWithText>
+                if (applying) return;
+                ideMessenger.post("applyToCurrentFile", {
+                  text: props.text,
+                });
+                setApplying(true);
+                setTimeout(() => setApplying(false), 2000);
+              }}
+            >
+              {applying ? (
+                <CheckIcon className="w-4 h-4 text-green-500" />
+              ) : (
+                <PlayIcon className="w-4 h-4" />
+              )}
+            </HeaderButtonWithText>
+
+            <HeaderButtonWithText
+              text={fastApplying ? "Fast Applying..." : "Fast Apply"}
+              disabled={applying || fastApplying}
+              onClick={() => {
+                if (fastApplying) return;
+                ideMessenger.post("applyWithRelace", {
+                  text: props.text,
+                });
+                setFastApplying(true);
+                setTimeout(() => setFastApplying(false), 2000);
+              }}
+            >
+              {fastApplying ? (
+                <CheckIcon className="w-4 h-4 text-green-500" />
+              ) : (
+                <BoltIcon className="w-4 h-4" />
+              )}
+            </HeaderButtonWithText>
+          </>
         )}
         {!isPerplexityMode() && <HeaderButtonWithText
           text="Insert at cursor"

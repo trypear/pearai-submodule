@@ -18,6 +18,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   ];
   openUrl: [string, void];
   applyToCurrentFile: [{ text: string }, void];
+  applyWithRelace: [{ text: string }, void];
   createFile: [{ path: string}, void];
   showTutorial: [undefined, void];
   showFile: [{ filepath: string }, void];
