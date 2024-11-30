@@ -23,7 +23,6 @@ export async function getMem0Memories(repo_id: string) {
       }
   
       const data = await response.json();
-      console.dir(data);
       return data;
     } catch (error) {
       // Show error message in VSCode
@@ -34,9 +33,6 @@ export async function getMem0Memories(repo_id: string) {
 export async function updateMem0Memories(repo_id: string, changes: MemoryChange[]) {
   const baseHeaders = await getHeaders();
   const auth: any = await vscode.commands.executeCommand("pearai.getPearAuth");
-
-  console.dir("IN MEM0 SERVICE");
-  console.dir(changes);
 
   const response = await fetch(`${SERVER_URL}/integrations/memory/update`, {
     method: "POST",
