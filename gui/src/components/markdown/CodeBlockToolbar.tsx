@@ -3,6 +3,8 @@ import {
   CheckIcon,
   PlayIcon,
   BoltIcon,
+  XMarkIcon,
+  ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import { useContext, useState } from "react";
 import styled from "styled-components";
@@ -12,6 +14,9 @@ import { isJetBrains } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "./CopyButton";
 import { isPerplexityMode } from '../../util/bareChatMode';
+import { useWebviewListener } from "../../hooks/useWebviewListener";
+import { Loader } from "lucide-react";
+
 
 const TopDiv = styled.div`
   position: sticky;
@@ -78,6 +83,18 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
   const [copied, setCopied] = useState(false);
   const [applying, setApplying] = useState(false);
   const [fastApplying, setFastApplying] = useState(false);
+  const [isDiffVisible, setIsDiffVisible] = useState(false);
+  const [originalFileUri, setOriginalFileUri] = useState("");
+  const [diffFileUri, setDiffFileUri] = useState("");
+
+  useWebviewListener("setRelaceDiffState", (state) => {
+    setIsDiffVisible(state.diffVisible);
+    setOriginalFileUri(state.originalFileUri);
+    console.dir("updating diff state");
+    console.dir(state);
+    setDiffFileUri(state.diffFileUri);
+    return Promise.resolve();
+  });
 
   return (
     <TopDiv>
@@ -127,24 +144,60 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
               )}
             </HeaderButtonWithText>
 
-            <HeaderButtonWithText
-              text={fastApplying ? "Fast Applying..." : "Fast Apply"}
-              disabled={applying || fastApplying}
-              onClick={() => {
-                if (fastApplying) return;
-                ideMessenger.post("applyWithRelace", {
-                  text: props.text,
-                });
-                setFastApplying(true);
-                setTimeout(() => setFastApplying(false), 2000);
-              }}
-            >
-              {fastApplying ? (
-                <CheckIcon className="w-4 h-4 text-green-500" />
+            <>
+              {!isDiffVisible ? (
+                <HeaderButtonWithText
+                  text={fastApplying ? "Fast Applying..." : "Fast Apply"}
+                  disabled={applying || fastApplying}
+                  onClick={() => {
+                    if (fastApplying) return;
+                    ideMessenger.post("applyWithRelace", {
+                      text: props.text,
+                    });
+                    setFastApplying(true);
+                    setTimeout(() => setFastApplying(false), 2000);
+                  }}
+                >
+                  {fastApplying ? (
+                    <Loader className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <BoltIcon className="w-4 h-4" />
+                  )}
+                </HeaderButtonWithText>
               ) : (
-                <BoltIcon className="w-4 h-4" />
+                <>
+                  <HeaderButtonWithText
+                    text="Accept Changes"
+                    onClick={() => {
+                      console.dir("accepting diff");
+                      console.dir({originalFileUri, diffFileUri});
+                      ideMessenger.post("acceptRelaceDiff", {originalFileUri, diffFileUri});
+                      // setIsDiffVisible(false);
+                    }}
+                  >
+                    <CheckIcon className="w-4 h-4 text-green-500" />
+                  </HeaderButtonWithText>
+                  <HeaderButtonWithText
+                    text="Reject Changes"
+                    onClick={() => {
+                      ideMessenger.post("rejectRelaceDiff", {originalFileUri, diffFileUri});
+                      setIsDiffVisible(false);
+                    }}
+                  >
+                    <XMarkIcon className="w-4 h-4 text-red-600" />
+                  </HeaderButtonWithText>
+                  <HeaderButtonWithText
+                    text="Reapply Changes"
+                    onClick={() => {
+                      ideMessenger.post("applyWithRelace", undefined);
+                      setIsDiffVisible(false);
+                    }}
+                  >
+                    <ArrowPathIcon className="w-4 h-4 text-yellow-500" />
+                  </HeaderButtonWithText>
+                </>
               )}
-            </HeaderButtonWithText>
+            </>
           </>
         )}
         {!isPerplexityMode() && <HeaderButtonWithText
