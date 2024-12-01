@@ -362,6 +362,16 @@ export class VsCodeMessenger {
 
             modifiedContent = extractCodeFromMarkdown(modifiedContent);
 
+            if (modifiedContent.length === 0) {
+              vscode.window.showInformationMessage("Received empty response from Relace");
+              return;
+            }
+
+            if (modifiedContent === originalContent) {
+              vscode.window.showInformationMessage("No changes to apply");
+              return;
+            }
+
             // // Create and show a new untitled document with the modified content
             // const modifiedDocUri = editor.document.uri.with({ 
             //   scheme: 'diff', 
@@ -441,18 +451,16 @@ export class VsCodeMessenger {
           originalFile.document.positionAt(originalFile.document.getText().length)
         );
 
-        // const editOriginal = new vscode.WorkspaceEdit();
-        // editOriginal.replace(originalFile.document.uri, fullRange, modifiedContent);
-        // await vscode.workspace.applyEdit(editOriginal);
-    
-        const editDiff = new vscode.WorkspaceEdit();
-        editDiff.delete(relaceDiffFile.uri, fullRange);
-        await vscode.workspace.applyEdit(editDiff);
-        // Close relaceDiffFile
-        // await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        // Close the diff view
+        const editOriginal = new vscode.WorkspaceEdit();
+        editOriginal.replace(originalFile.document.uri, fullRange, modifiedContent);
+        await vscode.workspace.applyEdit(editOriginal);
+        originalFile.document.save();
+
+        await vscode.window.showTextDocument(relaceDiffFile);
+        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
         relaceDiffManager.clearDiffState();
-        // this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false, originalFileUri: "aasdfasdf", diffFileUri: "asdfasdf"});
+        
+        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false, originalFileUri: "aasdfasdf", diffFileUri: "asdfasdf"});
         
         vscode.window.showInformationMessage("Fast Apply: Changes applied successfully!");
       } catch (error) {
@@ -463,9 +471,17 @@ export class VsCodeMessenger {
     // Reject the changes ❌
     this.onWebview("rejectRelaceDiff", async (msg) => {
       try {
-        // Close the diff view
-        await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-        
+        const relaceDiffManager = RelaceDiffManager.getInstance();
+        if (!relaceDiffManager.isDiffViewActive()) {
+            throw new Error("No active diff view found");
+        }
+        const relaceDiffFile = relaceDiffManager.getRelaceDiffFile();
+        if (!relaceDiffFile) {
+          throw new Error("Relace diff document not found");
+        }
+        await vscode.window.showTextDocument(relaceDiffFile);
+        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
+        relaceDiffManager.clearDiffState();
         // Notify webview that diff is no longer visible
         this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false, originalFileUri: "", diffFileUri: ""});
       } catch (error) {
