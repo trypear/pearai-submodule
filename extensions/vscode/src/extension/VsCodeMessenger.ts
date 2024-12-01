@@ -32,6 +32,7 @@ import { getMem0Memories, updateMem0Memories } from "../integrations/mem0/mem0Se
 import { TOOL_COMMANDS, ToolType, extractCodeFromMarkdown } from "../util/integrationUtils";
 import PearAIServer from "core/llm/llms/PearAIServer";
 import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
+import { RelaceDiffManager } from "../integrations/relace/relaceDiffManager";
 
 /**
  * A shared messenger class between Core and Webview
@@ -375,6 +376,11 @@ export class VsCodeMessenger {
               language: editor.document.languageId,
             });
 
+            RelaceDiffManager.getInstance().setDiffState(
+              editor,
+              modifiedDoc
+            );      
+
             // Show the diff using the actual documents
             const diff = await vscode.commands.executeCommand('vscode.diff',
               editor.document.uri,
@@ -394,24 +400,60 @@ export class VsCodeMessenger {
     // Accept the changes ✅
     this.onWebview("acceptRelaceDiff", async (msg) => {
       try {
-        const originalFileUri = msg.data.originalFileUri;
-        const diffFileUri = msg.data.diffFileUri;
-        console.log("-----------");
-        console.log(originalFileUri, diffFileUri);
-        console.log("-----------");
-        const FastApplyDiff = vscode.window.visibleTextEditors;
-        console.log(FastApplyDiff);
-        // if (FastApplyDiff ) {
-        //   const leftContent = FastApplyDiff
-        //   const rightContent = await vscode.workspace.openTextDocument(diffFileUri).then(doc => doc.getText());
-        //   console.log("Left Content: ", leftContent);
-        //   console.log("Right Content: ", rightContent);
-        // }
-        // if (!FastApplyDiff || FastApplyDiff.document.uri.scheme !== 'diff') {
-        //   throw new Error("Diff view not found or not active");
-        // }
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false, originalFileUri: "aasdfasdf", diffFileUri: "asdfasdf"});
+        const relaceDiffManager = RelaceDiffManager.getInstance();
+        if (!relaceDiffManager.isDiffViewActive()) {
+            throw new Error("No active diff view found");
+        }
 
+        const originalFile = relaceDiffManager.getOriginalFile();
+        const relaceDiffFile = relaceDiffManager.getRelaceDiffFile();
+
+        if (!originalFile) {
+          vscode.window.showErrorMessage("File to apply changes to not found");
+          throw new Error("Original file not found");
+        }
+
+        if (!relaceDiffFile) {
+          throw new Error("Relace diff document not found");
+        }
+
+        // // Log all visible editors to understand the structure
+        // vscode.window.visibleTextEditors.forEach((editor, index) => {
+        //   console.log(`Editor ${index}:`, {
+        //     scheme: editor.document.uri.scheme,
+        //     path: editor.document.uri.path,
+        //     fileName: editor.document.fileName,
+        //     isUntitled: editor.document.isUntitled,
+        //     content: editor.document.getText().substring(0, 100), // first 100 chars
+        //     external: editor.document.uri.fragment,
+        //     externalUri: editor.document.uri.fsPath,
+        //     external3: editor.document.uri.query
+        //   });
+        // });
+
+        console.log("relace diff file", relaceDiffFile);
+        console.log(relaceDiffFile?.getText());
+        const modifiedContent = relaceDiffFile?.getText();
+    
+        // Apply changes
+        const fullRange = new vscode.Range(
+          originalFile.document.positionAt(0),
+          originalFile.document.positionAt(originalFile.document.getText().length)
+        );
+
+        // const editOriginal = new vscode.WorkspaceEdit();
+        // editOriginal.replace(originalFile.document.uri, fullRange, modifiedContent);
+        // await vscode.workspace.applyEdit(editOriginal);
+    
+        const editDiff = new vscode.WorkspaceEdit();
+        editDiff.delete(relaceDiffFile.uri, fullRange);
+        await vscode.workspace.applyEdit(editDiff);
+        // Close relaceDiffFile
+        // await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+        // Close the diff view
+        relaceDiffManager.clearDiffState();
+        // this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false, originalFileUri: "aasdfasdf", diffFileUri: "asdfasdf"});
+        
         vscode.window.showInformationMessage("Fast Apply: Changes applied successfully!");
       } catch (error) {
         vscode.window.showErrorMessage(`Failed to apply changes: ${error}`);
