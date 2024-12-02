@@ -84,15 +84,14 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
   const [applying, setApplying] = useState(false);
   const [fastApplying, setFastApplying] = useState(false);
   const [isDiffVisible, setIsDiffVisible] = useState(false);
-  const [originalFileUri, setOriginalFileUri] = useState("");
-  const [diffFileUri, setDiffFileUri] = useState("");
 
   useWebviewListener("setRelaceDiffState", (state) => {
-    setIsDiffVisible(state.diffVisible);
-    setOriginalFileUri(state.originalFileUri);
-    console.dir("updating diff state");
-    console.dir(state);
-    setDiffFileUri(state.diffFileUri);
+    if (state.diffVisible) {
+      setIsDiffVisible(true);
+    } else {
+      setIsDiffVisible(false);
+      setFastApplying(false);
+    }
     return Promise.resolve();
   });
 
@@ -152,10 +151,9 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
                   onClick={() => {
                     if (fastApplying) return;
                     ideMessenger.post("applyWithRelace", {
-                      text: props.text,
+                      contentToApply: props.text,
                     });
                     setFastApplying(true);
-                    setTimeout(() => setFastApplying(false), 2000);
                   }}
                 >
                   {fastApplying ? (
@@ -169,10 +167,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
                   <HeaderButtonWithText
                     text="Accept Changes"
                     onClick={() => {
-                      console.dir("accepting diff");
-                      console.dir({originalFileUri, diffFileUri});
-                      ideMessenger.post("acceptRelaceDiff", {originalFileUri, diffFileUri});
-                      // setIsDiffVisible(false);
+                      ideMessenger.post("acceptRelaceDiff", undefined);
                     }}
                   >
                     <CheckIcon className="w-4 h-4 text-green-500" />
@@ -180,20 +175,11 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
                   <HeaderButtonWithText
                     text="Reject Changes"
                     onClick={() => {
-                      ideMessenger.post("rejectRelaceDiff", {originalFileUri, diffFileUri});
+                      ideMessenger.post("rejectRelaceDiff", undefined);
                       setIsDiffVisible(false);
                     }}
                   >
                     <XMarkIcon className="w-4 h-4 text-red-600" />
-                  </HeaderButtonWithText>
-                  <HeaderButtonWithText
-                    text="Reapply Changes"
-                    onClick={() => {
-                      ideMessenger.post("applyWithRelace", undefined);
-                      setIsDiffVisible(false);
-                    }}
-                  >
-                    <ArrowPathIcon className="w-4 h-4 text-yellow-500" />
                   </HeaderButtonWithText>
                 </>
               )}
