@@ -110,7 +110,7 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       model: "gpt-4o",
       contextLength: 300000,
-      title: "GPT-4o (PearAI)",
+      title: "GPT-4o",
       systemMessage:
         "You are an expert software developer. You give helpful and concise responses.",
       provider: "pearai_server",
@@ -119,7 +119,7 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       model: "claude-3-5-sonnet",
       contextLength: 3000000,
-      title: "Claude 3.5 Sonnet - New (PearAI)",
+      title: "Claude 3.5 Sonnet - New",
       systemMessage:
         "You are an expert software developer. You give helpful and concise responses.",
       provider: "pearai_server",
@@ -135,14 +135,14 @@ export const defaultConfig: SerializedContinueConfig = {
     },
     {
       model: "claude-3-5-haiku",
-      title: "Claude 3.5 Haiku (PearAI)",
+      title: "Claude 3.5 Haiku",
       provider: "pearai_server",
       isDefault: true,
     },
     {
       model: "gemini-1.5-pro",
       contextLength: 3000000,
-      title: "Gemini 1.5 Pro (PearAI)",
+      title: "Gemini 1.5 Pro",
       systemMessage:
         "You are an expert software developer. You give helpful and concise responses.",
       provider: "pearai_server",
