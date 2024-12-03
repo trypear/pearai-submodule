@@ -131,77 +131,22 @@ export async function aiderResetSession(core: Core) {
 
 
 export async function installAider(core: Core) {
-  // Step 1: Check if Aider is already installed
+  // Check if Aider is already installed
   const isAiderInstalled = await checkAiderInstallation();
   if (isAiderInstalled) {
     return false;
   }
 
-  // Step 2: For Mac/Linux, check and install Homebrew first
-  if (!IS_WINDOWS) {
-    const isBrewInstalled = await checkBrewInstallation();
-    if (!isBrewInstalled) {
-      vscode.window.showErrorMessage(
-        "Homebrew is required for Mac/Linux installation. Please install Homebrew and try again."
-      );
-      return true;
-    }
-
-    try {
-      console.log("Installing pipx via Homebrew...");
-      execSync("brew install pipx");
-      execSync("pipx ensurepath");
-    } catch (error) {
-      console.error("Failed to install pipx:", error);
-      vscode.window.showErrorMessage("Failed to install pipx. Please try again.");
-      return true;
-    }
+  if (IS_MAC) {
+    return await installAiderMac(core);
+  } else if (IS_LINUX) {
+    return await installAiderLinux(core);
+  } else if (IS_WINDOWS) {
+    return await installAiderWindows(core);
   }
 
-  // Step 3: Check Python installation
-  const isPythonInstalled = await checkPythonInstallation();
-  if (!isPythonInstalled) {
-    vscode.window.showErrorMessage(
-      "Python is required but not found. Please install Python 3 and try again."
-    );
-    return true;
-  }
-
-  console.log("Installing Aider...");
-
-  // Step 4: Install and configure pipx
-  try {
-    console.log("Installing and configuring pipx...");
-    execSync(`python3.9 -m pip install pipx`);
-    execSync(`python3.9 -m pipx ensurepath`);
-  } catch (error) {
-    console.error("Failed to install/configure pipx:", error);
-    vscode.window.showErrorMessage("Failed to install pipx. Please try again.");
-    return true;
-  }
-
-  // Step 5: Install Aider via pipx
-  try {
-    console.log("Installing Aider via pipx...");
-    execSync(`python3.9 -m pipx install --python python3.9 aider-chat==${PEARAI_AIDER_VERSION}`);
-  } catch (error) {
-    console.error("Failed to install Aider via pipx:", error);
-    vscode.window.showErrorMessage("Failed to install Aider. Please try again.");
-    return true;
-  }
-
-  // Step 6: Verify installation
-  const verifyInstallation = await checkAiderInstallation();
-  if (!verifyInstallation) {
-    console.error("Aider installation verification failed");
-    vscode.window.showErrorMessage("Aider installation verification failed");
-    return true;
-  }
-
-  // Step 7: Installation successful
-  vscode.window.showInformationMessage(`Aider ${PEARAI_AIDER_VERSION} installation completed successfully.`);
-  core.invoke("llm/startAiderProcess", undefined);
-  return false;
+  vscode.window.showErrorMessage("Unsupported operating system");
+  return true;
 }
 
 export async function uninstallAider(core: Core) {
@@ -374,6 +319,163 @@ export async function checkBrewInstallation(): Promise<boolean> {
     console.warn(`Brew is not installed: ${error}`);
     return false;
   }
+}
+
+async function installBrewMac(): Promise<boolean> {
+  try {
+    console.log("Installing Homebrew...");
+    await executeCommand('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"');
+    return true;
+  } catch (error) {
+    console.error("Failed to install Homebrew:", error);
+    vscode.window.showErrorMessage("Failed to install Homebrew. Please install it manually.");
+    return false;
+  }
+}
+
+async function installAiderMac(core: Core): Promise<boolean> {
+  // Step 1: Check and install Homebrew
+  let isBrewInstalled = await checkBrewInstallation();
+  if (!isBrewInstalled) {
+    const brewInstalled = await installBrewMac();
+    if (!brewInstalled) return true;
+  }
+
+  // Step 2: Check and install Python 3.9
+  try {
+    console.log("Checking Python 3.9...");
+    await executeCommand("python3.9 --version");
+  } catch {
+    console.log("Installing Python 3.9...");
+    try {
+      await executeCommand("brew install python@3.9");
+      await executeCommand("brew link python@3.9");
+    } catch (error) {
+      console.error("Failed to install Python 3.9:", error);
+      vscode.window.showErrorMessage("Failed to install Python 3.9");
+      return true;
+    }
+  }
+
+  // Step 3: Install pipx using brew
+  try {
+    console.log("Installing pipx...");
+    await executeCommand("brew install pipx");
+    await executeCommand("pipx ensurepath");
+  } catch (error) {
+    console.error("Failed to install pipx:", error);
+    vscode.window.showErrorMessage("Failed to install pipx");
+    return true;
+  }
+
+  // Step 4: Install Aider via pipx
+  try {
+    console.log("Installing Aider...");
+    await executeCommand(`pipx install --python python3.9 aider-chat==${PEARAI_AIDER_VERSION}`);
+  } catch (error) {
+    console.error("Failed to install Aider:", error);
+    vscode.window.showErrorMessage("Failed to install Aider");
+    return true;
+  }
+
+  vscode.window.showInformationMessage(`Aider ${PEARAI_AIDER_VERSION} installation completed successfully.`);
+  core.invoke("llm/startAiderProcess", undefined);
+  return false;
+}
+
+async function installAiderLinux(core: Core): Promise<boolean> {
+  // Step 1: Check package manager
+  let packageManager: string;
+  try {
+    await executeCommand("which apt");
+    packageManager = "apt";
+  } catch {
+    try {
+      await executeCommand("which dnf");
+      packageManager = "dnf";
+    } catch {
+      vscode.window.showErrorMessage("Unsupported Linux distribution. Please install manually.");
+      return true;
+    }
+  }
+
+  // Step 2: Install Python 3.9
+  try {
+    console.log("Installing Python 3.9...");
+    if (packageManager === "apt") {
+      await executeCommand("sudo apt update");
+      await executeCommand("sudo apt install -y python3.9 python3.9-venv");
+    } else {
+      await executeCommand("sudo dnf install -y python39 python39-pip");
+    }
+  } catch (error) {
+    console.error("Failed to install Python 3.9:", error);
+    vscode.window.showErrorMessage("Failed to install Python 3.9");
+    return true;
+  }
+
+  // Step 3: Install pipx
+  try {
+    console.log("Installing pipx...");
+    await executeCommand("python3.9 -m pip install --user pipx");
+    await executeCommand("python3.9 -m pipx ensurepath");
+  } catch (error) {
+    console.error("Failed to install pipx:", error);
+    vscode.window.showErrorMessage("Failed to install pipx");
+    return true;
+  }
+
+  // Step 4: Install Aider
+  try {
+    console.log("Installing Aider...");
+    await executeCommand(`python3.9 -m pipx install --python python3.9 aider-chat==${PEARAI_AIDER_VERSION}`);
+  } catch (error) {
+    console.error("Failed to install Aider:", error);
+    vscode.window.showErrorMessage("Failed to install Aider");
+    return true;
+  }
+
+  vscode.window.showInformationMessage(`Aider ${PEARAI_AIDER_VERSION} installation completed successfully.`);
+  core.invoke("llm/startAiderProcess", undefined);
+  return false;
+}
+
+async function installAiderWindows(core: Core): Promise<boolean> {
+  // Step 1: Check Python 3.9
+  try {
+    console.log("Checking Python 3.9...");
+    await executeCommand("python3.9 --version");
+  } catch {
+    vscode.window.showErrorMessage(
+      "Python 3.9 is required. Please install it from python.org, ensure it's added to PATH, and try again."
+    );
+    return true;
+  }
+
+  // Step 2: Install pipx
+  try {
+    console.log("Installing pipx...");
+    await executeCommand("python3.9 -m pip install --user pipx");
+    await executeCommand("python3.9 -m pipx ensurepath");
+  } catch (error) {
+    console.error("Failed to install pipx:", error);
+    vscode.window.showErrorMessage("Failed to install pipx");
+    return true;
+  }
+
+  // Step 3: Install Aider
+  try {
+    console.log("Installing Aider...");
+    await executeCommand(`python3.9 -m pipx install --python python3.9 aider-chat==${PEARAI_AIDER_VERSION}`);
+  } catch (error) {
+    console.error("Failed to install Aider:", error);
+    vscode.window.showErrorMessage("Failed to install Aider");
+    return true;
+  }
+
+  vscode.window.showInformationMessage(`Aider ${PEARAI_AIDER_VERSION} installation completed successfully.`);
+  core.invoke("llm/startAiderProcess", undefined);
+  return false;
 }
 
 export async function executeCommand(command: string): Promise<string> {
