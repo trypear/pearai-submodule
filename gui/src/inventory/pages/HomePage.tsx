@@ -1,8 +1,9 @@
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { getMetaKeyLabel } from "@/util";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 
 interface KbdProps {
   children: React.ReactNode;
@@ -18,6 +19,26 @@ export function Kbd({ children }: KbdProps) {
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : menuItems.length - 1));
+          break;
+        case 'ArrowRight':
+          setSelectedIndex((prev) => (prev < menuItems.length - 1 ? prev + 1 : 0));
+          break;
+        case 'Enter':
+          navigate(menuItems[selectedIndex].path);
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIndex, navigate]);
 
   const closeOverlay = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.currentTarget === e.target) {
@@ -73,12 +94,13 @@ export default function HomePage() {
     >
       <div className="flex-1 flex items-center justify-center" onClick={(e) => closeOverlay(e)}>
         <div className="grid grid-cols-4 gap-2">
-          {menuItems.map((item) => (
+          {menuItems.map((item, index) => (
             <div
               key={item.label}
-              className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-2
+              className={`text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-2
                 rounded-lg transition-all duration-200 
-                transform hover:scale-105"
+                transform hover:scale-105 relative
+                ${index === selectedIndex ? 'ring-2 ring-primary' : ''}`}
               onClick={() => navigate(item.path)}
             >
               <div>{item.shortcut}</div>
@@ -94,6 +116,9 @@ export default function HomePage() {
                   <div className="font-bold text-sm">{item.label}</div>
                   <p className="mt-1 text-xs">{item.description}</p>
                 </div>
+              </div>
+              <div className={` absolute -bottom-6 ${index === selectedIndex ? 'visible' : 'invisible'}`}>
+                <ChevronUpIcon className="text-primary w-6 h-6" />
               </div>
             </div>
           ))}
