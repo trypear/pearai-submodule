@@ -131,71 +131,93 @@ export async function aiderResetSession(core: Core) {
 
 
 export async function installAider(core: Core) {
-  const isPythonInstalled = await checkPythonInstallation();
-  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  // Step 1: Check if Aider is already installed
   const isAiderInstalled = await checkAiderInstallation();
-
   if (isAiderInstalled) {
     return false;
   }
 
-  if (!isAiderInstalled) {
-    if (!isBrewInstalled || !isPythonInstalled) {
-      vscode.window.showInformationMessage(
-        "Please follow manual installation steps to install Aider."
+  // Step 2: Check Python installation
+  const isPythonInstalled = await checkPythonInstallation();
+  if (!isPythonInstalled) {
+    vscode.window.showErrorMessage(
+      "Python is required but not found. Please install Python 3 and try again."
+    );
+    return true;
+  }
+
+  // Step 3: Check and install package managers based on platform
+  if (!IS_WINDOWS) {
+    // Check and install Homebrew first
+    const isBrewInstalled = await checkBrewInstallation();
+    if (!isBrewInstalled) {
+      vscode.window.showErrorMessage(
+        "Homebrew is required for Mac/Linux installation. Please install Homebrew and try again."
       );
-      return;
+      return true;
     }
 
-    vscode.window.showInformationMessage("Installing Aider...");
+    // Install pipx using brew
+    try {
+      console.log("Installing pipx via Homebrew...");
+      execSync("brew install pipx");
+      execSync("pipx ensurepath");
+    } catch (error) {
+      console.error("Failed to install pipx:", error);
+      vscode.window.showErrorMessage("Failed to install pipx. Please try again.");
+      return true;
+    }
+  }
 
-    let success = false;
-    
+  console.log("Installing Aider...");
+
+  try {
+    // Step 4: Install Aider based on platform
     if (IS_WINDOWS) {
-      const command = [
-        "python -m pip install pipx",
-        "pipx ensurepath",
-        `pipx install aider-chat==${PEARAI_AIDER_VERSION}`,
-        `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`
-      ].join(";");
-
-      try {
-        execSync(command);
-        success = true;
-      } catch (error) {
-        console.error("Failed to install Aider via pipx on Windows:", error);
-        return true;
-      }
+      await installAiderOnWindows();
     } else {
-      // For Mac/Linux, try pipx first
-      try {
-        const pipxCommand = [
-          "brew install pipx",
-          `pipx install aider-chat==${PEARAI_AIDER_VERSION}`,
-          `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`
-        ].join(";");
-        
-        execSync(pipxCommand);
-        success = true;
-      } catch (pipxError) {
-        console.log("Failed to install Aider via pipx, trying brew...");
-        
-        // If pipx fails, try installing directly with brew
-        try {
-          execSync("brew install aider");
-          success = true;
-        } catch (brewError) {
-          console.error("Failed to install Aider via brew:", brewError);
-          return true;
-        }
-      }
+      await installAiderOnUnix();
     }
 
-    if (success) {
+    // Step 5: Verify installation and start process
+    const verifyInstallation = await checkAiderInstallation();
+    if (verifyInstallation) {
+      vscode.window.showInformationMessage(`Aider ${PEARAI_AIDER_VERSION} installation completed successfully.`);
       core.invoke("llm/startAiderProcess", undefined);
       return false;
+    } else {
+      throw new Error("Aider installation verification failed");
     }
+  } catch (error) {
+    console.error("Failed to install Aider:", error);
+    vscode.window.showErrorMessage(`Failed to install Aider: ${error}`);
     return true;
+  }
+}
+
+async function installAiderOnWindows() {
+  const commands = [
+    "python -m pip install pipx",
+    "pipx ensurepath",
+    `pipx install aider-chat==${PEARAI_AIDER_VERSION}`
+  ];
+
+  for (const command of commands) {
+    try {
+      execSync(command);
+    } catch (error) {
+      throw new Error(`Failed to execute: ${command}\nError: ${error}`);
+    }
+  }
+}
+
+async function installAiderOnUnix() {
+  try {
+    execSync(`pipx install aider-chat==${PEARAI_AIDER_VERSION}`);
+    return;
+  } catch (error) {
+    console.error("Failed to install Aider via pipx:", error);
+    throw new Error("Failed to install Aider. Please try again.");
   }
 }
 
