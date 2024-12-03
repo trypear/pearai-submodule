@@ -304,7 +304,6 @@ function PerplexityGUI() {
                   <NewSessionButton
                     onClick={() => {
                       saveSession();
-                      ideMessenger.post("aiderResetSession", undefined);
                     }}
                     className="mr-auto"
                   >

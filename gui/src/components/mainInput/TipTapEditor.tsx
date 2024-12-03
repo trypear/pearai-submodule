@@ -750,6 +750,15 @@ const TipTapEditor = memo(function TipTapEditor({
     [editor, isMainInput],
   );
 
+  useEffect(
+    () => {
+      if (!isMainInput) {
+        return;
+      }
+      editor?.commands.focus("end");
+    }, [historyLength]
+  )
+
   useWebviewListener(
     "highlightedCode",
     async (data) => {
