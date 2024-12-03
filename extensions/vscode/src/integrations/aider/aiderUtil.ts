@@ -134,7 +134,7 @@ export async function installAider(core: Core) {
   // Check if Aider is already installed
   const isAiderInstalled = await checkAiderInstallation();
   if (isAiderInstalled) {
-    return false;
+    return true;
   }
 
   if (IS_MAC) {
@@ -146,7 +146,7 @@ export async function installAider(core: Core) {
   }
 
   vscode.window.showErrorMessage("Unsupported operating system");
-  return true;
+  return false;
 }
 
 export async function uninstallAider(core: Core) {
@@ -321,24 +321,12 @@ export async function checkBrewInstallation(): Promise<boolean> {
   }
 }
 
-async function installBrewMac(): Promise<boolean> {
-  try {
-    console.log("Installing Homebrew...");
-    await executeCommand('/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"');
-    return true;
-  } catch (error) {
-    console.error("Failed to install Homebrew:", error);
-    vscode.window.showErrorMessage("Failed to install Homebrew. Please install it manually.");
-    return false;
-  }
-}
-
 async function installAiderMac(core: Core): Promise<boolean> {
-  // Step 1: Check and install Homebrew
+  // Step 1: Check for Homebrew  
   let isBrewInstalled = await checkBrewInstallation();
   if (!isBrewInstalled) {
-    const brewInstalled = await installBrewMac();
-    if (!brewInstalled) return true;
+    vscode.window.showErrorMessage("Homebrew is required. Please install Homebrew manually and try again.");
+    return false;
   }
 
   // Step 2: Check and install Python 3.9
@@ -353,7 +341,7 @@ async function installAiderMac(core: Core): Promise<boolean> {
     } catch (error) {
       console.error("Failed to install Python 3.9:", error);
       vscode.window.showErrorMessage("Failed to install Python 3.9");
-      return true;
+      return false;
     }
   }
 
@@ -365,7 +353,7 @@ async function installAiderMac(core: Core): Promise<boolean> {
   } catch (error) {
     console.error("Failed to install pipx:", error);
     vscode.window.showErrorMessage("Failed to install pipx");
-    return true;
+    return false;
   }
 
   // Step 4: Install Aider via pipx
@@ -375,12 +363,12 @@ async function installAiderMac(core: Core): Promise<boolean> {
   } catch (error) {
     console.error("Failed to install Aider:", error);
     vscode.window.showErrorMessage("Failed to install Aider");
-    return true;
+    return false;
   }
 
   vscode.window.showInformationMessage(`Aider ${PEARAI_AIDER_VERSION} installation completed successfully.`);
   core.invoke("llm/startAiderProcess", undefined);
-  return false;
+  return true;
 }
 
 async function installAiderLinux(core: Core): Promise<boolean> {
@@ -395,7 +383,7 @@ async function installAiderLinux(core: Core): Promise<boolean> {
       packageManager = "dnf";
     } catch {
       vscode.window.showErrorMessage("Unsupported Linux distribution. Please install manually.");
-      return true;
+      return false;
     }
   }
 
@@ -411,7 +399,7 @@ async function installAiderLinux(core: Core): Promise<boolean> {
   } catch (error) {
     console.error("Failed to install Python 3.9:", error);
     vscode.window.showErrorMessage("Failed to install Python 3.9");
-    return true;
+    return false;
   }
 
   // Step 3: Install pipx
@@ -422,7 +410,7 @@ async function installAiderLinux(core: Core): Promise<boolean> {
   } catch (error) {
     console.error("Failed to install pipx:", error);
     vscode.window.showErrorMessage("Failed to install pipx");
-    return true;
+    return false;
   }
 
   // Step 4: Install Aider
@@ -432,12 +420,12 @@ async function installAiderLinux(core: Core): Promise<boolean> {
   } catch (error) {
     console.error("Failed to install Aider:", error);
     vscode.window.showErrorMessage("Failed to install Aider");
-    return true;
+    return false;
   }
 
   vscode.window.showInformationMessage(`Aider ${PEARAI_AIDER_VERSION} installation completed successfully.`);
   core.invoke("llm/startAiderProcess", undefined);
-  return false;
+  return true;
 }
 
 async function installAiderWindows(core: Core): Promise<boolean> {
@@ -449,7 +437,7 @@ async function installAiderWindows(core: Core): Promise<boolean> {
     vscode.window.showErrorMessage(
       "Python 3.9 is required. Please install it from python.org, ensure it's added to PATH, and try again."
     );
-    return true;
+    return false;
   }
 
   // Step 2: Install pipx
@@ -460,7 +448,7 @@ async function installAiderWindows(core: Core): Promise<boolean> {
   } catch (error) {
     console.error("Failed to install pipx:", error);
     vscode.window.showErrorMessage("Failed to install pipx");
-    return true;
+    return false;
   }
 
   // Step 3: Install Aider
@@ -470,12 +458,12 @@ async function installAiderWindows(core: Core): Promise<boolean> {
   } catch (error) {
     console.error("Failed to install Aider:", error);
     vscode.window.showErrorMessage("Failed to install Aider");
-    return true;
+    return false;
   }
 
   vscode.window.showInformationMessage(`Aider ${PEARAI_AIDER_VERSION} installation completed successfully.`);
   core.invoke("llm/startAiderProcess", undefined);
-  return false;
+  return true;
 }
 
 export async function executeCommand(command: string): Promise<string> {
