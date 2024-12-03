@@ -37,6 +37,7 @@ export async function startAiderProcess(core: Core) {
     await aiderModel.setAiderState({state: "notgitrepo"});
     // vscode.window.showErrorMessage('Please open a workspace folder to use PearAI Creator.');
     return;
+    
   }
 
   const isGitRepo = await isGitRepository(workspaceFolders[0].uri.fsPath);
@@ -130,38 +131,6 @@ export async function aiderResetSession(core: Core) {
 }
 
 
-export async function installAider(core: Core) {
-  // Check if Aider is already installed
-  const isAiderInstalled = await checkAiderInstallation();
-  if (isAiderInstalled) {
-    return true;
-  }
-
-  if (IS_MAC) {
-    return await installAiderMac(core);
-  } else if (IS_LINUX) {
-    return await installAiderLinux(core);
-  } else if (IS_WINDOWS) {
-    return await installAiderWindows(core);
-  }
-
-  vscode.window.showErrorMessage("Unsupported operating system");
-  return false;
-}
-
-export async function uninstallAider(core: Core) {
-  const isAiderInstalled = await checkAiderInstallation();
-  if (!isAiderInstalled) {
-    return;
-  }
-  vscode.window.showInformationMessage("Uninstalling Aider...");
-  if (IS_WINDOWS) {
-    execSync("python3.9 -m pipx uninstall aider-chat");
-  } else {
-    execSync("brew uninstall aider");
-  }
-}
-
 export async function openAiderPanel(
   core: Core,
   sidebar: ContinueGUIWebviewViewProvider,
@@ -226,6 +195,39 @@ export async function openAiderPanel(
     extensionContext.subscriptions,
   );
 }
+
+export async function installAider(core: Core) {
+  // Check if Aider is already installed
+  const isAiderInstalled = await checkAiderInstallation();
+  if (isAiderInstalled) {
+    return true;
+  }
+
+  if (IS_MAC) {
+    return await installAiderMac(core);
+  } else if (IS_LINUX) {
+    return await installAiderLinux(core);
+  } else if (IS_WINDOWS) {
+    return await installAiderWindows(core);
+  }
+
+  vscode.window.showErrorMessage("Unsupported operating system");
+  return false;
+}
+
+export async function uninstallAider(core: Core) {
+  const isAiderInstalled = await checkAiderInstallation();
+  if (!isAiderInstalled) {
+    return;
+  }
+  vscode.window.showInformationMessage("Uninstalling Aider...");
+  if (IS_WINDOWS) {
+    execSync("python3.9 -m pipx uninstall aider-chat");
+  } else {
+    execSync("pipx uninstall aider");
+  }
+}
+
 export function getUserShell(): string {
   if (IS_WINDOWS) {
     return process.env.COMSPEC || "cmd.exe";
@@ -297,7 +299,7 @@ export async function checkPythonInstallation(): Promise<boolean> {
 
 export async function checkAiderInstallation(): Promise<boolean> {
   const commands = [
-    "python3.9 -m aider --version",
+    "aider --version",
   ];
 
   for (const cmd of commands) {

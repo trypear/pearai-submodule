@@ -44,47 +44,36 @@ async function updateAiderVersion() {
     console.error("Error updating Aider version:", error);
   }
 }
-
 async function updateUsingPackageManager() {
-  const updateMethods = [
-    {
-      name: 'pipx reinstall',
-      command: async () => {
-        await execSync(`pipx uninstall aider-chat`);
-        await execSync(`pipx install aider-chat==${PEARAI_AIDER_VERSION}`);
-      }
-    },
-    {
-      name: 'pipx upgrade',
-      command: async () => await execSync(`pipx upgrade aider-chat`)
-    },
-    {
-      name: 'brew upgrade',
-      condition: () => IS_MAC || IS_LINUX,
-      command: async () => await execSync(`brew upgrade aider`)
-    }
-  ];
-
-  for (const method of updateMethods) {
-    if (method.condition && !method.condition()) {
-      continue;
-    }
-
+  try {
+    console.log('Attempting to update aider-chat using pipx with Python 3.9...');
+    
+    // First try a clean reinstall
     try {
-      await method.command();
-      console.log(`Successfully updated using ${method.name}`);
-      vscode.commands.executeCommand("pearai.aiderResetSession");
+      await execSync(`pipx uninstall aider-chat`);
+      await execSync(`pipx install --python python3.9 aider-chat==${PEARAI_AIDER_VERSION}`);
+      console.log('Successfully reinstalled aider-chat');
+      await vscode.commands.executeCommand("pearai.aiderResetSession");
       return;
     } catch (error) {
-      console.log(`${method.name} failed:`, error);
-      // Continue to next method
+      console.log('Reinstall failed, attempting upgrade...', error);
     }
+
+    // Fall back to upgrade if reinstall fails 
+    try {
+      await execSync(`pipx upgrade --python python3.9 aider-chat`);
+      console.log('Successfully upgraded aider-chat');
+      await vscode.commands.executeCommand("pearai.aiderResetSession");
+      return;
+    } catch (error) {
+      console.log('Upgrade failed:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Failed to update aider-chat:', error);
+    throw new Error('Failed to update aider-chat using pipx');
   }
-
-  throw new Error('All update methods failed');
 }
-
-
 function getAiderVersion(): string {
   try {
     const versionOutput = execSync('aider --version').toString().trim();
@@ -110,7 +99,7 @@ function compareVersions(v1: string, v2: string): number {
 
 export function buildAiderCommand(model: string, accessToken: string | undefined, apiKey: string | undefined): string[] {
   const aiderCommand = ["aider"];
-  updateAiderVersion()
+  // updateAiderVersion()
 
   let aiderFlags = [
     "--no-pretty",
