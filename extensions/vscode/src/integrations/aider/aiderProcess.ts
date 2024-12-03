@@ -99,7 +99,7 @@ function compareVersions(v1: string, v2: string): number {
 
 export function buildAiderCommand(model: string, accessToken: string | undefined, apiKey: string | undefined): string[] {
   const aiderCommand = ["aider"];
-  // updateAiderVersion()
+  updateAiderVersion()
 
   let aiderFlags = [
     "--no-pretty",

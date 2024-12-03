@@ -257,15 +257,10 @@ export function getUserPath(): string {
 }
 
 // Utility functions for installation and checks
-export async function checkPythonInstallation(): Promise<boolean> {
+export async function checkPython39Installation(): Promise<boolean> {
   try {
-    const pythonVersion = await executeCommand("python3 --version");
-    const version = pythonVersion.match(/Python (\d+\.\d+)/);
-    if (version && parseFloat(version[1]) >= 3.9) {
-      return true;
-    }
+    const pythonVersion = await executeCommand("python3.9 --version");
     
-    // If Python version is less than 3.9 or not found, try to install Python 3.9
     if (IS_MAC) {
       console.log("Installing Python 3.9 via Homebrew...");
       await executeCommand("brew install python@3.9");
@@ -332,21 +327,8 @@ async function installAiderMac(core: Core): Promise<boolean> {
   }
 
   // Step 2: Check and install Python 3.9
-  try {
-    console.log("Checking Python 3.9...");
-    await executeCommand("python3.9 --version");
-  } catch {
-    console.log("Installing Python 3.9...");
-    try {
-      await executeCommand("brew install python@3.9");
-      await executeCommand("brew link python@3.9");
-    } catch (error) {
-      console.error("Failed to install Python 3.9:", error);
-      vscode.window.showErrorMessage("Failed to install Python 3.9");
-      return false;
-    }
-  }
-
+  checkPython39Installation()
+  
   // Step 3: Install pipx using brew
   try {
     console.log("Installing pipx...");
@@ -390,19 +372,7 @@ async function installAiderLinux(core: Core): Promise<boolean> {
   }
 
   // Step 2: Install Python 3.9
-  try {
-    console.log("Installing Python 3.9...");
-    if (packageManager === "apt") {
-      await executeCommand("sudo apt update");
-      await executeCommand("sudo apt install -y python3.9 python3.9-venv");
-    } else {
-      await executeCommand("sudo dnf install -y python39 python39-pip");
-    }
-  } catch (error) {
-    console.error("Failed to install Python 3.9:", error);
-    vscode.window.showErrorMessage("Failed to install Python 3.9");
-    return false;
-  }
+  checkPython39Installation()
 
   // Step 3: Install pipx
   try {
@@ -432,15 +402,7 @@ async function installAiderLinux(core: Core): Promise<boolean> {
 
 async function installAiderWindows(core: Core): Promise<boolean> {
   // Step 1: Check Python 3.9
-  try {
-    console.log("Checking Python 3.9...");
-    await executeCommand("python3.9 --version");
-  } catch {
-    vscode.window.showErrorMessage(
-      "Python 3.9 is required. Please install it from python.org, ensure it's added to PATH, and try again."
-    );
-    return false;
-  }
+  checkPython39Installation()
 
   // Step 2: Install pipx
   try {
