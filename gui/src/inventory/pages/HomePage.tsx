@@ -20,32 +20,8 @@ export function Kbd({ children }: KbdProps) {
 export default function HomePage() {
   const navigate = useNavigate();
   const [selectedIndex, setSelectedIndex] = useState(0);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case 'ArrowLeft':
-          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : menuItems.length - 1));
-          break;
-        case 'ArrowRight':
-          setSelectedIndex((prev) => (prev < menuItems.length - 1 ? prev + 1 : 0));
-          break;
-        case 'Enter':
-          navigate(menuItems[selectedIndex].path);
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, navigate]);
-
-  const closeOverlay = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.currentTarget === e.target) {
-      ideMessenger.post("closeOverlay", undefined);
-    }
-  }
-
+  const [searchTerm, setSearchTerm] = useState('');
+ 
   const menuItems = [
     {
       icon: "inventory.svg",
@@ -77,6 +53,43 @@ export default function HomePage() {
     }
   ];
 
+  const filteredMenuItems = menuItems.filter(item => 
+    item.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    item.description.props.children.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowLeft':
+          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : filteredMenuItems.length - 1));
+          break;
+        case 'ArrowRight':
+          setSelectedIndex((prev) => (prev < filteredMenuItems.length - 1 ? prev + 1 : 0));
+          break;
+        case 'Enter':
+          if (filteredMenuItems.length > 0) {
+            navigate(filteredMenuItems[selectedIndex].path);
+          }
+          break;
+        default:
+          if (e.key.length === 1 || e.key === 'Backspace') {
+            setSearchTerm(prev => e.key === 'Backspace' ? prev.slice(0, -1) : prev + e.key);
+            setSelectedIndex(0);
+          }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIndex, navigate, searchTerm, filteredMenuItems]);
+
+  const closeOverlay = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.currentTarget === e.target) {
+      ideMessenger.post("closeOverlay", undefined);
+    }
+  }
+
   useEffect(() => {
     document.documentElement.style.setProperty('--overlay-border-radius', '15px');
     document.documentElement.style.setProperty('backdrop-filter', `blur(3px)`);
@@ -92,9 +105,22 @@ export default function HomePage() {
         closeOverlay(e);
       }}
     >
+      {searchTerm && (
+        <div className="absolute top-8 text-white/90 text-lg">
+          {filteredMenuItems.length > 0 ? 
+            `${searchTerm}` : 
+            `No matches found for "${searchTerm}"`
+          }
+        </div>
+      )}
       <div className="flex-1 flex items-center justify-center" onClick={(e) => closeOverlay(e)}>
-        <div className="grid grid-cols-4 gap-2">
-          {menuItems.map((item, index) => (
+        <div className={`grid gap-2 ${
+          filteredMenuItems.length === 4 ? 'grid-cols-4' : 
+          filteredMenuItems.length === 3 ? 'grid-cols-3' : 
+          filteredMenuItems.length === 2 ? 'grid-cols-2' : 
+          'grid-cols-1'
+        } auto-cols-max justify-center`}>
+          {(filteredMenuItems.length > 0 ? filteredMenuItems : []).map((item, index) => (
             <div
               key={item.label}
               className={`text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-2
