@@ -19,7 +19,7 @@ import {
   pruneRawPromptFromTop,
 } from "./../countTokens.js";
 import { PearAICredentials } from "../../pearaiServer/PearAICredentials.js";
-import { editConfigJson } from "../../util/paths.js";
+import { readConfigJson } from "../../util/paths.js";
 import { execSync } from "child_process";
 import * as vscode from "vscode";
 
@@ -58,16 +58,7 @@ class PearAIServer extends BaseLLM {
     // no-op
   }
 
-  private _getIntegrations(): any {
-    let integrations = {};
-    editConfigJson((config) => {
-      integrations = config.integrations || {};
-      return config;
-    });
-    return integrations;
-  }
-
-  public static _getRepoId(): string {
+  private _getRepoId(): string {
     try {
         const gitRepo = vscode.workspace.workspaceFolders?.[0];
         if (gitRepo) {
@@ -89,8 +80,8 @@ class PearAIServer extends BaseLLM {
   private _convertArgs(options: CompletionOptions): any {
     return {
       model: options.model,
-      integrations: this._getIntegrations(),
-      repoId: PearAIServer._getRepoId(),
+      integrations: readConfigJson().integrations || {},
+      repoId: this._getRepoId(),
       frequency_penalty: options.frequencyPenalty,
       presence_penalty: options.presencePenalty,
       max_tokens: options.maxTokens,
