@@ -5,7 +5,7 @@ import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
 import AiderGUI from "@/integrations/aider/aidergui";
 import Mem0GUI from "@/integrations/mem0/mem0gui";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState, ReactNode } from "react";
+import { useEffect, useState, ReactNode, KeyboardEvent } from "react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 
 const tabs = [
@@ -27,17 +27,17 @@ const tabs = [
     component: <PerplexityGUI />, 
     shortcut: <kbd className="ml-[1.5px]">3</kbd> 
   },
-  { 
-    id: "inventory", 
-    name: "Inventory Settings", 
-    component: <InventoryPage />, 
-    shortcut: <><kbd className="ml-[1.5px]">SHIFT</kbd><kbd className="ml-[1.5px]">1</kbd></> 
-  },
   {
     id: "mem0Mode",
     name: "Memory",
     component: <Mem0GUI />,
     shortcut: <kbd className="ml-[1.5px]">4</kbd> 
+  },
+  { 
+    id: "inventory", 
+    name: "Inventory Settings", 
+    component: <InventoryPage />, 
+    shortcut: <><kbd className="ml-[1.5px]">SHIFT</kbd><kbd className="ml-[1.5px]">1</kbd></> 
   }
 ];
 
@@ -66,6 +66,31 @@ export default function Inventory() {
   useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
   useWebviewListener("toggleOverlay", () => handleTabChange("inventory"), []);
   useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEventInit) => {
+      // Check if Ctrl/Cmd + Tab is pressed
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Tab') {
+        // e.preventDefault(); // Prevent default tab behavior
+        
+        // Find current tab index
+        const currentIndex = tabs.findIndex(tab => tab.id === activeTab);
+        // Calculate next tab index (cycle through tabs)
+        const nextIndex = (currentIndex + 1) % tabs.length;
+        if (nextIndex === 0) {
+          // If next tab is the first tab, homepage
+          handleTabChange(tabs[1].id);
+          return;
+        }
+        
+        // Set the next tab
+        handleTabChange(tabs[nextIndex].id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeTab]); // Add activeTab as dependency
 
   const handleTabChange = async (value: string) => {
     setActiveTab(value);
@@ -104,10 +129,10 @@ export default function Inventory() {
               <div className="flex gap-1">
                 <TabButton {...tabs[1]} />
                 <TabButton {...tabs[2]} />
-                <TabButton {...tabs[4]} />
+                <TabButton {...tabs[3]} />
               </div>
               <div className="flex">
-                <TabButton {...tabs[3]} />
+                <TabButton {...tabs[4]} />
               </div>
             </TabsList>
           </div>
