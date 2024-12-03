@@ -4,7 +4,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
-import { usePostHog } from "posthog-js/react";
+import { PostHog, usePostHog } from "posthog-js/react";
 import {
   Fragment,
   useCallback,
@@ -50,7 +50,7 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
-import { getLocalStorage, setLocalStorage } from "../util/localStorage";
+import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
 import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 

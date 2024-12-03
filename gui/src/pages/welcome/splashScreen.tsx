@@ -11,7 +11,7 @@ const SplashScreen = ({ onNext }: { onNext: () => void }) => {
             />
             <h1 className="text-3xl font-bold mb-2">Welcome to PearAI</h1>
             <p className="text-center text-lg mb-6">
-                Your AI-powered development assistant.
+                Your AI-Powered Code Editor.
             </p>
             <Button onClick={onNext} className="max-w-xs">
             Let's get started!

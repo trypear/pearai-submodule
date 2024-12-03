@@ -7,7 +7,9 @@ import Aider from "core/llm/llms/AiderLLM";
 import { execSync } from "child_process";
 import { isFirstPearAICreatorLaunch } from "../../copySettings";
 import { VsCodeWebviewProtocol } from "../../webviewProtocol";
+import * as os from "os";
 
+export const PEARAI_AIDER_VERSION = "0.65.0";
 
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
@@ -17,6 +19,7 @@ const IS_LINUX = PLATFORM === "linux";
 let aiderPanel: vscode.WebviewPanel | undefined;
 
 // Aider process management functions
+// startAiderProcess is in util because if it is in aiderProcess, it introduces circular dependencies between aiderProcess.ts and aiderLLM.ts
 export async function startAiderProcess(core: Core) {
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as
@@ -31,7 +34,7 @@ export async function startAiderProcess(core: Core) {
   // Check if current workspace is a git repo
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders || workspaceFolders.length === 0) {
-    await aiderModel.setAiderState("notgitrepo");
+    await aiderModel.setAiderState({state: "notgitrepo"});
     // vscode.window.showErrorMessage('Please open a workspace folder to use PearAI Creator.');
     return;
   }
@@ -39,16 +42,17 @@ export async function startAiderProcess(core: Core) {
   const isGitRepo = await isGitRepository(workspaceFolders[0].uri.fsPath);
   if (!isGitRepo) {
     console.dir("setting state to notgitrepo");
-    await aiderModel.setAiderState("notgitrepo");
+    await aiderModel.setAiderState({state: "notgitrepo"});
     return;
   }
 
   const isAiderInstalled = await checkAiderInstallation();
 
   if (!isAiderInstalled) {
-    await aiderModel.setAiderState("uninstalled");
+    await aiderModel.setAiderState({state: "uninstalled"});
     return;
   }
+  
 
   try {
     await aiderModel.startAiderChat(aiderModel.model, aiderModel.apiKey);
@@ -57,7 +61,7 @@ export async function startAiderProcess(core: Core) {
   }
 }
 
-export async function refreshAiderProcessState(core: Core, webviewProtocol: VsCodeWebviewProtocol) {
+export async function sendAiderProcessStateToGUI(core: Core, webviewProtocol: VsCodeWebviewProtocol) {
   const config = await core.configHandler.loadConfig();
   const aiderModel = config.models.find((model) => model instanceof Aider) as
     | Aider
@@ -68,8 +72,9 @@ export async function refreshAiderProcessState(core: Core, webviewProtocol: VsCo
     webviewProtocol?.request("setAiderProcessStateInGUI", { state: "stopped" }, [PEAR_OVERLAY_VIEW_ID]);
     return;
   }
-
-  webviewProtocol?.request("setAiderProcessStateInGUI", { state: aiderModel.getAiderState() }, [PEAR_OVERLAY_VIEW_ID]);
+  console.dir("Sending state to Aider GUI:");
+  console.dir(aiderModel.getAiderState())
+  webviewProtocol?.request("setAiderProcessStateInGUI", aiderModel.getAiderState(), [PEAR_OVERLAY_VIEW_ID]);
 }
 
 export async function killAiderProcess(core: Core) {
@@ -98,7 +103,7 @@ export async function aiderCtrlC(core: Core) {
   try {
     if (aiderModels.length > 0) {
       aiderModels.forEach((model) => {
-        if (model.aiderProcess) {
+        if (Aider.aiderProcess) {
           model.aiderCtrlC();
         }
       });
@@ -111,20 +116,99 @@ export async function aiderCtrlC(core: Core) {
 
 export async function aiderResetSession(core: Core) {
   const config = await core.configHandler.loadConfig();
-  const aiderModels = config.models.filter(
-    (model) => model instanceof Aider,
-  ) as Aider[];
+  const aiderModel = config.models.find(
+    (model) => model instanceof Aider
+  ) as Aider | undefined;
 
   try {
-    if (aiderModels.length > 0) {
-      aiderModels.forEach((model) => {
-        if (model.aiderProcess) {
-          model.aiderResetSession(model.model, model.apiKey);
-        }
-      });
+    if (aiderModel && Aider.aiderProcess) {
+      aiderModel.aiderResetSession(aiderModel.model, aiderModel.apiKey);
     }
   } catch (e) {
     console.warn(`Error resetting Aider session: ${e}`);
+  }
+}
+
+
+export async function installAider(core: Core) {
+  const isPythonInstalled = await checkPythonInstallation();
+  const isBrewInstalled = IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
+  const isAiderInstalled = await checkAiderInstallation();
+
+  if (isAiderInstalled) {
+    return false;
+  }
+
+  if (!isAiderInstalled) {
+    if (!isBrewInstalled || !isPythonInstalled) {
+      vscode.window.showInformationMessage(
+        "Please follow manual installation steps to install Aider."
+      );
+      return;
+    }
+
+    vscode.window.showInformationMessage("Installing Aider...");
+
+    let success = false;
+    
+    if (IS_WINDOWS) {
+      const command = [
+        "python -m pip install pipx",
+        "pipx ensurepath",
+        `pipx install aider-chat==${PEARAI_AIDER_VERSION}`,
+        `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`
+      ].join(";");
+
+      try {
+        execSync(command);
+        success = true;
+      } catch (error) {
+        console.error("Failed to install Aider via pipx on Windows:", error);
+        return true;
+      }
+    } else {
+      // For Mac/Linux, try pipx first
+      try {
+        const pipxCommand = [
+          "brew install pipx",
+          `pipx install aider-chat==${PEARAI_AIDER_VERSION}`,
+          `echo "\nAider ${PEARAI_AIDER_VERSION} installation complete."`
+        ].join(";");
+        
+        execSync(pipxCommand);
+        success = true;
+      } catch (pipxError) {
+        console.log("Failed to install Aider via pipx, trying brew...");
+        
+        // If pipx fails, try installing directly with brew
+        try {
+          execSync("brew install aider");
+          success = true;
+        } catch (brewError) {
+          console.error("Failed to install Aider via brew:", brewError);
+          return true;
+        }
+      }
+    }
+
+    if (success) {
+      core.invoke("llm/startAiderProcess", undefined);
+      return false;
+    }
+    return true;
+  }
+}
+
+export async function uninstallAider(core: Core) {
+  const isAiderInstalled = await checkAiderInstallation();
+  if (!isAiderInstalled) {
+    return;
+  }
+  vscode.window.showInformationMessage("Uninstalling Aider...");
+  if (IS_WINDOWS) {
+    execSync("python -m pip uninstall -y aider-chat");
+  } else {
+    execSync("brew uninstall aider");
   }
 }
 
@@ -192,8 +276,36 @@ export async function openAiderPanel(
     extensionContext.subscriptions,
   );
 }
+export function getUserShell(): string {
+  if (IS_WINDOWS) {
+    return process.env.COMSPEC || "cmd.exe";
+  }
+  return process.env.SHELL || "/bin/sh";
+}
 
-async function checkPythonInstallation(): Promise<boolean> {
+export function getUserPath(): string {
+  try {
+    let pathCommand: string;
+    const shell = getUserShell();
+
+    if (os.platform() === "win32") {
+      // For Windows, we'll use a PowerShell command
+      pathCommand =
+        "powershell -Command \"[Environment]::GetEnvironmentVariable('Path', 'User') + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine')\"";
+    } else {
+      // For Unix-like systems (macOS, Linux)
+      pathCommand = `${shell} -ilc 'echo $PATH'`;
+    }
+
+    return execSync(pathCommand, { encoding: "utf8" }).trim();
+  } catch (error) {
+    console.error("Error getting user PATH:", error);
+    return process.env.PATH || "";
+  }
+}
+
+// Utility functions for installation and checks
+export async function checkPythonInstallation(): Promise<boolean> {
   const commands = ["python3 --version", "python --version"];
 
   for (const command of commands) {
@@ -227,7 +339,7 @@ export async function checkAiderInstallation(): Promise<boolean> {
   return false;
 }
 
-async function checkBrewInstallation(): Promise<boolean> {
+export async function checkBrewInstallation(): Promise<boolean> {
   try {
     await executeCommand("brew --version");
     return true;
@@ -237,66 +349,43 @@ async function checkBrewInstallation(): Promise<boolean> {
   }
 }
 
-// Return whether or not automatic install worked or not
-export async function installAider(core: Core) {
-  const isPythonInstalled = await checkPythonInstallation();
-  console.log("PYTHON CHECK RESULT :");
-  console.dir(isPythonInstalled);
-  const isBrewInstalled =
-    IS_MAC || IS_LINUX ? await checkBrewInstallation() : true;
-  console.log("BREW CHECK RESULT :");
-  console.dir(isBrewInstalled);
-  const isAiderInstalled = await checkAiderInstallation();
-  console.log("AIDER CHECK RESULT :");
-  console.dir(isAiderInstalled);
-  if (isAiderInstalled) {
-    return false;
-  }
+export async function executeCommand(command: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    cp.exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(stderr || error);
+      } else {
+        resolve(stdout);
+      }
+    });
+  });
+}
 
-  if (!isAiderInstalled) {
-    // if brew or python is not installed, then user must install manually
-    if (!isBrewInstalled || !isPythonInstalled) {
-      vscode.window.showInformationMessage(
-        "Plese follow manual installation steps to install Aider.",
-      );
-      return;
-    }
-
-    vscode.window.showInformationMessage("Installing Aider...");
-
-    let command = "";
-    if (IS_WINDOWS) {
-      command += "python -m pip install -U aider-chat;";
-      command += 'echo "`nAider installation complete."';
-    } else {
-      command += "brew install aider;";
-      command += "echo '\nAider installation complete.'";
-    }
-
-    try {
-      execSync(command);
-      // If execution was successful, start the Aider process
-      core.invoke("llm/startAiderProcess", undefined);
-      return false;
-    } catch (error) {
-      // Handle the error case
-      console.error("Failed to execute Aider command:", error);
+export async function checkGitRepository(currentDirectory?: string): Promise<boolean> {
+  try {
+      const currentDir = currentDirectory || process.cwd();
+      // Use a more robust git check method
+      execSync('git rev-parse --is-inside-work-tree', { cwd: currentDir });
       return true;
-    }
+  } catch {
+      return false;
   }
 }
 
-export async function uninstallAider(core: Core) {
-  const isAiderInstalled = await checkAiderInstallation();
-  if (!isAiderInstalled) {
-    return;
+export function checkCredentials(model: string, credentials: { getAccessToken: () => string | undefined }): boolean {
+  // Implement credential check logic
+  if (!model.includes("claude") && !model.includes("gpt")) {
+      const accessToken = credentials.getAccessToken();
+      return !!accessToken;
   }
-  vscode.window.showInformationMessage("Uninstalling Aider...");
-  if (IS_WINDOWS) {
-    execSync("python -m pip uninstall -y aider-chat");
-  } else {
-    execSync("brew uninstall aider");
+  return true;
+}
+
+export async function getCurrentWorkingDirectory(getCurrentDirectory?: () => Promise<string>): Promise<string> {
+  if (getCurrentDirectory) {
+      return await getCurrentDirectory();
   }
+  return process.cwd();
 }
 
 // check if directory is a git repo
@@ -313,107 +402,3 @@ async function isGitRepository(directory: string): Promise<boolean> {
     return false;
   }
 }
-
-async function executeCommand(command: string): Promise<string> {
-  return new Promise((resolve, reject) => {
-    cp.exec(command, (error, stdout, stderr) => {
-      if (error) {
-        reject(stderr || error);
-      } else {
-        resolve(stdout);
-      }
-    });
-  });
-}
-
-// Commented out as the user must do this themselves
-
-// function getPythonInstallCommand(): string {
-//   switch (PLATFORM) {
-//     case "win32":
-//       return "winget install Python.Python.3.9";
-//     case "darwin":
-//       return "brew install python@3";
-//     default: // Linux
-//       return "sudo apt-get install -y python3";
-//   }
-// }
-// async function isPythonInPath(): Promise<boolean> {
-//   try {
-//     return checkPythonInstallation();
-//   } catch (error) {
-//     console.warn(`Error checking Python in PATH: ${error}`);
-//     return false;
-//   }
-// }
-
-// async function setupPythonEnvironmentVariables(): Promise<void> {
-//   const pythonAlreadyInPath = await isPythonInPath();
-//   if (pythonAlreadyInPath) {
-//     console.log("Python is already in PATH, skipping environment setup");
-//     return;
-//   }
-
-//   vscode.window.showInformationMessage(
-//     "Adding Python to PATH. Please restart PearAI after Python is added to PATH successfully.",
-//   );
-//   const terminal = vscode.window.createTerminal("Python PATH Setup");
-//   terminal.show();
-
-//   switch (PLATFORM) {
-//     case "win32":
-//       terminal.sendText(`
-// # PowerShell Script to Add Specific Python Paths to User PATH Variable at the Top
-
-// # Get the current username
-// $username = [System.Environment]::UserName
-
-// # Define Python paths with the current username
-// $pythonPath = "C:\\Users\\$username\\AppData\\Local\\Programs\\Python\\Python39"
-// $pythonScriptsPath = "C:\\Users\\$username\\AppData\\Local\\Programs\\Python\\Python39\\Scripts"
-
-// # Retrieve the current user PATH
-// $currentUserPath = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User)
-
-// # Add the new paths at the top if they're not already present
-// if ($currentUserPath -notlike "*$pythonPath*") {
-//     # Prepend the Python paths to the existing user PATH
-//     $newUserPath = "$pythonPath;$pythonScriptsPath;$currentUserPath"
-//     [System.Environment]::SetEnvironmentVariable("Path", $newUserPath, [System.EnvironmentVariableTarget]::User)
-//     Write-Output "Python paths have been added to user PATH."
-// } else {
-//     Write-Output "Python paths are already in the user PATH. "
-//     Write-Output "Try Running PearAI Creator (Aider) Again."
-// }
-//         `);
-//       break;
-
-//     case "darwin":
-//       terminal.sendText(`
-//           PYTHON_PATH=$(which python3)
-//           if [ -n "$PYTHON_PATH" ]; then
-//             PYTHON_DIR=$(dirname "$PYTHON_PATH")
-//             if ! grep -q "export PATH=.*$PYTHON_DIR" ~/.zshrc; then
-//               echo "\\nexport PATH=\\"$PYTHON_DIR:\$PATH\\"" >> ~/.zshrc
-//               echo "Python path added to .zshrc"
-//               source ~/.zshrc
-//             fi
-//           fi
-//         `);
-//       break;
-
-//     case "linux":
-//       terminal.sendText(`
-//           PYTHON_PATH=$(which python3)
-//           if [ -n "$PYTHON_PATH" ]; then
-//             PYTHON_DIR=$(dirname "$PYTHON_PATH")
-//             if ! grep -q "export PATH=.*$PYTHON_DIR" ~/.bashrc; then
-//               echo "\\nexport PATH=\\"$PYTHON_DIR:\$PATH\\"" >> ~/.bashrc
-//               echo "Python path added to .bashrc"
-//               source ~/.bashrc
-//             fi
-//           fi
-//         `);
-//       break;
-//   }
-// }

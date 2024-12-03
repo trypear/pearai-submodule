@@ -1,5 +1,5 @@
 import { AiderState } from "../../extensions/vscode/src/integrations/aider/types/aiderTypes.js";
-import { ToolType } from "../../extensions/vscode/src/util/integrationUtils.js";
+import { ToolType, Memory, MemoryChange } from "../../extensions/vscode/src/util/integrationUtils.js";
 import type { RangeInFileWithContents } from "../commands/util.js";
 import type { ContextSubmenuItem } from "../index.js";
 import { ToIdeFromWebviewOrCoreProtocol } from "./ide.js";
@@ -29,8 +29,8 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   addPerplexityContextinChat: [{ text: string, language: string }, void];
   aiderMode: [undefined, void];
   aiderCtrlC: [undefined, void];
+  sendAiderProcessStateToGUI: [undefined, void];
   aiderResetSession: [undefined, void];
-  refreshAiderProcessState: [undefined, void];
   toggleDevTools: [undefined, void];
   reloadWindow: [undefined, void];
   focusEditor: [undefined, void];
@@ -55,9 +55,11 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   isSupermavenInstalled: [undefined, boolean];
   uninstallVscodeExtension: [{ extensionId: string }, void];
   completeWelcome: [undefined, void];
-  openInventory: [undefined, void];
+  openInventoryHome: [undefined, void];
   getUrlTitle: [string, string];
   pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
+  "mem0/getMemories": [undefined, Memory[]];
+  "mem0/updateMemories": [{ changes: MemoryChange[] }, boolean];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
@@ -101,7 +103,8 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   addPerplexityContextinChat: [{ text: string, language: string }, void];
   navigateToCreator: [undefined, void];
   navigateToSearch: [undefined, void];
-  navigateToInventory: [undefined, void];
+  navigateToMem0: [undefined, void];
+  toggleOverlay: [undefined, void];
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
   setAiderProcessStateInGUI: [AiderState, void];

@@ -220,6 +220,13 @@ function PerplexityGUI() {
     [state.perplexityHistory],
   );
 
+  const [historyKey, setHistoryKey] = useState(0);
+
+  // force re-render continueInputBox when history changes
+  useEffect(() => {
+    setHistoryKey(prev => prev + 1);
+  }, [state.perplexityHistory]);
+
   return (
     <>
     <div className="relative flex h-screen overflow-hidden">
@@ -328,6 +335,7 @@ function PerplexityGUI() {
                 >
                   {item.message.role === "user" ? (
                     <ContinueInputBox
+                      key={historyKey}
                       onEnter={async (editorState, modifiers) => {
                         streamResponse(
                           editorState,

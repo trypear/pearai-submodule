@@ -5,10 +5,10 @@ import * as vscode from "vscode";
 import { VsCodeExtension } from "../extension/VsCodeExtension";
 import registerQuickFixProvider from "../lang-server/codeActions";
 import { getExtensionVersion } from "../util/util";
-import { getExtensionUri } from "../util/vscode";
 import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
 import { isFirstLaunch } from "../copySettings";
+
 
 export async function isVSCodeExtensionInstalled(extensionId: string): Promise<boolean> {
   return vscode.extensions.getExtension(extensionId) !== undefined;
@@ -49,7 +49,6 @@ export async function attemptUninstallExtension(extensionId: string): Promise<vo
       console.error(error);
   }
 }
-
 
 export async function activateExtension(context: vscode.ExtensionContext) {
   // Add necessary files
