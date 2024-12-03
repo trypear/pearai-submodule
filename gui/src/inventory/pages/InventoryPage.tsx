@@ -434,14 +434,15 @@ export default function AIToolInventory() {
   };
 
   const handleOpen = (tool: AITool) => {
-    console.dir("handleOpen");
-    console.dir(tool);
     switch (tool.id) {
       case AIToolID.CREATOR:
         navigate("/inventory/aiderMode");
         break;
       case AIToolID.SEARCH:
         navigate("/inventory/perplexityMode");
+        break;
+      case AIToolID.MEMORY:
+        navigate("/inventory/mem0Mode");
         break;
       case AIToolID.AUTOCOMPLETE:
         ideMessenger.post("invokeVSCodeCommandById", {

@@ -3,7 +3,7 @@
   "name": "pearai",
   "publisher": "pearai",
   "icon": "media/icon.png",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/trypear/pearai-submodule"
@@ -168,6 +168,12 @@
         "command": "pearai.toggleSearch",
         "category": "PearAI",
         "title": "Toggle PearAI Search",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.toggleMem0",
+        "category": "PearAI",
+        "title": "Toggle PearAI Memory",
         "group": "PearAI"
       },
       {
@@ -374,6 +380,11 @@
         "command": "pearai.toggleSearch",
         "mac": "cmd+3",
         "key": "ctrl+3"
+      },
+      {
+        "command": "pearai.toggleMem0",
+        "mac": "cmd+4",
+        "key": "ctrl+4"
       },
       {
         "command": "pearai.focusContinueInput",
