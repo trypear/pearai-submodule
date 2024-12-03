@@ -67,14 +67,26 @@ export default function HomePage() {
         case 'ArrowRight':
           setSelectedIndex((prev) => (prev < filteredMenuItems.length - 1 ? prev + 1 : 0));
           break;
+        case ' ':
+          if (e.shiftKey) {
+            setSelectedIndex((prev) => (prev > 0 ? prev - 1 : filteredMenuItems.length - 1));
+          } else {
+            setSelectedIndex((prev) => (prev < filteredMenuItems.length - 1 ? prev + 1 : 0));
+          }
+          break;
         case 'Enter':
           if (filteredMenuItems.length > 0) {
             navigate(filteredMenuItems[selectedIndex].path);
+          } else {
+            setSearchTerm('');
+            setSelectedIndex(0);
           }
           break;
         default:
           if (e.key.length === 1 || e.key === 'Backspace') {
-            setSearchTerm(prev => e.key === 'Backspace' ? prev.slice(0, -1) : prev + e.key);
+            if (!e.ctrlKey && !e.altKey) {
+              setSearchTerm(prev => e.key === 'Backspace' ? prev.slice(0, -1) : prev + e.key);
+            }
             setSelectedIndex(0);
           }
       }
@@ -91,6 +103,7 @@ export default function HomePage() {
   }
 
   useEffect(() => {
+    // Set overlay styles
     document.documentElement.style.setProperty('--overlay-border-radius', '15px');
     document.documentElement.style.setProperty('backdrop-filter', `blur(3px)`);
     document.documentElement.style.setProperty('background-color', "rgba(0, 0, 0, 0.35)");
@@ -109,7 +122,11 @@ export default function HomePage() {
         <div className="absolute top-8 text-white/90 text-lg">
           {filteredMenuItems.length > 0 ? 
             `${searchTerm}` : 
-            `No matches found for "${searchTerm}"`
+            <div className="text-center">
+              <span className="text-lg font-semibold">No matches found - "{searchTerm}"</span>
+              <br />
+              <span className="text-sm">Press 'Enter' to clear search.</span>
+            </div>
           }
         </div>
       )}
