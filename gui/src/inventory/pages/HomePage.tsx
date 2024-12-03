@@ -84,7 +84,7 @@ export default function HomePage() {
           break;
         default:
           if (e.key.length === 1 || e.key === 'Backspace') {
-            if (!e.ctrlKey && !e.altKey) {
+            if (!e.metaKey && !e.altKey) {
               setSearchTerm(prev => e.key === 'Backspace' ? prev.slice(0, -1) : prev + e.key);
             }
             setSelectedIndex(0);
