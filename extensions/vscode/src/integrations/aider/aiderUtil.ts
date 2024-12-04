@@ -16,6 +16,8 @@ const IS_WINDOWS = PLATFORM === "win32";
 const IS_MAC = PLATFORM === "darwin";
 const IS_LINUX = PLATFORM === "linux";
 
+const pythonCommand = IS_WINDOWS ? "py -3.9" : "python3.9";
+
 let aiderPanel: vscode.WebviewPanel | undefined;
 
 // Aider process management functions
@@ -266,7 +268,10 @@ export function getUserPath(): string {
 // Utility functions for installation and checks
 export async function checkPython39Installation(): Promise<boolean> {
   try {
-    const pythonVersion = await executeCommand("python3.9 --version");
+    const pythonVersion = await executeCommand(`${pythonCommand} --version`);
+    if (pythonVersion.includes("Python 3.9")) {
+      return true;
+    }
     
     if (IS_MAC) {
       console.log("Installing Python 3.9 via Homebrew...");
@@ -420,8 +425,8 @@ async function installAiderWindows(core: Core): Promise<boolean> {
   // Step 2: Install pipx
   try {
     console.log("Installing pipx...");
-    await executeCommand("python3.9 -m pip install --user pipx");
-    await executeCommand("python3.9 -m pipx ensurepath");
+    await executeCommand(`${pythonCommand} -m pip install --user pipx`);
+    await executeCommand(`${pythonCommand} -m pipx ensurepath`);
   } catch (error) {
     console.error("Failed to install pipx:", error);
     vscode.window.showErrorMessage("Failed to install pipx");
@@ -431,7 +436,7 @@ async function installAiderWindows(core: Core): Promise<boolean> {
   // Step 3: Install Aider
   try {
     console.log("Installing Aider...");
-    await executeCommand(`python3.9 -m pipx install --python python3.9 aider-chat==${PEARAI_AIDER_VERSION}`);
+    await executeCommand(`${pythonCommand} -m pipx install --python python3.9 aider-chat==${PEARAI_AIDER_VERSION}`);
   } catch (error) {
     console.error("Failed to install Aider:", error);
     vscode.window.showErrorMessage("Failed to install Aider");
