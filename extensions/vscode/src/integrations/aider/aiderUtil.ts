@@ -332,7 +332,7 @@ async function installAiderMac(core: Core): Promise<boolean> {
   }
 
   // Step 2: Check and install Python 3.9
-  checkPython39Installation()
+  await checkPython39Installation();
   
   // Step 3: Check for pipx and install if needed
   try {
