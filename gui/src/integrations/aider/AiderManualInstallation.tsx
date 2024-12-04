@@ -47,9 +47,9 @@ const AiderManualInstallation: React.FC = () => {
 
 const WindowsManualInstallation: React.FC = () => {
   const pythonCmd = "winget install Python.Python.3.9";
-  const pipxInstallCmd = "python -m pip install pipx";
-  const pipxEnsureCmd = "pipx ensurepath";
-  const aiderCmd = "pipx install aider-chat";
+  const pipxInstallCmd = "python3.9 -m pip install --user pipx";
+  const pipxEnsureCmd = "python3.9 -m pipx ensurepath";
+  const aiderCmd = "python3.9 -m pipx install --python python3.9 aider-chat==0.65.0";
 
   return (
     <div className="px-4 py-1 bg-statusbar-background rounded-lg shadow-md">
@@ -59,15 +59,8 @@ const WindowsManualInstallation: React.FC = () => {
           <strong>Open a Command Prompt or PowerShell window</strong>
         </li>
         <li className="mb-2">
-          <strong>Install Python (if not already installed) - </strong> Run:
-          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
-            <div className="flex justify-between items-center flex-wrap">
-              <span className="font-mono">{pythonCmd}</span>
-              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
-                onClick={() => navigator.clipboard.writeText(pythonCmd)}
-              >copy</span>
-            </div>
-          </pre>
+          <strong>Install Python 3.9 - </strong>
+          Please download and install Python 3.9 from <a href="https://www.python.org/downloads/" target="_blank" className="text-blue-500 hover:underline">python.org</a>
         </li>
         <li>
           <strong>Install pipx (if not already installed)</strong>

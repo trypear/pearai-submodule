@@ -271,6 +271,13 @@ useEffect(() => {
     if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
       return <AiderManualInstallation />;
     }
+    if (aiderProcessState.state === "installing") {
+      msg = (
+        <>
+          Installing PearAI Creator dependencies (aider), this may take a few minutes...
+        </>
+      );
+    }
     if (aiderProcessState.state === "starting" || aiderProcessState.state === "restarting") {
       msg = (
         <>
