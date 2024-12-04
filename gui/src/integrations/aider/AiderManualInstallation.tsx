@@ -112,10 +112,6 @@ const WindowsManualInstallation: React.FC = () => {
 
 const MacManualInstallation: React.FC = () => {
   const homebrewCmd = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
-  const pythonCmd = "brew install python@3";
-  const pipxInstallCmd = "brew install pipx";
-  const pipxEnsureCmd = "sudo pipx ensurepath --global";
-  const aiderCmd = "pipx install aider-chat";
 
   return (
     <div className="px-4 py-1 bg-statusbar-background rounded-lg shadow-md flex-wrap text-wrap">
@@ -135,52 +131,8 @@ const MacManualInstallation: React.FC = () => {
             </div>
           </pre>
         </li>
-        <li className="mb-2">
-          <strong>Install Python (if not already installed) - </strong> Run:
-          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
-            <div className="flex justify-between items-center flex-wrap">
-              <span className="font-mono text-wrap">{pythonCmd}</span>
-              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
-                onClick={() => navigator.clipboard.writeText(pythonCmd)}
-              >copy</span>
-            </div>
-          </pre>
-        </li>
-        <li className="mb-2">
-          <strong>Install pipx (if not already installed)</strong>
-          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
-            <div className="flex justify-between items-center flex-wrap">
-              <span className="font-mono text-wrap">{pipxInstallCmd}</span>
-              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
-                onClick={() => navigator.clipboard.writeText(pipxInstallCmd)}
-              >copy</span>
-            </div>
-          </pre>
-        </li>
-        <li className="mb-2">
-          <strong>Ensure pipx is in your PATH</strong>
-          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
-            <div className="flex justify-between items-center flex-wrap">
-              <span className="font-mono text-wrap">{pipxEnsureCmd}</span>
-              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
-                onClick={() => navigator.clipboard.writeText(pipxEnsureCmd)}
-              >copy</span>
-            </div>
-          </pre>
-        </li>
-        <li className="mb-2">
-          <strong>Install aider - </strong> Please run:
-          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
-            <div className="flex justify-between items-center flex-wrap">
-              <span className="font-mono text-wrap">{aiderCmd}</span>
-              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
-                onClick={() => navigator.clipboard.writeText(aiderCmd)}
-              >copy</span>
-            </div>
-          </pre>
-        </li>
         <li className="mt-4">
-          <strong>Finally, please restart PearAI</strong>
+          <strong>After installing Homebrew, please restart PearAI</strong>
         </li>
       </ol>
     </div>
