@@ -50,12 +50,14 @@ export async function startAiderProcess(core: Core) {
   const isAiderInstalled = await checkAiderInstallation();
 
   if (!isAiderInstalled) {
-    await aiderModel.setAiderState({state: "installing"});
-    const installSuccess = await installAider(core);
-    if (!installSuccess) {
-      await aiderModel.setAiderState({state: "uninstalled"});
-      return;
-    }
+    await aiderModel.setAiderState({state: "uninstalled"});
+    // TODO: @nang: add a state variable for aider toggled. If it is, then install aider.
+    // await aiderModel.setAiderState({state: "installing"});
+    // const installSuccess = await installAider(core);
+    // if (!installSuccess) {
+    //   await aiderModel.setAiderState({state: "uninstalled"});
+    //   return;
+    // }
     return;
   }
   

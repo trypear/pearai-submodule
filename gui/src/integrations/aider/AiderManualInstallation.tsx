@@ -103,12 +103,17 @@ const WindowsManualInstallation: React.FC = () => {
   );
 }
 
+
+
 const MacManualInstallation: React.FC = () => {
   const homebrewCmd = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
+  const pipxCmd = 'brew install pipx';
+  const pipxEnsureCmd = 'pipx ensurepath';
+  const aiderCmd = `pipx install --python python3.9 aider-chat==0.65.0`;
 
   return (
     <div className="px-4 py-1 bg-statusbar-background rounded-lg shadow-md flex-wrap text-wrap">
-      <h3 className="text-xl font-semibold mb-2">For macOS/Linux:</h3>
+      <h3 className="text-xl font-semibold mb-2">For macOS:</h3>
       <ol className="list-decimal list-inside">
         <li className="mb-4">
           <strong>Open a new terminal window</strong>
@@ -124,12 +129,93 @@ const MacManualInstallation: React.FC = () => {
             </div>
           </pre>
         </li>
-        <li className="mt-4">
-          <strong>After installing Homebrew, please restart PearAI</strong>
+        <li className="mb-2">
+          <strong>Install Python 3.9 - </strong> Run:
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono">brew install python@3.9</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText('brew install python@3.9')}
+              >copy</span>
+            </div>
+          </pre>
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg mt-2">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono">brew link python@3.9</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText('brew link python@3.9')}
+              >copy</span>
+            </div>
+          </pre>
+        </li>
+        <li className="mb-2">
+          <strong>Install pipx - </strong> Run:
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono">{pipxCmd}</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText(pipxCmd)}
+              >copy</span>
+            </div>
+          </pre>
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg mt-2">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono">{pipxEnsureCmd}</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText(pipxEnsureCmd)}
+              >copy</span>
+            </div>
+          </pre>
+        </li>
+        <li className="mb-2">
+          <strong>Install aider - </strong> Run:
+          <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
+            <div className="flex justify-between items-center flex-wrap">
+              <span className="font-mono">{aiderCmd}</span>
+              <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+                onClick={() => navigator.clipboard.writeText(aiderCmd)}
+              >copy</span>
+            </div>
+          </pre>
+        </li>
+        <li>
+          <strong>Finally, please close and reopen PearAI</strong>
         </li>
       </ol>
     </div>
   );
+  
+  // TODO: Add this when we add the state variable of if aider is enabled or not.
+// const MacManualInstallation: React.FC = () => {
+//   const homebrewCmd = '/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"';
+
+//   return (
+//     <div className="px-4 py-1 bg-statusbar-background rounded-lg shadow-md flex-wrap text-wrap">
+//       <h3 className="text-xl font-semibold mb-2">For macOS/Linux:</h3>
+//       <ol className="list-decimal list-inside">
+//         <li className="mb-4">
+//           <strong>Open a new terminal window</strong>
+//         </li>
+//         <li className="mb-2">
+//           <strong>Install Homebrew (if not already installed) - </strong> Run:
+//           <pre className="bg-secondary border-solid border-2 border-input p-2 rounded-lg">
+//             <div className="flex justify-between items-center flex-wrap">
+//               <span className="font-mono text-wrap">{homebrewCmd}</span>
+//               <span className="font-mono ml-auto bg-button-background text-button-foreground border-solid border-2 border-input cursor-pointer px-2 py-1 rounded-md"
+//                 onClick={() => navigator.clipboard.writeText(homebrewCmd)}
+//               >copy</span>
+//             </div>
+//           </pre>
+//         </li>
+//         <li className="mt-4">
+//           <strong>After installing Homebrew, please restart PearAI</strong>
+//         </li>
+//       </ol>
+//     </div>
+//   );
+
 }
+
+
 
 export default AiderManualInstallation;
