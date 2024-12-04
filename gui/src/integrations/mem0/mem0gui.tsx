@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Search, Plus, Brain, Sparkles, ExternalLink } from "lucide-react";
+import { Search, Plus, Brain, Sparkles, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import HeaderButtonWithText from "@/components/HeaderButtonWithText";
 import { TrashIcon, Pencil2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
@@ -404,6 +404,15 @@ export default function Mem0GUI() {
             disabled={!!searchQuery || isExpanded}
           >
             <Plus className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={fetchMemories}
+            className="hover:bg-input/90"
+            disabled={isLoading}
+          >
+            <RotateCcw className="h-5 w-5" />
           </Button>
           <div
             ref={searchRef}
