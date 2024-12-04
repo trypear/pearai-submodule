@@ -145,7 +145,8 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
 
             <>
               {!isDiffVisible ? (
-                <HeaderButtonWithText
+                <>
+                {/* <HeaderButtonWithText
                   text={fastApplying ? "Fast Applying..." : "Fast Apply"}
                   disabled={applying || fastApplying}
                   onClick={() => {
@@ -161,7 +162,25 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
                   ) : (
                     <BoltIcon className="w-4 h-4" />
                   )}
+                </HeaderButtonWithText> */}
+                <HeaderButtonWithText
+                  text={fastApplying ? "Fast Applying..." : "Fast Apply (Horizontal)"}
+                  disabled={applying || fastApplying}
+                  onClick={() => {
+                    if (fastApplying) return;
+                    ideMessenger.post("applyWithRelaceHorizontal", {
+                      contentToApply: props.text,
+                    });
+                    setFastApplying(true);
+                  }}
+                >
+                  {fastApplying ? (
+                    <Loader className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <BoltIcon className="w-4 h-4" />
+                  )}
                 </HeaderButtonWithText>
+                </>
               ) : (
                 <>
                   <HeaderButtonWithText
