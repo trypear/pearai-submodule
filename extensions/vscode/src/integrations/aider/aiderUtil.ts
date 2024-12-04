@@ -50,7 +50,12 @@ export async function startAiderProcess(core: Core) {
   const isAiderInstalled = await checkAiderInstallation();
 
   if (!isAiderInstalled) {
-    await aiderModel.setAiderState({state: "uninstalled"});
+    await aiderModel.setAiderState({state: "starting"});
+    const installSuccess = await installAider(core);
+    if (!installSuccess) {
+      await aiderModel.setAiderState({state: "uninstalled"});
+      return;
+    }
     return;
   }
   
@@ -329,11 +334,17 @@ async function installAiderMac(core: Core): Promise<boolean> {
   // Step 2: Check and install Python 3.9
   checkPython39Installation()
   
-  // Step 3: Install pipx using brew
+  // Step 3: Check for pipx and install if needed
   try {
-    console.log("Installing pipx...");
-    await executeCommand("brew install pipx");
-    await executeCommand("pipx ensurepath");
+    console.log("Checking pipx installation...");
+    try {
+      await executeCommand("pipx --version");
+      console.log("pipx is already installed");
+    } catch {
+      console.log("Installing pipx...");
+      await executeCommand("brew install pipx");
+      await executeCommand("pipx ensurepath");
+    }
   } catch (error) {
     console.error("Failed to install pipx:", error);
     vscode.window.showErrorMessage("Failed to install pipx");
