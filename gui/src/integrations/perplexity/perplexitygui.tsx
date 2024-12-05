@@ -194,7 +194,7 @@ function PerplexityGUI() {
     "newSession",
     async () => {
       saveSession();
-      setSessionKey(prev => prev + 1); // Add this
+      setSessionKey(prev => prev + 1);
     },
     [saveSession],
   );
@@ -203,7 +203,7 @@ function PerplexityGUI() {
     "loadMostRecentChat",
     async () => {
       await loadMostRecentChat();
-      setSessionKey(prev => prev + 1); // Add this
+      setSessionKey(prev => prev + 1);
     },
     [loadMostRecentChat],
   );
