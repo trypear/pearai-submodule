@@ -52,6 +52,7 @@ function AiderGUI() {
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const [sessionKey, setSessionKey] = useState(0);
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
   const active = useSelector((state: RootState) => state.state.aiderActive);
@@ -195,7 +196,7 @@ function AiderGUI() {
     "newSession",
     async () => {
       saveSession();
-      mainTextInputRef.current?.focus?.();
+      setSessionKey(prev => prev + 1);
     },
     [saveSession],
   );
@@ -387,6 +388,7 @@ useEffect(() => {
                       onClick={() => {
                         saveSession();
                         ideMessenger.post("aiderResetSession", undefined);
+                        setSessionKey(prev => prev + 1);
                       }}
                       className="mr-auto"
                     >
@@ -511,6 +513,7 @@ useEffect(() => {
               )}
             >
               <ContinueInputBox
+                key={sessionKey}
                 onEnter={(editorContent, modifiers) => {
                   sendInput(editorContent, modifiers);
                 }}
@@ -537,6 +540,7 @@ useEffect(() => {
                 onClick={() => {
                   saveSession();
                   ideMessenger.post("aiderResetSession", undefined);
+                  setSessionKey(prev => prev + 1);
                 }}
                 className="mr-auto"
               >
