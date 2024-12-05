@@ -33,6 +33,9 @@ import { TOOL_COMMANDS, ToolType, extractCodeFromMarkdown } from "../util/integr
 import PearAIServer from "core/llm/llms/PearAIServer";
 import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
 import { RelaceDiffManager } from "../integrations/relace/relaceDiffManager";
+import { streamDiffLines } from "core/util/verticalEdit";
+import { getMarkdownLanguageTagForFile } from "core/util";
+import { streamRelaceDiffLines } from "core/util/relaceDiff";
 
 /**
  * A shared messenger class between Core and Webview
@@ -673,6 +676,66 @@ export class VsCodeMessenger {
       await Promise.all(
         sessions.map((session) => workOsAuthProvider.removeSession(session.id)),
       );
+    });
+
+    this.onWebview("applyWithRelaceVertical", async (msg) => {
+      const editor = vscode.window.activeTextEditor;
+      if (!editor) {
+        vscode.window.showErrorMessage(
+          "No active editor to apply edits to. Please open a file you'd like to apply the edits to first.",
+        );
+        return;
+      }
+
+      try {
+        const originalContent = editor.document.getText();
+        const changesToApply = msg.data.contentToApply;
+
+        if (!originalContent) {
+          throw new Error("Original content not found");
+        }
+
+        let modifiedContent = await getFastApplyChangesWithRelace(
+          originalContent,
+          changesToApply,
+        );
+
+        modifiedContent = extractCodeFromMarkdown(modifiedContent);
+
+        if (modifiedContent.length === 0) {
+          vscode.window.showInformationMessage("Received empty response from Relace");
+          return;
+        }
+
+        if (modifiedContent === originalContent) {
+          vscode.window.showInformationMessage("No changes to apply");
+          return;
+        }
+
+        // Use vertical diff manager to show changes
+        const verticalDiffManager = await this.verticalDiffManagerPromise;
+        const startLine = 0; // or calculate based on where you want to start
+        const endLine = editor.document.lineCount;
+
+        const handler = verticalDiffManager.createVerticalPerLineDiffHandler(
+          editor.document.uri.fsPath,
+          startLine,
+          endLine,
+          msg.data.contentToApply
+        );
+
+        if (handler) {
+          await handler.run(
+            streamRelaceDiffLines(
+              originalContent,
+              modifiedContent
+            )
+          );
+        }
+
+      } catch (error) {
+        vscode.window.showErrorMessage(`Fast Apply Vertical failed: ${error}`);
+      }
     });
   }
 }

@@ -20,6 +20,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   applyToCurrentFile: [{ text: string }, void];
   applyWithRelace: [{ contentToApply: string }, void];
   applyWithRelaceHorizontal: [{ contentToApply: string }, void];
+  applyWithRelaceVertical: [{ contentToApply: string}, void];
   acceptRelaceDiff: [{ originalFileUri: string, diffFileUri: string }, void];
   rejectRelaceDiff: [{ originalFileUri: string, diffFileUri: string }, void];
   createFile: [{ path: string}, void];
