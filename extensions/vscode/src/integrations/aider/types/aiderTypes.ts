@@ -1,4 +1,4 @@
 export interface AiderState {
-  state: "undefined" | "starting" | "uninstalled" | "ready" |  "stopped" |"crashed" | "signedOut" | "notgitrepo" | "restarting";
+  state: "undefined" | "starting" | "installing" | "uninstalled" | "ready" |  "stopped" |"crashed" | "signedOut" | "notgitrepo" | "restarting";
   timeStamp?: number;
 }
