@@ -229,7 +229,7 @@ class OpenAI extends BaseLLM {
       stream: true,
     };
     // Empty messages cause an error in LM Studio
-    body.messages = body.messages.map((m) => ({
+    body.messages = body.messages.map((m: { content: string; }) => ({
       ...m,
       content: m.content === "" ? " " : m.content,
     })) as any;
