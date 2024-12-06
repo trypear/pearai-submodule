@@ -33,9 +33,7 @@ import { TOOL_COMMANDS, ToolType, extractCodeFromMarkdown } from "../util/integr
 import PearAIServer from "core/llm/llms/PearAIServer";
 import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
 import { RelaceDiffManager } from "../integrations/relace/relaceDiffManager";
-import { streamDiffLines } from "core/util/verticalEdit";
 import { getMarkdownLanguageTagForFile } from "core/util";
-import { streamRelaceDiffLines } from "core/util/relaceDiff";
 
 /**
  * A shared messenger class between Core and Webview
