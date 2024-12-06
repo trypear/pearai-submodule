@@ -95,6 +95,7 @@ export class VsCodeMessenger {
     });
     this.onWebview("closeOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.hideOverlay");
+      vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     });
     this.onWebview("lockOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.lockOverlay");
