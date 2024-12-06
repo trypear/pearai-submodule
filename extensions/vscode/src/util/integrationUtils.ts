@@ -59,6 +59,7 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
   if (isOverlayVisible && currentTab === integrationName) {
     // close overlay
     await vscode.commands.executeCommand("pearai.hideOverlay");
+    await vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     return;
   }
   
@@ -71,3 +72,12 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
   }
 }
 
+export function extractCodeFromMarkdown(text: string): string {
+  // Match code blocks with language specification
+  const codeBlockRegex = /^```[\w-]*\n([\s\S]*?)\n```$/m;
+  const match = text.match(codeBlockRegex);
+  
+  // If it's a code block, return the code inside
+  // Otherwise return the original text
+  return match ? match[1] : text;
+}

@@ -188,11 +188,13 @@ function PerplexityGUI() {
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
     useHistory(dispatch, "perplexity");
 
+  const [sessionKey, setSessionKey] = useState(0);
+
   useWebviewListener(
     "newSession",
     async () => {
       saveSession();
-      mainTextInputRef.current?.focus?.();
+      setSessionKey(prev => prev + 1);
     },
     [saveSession],
   );
@@ -201,7 +203,7 @@ function PerplexityGUI() {
     "loadMostRecentChat",
     async () => {
       await loadMostRecentChat();
-      mainTextInputRef.current?.focus?.();
+      setSessionKey(prev => prev + 1);
     },
     [loadMostRecentChat],
   );
@@ -225,6 +227,7 @@ function PerplexityGUI() {
   // force re-render continueInputBox when history changes
   useEffect(() => {
     setHistoryKey(prev => prev + 1);
+    setSessionKey(prev => prev + 1);
   }, [state.perplexityHistory]);
 
   return (
@@ -311,7 +314,7 @@ function PerplexityGUI() {
                   <NewSessionButton
                     onClick={() => {
                       saveSession();
-                      ideMessenger.post("aiderResetSession", undefined);
+                      setSessionKey(prev => prev + 1);
                     }}
                     className="mr-auto"
                   >
@@ -438,6 +441,7 @@ function PerplexityGUI() {
             )}
           >
             <ContinueInputBox
+              key={sessionKey}
               onEnter={(editorContent, modifiers) => {
                 sendInput(editorContent, modifiers);
               }}
@@ -461,6 +465,7 @@ function PerplexityGUI() {
               <NewSessionButton
                 onClick={() => {
                   saveSession();
+                  setSessionKey(prev => prev + 1);
                 }}
                 className="mr-auto"
               >
