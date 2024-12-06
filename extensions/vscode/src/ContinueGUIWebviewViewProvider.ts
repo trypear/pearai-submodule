@@ -274,6 +274,7 @@ export class ContinueGUIWebviewViewProvider
             document.body.addEventListener('click', function(e) {
                 if (e.target === document.body) {
                     vscode.postMessage({ messageType: 'closeOverlay', messageId: "closeOverlay" });
+                    vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
                 }
             });
           </script>
