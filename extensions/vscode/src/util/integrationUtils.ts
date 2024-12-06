@@ -59,6 +59,7 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
   if (isOverlayVisible && currentTab === integrationName) {
     // close overlay
     await vscode.commands.executeCommand("pearai.hideOverlay");
+    await vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     return;
   }
   
