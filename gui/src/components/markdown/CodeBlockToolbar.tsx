@@ -147,25 +147,8 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
             <>
               {!isDiffVisible ? (
                 <>
-                {/* <HeaderButtonWithText
-                  text={fastApplying ? "Fast Applying..." : "Fast Apply"}
-                  disabled={applying || fastApplying}
-                  onClick={() => {
-                    if (fastApplying) return;
-                    ideMessenger.post("applyWithRelace", {
-                      contentToApply: props.text,
-                    });
-                    setFastApplying(true);
-                  }}
-                >
-                  {fastApplying ? (
-                    <Loader className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <BoltIcon className="w-4 h-4" />
-                  )}
-                </HeaderButtonWithText> */}
                 <HeaderButtonWithText
-                  text={fastApplying ? "Fast Applying..." : "Fast Apply (Horizontal)"}
+                  text={fastApplying ? "Fast Applying..." : "Fast Apply"}
                   disabled={applying || fastApplying}
                   onClick={() => {
                     if (fastApplying) return;
@@ -179,23 +162,6 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
                     <Loader className="w-4 h-4 animate-spin" />
                   ) : (
                     <BoltIcon className="w-4 h-4" />
-                  )}
-                </HeaderButtonWithText>
-                <HeaderButtonWithText
-                  text={fastApplying ? "Fast Applying..." : "Fast Apply (Vertical)"}
-                  disabled={applying || fastApplying}
-                  onClick={() => {
-                    if (fastApplying) return;
-                    ideMessenger.post("applyWithRelaceVertical", {
-                      contentToApply: props.text,
-                    });
-                    setFastApplying(true);
-                  }}
-                >
-                  {fastApplying ? (
-                    <Loader className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <ArrowDownIcon className="w-4 h-4" />
                   )}
                 </HeaderButtonWithText>
                 </>

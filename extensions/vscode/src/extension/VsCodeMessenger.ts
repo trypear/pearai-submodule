@@ -337,84 +337,7 @@ export class VsCodeMessenger {
       verticalDiffManager.streamEdit(prompt, modelTitle);
     });
 
-    // Fast Apply with Relace 🚀
-    this.onWebview("applyWithRelace", async (msg) => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        vscode.window.showErrorMessage(
-          "No active editor to apply edits to. Please open a file you'd like to apply the edits to first.",
-        );
-        return;
-      }
-
-      try {
-        const originalContent = editor.document.getText();
-        const changesToApply = msg.data.contentToApply;
-
-        if (!originalContent) {
-          throw new Error("Original content not found");
-        }
-
-        let modifiedContent = await getFastApplyChangesWithRelace(
-          originalContent,
-          changesToApply,
-        );
-
-        modifiedContent = extractCodeFromMarkdown(modifiedContent);
-
-        if (modifiedContent.length === 0) {
-          vscode.window.showInformationMessage("Received empty response from Relace");
-          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
-          return;
-        }
-
-        if (modifiedContent === originalContent) {
-          vscode.window.showInformationMessage("No changes to apply");
-          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
-          return;
-        }
-
-        const relaceDiffManager = RelaceDiffManager.getInstance();
-
-        if (relaceDiffManager.isDiffViewActive()) {
-          const relaceDiffFile = relaceDiffManager.getRelaceDiffFile();
-          if (relaceDiffFile) {
-            try {
-              await vscode.window.showTextDocument(relaceDiffFile);
-              await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-            } catch (error) {
-              // ignore
-            }
-          }
-          relaceDiffManager.clearDiffState();
-        }
-
-        const modifiedDoc = await vscode.workspace.openTextDocument({
-          content: modifiedContent,
-          language: editor.document.languageId,
-        });
-
-        RelaceDiffManager.getInstance().setDiffState(
-          editor,
-          modifiedDoc
-        );      
-
-        // Show the diff in inline view
-        const diff = await vscode.commands.executeCommand('vscode.diff',
-          editor.document.uri,
-          modifiedDoc.uri,
-          'Fast Apply Changes',
-          // { viewColumn: vscode.ViewColumn.Beside } // open side by side
-        );
-
-        // Notify webview that diff is visible
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: true});
-      } catch (error) {
-        vscode.window.showErrorMessage(`Fast Apply failed: ${error}`);
-      }
-    });
-
-    // Fast Apply with Relace Inline 🚀
+    // Fast Apply with Relace Horizontal 🚀
     this.onWebview("applyWithRelaceHorizontal", async (msg) => {
       const editor = vscode.window.activeTextEditor;
       if (!editor) {
@@ -441,11 +364,13 @@ export class VsCodeMessenger {
 
         if (modifiedContent.length === 0) {
           vscode.window.showInformationMessage("Received empty response from Relace");
+          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
           return;
         }
 
         if (modifiedContent === originalContent) {
           vscode.window.showInformationMessage("No changes to apply");
+          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
           return;
         }
 
@@ -676,66 +601,6 @@ export class VsCodeMessenger {
       await Promise.all(
         sessions.map((session) => workOsAuthProvider.removeSession(session.id)),
       );
-    });
-
-    this.onWebview("applyWithRelaceVertical", async (msg) => {
-      const editor = vscode.window.activeTextEditor;
-      if (!editor) {
-        vscode.window.showErrorMessage(
-          "No active editor to apply edits to. Please open a file you'd like to apply the edits to first.",
-        );
-        return;
-      }
-
-      try {
-        const originalContent = editor.document.getText();
-        const changesToApply = msg.data.contentToApply;
-
-        if (!originalContent) {
-          throw new Error("Original content not found");
-        }
-
-        let modifiedContent = await getFastApplyChangesWithRelace(
-          originalContent,
-          changesToApply,
-        );
-
-        modifiedContent = extractCodeFromMarkdown(modifiedContent);
-
-        if (modifiedContent.length === 0) {
-          vscode.window.showInformationMessage("Received empty response from Relace");
-          return;
-        }
-
-        if (modifiedContent === originalContent) {
-          vscode.window.showInformationMessage("No changes to apply");
-          return;
-        }
-
-        // Use vertical diff manager to show changes
-        const verticalDiffManager = await this.verticalDiffManagerPromise;
-        const startLine = 0; // or calculate based on where you want to start
-        const endLine = editor.document.lineCount;
-
-        const handler = verticalDiffManager.createVerticalPerLineDiffHandler(
-          editor.document.uri.fsPath,
-          startLine,
-          endLine,
-          msg.data.contentToApply
-        );
-
-        if (handler) {
-          await handler.run(
-            streamRelaceDiffLines(
-              originalContent,
-              modifiedContent
-            )
-          );
-        }
-
-      } catch (error) {
-        vscode.window.showErrorMessage(`Fast Apply Vertical failed: ${error}`);
-      }
     });
   }
 }
