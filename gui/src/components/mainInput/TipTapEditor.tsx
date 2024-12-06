@@ -59,7 +59,7 @@ import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
 import TopBar from "./TopBarIndicators";
 import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
-
+import HardBreak from '@tiptap/extension-hard-break';
 
 const InputBoxDiv = styled.div`
   resize: none;
@@ -237,6 +237,7 @@ const TipTapEditor = memo(function TipTapEditor({
     (store: RootState) => store.state.contextItems,
   );
   const defaultModel = useSelector(defaultModelSelector);
+  const defaultModelRef = useUpdatingRef(defaultModel);
   const getSubmenuContextItemsRef = useUpdatingRef(getSubmenuContextItems);
   const availableContextProvidersRef = useUpdatingRef(availableContextProviders)
 
@@ -319,42 +320,9 @@ const TipTapEditor = memo(function TipTapEditor({
     extensions: [
       Document,
       History,
-      Image.extend({
-        addProseMirrorPlugins() {
-          const plugin = new Plugin({
-            props: {
-              handleDOMEvents: {
-                paste(view, event) {
-                  console.log("Pasting image");
-                  const items = event.clipboardData.items;
-                  for (const item of items) {
-                    const file = item.getAsFile();
-                    file &&
-                      modelSupportsImages(
-                        defaultModel.provider,
-                        defaultModel.model,
-                        defaultModel.title,
-                        defaultModel.capabilities,
-                      ) &&
-                      handleImageFile(file).then((resp) => {
-                        if (!resp) {
-                          return;
-                        }
-                        const [img, dataUrl] = resp;
-                        const { schema } = view.state;
-                        const node = schema.nodes.image.create({
-                          src: dataUrl,
-                        });
-                        const tr = view.state.tr.insert(0, node);
-                        view.dispatch(tr);
-                      });
-                  }
-                },
-              },
-            },
-          });
-          return [plugin];
-        },
+      Image.configure({
+        inline: true,
+        allowBase64: true,
       }),
       Placeholder.configure({
         placeholder: () => getPlaceholder(historyLengthRef.current, location),
@@ -449,6 +417,7 @@ const TipTapEditor = memo(function TipTapEditor({
         },
       }),
       Text,
+      HardBreak,
       Mention.configure({
         HTMLAttributes: {
           class: "mention",
@@ -487,6 +456,65 @@ const TipTapEditor = memo(function TipTapEditor({
         class: "outline-none -mt-1 mb-1 overflow-hidden",
         style: `font-size: ${getFontSize()}px;`,
       },
+      handlePaste: (view, event) => {
+        const items = event.clipboardData?.items;
+        const currentModel = defaultModelRef.current;
+        if (!items || !currentModel) return false;
+
+        // Check for image items and model support
+        for (const item of items) {
+          if (item.type.startsWith('image/') && 
+              modelSupportsImages(
+                currentModel.provider,
+                currentModel.model,
+                currentModel.title,
+                currentModel.capabilities
+              )) {
+            event.preventDefault();
+            const file = item.getAsFile();
+            if (!file) continue;
+
+            // Handle image file asynchronously but return synchronously
+            handleImageFile(file).then(result => {
+              if (result) {
+                const [image, dataUrl] = result;
+                const { state } = view;
+                const { tr } = state;
+                const pos = state.selection.from;
+                tr.replaceSelectionWith(state.schema.nodes.image.create({ src: dataUrl }));
+                view.dispatch(tr);
+              }
+            });
+            return true;
+          }
+        }
+
+        // Handle text paste
+        const text = event.clipboardData.getData('text/plain');
+        if (text) {
+          event.preventDefault();
+          const lines = text.split(/\r?\n/);
+          const { tr } = view.state;
+          const { schema } = view.state;
+          let pos = view.state.selection.from;
+
+          // Delete the selected text before inserting new text
+          tr.delete(view.state.selection.from, view.state.selection.to);
+
+          lines.forEach((line, index) => {
+            if (index > 0) {
+              tr.insert(pos++, schema.nodes.hardBreak.create());
+            }
+            tr.insertText(line, pos);
+            pos += line.length;
+          });
+
+          view.dispatch(tr);
+          return true;
+        }
+
+        return false;
+      },
     },
     content: lastContentRef.current,
     editable: true,
@@ -517,62 +545,15 @@ const TipTapEditor = memo(function TipTapEditor({
   }, [ideMessenger]);
 
   useEffect(() => {
-    if (isJetBrains()) {
-      // This is only for VS Code .ipynb files
-      return;
-    }
-
-    if (isWebEnvironment()) {
-      const handleKeyDown = async (event: KeyboardEvent) => {
-        if (!editor || !editorFocusedRef.current) {
-          return;
-        }
-        if ((event.metaKey || event.ctrlKey) && event.key === "x") {
-          // Cut
-          const selectedText = editor.state.doc.textBetween(
-            editor.state.selection.from,
-            editor.state.selection.to,
-          );
-          navigator.clipboard.writeText(selectedText);
-          editor.commands.deleteSelection();
-          event.preventDefault();
-        } else if ((event.metaKey || event.ctrlKey) && event.key === "c") {
-          // Copy
-          const selectedText = editor.state.doc.textBetween(
-            editor.state.selection.from,
-            editor.state.selection.to,
-          );
-          navigator.clipboard.writeText(selectedText);
-          event.preventDefault();
-        } else if ((event.metaKey || event.ctrlKey) && event.key === "v") {
-          // Paste
-          event.preventDefault(); // Prevent default paste behavior
-          const clipboardText = await navigator.clipboard.readText();
-          editor.commands.insertContent(clipboardText);
-        }
-      };
-
-      document.addEventListener("keydown", handleKeyDown);
-
-      return () => {
-        document.removeEventListener("keydown", handleKeyDown);
-      };
-    }
-
     const handleKeyDown = async (event: KeyboardEvent) => {
       if (!editor || !editorFocusedRef.current) {
         return;
       }
-
-      if (event.metaKey && event.key === "x") {
+      if ((event.metaKey || event.ctrlKey) && event.key === "x") {
         document.execCommand("cut");
         event.stopPropagation();
         event.preventDefault();
-      } else if (event.metaKey && event.key === "v") {
-        document.execCommand("paste");
-        event.stopPropagation();
-        event.preventDefault();
-      } else if (event.metaKey && event.key === "c") {
+      } else if ((event.metaKey || event.ctrlKey) && event.key === "c") {
         document.execCommand("copy");
         event.stopPropagation();
         event.preventDefault();
