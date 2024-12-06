@@ -18,6 +18,9 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   ];
   openUrl: [string, void];
   applyToCurrentFile: [{ text: string }, void];
+  applyWithRelaceHorizontal: [{ contentToApply: string }, void];
+  acceptRelaceDiff: [{ originalFileUri: string, diffFileUri: string }, void];
+  rejectRelaceDiff: [{ originalFileUri: string, diffFileUri: string }, void];
   createFile: [{ path: string}, void];
   showTutorial: [undefined, void];
   showFile: [{ filepath: string }, void];
@@ -108,4 +111,5 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
   setAiderProcessStateInGUI: [AiderState, void];
+  setRelaceDiffState: [{diffVisible: boolean}, void];
 };
