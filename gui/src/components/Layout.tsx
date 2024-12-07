@@ -91,23 +91,12 @@ const Header = styled.header`
   padding-left: 6px;
   padding-right: 6px;
   width: calc(100% - 12px);
-  height: ${HEADER_HEIGHT};
   overflow: hidden;
 `;
 
-const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean, path: string}>`
-  display: grid;
-  grid-template-rows: ${(props) => {
-    if (props.showHeader && props.showTutorial && props.path !== "/onboarding") {
-      return "auto auto 1fr auto";
-    } else if (props.showHeader || (props.showTutorial && props.path !== "/onboarding")) {
-      return "auto 1fr auto";
-    } else {
-      return "1fr auto";
-    }
-  }};
-  min-height: 100vh;
-  overflow-x: visible;
+const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean, path: string }>`
+  display: flex-row;
+  
 `;
 
 const ModelDropdownPortalDiv = styled.div`
@@ -160,6 +149,8 @@ const Layout = () => {
   const location = useLocation();
   const dispatch = useDispatch();
   const ideMessenger = useContext(IdeMessengerContext);
+
+  const historyLength = useSelector((state: RootState) => state.state.history.length);
 
   const dialogMessage = useSelector(
     (state: RootState) => state.uiState.dialogMessage,
@@ -291,98 +282,93 @@ const Layout = () => {
 
   if (window.isPearOverlay) {
     return <OverlayContainer isPearOverlay={window.isPearOverlay} path={location.pathname}>
-            <GlobalStyle/>
-            <Outlet />
-          </OverlayContainer>;
+      <GlobalStyle />
+      <Outlet />
+    </OverlayContainer>;
   }
 
   return (
-      <div className="w-full h-full">
-        <div
-          style={{
-            backgroundColor: vscBackground,
-            scrollbarGutter: "stable both-edges",
-            minHeight: "100%",
-            display: "grid",
-            gridTemplateRows: "1fr auto",
+    <div className="w-full h-full" style={{ backgroundColor: vscBackground }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          backgroundColor: vscBackground,
+          scrollbarGutter: "stable both-edges",
+        }}
+      >
+        <TextDialog
+          showDialog={showDialog}
+          onEnter={() => {
+            dispatch(setShowDialog(false));
           }}
-        >
-          <TextDialog
-            showDialog={showDialog}
-            onEnter={() => {
-              dispatch(setShowDialog(false));
-            }}
-            onClose={() => {
-              dispatch(setShowDialog(false));
-            }}
-            message={dialogMessage}
-          />
-
-          <GridDiv
-            showHeader={SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname)}
-            showTutorial={!!showInteractiveContinueTutorial}
-            path={location.pathname}
-          >
-            {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && (
-              <Header>
-                <ShortcutContainer />
-              </Header>
-            )}
-            <PostHogPageView />
-            <Outlet />
-            <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
-            <ProfileDropdownPortalDiv id="profile-select-top-div"></ProfileDropdownPortalDiv>
-            {HIDE_FOOTER_ON_PAGES.includes(location.pathname) || (
-              <Footer>
-                <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
-                  {indexingState.status !== "indexing" && // Would take up too much space together with indexing progress
-                    defaultModel?.provider === "free-trial" && (
-                      <ProgressBar
-                        completed={parseInt(localStorage.getItem("ftc") || "0")}
-                        total={FREE_TRIAL_LIMIT_REQUESTS}
-                      />
-                    )}
-                  <IndexingProgressBar indexingState={indexingState} />
-                </div>
-
-                <ProfileSwitcher />
-                <HeaderButtonWithText
-                  tooltipPlacement="top-end"
-                  text="Help"
-                  onClick={() => {
-                    if (location.pathname === "/help") {
-                      navigate("/");
-                    } else {
-                      navigate("/help");
-                    }
-                  }}
-                >
-                  <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
-                </HeaderButtonWithText>
-              </Footer>
-            )}
-          </GridDiv>
-
-          <BottomMessageDiv
-            displayOnBottom={displayBottomMessageOnBottom}
-            onMouseEnter={() => {
-              dispatch(setBottomMessageCloseTimeout(undefined));
-            }}
-            onMouseLeave={(e) => {
-              if (!e.buttons) {
-                dispatch(setBottomMessage(undefined));
-              }
-            }}
-            hidden={!bottomMessage}
-          >
-            {bottomMessage}
-          </BottomMessageDiv>
-        </div>
-        <div
-          style={{ fontSize: `${getFontSize() - 4}px` }}
-          id="tooltip-portal-div"
+          onClose={() => {
+            dispatch(setShowDialog(false));
+          }}
+          message={dialogMessage}
         />
+        <div>
+          <PostHogPageView />
+          <Outlet />
+          <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
+          {HIDE_FOOTER_ON_PAGES.includes(location.pathname) || (
+            <Footer>
+              <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
+                {indexingState.status !== "indexing" && // Would take up too much space together with indexing progress
+                  defaultModel?.provider === "free-trial" && (
+                    <ProgressBar
+                      completed={parseInt(localStorage.getItem("ftc") || "0")}
+                      total={FREE_TRIAL_LIMIT_REQUESTS}
+                    />
+                  )}
+                <IndexingProgressBar indexingState={indexingState} />
+              </div>
+
+              <ProfileSwitcher />
+              <HeaderButtonWithText
+                tooltipPlacement="top-end"
+                text="Help"
+                onClick={() => {
+                  if (location.pathname === "/help") {
+                    navigate("/");
+                  } else {
+                    navigate("/help");
+                  }
+                }}
+              >
+                <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
+              </HeaderButtonWithText>
+            </Footer>
+          )}
+
+        </div>
+        {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && historyLength === 0 && (
+          <ShortcutContainer />
+        )}
+        <ProfileDropdownPortalDiv id="profile-select-top-div"></ProfileDropdownPortalDiv>
+
+
+        <BottomMessageDiv
+          displayOnBottom={displayBottomMessageOnBottom}
+          onMouseEnter={() => {
+            dispatch(setBottomMessageCloseTimeout(undefined));
+          }}
+          onMouseLeave={(e) => {
+            if (!e.buttons) {
+              dispatch(setBottomMessage(undefined));
+            }
+          }}
+          hidden={!bottomMessage}
+        >
+          {bottomMessage}
+        </BottomMessageDiv>
       </div>
+      <div
+        style={{ fontSize: `${getFontSize() - 4}px` }}
+        id="tooltip-portal-div"
+      />
+    </div>
   );
 };
 
