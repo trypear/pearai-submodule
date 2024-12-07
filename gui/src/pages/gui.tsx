@@ -213,6 +213,20 @@ function GUI() {
     setIsAtBottom(atBottom);
   };
 
+  const snapToBottom = useCallback(() => {
+    window.scrollTo({
+      top: topGuiDivRef.current?.scrollHeight,
+      behavior: "instant" as any,
+    });
+    setIsAtBottom(true);
+  }, []);
+
+  useEffect(() => {
+    if (active) {
+      snapToBottom();
+    }
+  }, [active])
+
   useEffect(() => {
       if (active && !isAtBottom) {
         if (!topGuiDivRef.current) return;
@@ -225,10 +239,7 @@ function GUI() {
   
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      window.scrollTo({
-        top: topGuiDivRef.current?.scrollHeight,
-        behavior: "instant" as any,
-      });
+      snapToBottom();
     }, 1);
 
     return () => {
