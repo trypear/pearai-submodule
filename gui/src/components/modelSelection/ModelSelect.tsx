@@ -9,7 +9,7 @@ import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { defaultBorderRadius, lightGray, vscInputBackground } from "..";
+import { defaultBorderRadius, lightGray, vscButtonBackground, vscEditorBackground, vscInputBackground, vscBadgeForeground, vscInputBorder, vscListActiveBackground, vscBadgeBackground, vscSidebarBorder } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
@@ -44,17 +44,48 @@ const StyledListboxButton = styled(Listbox.Button)`
 const StyledListboxOptions = styled(Listbox.Options)`
   margin-top: 4px;
   position: absolute;
+  bottom: 100%;
+  left: 0;
   list-style: none;
   padding: 4px;
   white-space: nowrap;
   cursor: default;
+  z-index: 1100;
 
-  border-radius: ${defaultBorderRadius};
-  border: 0.5px solid ${lightGray};
-  background-color: ${vscInputBackground};
-
-  max-height: 300px;
+  border-radius: 10px;
+  background-color: ${vscEditorBackground};
+  max-height: 450px;
   overflow-y: auto;
+
+  /* Custom Scrollbar Styles */
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    margin: 4px 0; /* Add space at top and bottom of track */
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${lightGray}44;
+    border-radius: 4px;
+    
+    &:hover {
+      background: ${lightGray}88;
+    }
+  }
+
+  /* Firefox Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: ${lightGray}44 transparent;
+
+  /* Adjust content padding to account for rounded corners */
+  & > * {
+    margin: 2px 0;
+  }
+
 `;
 
 const StyledListboxOption = styled(Listbox.Option)`
@@ -78,7 +109,7 @@ const StyledTrashIcon = styled(TrashIcon)`
 
 const Divider = styled.div`
   height: 1px;
-  background-color: ${lightGray};
+  background-color: ${lightGray}35;
   margin: 4px;
 `;
 
@@ -230,7 +261,7 @@ function ModelSelect() {
         dispatch(setDefaultModel({ title: val }));
       }}
     >
-      <div className="relative">
+      <div className="relative inline-block">
         <StyledListboxButton
           className="h-[18px] overflow-hidden"
           style={{ padding: 0 }}
@@ -241,6 +272,37 @@ function ModelSelect() {
           </span>
         </StyledListboxButton>
         <StyledListboxOptions>
+          <span
+            style={{
+              color: lightGray,
+              padding: "4px",
+              marginTop: "4px",
+              display: "block",
+              textAlign: "right",
+            }}
+          >
+            Press <kbd className="font-mono">{getMetaKeyLabel()}</kbd> <kbd className="font-mono">'</kbd> to cycle between models.
+          </span>
+          <Divider />
+          <StyledListboxOption
+            key={options.length}
+            onClick={(e) => {
+              if (aiderMode) {
+                ideMessenger.post("openConfigJson", undefined);
+                return;
+              }
+              e.stopPropagation();
+              e.preventDefault();
+              navigate("/addModel");
+            }}
+            value={"addModel" as any}
+          >
+            <div className="flex items-center">
+              <PlusIcon className="w-4 h-4 mr-2" />
+              Add Model
+            </div>
+          </StyledListboxOption>
+          <Divider />
           {options
             .filter((option) => option.isDefault)
             .map((option, idx) => (
@@ -266,40 +328,8 @@ function ModelSelect() {
                     showDelete={!option.isDefault}
                   />
                 ))}
-
-              <StyledListboxOption
-                key={options.length}
-                onClick={(e) => {
-                  if (aiderMode) {
-                    ideMessenger.post("openConfigJson", undefined);
-                    return;
-                  }
-                  e.stopPropagation();
-                  e.preventDefault();
-                  navigate("/addModel");
-                }}
-                value={"addModel" as any}
-              >
-                <div className="flex items-center">
-                  <PlusIcon className="w-4 h-4 mr-2" />
-                  Add Model
-                </div>
-              </StyledListboxOption>
             </>
           )}
-
-          <Divider />
-
-          <i
-            style={{
-              color: lightGray,
-              padding: "4px",
-              marginTop: "4px",
-              display: "block",
-            }}
-          >
-            Press {getMetaKeyLabel()}+' to toggle
-          </i>
         </StyledListboxOptions>
       </div>
     </Listbox>
