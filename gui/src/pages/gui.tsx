@@ -144,9 +144,9 @@ const TutorialCardDiv = styled.header`
   width: 100%;
 `
 
-const FixedBottomContainer = styled.div`
-  position: fixed;
-  bottom: ${FOOTER_HEIGHT};
+const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
+  bottom: ${props => props.isNewSession ? 'auto' : FOOTER_HEIGHT};
   left: 0;
   right: 0;
   background-color: ${vscBackground};
@@ -364,10 +364,37 @@ function GUI() {
   return (
     <>
       {!window.isPearOverlay && !!showTutorialCard && 
-        <TutorialCardDiv >
+        <TutorialCardDiv>
             <OnboardingTutorial onClose={onCloseTutorialCard}/>
         </TutorialCardDiv>
       }
+      
+      {state.history.length === 0 && (
+        <FixedBottomContainer isNewSession={true}>
+          <ContinueInputBox
+            onEnter={(editorContent, modifiers) => {
+              sendInput(editorContent, modifiers);
+            }}
+            isLastUserInput={false}
+            isMainInput={true}
+            hidden={active}
+          />
+          {getLastSessionId() && (
+            <div className="mt-2">
+              <NewSessionButton
+                onClick={async () => {
+                  loadLastSession();
+                }}
+                className="mr-auto flex items-center gap-2"
+              >
+                <ArrowLeftIcon width="11px" height="11px" />
+                Last Session
+              </NewSessionButton>
+            </div>
+          )}
+        </FixedBottomContainer>
+      )}
+
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
           <StepsDiv>
@@ -496,31 +523,18 @@ function GUI() {
         </StopButtonContainer>
       )}
 
-      <FixedBottomContainer>
-        <ContinueInputBox
-          onEnter={(editorContent, modifiers) => {
-            sendInput(editorContent, modifiers);
-          }}
-          isLastUserInput={false}
-          isMainInput={true}
-          hidden={active}
-        />
-        {state.history.length === 0 && getLastSessionId() ?
-          (
-            <div className="mt-2">
-              <NewSessionButton
-                onClick={async () => {
-                  loadLastSession();
-                }}
-                className="mr-auto flex items-center gap-2"
-              >
-                <ArrowLeftIcon width="11px" height="11px" />
-                Last Session
-              </NewSessionButton>
-            </div>
-          ) : null
-        }
-      </FixedBottomContainer>
+      {state.history.length > 0 && (
+        <FixedBottomContainer isNewSession={false}>
+          <ContinueInputBox
+            onEnter={(editorContent, modifiers) => {
+              sendInput(editorContent, modifiers);
+            }}
+            isLastUserInput={false}
+            isMainInput={true}
+            hidden={active}
+          />
+        </FixedBottomContainer>
+      )}
     </>
   );
 }
