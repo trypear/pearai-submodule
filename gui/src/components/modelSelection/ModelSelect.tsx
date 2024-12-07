@@ -41,10 +41,10 @@ const StyledListboxButton = styled(Listbox.Button)`
   }
 `;
 
-const StyledListboxOptions = styled(Listbox.Options)`
+const StyledListboxOptions = styled(Listbox.Options)<{ newSession: boolean }>`
   margin-top: 4px;
   position: absolute;
-  bottom: 100%;
+  bottom: ${(props) => props.newSession ? 'auto' : '100%'};
   left: 0;
   list-style: none;
   padding: 4px;
@@ -194,6 +194,7 @@ interface Option {
 }
 
 function ModelSelect() {
+  const state = useSelector((state: RootState) => state.state);
   const dispatch = useDispatch();
   const defaultModel = useSelector(defaultModelSelector);
   const perplexityMode = isPerplexityMode();
@@ -271,7 +272,7 @@ function ModelSelect() {
             <ChevronDownIcon className="h-2.5 w-2.5" aria-hidden="true" />
           </span>
         </StyledListboxButton>
-        <StyledListboxOptions>
+        <StyledListboxOptions newSession={state.history.length === 0 ? true : false}>
           <span
             style={{
               color: lightGray,
