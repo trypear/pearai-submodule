@@ -247,7 +247,7 @@ function PerplexityGUI() {
   useEffect(() => {
     setHistoryKey(prev => prev + 1);
     setSessionKey(prev => prev + 1);
-  }, [state.perplexityHistory]);
+  }, [state.perplexityHistory.length]);
 
   return (
     <>
