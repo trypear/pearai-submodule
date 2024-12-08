@@ -218,7 +218,7 @@ function StepContainer({
           <div
             className="flex gap-1 absolute -bottom-2 right-0"
             style={{
-              zIndex: 200,
+              zIndex: 100,
               color: lightGray,
               fontSize: getFontSize() - 3,
             }}
