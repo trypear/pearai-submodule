@@ -86,7 +86,7 @@ export default function HomePage() {
           if (e.ctrlKey || e.metaKey) {
             setTimeout(() => {
               setSearchTerm('');
-            }, 500);
+            }, 200);
             break;
           }
         default:
