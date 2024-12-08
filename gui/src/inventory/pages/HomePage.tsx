@@ -82,6 +82,13 @@ export default function HomePage() {
             setSelectedIndex(0);
           }
           break;
+        case 'e':
+          if (e.ctrlKey || e.metaKey) {
+            setTimeout(() => {
+              setSearchTerm('');
+            }, 500);
+            break;
+          }
         default:
           if (e.key.length === 1 || e.key === 'Backspace') {
             if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.key.includes('Meta')) {
