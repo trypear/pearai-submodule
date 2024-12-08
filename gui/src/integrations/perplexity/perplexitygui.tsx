@@ -207,13 +207,14 @@ function PerplexityGUI() {
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
     useHistory(dispatch, "perplexity");
 
-  const [sessionKey, setSessionKey] = useState(0);
+  const historyKeyRef = useRef(0);
+  const sessionKeyRef = useRef(0);
 
   useWebviewListener(
     "newSession",
     async () => {
       saveSession();
-      setSessionKey(prev => prev + 1);
+      sessionKeyRef.current += 1;
     },
     [saveSession],
   );
@@ -222,7 +223,7 @@ function PerplexityGUI() {
     "loadMostRecentChat",
     async () => {
       await loadMostRecentChat();
-      setSessionKey(prev => prev + 1);
+      sessionKeyRef.current += 1;
     },
     [loadMostRecentChat],
   );
@@ -241,13 +242,11 @@ function PerplexityGUI() {
     [state.perplexityHistory],
   );
 
-  const [historyKey, setHistoryKey] = useState(0);
-
   // force re-render continueInputBox when history changes
   useEffect(() => {
-    setHistoryKey(prev => prev + 1);
-    setSessionKey(prev => prev + 1);
-  }, [state.perplexityHistory.length]);
+    historyKeyRef.current += 1;
+    sessionKeyRef.current += 1;
+  }, [state.perplexityHistory]);
 
   return (
     <>
@@ -333,7 +332,7 @@ function PerplexityGUI() {
                   <NewSessionButton
                     onClick={() => {
                       saveSession();
-                      setSessionKey(prev => prev + 1);
+                      sessionKeyRef.current += 1;
                     }}
                     className="mr-auto"
                   >
@@ -357,7 +356,7 @@ function PerplexityGUI() {
                 >
                   {item.message.role === "user" ? (
                     <ContinueInputBox
-                      key={historyKey}
+                      key={historyKeyRef.current}
                       onEnter={async (editorState, modifiers) => {
                         streamResponse(
                           editorState,
@@ -460,7 +459,7 @@ function PerplexityGUI() {
             )}
           >
             <ContinueInputBox
-              key={sessionKey}
+              key={sessionKeyRef.current}
               onEnter={(editorContent, modifiers) => {
                 sendInput(editorContent, modifiers);
               }}
@@ -484,7 +483,7 @@ function PerplexityGUI() {
               <NewSessionButton
                 onClick={() => {
                   saveSession();
-                  setSessionKey(prev => prev + 1);
+                  sessionKeyRef.current += 1;
                 }}
                 className="mr-auto"
               >
