@@ -39,7 +39,6 @@ import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
   StopButton,
-  StepsDiv,
   NewSessionButton,
   fallbackRender,
 } from "../../pages/gui";
@@ -48,6 +47,26 @@ import { cn } from "@/lib/utils";
 import { Citations } from './Citations';
 import { Button } from "@/components/ui/button";
 import { HistorySidebar } from "@/components/HistorySidebar";
+import styled from "styled-components";
+import { lightGray } from "@/components";
+
+
+export const StepsDiv = styled.div`
+  padding-bottom: 8px;
+  position: relative;
+  background-color: transparent;
+
+  & > * {
+    position: relative;
+  }
+
+  .thread-message {
+    margin: 16px 8px 0 8px;
+  }
+  .thread-message:not(:first-child) {
+    border-top: 1px solid ${lightGray}22;
+  }
+`;
 
 
 function PerplexityGUI() {
