@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Search, Plus, Brain, Sparkles, RotateCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import HeaderButtonWithText from "@/components/HeaderButtonWithText";
 import { TrashIcon, Pencil2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { Badge } from "../../components/ui/badge";
@@ -396,24 +397,46 @@ export default function Mem0GUI() {
                 )
               }
             <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleAddNewMemory}
-            className="hover:bg-input/90"
-            disabled={!!searchQuery || isExpanded}
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={fetchMemories}
-            className="hover:bg-input/90"
-            disabled={isLoading}
-          >
-            <RotateCcw className="h-5 w-5" />
-          </Button>
+              <TooltipProvider>
+                <Tooltip
+                    delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={handleAddNewMemory}
+                      className="hover:bg-input/90"
+                      disabled={!!searchQuery || isExpanded}
+                    >
+                      <Plus className="h-5 w-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={-8} side="top">
+                    <p className="bg-input p-2 border rounded-lg shadow-lg">Add a new memory</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip
+                  delayDuration={100}
+                >
+                  <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={fetchMemories}
+                    className="hover:bg-input/90"
+                    disabled={isLoading}
+                  >
+                    <RotateCcw className="h-5 w-5" />
+                  </Button>
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={-8} side="top">
+                    <p className="bg-input p-2 border rounded-lg shadow-lg">Refresh memories</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
           <div
             ref={searchRef}
             className={`relative transition-all duration-200 ease-in-out mr-14 ${
