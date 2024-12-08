@@ -1,5 +1,3 @@
-// Note: This file has been modified significantly from its original contents. New commands have been added, and there has been renaming from Continue to PearAI. pearai-submodule is a fork of Continue (https://github.com/continuedev/continue).
-
 import { ConfigHandler } from "core/config/ConfigHandler";
 import {
   FromCoreProtocol,
