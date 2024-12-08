@@ -51,7 +51,7 @@ import styled from "styled-components";
 import { lightGray } from "@/components";
 
 
-export const StepsDiv = styled.div`
+const StepsDiv = styled.div`
   padding-bottom: 8px;
   position: relative;
   background-color: transparent;
