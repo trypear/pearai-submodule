@@ -1,11 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { useSelector } from "react-redux";
 import { Button } from "@/components/ui/button";
 import {
-    PhotoIcon as OutlinePhotoIcon,
+    PhotoIcon,
     AtSymbolIcon,
     PlusIcon,
-    PhotoIcon as SolidPhotoIcon,
 } from "@heroicons/react/24/outline";
 import styled from "styled-components";
 import {
@@ -15,25 +14,17 @@ import {
     vscButtonForeground,
     vscInputBackground
 } from "..";
-import { getFontSize } from "../../util";
 import { modelSupportsImages } from "core/llm/autodetect"; // Updated import
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors"; // Added import
 import { isPerplexityMode } from "../../util/bareChatMode"; // Added import
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
-  padding: 4px 0;
-  display: ${(props) => (props.isHidden ? "none" : "flex")};
-  justify-content: flex-start;
-  gap: 6px;
-  align-items: flex-end;
-  z-index: 50;
-  font-size: ${getFontSize()}px;
-  cursor: ${(props) => (props.isHidden ? "default" : "text")};
-  pointer-events: ${(props) => (props.isHidden ? "none" : "auto")};
-
-  & > * {
-    flex: 0 0 auto;
-  }
+    display: ${(props) => (props.isHidden ? "none" : "flex")};
+    gap: 0.5rem;
+    align-items: flex-end;
+    z-index: 10;
+    cursor: ${(props) => (props.isHidden ? "default" : "text")};
+    pointer-events: ${(props) => (props.isHidden ? "none" : "auto")};
 `;
 
 interface ContextToolbarProps {
@@ -44,7 +35,6 @@ interface ContextToolbarProps {
 }
 
 function ContextToolbar(props: ContextToolbarProps) {
-    const [fileSelectHovered, setFileSelectHovered] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const defaultModel = useSelector(defaultModelSelector);
     const perplexityMode = isPerplexityMode();
@@ -56,40 +46,25 @@ function ContextToolbar(props: ContextToolbarProps) {
             id="context-toolbar"
         >
             <Button
-                variant="secondary"
-                className="rounded-lg gap-1 h-7 px-2"
-                size="sm"
+                className="gap-1 text-xs bg-input h-6 px-2"
                 onClick={(e) => {
                     props.onAddContextItem?.();
                 }}
             >
                 <AtSymbolIcon
                     width="16px"
-                    height="16px"                    
-                  />
+                    height="16px"
+                />
                 Context
             </Button>
             <Button
-                variant="secondary"
-                className="rounded-lg gap-1 h-7 px-2"
-                size="sm"
+                className="gap-1 h-6 bg-input text-xs px-2"
             >
                 <PlusIcon
                     width="16px"
-                    height="16px"                    
-                  />
-                Current selection
-            </Button>
-            <Button
-                variant="secondary"
-                className="rounded-lg gap-1 h-7 px-2"
-                size="sm"
-            >
-                <PlusIcon
-                    width="16px"
-                    height="16px"                    
-                  />
-                Current file
+                    height="16px"
+                />
+                Current File
             </Button>
 
             {!perplexityMode && defaultModel &&
@@ -99,10 +74,7 @@ function ContextToolbar(props: ContextToolbarProps) {
                     defaultModel.title,
                     defaultModel.capabilities,
                 ) && (
-                    <span
-                        onMouseLeave={() => setFileSelectHovered(false)}
-                        onMouseEnter={() => setFileSelectHovered(true)}
-                    >
+                    <span>
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -114,25 +86,15 @@ function ContextToolbar(props: ContextToolbarProps) {
                                 }
                             }}
                         />
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7" 
+                        <Button
+                            className="h-0 p-0"
                             onClick={() => fileInputRef.current?.click()}
                         >
-                            {fileSelectHovered ? (
-                                <SolidPhotoIcon
-                                    width="16px"
-                                    height="16px"
-                                    color={lightGray}
-                                />
-                            ) : (
-                                <OutlinePhotoIcon
-                                    width="16px"
-                                    height="16px"
-                                    color={lightGray}
-                                />
-                            )}
+                            <PhotoIcon
+                                width="17px"
+                                height="17px"
+								color={lightGray}
+                            />
                         </Button>
                     </span>
                 )}

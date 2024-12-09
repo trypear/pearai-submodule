@@ -38,7 +38,7 @@ export const VSC_THEME_COLOR_VARS = [
   VSC_BADGE_FOREGROUND_VAR,
 ];
 
-export const defaultBorderRadius = "5px";
+export const defaultBorderRadius = "8px";
 export const lightGray = "#999998";
 export const greenButtonColor = "#189e72";
 

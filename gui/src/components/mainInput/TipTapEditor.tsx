@@ -65,9 +65,10 @@ import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 
 
 const InputBoxDiv = styled.div`
+	position: relative;
   resize: none;
   gap: 12px;
-  padding: 12px 12px;
+  padding: 12px;
   font-family: inherit;
   border-radius: ${defaultBorderRadius};
   margin: 0;
@@ -75,7 +76,7 @@ const InputBoxDiv = styled.div`
   width: calc(100% - 18px);
   background-color: ${vscEditorBackground};
   color: ${vscForeground};
-  z-index: 1;
+  z-index: 20;
   outline: 1px solid ${vscSidebarBorder};
   font-size: ${getFontSize()}px;
   &:focus {
@@ -105,11 +106,13 @@ const HoverDiv = styled.div`
   left: 0;
   opacity: 0.5;
   background-color: ${vscBadgeBackground};
+	border-radius: ${defaultBorderRadius};
   color: ${vscForeground};
-  z-index: 100;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
+	pointer-events: none;
 `;
 
 const HoverTextDiv = styled.div`
@@ -119,10 +122,11 @@ const HoverTextDiv = styled.div`
   top: 0;
   left: 0;
   color: ${vscForeground};
-  z-index: 100;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
+	pointer-events: none;
 `;
 
 
@@ -922,7 +926,7 @@ const TipTapEditor = memo(function TipTapEditor({
   }, [editor, source]);
 
   return (
-    
+
     <InputBoxDiv
       onKeyDown={(e) => {
         if (e.key === "Alt") {
@@ -975,8 +979,8 @@ const TipTapEditor = memo(function TipTapEditor({
         });
         event.preventDefault();
       }}
-    > 
-      <ContextToolbar 
+    >
+      <ContextToolbar
 hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
         onImageFileSelected={(file) => {
           handleImageFile(file).then(([img, dataUrl]) => {
@@ -1035,7 +1039,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
         ) && (
           <>
             <HoverDiv></HoverDiv>
-            <HoverTextDiv>Hold ⇧ to drop image</HoverTextDiv>
+            <HoverTextDiv>Drop Here</HoverTextDiv>
           </>
         )}
     </InputBoxDiv>

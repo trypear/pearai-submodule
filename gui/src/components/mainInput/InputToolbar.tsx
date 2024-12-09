@@ -43,19 +43,13 @@ import { ShortcutButton } from "../ui/shortcutButton";
 
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
-  padding: 4px 0;
   display: ${(props) => (props.isHidden ? "none" : "flex")};
   justify-content: space-between;
-  gap: 1px;
+  gap: 4px;
   align-items: flex-end;
-  z-index: 50;
-  font-size: ${getFontSize()}px;
+  z-index: 10;
   cursor: ${(props) => (props.isHidden ? "default" : "text")};
   pointer-events: ${(props) => (props.isHidden ? "none" : "auto")};
-
-  & > * {
-    flex: 0 0 auto;
-  }
 `;
 
 interface InputToolbarProps {
@@ -108,18 +102,18 @@ function InputToolbar(props: InputToolbarProps) {
         onClick={props.onClick}
         id="input-toolbar"
       >
-        <div className="flex gap-4 items-center">
+        <div className="flex gap-3 items-center">
           {!perplexityMode && (
             <>
               <ShortcutButton
                 keys={["⎇", "⏎"]}
-                label="Use file"
+                label="Use current file"
                 onClick={() => ({
                   // useCodebase: false,
-                  // noContext: !useActiveFile, 
+                  // noContext: !useActiveFile,
                 })}
               />
-               {/* TODO:  add onClick to add file*/}
+              {/* TODO:  add onClick to add file*/}
               <ShortcutButton
                 keys={[getMetaKeyLabel(), "⏎"]}
                 onClick={() => {
@@ -133,7 +127,7 @@ function InputToolbar(props: InputToolbarProps) {
             </>
           )}
         </div>
-       
+
 
         {/* <span className="flex gap-2 items-center whitespace-nowrap">
           <>
@@ -231,12 +225,11 @@ function InputToolbar(props: InputToolbarProps) {
             </StyledSpan>
           ) : null} */}
           <Button
-                variant="default"
-                className="gap-2"
-                size="sm"
+                className="gap-1 h-6 bg-[#AFF349] text-[#005A4E] text-xs px-2"
+								// gap-1 h-6 bg-input text-xs px-2
             >
-                <ArrowTurnDownLeftIcon width="16px"
-                    height="16px" ></ArrowTurnDownLeftIcon>
+                <ArrowTurnDownLeftIcon width="12px"
+                    height="12px" ></ArrowTurnDownLeftIcon>
                 Send
             </Button>
           {/* <EnterButton

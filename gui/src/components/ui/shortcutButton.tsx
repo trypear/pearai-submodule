@@ -19,18 +19,14 @@ interface ShortcutButtonProps {
 const Container = styled.div`
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.25rem;
     cursor: pointer;
     border-radius: 6px;
     color: ${vscForeground};
-
-    &:hover {
-        opacity: 0.6;
-    }
 `;
 
 const StyledShortcutButton = styled.div<{ offFocus: boolean }>`
-    padding: 1px 4px;
+    padding: 0rem 0.25rem;
     display: flex;
     align-items: center;
     gap: 2px;
@@ -58,7 +54,7 @@ export function ShortcutButton({ keys, onClick, offFocus = false, className = ""
                     </Fragment>
                 ))}
             </StyledShortcutButton>
-            {label && <span className="text-xs">{label}</span>}
+            {label && <span className="text-[10px]">{label}</span>}
         </Container>
     );
 }
