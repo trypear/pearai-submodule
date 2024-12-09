@@ -58,7 +58,6 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
-import TopBar from "./TopBarIndicators";
 import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 import { TipTapContextMenu } from './TipTapContextMenu';
 
@@ -161,7 +160,6 @@ interface TipTapEditorProps {
 export const handleCopy = (editor: Editor) => {
   const selection = editor.state.selection;
   const text = editor.state.doc.textBetween(selection.from, selection.to, '\n');
-  // console.dir({text}); 
   navigator.clipboard.writeText(text);
 };
 
@@ -985,8 +983,6 @@ const TipTapEditor = memo(function TipTapEditor({
   const [contextMenu, setContextMenu] = useState<{
     position: { x: number; y: number };
   } | null>(null);
-
-  // console.log('TipTapEditor rendering, editor exists:', !!editor);
 
   // Add context menu handler
   useEffect(() => {

@@ -1,11 +1,4 @@
 import React from 'react';
-import {
-  Button,
-  defaultBorderRadius,
-  lightGray,
-  vscBackground,
-  vscForeground,
-} from "../components";
 
 interface CustomContextMenuProps {
   text: string;
@@ -21,29 +14,6 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({ text, posi
         navigator.clipboard.writeText(text);
       },
     },
-    // {
-    //   label: "Cut",
-    //   action: async () => {
-    //     await navigator.clipboard.writeText(text);
-    //     const selection = window.getSelection();
-    //     if (selection) {
-    //       const range = selection.getRangeAt(0);
-    //       range.deleteContents();
-    //     }
-    //   },
-    // },
-    // {
-    //   label: "Paste",
-    //   action: async () => {
-    //     const text = await navigator.clipboard.readText();
-    //     const selection = window.getSelection();
-    //     if (selection) {
-    //       const range = selection.getRangeAt(0);
-    //       range.deleteContents();
-    //       range.insertNode(document.createTextNode(text));
-    //     }
-    //   },
-    // },
   ];
 
   return (
