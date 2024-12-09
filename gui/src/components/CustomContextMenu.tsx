@@ -21,29 +21,29 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({ text, posi
         navigator.clipboard.writeText(text);
       },
     },
-    {
-      label: "Cut",
-      action: async () => {
-        await navigator.clipboard.writeText(text);
-        const selection = window.getSelection();
-        if (selection) {
-          const range = selection.getRangeAt(0);
-          range.deleteContents();
-        }
-      },
-    },
-    {
-      label: "Paste",
-      action: async () => {
-        const text = await navigator.clipboard.readText();
-        const selection = window.getSelection();
-        if (selection) {
-          const range = selection.getRangeAt(0);
-          range.deleteContents();
-          range.insertNode(document.createTextNode(text));
-        }
-      },
-    },
+    // {
+    //   label: "Cut",
+    //   action: async () => {
+    //     await navigator.clipboard.writeText(text);
+    //     const selection = window.getSelection();
+    //     if (selection) {
+    //       const range = selection.getRangeAt(0);
+    //       range.deleteContents();
+    //     }
+    //   },
+    // },
+    // {
+    //   label: "Paste",
+    //   action: async () => {
+    //     const text = await navigator.clipboard.readText();
+    //     const selection = window.getSelection();
+    //     if (selection) {
+    //       const range = selection.getRangeAt(0);
+    //       range.deleteContents();
+    //       range.insertNode(document.createTextNode(text));
+    //     }
+    //   },
+    // },
   ];
 
   return (
@@ -54,7 +54,7 @@ export const CustomContextMenu: React.FC<CustomContextMenuProps> = ({ text, posi
       {menuItems.map((item, index) => (
         <div
           key={index}
-          className="px-2 py-1 text-left hover:bg-list-activeSelection-background flex items-center gap-2  rounded-lg"
+          className="px-2 py-1 text-left hover:bg-list-activeSelection-background flex items-center gap-2  rounded-md"
           style={{
             color: 'var(--dropdown-foreground)',
           }}
