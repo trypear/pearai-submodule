@@ -37,7 +37,6 @@ import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
   StopButton,
-  StepsDiv,
   NewSessionButton,
   fallbackRender,
 } from "../../pages/gui";
@@ -45,6 +44,26 @@ import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import AiderManualInstallation from "./AiderManualInstallation";
 import { cn } from "@/lib/utils";
 import type { AiderState } from "../../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
+import styled from "styled-components";
+import { lightGray } from "@/components";
+
+
+const StepsDiv = styled.div`
+  padding-bottom: 8px;
+  position: relative;
+  background-color: transparent;
+
+  & > * {
+    position: relative;
+  }
+
+  .thread-message {
+    margin: 16px 8px 0 8px;
+  }
+  .thread-message:not(:first-child) {
+    border-top: 1px solid ${lightGray}22;
+  }
+`;
 
 function AiderGUI() {
   const posthog = usePostHog();
@@ -52,6 +71,7 @@ function AiderGUI() {
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const [sessionKey, setSessionKey] = useState(0);
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
   const active = useSelector((state: RootState) => state.state.aiderActive);
@@ -195,7 +215,7 @@ function AiderGUI() {
     "newSession",
     async () => {
       saveSession();
-      mainTextInputRef.current?.focus?.();
+      setSessionKey(prev => prev + 1);
     },
     [saveSession],
   );
@@ -270,6 +290,13 @@ useEffect(() => {
     }
     if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
       return <AiderManualInstallation />;
+    }
+    if (aiderProcessState.state === "installing") {
+      msg = (
+        <>
+          Installing PearAI Creator dependencies (aider), this may take a few minutes...
+        </>
+      );
     }
     if (aiderProcessState.state === "starting" || aiderProcessState.state === "restarting") {
       msg = (
@@ -387,6 +414,7 @@ useEffect(() => {
                       onClick={() => {
                         saveSession();
                         ideMessenger.post("aiderResetSession", undefined);
+                        setSessionKey(prev => prev + 1);
                       }}
                       className="mr-auto"
                     >
@@ -511,6 +539,7 @@ useEffect(() => {
               )}
             >
               <ContinueInputBox
+                key={sessionKey}
                 onEnter={(editorContent, modifiers) => {
                   sendInput(editorContent, modifiers);
                 }}
@@ -537,6 +566,7 @@ useEffect(() => {
                 onClick={() => {
                   saveSession();
                   ideMessenger.post("aiderResetSession", undefined);
+                  setSessionKey(prev => prev + 1);
                 }}
                 className="mr-auto"
               >

@@ -43,45 +43,48 @@ async function updateAiderVersion() {
   } catch (error) {
     console.error("Error updating Aider version:", error);
   }
-}
-
-async function updateUsingPackageManager() {
-  const updateMethods = [
-    {
-      name: 'pipx reinstall',
-      command: async () => {
+}async function updateUsingPackageManager() {
+  try {
+    console.log('Attempting to update aider-chat using pipx with Python 3.9...');
+    
+    const selection = await vscode.window.showInformationMessage(
+      "A new version of aider is required for PearAI creator to work. Update aider?",
+      'Yes',
+      'No'
+    );
+    if (selection === 'Yes') {
+      await vscode.window.showInformationMessage('Upgrading aider...');
+      
+      // First try a clean reinstall
+      try {
         await execSync(`pipx uninstall aider-chat`);
-        await execSync(`pipx install aider-chat==${PEARAI_AIDER_VERSION}`);
+        await execSync(`pipx install --python python3.9 aider-chat==${PEARAI_AIDER_VERSION}`);
+        console.log('Successfully reinstalled aider-chat');
+        await vscode.commands.executeCommand("pearai.aiderResetSession");
+        await vscode.window.showInformationMessage('Successfully upgraded aider!');
+        return;
+      } catch (error) {
+        console.log('Reinstall failed, attempting upgrade...', error);
       }
-    },
-    {
-      name: 'pipx upgrade',
-      command: async () => await execSync(`pipx upgrade aider-chat`)
-    },
-    {
-      name: 'brew upgrade',
-      condition: () => IS_MAC || IS_LINUX,
-      command: async () => await execSync(`brew upgrade aider`)
-    }
-  ];
 
-  for (const method of updateMethods) {
-    if (method.condition && !method.condition()) {
-      continue;
+      // Fall back to upgrade if reinstall fails 
+      try {
+        await execSync(`pipx upgrade --python python3.9 aider-chat`);
+        console.log('Successfully upgraded aider-chat');
+        await vscode.commands.executeCommand("pearai.aiderResetSession");
+        await vscode.window.showInformationMessage('Successfully upgraded aider!');
+        return;
+      } catch (error) {
+        console.log('Upgrade failed:', error);
+        await vscode.window.showErrorMessage('Failed to upgrade aider');
+        throw error;
+      }
     }
-
-    try {
-      await method.command();
-      console.log(`Successfully updated using ${method.name}`);
-      vscode.commands.executeCommand("pearai.aiderResetSession");
-      return;
-    } catch (error) {
-      console.log(`${method.name} failed:`, error);
-      // Continue to next method
-    }
+  } catch (error) {
+    console.error('Failed to update aider-chat:', error);
+    await vscode.window.showErrorMessage('Failed to upgrade aider.');
+    throw new Error('Failed to update aider-chat using pipx');
   }
-
-  throw new Error('All update methods failed');
 }
 
 

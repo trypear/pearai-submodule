@@ -446,7 +446,7 @@ export default function AIToolInventory() {
         break;
       case AIToolID.AUTOCOMPLETE:
         ideMessenger.post("invokeVSCodeCommandById", {
-          commandId: "supermaven.newConversationTab", // supermaven new chat command
+          commandId: "supermaven.onStatusBarClick", // supermaven status bar click
         });
         ideMessenger.post("closeOverlay", undefined);
         break;

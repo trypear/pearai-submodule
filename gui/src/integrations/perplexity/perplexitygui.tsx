@@ -39,7 +39,6 @@ import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
   StopButton,
-  StepsDiv,
   NewSessionButton,
   fallbackRender,
 } from "../../pages/gui";
@@ -48,6 +47,26 @@ import { cn } from "@/lib/utils";
 import { Citations } from './Citations';
 import { Button } from "@/components/ui/button";
 import { HistorySidebar } from "@/components/HistorySidebar";
+import styled from "styled-components";
+import { lightGray } from "@/components";
+
+
+const StepsDiv = styled.div`
+  padding-bottom: 8px;
+  position: relative;
+  background-color: transparent;
+
+  & > * {
+    position: relative;
+  }
+
+  .thread-message {
+    margin: 16px 8px 0 8px;
+  }
+  .thread-message:not(:first-child) {
+    border-top: 1px solid ${lightGray}22;
+  }
+`;
 
 
 function PerplexityGUI() {
@@ -188,11 +207,14 @@ function PerplexityGUI() {
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
     useHistory(dispatch, "perplexity");
 
+  const historyKeyRef = useRef(0);
+  const sessionKeyRef = useRef(0);
+
   useWebviewListener(
     "newSession",
     async () => {
       saveSession();
-      mainTextInputRef.current?.focus?.();
+      sessionKeyRef.current += 1;
     },
     [saveSession],
   );
@@ -201,7 +223,7 @@ function PerplexityGUI() {
     "loadMostRecentChat",
     async () => {
       await loadMostRecentChat();
-      mainTextInputRef.current?.focus?.();
+      sessionKeyRef.current += 1;
     },
     [loadMostRecentChat],
   );
@@ -219,6 +241,12 @@ function PerplexityGUI() {
     },
     [state.perplexityHistory],
   );
+
+  // force re-render continueInputBox when history changes
+  useEffect(() => {
+    historyKeyRef.current += 1;
+    sessionKeyRef.current += 1;
+  }, [state.perplexityHistory]);
 
   return (
     <>
@@ -304,6 +332,7 @@ function PerplexityGUI() {
                   <NewSessionButton
                     onClick={() => {
                       saveSession();
+                      sessionKeyRef.current += 1;
                     }}
                     className="mr-auto"
                   >
@@ -327,6 +356,7 @@ function PerplexityGUI() {
                 >
                   {item.message.role === "user" ? (
                     <ContinueInputBox
+                      key={historyKeyRef.current}
                       onEnter={async (editorState, modifiers) => {
                         streamResponse(
                           editorState,
@@ -429,6 +459,7 @@ function PerplexityGUI() {
             )}
           >
             <ContinueInputBox
+              key={sessionKeyRef.current}
               onEnter={(editorContent, modifiers) => {
                 sendInput(editorContent, modifiers);
               }}
@@ -452,6 +483,7 @@ function PerplexityGUI() {
               <NewSessionButton
                 onClick={() => {
                   saveSession();
+                  sessionKeyRef.current += 1;
                 }}
                 className="mr-auto"
               >
