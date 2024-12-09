@@ -972,8 +972,6 @@ const TipTapEditor = memo(function TipTapEditor({
     if (!editor) return;
 
     const handleContextMenu = (event: MouseEvent) => {
-      // console.log('Context menu triggered');
-      // Only handle context menu if target is within editor
       if (!editor.view.dom.contains(event.target as Node)) return;
 
       event.preventDefault();
@@ -984,22 +982,13 @@ const TipTapEditor = memo(function TipTapEditor({
       });
     };
 
-    const handleClickOutside = (event: MouseEvent) => {
-      if (contextMenu && !editor.view.dom.contains(event.target as Node)) {
-        setContextMenu(null);
-      }
-    };
-
-    // Attach listeners to editor DOM
     const editorDom = editor.view.dom;
     editorDom.addEventListener('contextmenu', handleContextMenu);
-    document.addEventListener('click', handleClickOutside);
 
     return () => {
       editorDom.removeEventListener('contextmenu', handleContextMenu);
-      document.removeEventListener('click', handleClickOutside);
     };
-  }, [editor, contextMenu]);
+  }, [editor]);
 
   return (
     <InputBoxDiv
