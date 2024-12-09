@@ -4,7 +4,7 @@ import { getHeaders } from "core/pearaiServer/stubs/headers";
 import { MemoryChange } from "../../util/integrationUtils";
 import * as vscode from 'vscode';
 
-export async function getMem0Memories(repo_id: string, page: number=1, page_size: number = 4, searchQuery: string = "") {
+export async function getMem0Memories(repo_id: string, page: number=1, page_size: number = 100, searchQuery: string = "") {
     try {
       const baseHeaders = await getHeaders();
       const auth: any = await vscode.commands.executeCommand("pearai.getPearAuth");

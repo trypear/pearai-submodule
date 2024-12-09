@@ -97,11 +97,16 @@ function formatTimestamp(timestamp: string): string {
   }
 
 export default function Mem0GUI() {
+  const [apiPage, setApiPage] = useState(1);
+  const [cachedMemories, setCachedMemories] = useState<Memory[]>([]);
+  const memoriesPerPage = 5; // Changed from 4 to 5
+  const memoriesPerAPIFetch = 100;
+
   const [totalCount, setTotalCount] = useState(0);
   const [isSearching, setIsSearching] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1)
+  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
   const ideMessenger = useContext(IdeMessengerContext);
@@ -112,7 +117,6 @@ export default function Mem0GUI() {
   // todo:
   // 1. add pagination info to state (num of pages, current page, etc.)
   // 2. block next page if there are edits in progress, disable page buttons and give a tooltip (save current changes first)
-  
 
   const dispatch = useDispatch();
   const memories = useSelector(
@@ -126,14 +130,13 @@ export default function Mem0GUI() {
 
   const searchRef = useRef<HTMLDivElement>(null)
   const editCardRef = useRef<HTMLDivElement>(null);
-  const memoriesPerPage = 4;
 
   const fetchMemories = async (page: number = 1, search: string = "") => {
     try {
         setIsLoading(true);
         // get all memories
-        const response = await ideMessenger.request('mem0/getMemories', {page, searchQuery: search});
-        const memories = response.results.map((memory) => ({
+        const response = await ideMessenger.request('mem0/getMemories', {page: apiPage, pageSize: memoriesPerAPIFetch, searchQuery: search});
+        const newMemories = response.results.map((memory) => ({
             id: memory.id,
             content: memory.memory,
             timestamp: memory.updated_at || memory.created_at,
@@ -141,9 +144,12 @@ export default function Mem0GUI() {
             isDeleted: false,
             isNew: false
         }));
-        dispatch(setMem0Memories(memories));
-        setOriginalMemories(memories);
+
+        setCachedMemories(prev => [...prev, ...newMemories]);
+        dispatch(setMem0Memories(cachedMemories));
+        setOriginalMemories(cachedMemories);
         setTotalCount(response.count);
+        // setTotalCount(cachedMemories.length);
     } catch (error) {
         console.error('Failed to fetch memories:', error);
     } finally {

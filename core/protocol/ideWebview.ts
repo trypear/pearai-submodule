@@ -62,7 +62,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   getUrlTitle: [string, string];
   pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  "mem0/getMemories": [{page?: number, page_size?: number, searchQuery?: string}, PaginatedMemories];
+  "mem0/getMemories": [{page?: number, pageSize?: number, searchQuery?: string}, PaginatedMemories];
   // eslint-disable-next-line @typescript-eslint/naming-convention
   "mem0/updateMemories": [{ changes: MemoryChange[] }, boolean];
 };
