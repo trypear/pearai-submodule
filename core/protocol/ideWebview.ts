@@ -1,5 +1,5 @@
 import { AiderState } from "../../extensions/vscode/src/integrations/aider/types/aiderTypes.js";
-import { ToolType, Memory, MemoryChange } from "../../extensions/vscode/src/util/integrationUtils.js";
+import { ToolType, PaginatedMemories, MemoryChange } from "../../extensions/vscode/src/util/integrationUtils.js";
 import type { RangeInFileWithContents } from "../commands/util.js";
 import type { ContextSubmenuItem } from "../index.js";
 import { ToIdeFromWebviewOrCoreProtocol } from "./ide.js";
@@ -61,7 +61,9 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   openInventoryHome: [undefined, void];
   getUrlTitle: [string, string];
   pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
-  "mem0/getMemories": [undefined, Memory[]];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  "mem0/getMemories": [{page?: number, page_size?: number, searchQuery?: string}, PaginatedMemories];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   "mem0/updateMemories": [{ changes: MemoryChange[] }, boolean];
 };
 

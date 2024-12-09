@@ -13,6 +13,13 @@ export interface ToolCommand {
   args?: any;
 }
 
+export interface PaginatedMemories {
+  count: number;
+  next: string;
+  previous: string;
+  results: Memory[];
+}
+
 export interface Memory {
   id: string;
   memory: string;

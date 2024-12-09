@@ -128,8 +128,7 @@ export class VsCodeMessenger {
       return isAiderInstalled;
     });
     this.onWebview("mem0/getMemories", async (msg) => {
-
-      const memories = await getMem0Memories(PearAIServer._getRepoId());
+      const memories = await getMem0Memories(PearAIServer._getRepoId(), msg.data?.page, msg.data?.page_size, msg.data?.searchQuery);
       return memories;
     }); 
     this.onWebview("mem0/updateMemories", async (msg) => {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -13,6 +13,7 @@ import { IdeMessengerContext } from '../../context/IdeMessenger';
 import { setMem0Memories } from "@/redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useNavigate } from "react-router-dom";
+import { debounce } from 'lodash';
 
 
 export interface Memory {
@@ -96,6 +97,8 @@ function formatTimestamp(timestamp: string): string {
   }
 
 export default function Mem0GUI() {
+  const [totalCount, setTotalCount] = useState(0);
+  const [isSearching, setIsSearching] = useState(false);
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("");
   const [isExpanded, setIsExpanded] = useState(false)
@@ -105,6 +108,11 @@ export default function Mem0GUI() {
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const navigate = useNavigate();
+
+  // todo:
+  // 1. add pagination info to state (num of pages, current page, etc.)
+  // 2. block next page if there are edits in progress, disable page buttons and give a tooltip (save current changes first)
+  
 
   const dispatch = useDispatch();
   const memories = useSelector(
@@ -120,12 +128,12 @@ export default function Mem0GUI() {
   const editCardRef = useRef<HTMLDivElement>(null);
   const memoriesPerPage = 4;
 
-  const fetchMemories = async () => {
+  const fetchMemories = async (page: number = 1, search: string = "") => {
     try {
         setIsLoading(true);
         // get all memories
-        const response = await ideMessenger.request('mem0/getMemories', undefined);
-        const memories = response.map((memory) => ({
+        const response = await ideMessenger.request('mem0/getMemories', {page, searchQuery: search});
+        const memories = response.results.map((memory) => ({
             id: memory.id,
             content: memory.memory,
             timestamp: memory.updated_at || memory.created_at,
@@ -135,12 +143,23 @@ export default function Mem0GUI() {
         }));
         dispatch(setMem0Memories(memories));
         setOriginalMemories(memories);
+        setTotalCount(response.count);
     } catch (error) {
         console.error('Failed to fetch memories:', error);
     } finally {
         setIsLoading(false);
+        setIsSearching(false);
     }
   };
+
+  const handleSearch = useCallback(
+    debounce((query: string) => {
+        setIsSearching(true);
+        setCurrentPage(1); // Reset to first page on new search
+        fetchMemories(1, query);
+    }, 300),
+    []
+  );
 
   const handleAddNewMemory = () => {
     // reset search query if any
@@ -180,7 +199,7 @@ export default function Mem0GUI() {
         });
         
         if (response) {
-            await fetchMemories();
+            await fetchMemories(1);
         }
       } catch (error) {
         console.error('Failed to save memories:', error);
@@ -292,15 +311,16 @@ export default function Mem0GUI() {
   };
 
    // Update filteredMemories to use memories state
-  const filteredMemories = useMemo(() => {
-    return memories.filter(memory => 
-    memory.content.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery, memories]);
+  // const filteredMemories = useMemo(() => {
+  //   return memories.filter(memory => 
+  //   memory.content.toLowerCase().includes(searchQuery.toLowerCase())
+  //   );
+  // }, [searchQuery, memories]);
   
 
   // Get total pages based on filtered results
-  const totalPages = Math.ceil(filteredMemories.length / memoriesPerPage);
+  const totalPages = Math.ceil(totalCount / memoriesPerPage);
+  // const totalPages = Math.ceil(filteredMemories.length / memoriesPerPage);
 
   // Reset to first page when search query changes
   useEffect(() => {
@@ -309,25 +329,30 @@ export default function Mem0GUI() {
 
   useEffect(() => {
     if (memories.length === 0) {
-      fetchMemories();
+      fetchMemories(1);
     }
   }, []);
 
-  const getCurrentPageMemories = () => {
-    const startIndex = (currentPage - 1) * memoriesPerPage;
-    const endIndex = startIndex + memoriesPerPage;
-    return filteredMemories.slice(startIndex, endIndex);
-  }
+  // const getCurrentPageMemories = () => {
+  //   const startIndex = (currentPage - 1) * memoriesPerPage;
+  //   const endIndex = startIndex + memoriesPerPage;
+  //   return filteredMemories.slice(startIndex, endIndex);
+  // }
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+      const newPage = currentPage - 1;
+      setCurrentPage(newPage);
+      fetchMemories(newPage, searchQuery);
     }
   }
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      fetchMemories(newPage, searchQuery);
+
     }
   }
 
@@ -424,7 +449,7 @@ export default function Mem0GUI() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={fetchMemories}
+                    onClick={() => fetchMemories(currentPage, searchQuery)}
                     className="hover:bg-input/90"
                     disabled={isLoading}
                   >
@@ -448,7 +473,10 @@ export default function Mem0GUI() {
               type="text"
               placeholder="Search memories"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                handleSearch(e.target.value);  
+              }}
               className="h-8 pl-10 text-foreground bg-input rounded-xl"
               onFocus={() => setIsExpanded(true)}
             />
@@ -482,14 +510,14 @@ export default function Mem0GUI() {
                 showSparkles
                 secondaryDescription="You can also add memories manually by clicking the + button above!"
             />
-            ) : filteredMemories.length === 0 ? (
+            ) : memories.length === 0 ? (
             <StatusCard
                 title="No Memories Found"
                 description="No memories match your search."
                 icon="search"
             />
             )  :
-        getCurrentPageMemories().map((memory: Memory) => (
+        memories.map((memory: Memory) => (
           <Card 
           key={memory.id} 
           className={`p-2 bg-input hover:bg-input/90 hover:cursor-pointer transition-colors mx-auto
@@ -618,7 +646,7 @@ export default function Mem0GUI() {
         
             <div className="flex flex-1 justify-end">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {filteredMemories.length > 0 && (
+                    {memories.length > 0 && (
                         <>
                             <HeaderButtonWithText
                                 disabled={currentPage === 1}
