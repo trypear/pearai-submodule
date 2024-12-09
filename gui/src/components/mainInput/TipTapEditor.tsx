@@ -137,22 +137,15 @@ const getPlaceholder = (historyLength: number, location: any) => {
 };
 
 export function getDataUrlForFile(file: File, img: HTMLImageElement): string {
-  const targetWidth = 512;
-  const targetHeight = 512;
-  const scaleFactor = Math.min(
-    targetWidth / img.width,
-    targetHeight / img.height,
-  );
-
   const canvas = document.createElement("canvas");
-  canvas.width = img.width * scaleFactor;
-  canvas.height = img.height * scaleFactor;
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
 
   const ctx = canvas.getContext("2d");
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  const downsizedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
-  return downsizedDataUrl;
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+  return dataUrl;
 }
 
 interface TipTapEditorProps {

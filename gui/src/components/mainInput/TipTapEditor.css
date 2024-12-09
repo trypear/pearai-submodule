@@ -31,14 +31,13 @@
 
 .tiptap img {
   position: relative;
-  max-height: 10rem;
+  max-height: 12rem;
+  max-width: 96%;
+  width: auto;
   object-fit: contain;
-  border: 3px solid var(--vscode-badge-background, #bfe2b6);
+  border: 2px solid var(--vscode-list-activeSelectionBackground, #bfe2b6);
   border-radius: 0.4rem;
   margin-top: 0.5rem;
-  image-rendering: -webkit-optimize-contrast; /* For Webkit browsers */
-  image-rendering: crisp-edges; /* For Firefox */
-  -ms-interpolation-mode: nearest-neighbor; /* For IE */
 }
 
 .tiptap img.ProseMirror-selectednode {
