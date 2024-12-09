@@ -4,6 +4,7 @@ import Image from "@tiptap/extension-image";
 import Paragraph from "@tiptap/extension-paragraph";
 import Placeholder from "@tiptap/extension-placeholder";
 import Text from "@tiptap/extension-text";
+import HardBreak from "@tiptap/extension-hard-break";
 import { Plugin } from "@tiptap/pm/state";
 import { Editor, EditorContent, JSONContent, useEditor } from "@tiptap/react";
 import {
@@ -59,6 +60,7 @@ import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
 import TopBar from "./TopBarIndicators";
 import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
+import { TipTapContextMenu } from './TipTapContextMenu';
 
 
 const InputBoxDiv = styled.div`
@@ -134,7 +136,7 @@ const getPlaceholder = (historyLength: number, location: any) => {
     : "Ask a follow-up";
 };
 
-function getDataUrlForFile(file: File, img): string {
+export function getDataUrlForFile(file: File, img: HTMLImageElement): string {
   const targetWidth = 512;
   const targetHeight = 512;
   const scaleFactor = Math.min(
@@ -162,6 +164,45 @@ interface TipTapEditorProps {
   source?: 'perplexity' | 'aider' | 'continue';
   onChange?: (newState: JSONContent) => void;
 }
+
+export const handleCopy = (editor: Editor) => {
+  const selection = editor.state.selection;
+  const text = editor.state.doc.textBetween(selection.from, selection.to, '\n');
+  // console.dir({text}); 
+  navigator.clipboard.writeText(text);
+};
+
+export const handleCut = (editor: Editor) => {
+  const selection = editor.state.selection;
+  const text = editor.state.doc.textBetween(selection.from, selection.to, '\n');
+  navigator.clipboard.writeText(text);
+  editor.commands.deleteSelection();
+};
+
+export const handlePaste = async (editor: Editor) => {
+  const clipboardText = await navigator.clipboard.readText();
+  if (clipboardText) {
+    const lines = clipboardText.split(/\r?\n/);
+    const { tr } = editor.state;
+    const { schema } = editor.state;
+    let pos = editor.state.selection.from;
+
+    // Delete the selected text before inserting new text
+    tr.delete(editor.state.selection.from, editor.state.selection.to);
+
+    lines.forEach((line, index) => {
+      if (index > 0) {
+        tr.insert(pos++, schema.nodes.hardBreak.create());
+      }
+      tr.insertText(line, pos);
+      pos += line.length;
+    });
+
+    editor.view.dispatch(tr);
+    return true;
+  }
+  return false;
+};
 
 const TipTapEditor = memo(function TipTapEditor({
   availableContextProviders,
@@ -481,6 +522,11 @@ const TipTapEditor = memo(function TipTapEditor({
         },
       }),
       CodeBlockExtension,
+      HardBreak.extend({
+        renderText() {
+          return '\n'
+        },
+      }),
     ],
     editorProps: {
       attributes: {
@@ -914,6 +960,47 @@ const TipTapEditor = memo(function TipTapEditor({
     }
   }, [editor, source]);
 
+
+  const [contextMenu, setContextMenu] = useState<{
+    position: { x: number; y: number };
+  } | null>(null);
+
+  // console.log('TipTapEditor rendering, editor exists:', !!editor);
+
+  // Add context menu handler
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleContextMenu = (event: MouseEvent) => {
+      // console.log('Context menu triggered');
+      // Only handle context menu if target is within editor
+      if (!editor.view.dom.contains(event.target as Node)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      setContextMenu({
+        position: { x: event.clientX, y: event.clientY },
+      });
+    };
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contextMenu && !editor.view.dom.contains(event.target as Node)) {
+        setContextMenu(null);
+      }
+    };
+
+    // Attach listeners to editor DOM
+    const editorDom = editor.view.dom;
+    editorDom.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('click', handleClickOutside);
+
+    return () => {
+      editorDom.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [editor, contextMenu]);
+
   return (
     <InputBoxDiv
       onKeyDown={(e) => {
@@ -1010,6 +1097,16 @@ const TipTapEditor = memo(function TipTapEditor({
             <HoverTextDiv>Hold ⇧ to drop image</HoverTextDiv>
           </>
         )}
+      {contextMenu && editor && (
+        <TipTapContextMenu
+          editor={editor}
+          position={contextMenu.position}
+          onClose={() => setContextMenu(null)}
+          defaultModel={defaultModel}
+          ideMessenger={ideMessenger}
+          handleImageFile={handleImageFile}
+        />
+      )}
     </InputBoxDiv>
   );
 });
