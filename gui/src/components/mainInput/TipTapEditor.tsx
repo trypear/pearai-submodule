@@ -361,6 +361,34 @@ const TipTapEditor = memo(function TipTapEditor({
       Document,
       History,
       Image.extend({
+        renderHTML({ HTMLAttributes }) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'image-wrapper';
+          
+          const img = document.createElement('img');
+          Object.entries(HTMLAttributes).forEach(([key, value]) => {
+            img.setAttribute(key, value as string);
+          });
+          
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'image-delete-button';
+          deleteButton.textContent = 'Delete';
+          deleteButton.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Dispatch a custom event that we'll handle in the editor
+            const event = new CustomEvent('deleteImage', {
+              detail: { imgElement: (e.target as HTMLElement).parentElement?.querySelector('img') }
+            });
+            window.dispatchEvent(event);
+          };
+          
+          wrapper.appendChild(img);
+          wrapper.appendChild(deleteButton);
+          
+          return wrapper;
+        },
         addProseMirrorPlugins() {
           const plugin = new Plugin({
             props: {
@@ -987,6 +1015,30 @@ const TipTapEditor = memo(function TipTapEditor({
 
     return () => {
       editorDom.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [editor]);
+
+  // Add this effect in your component
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleDeleteImage = (event: CustomEvent) => {
+      const imgElement = event.detail.imgElement;
+      if (imgElement && editor) {
+        // Find all image nodes in the editor
+        editor.state.doc.descendants((node, pos) => {
+          if (node.type.name === 'image' && node.attrs.src === imgElement.src) {
+            // Delete the specific image node at this position
+            editor.commands.deleteRange({ from: pos, to: pos + 1 });
+            return false; // Stop searching
+          }
+        });
+      }
+    };
+
+    window.addEventListener('deleteImage', handleDeleteImage as EventListener);
+    return () => {
+      window.removeEventListener('deleteImage', handleDeleteImage as EventListener);
     };
   }, [editor]);
 

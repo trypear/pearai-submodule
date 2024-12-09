@@ -30,11 +30,41 @@
 }
 
 .tiptap img {
-  height: auto;
-  max-width: 96%;
-  border: 1px solid transparent;
+  position: relative;
+  max-height: 10rem;
+  object-fit: contain;
+  border: 3px solid var(--vscode-badge-background, #bfe2b6);
+  border-radius: 0.4rem;
+  margin-top: 0.5rem;
+  image-rendering: -webkit-optimize-contrast; /* For Webkit browsers */
+  image-rendering: crisp-edges; /* For Firefox */
+  -ms-interpolation-mode: nearest-neighbor; /* For IE */
 }
 
 .tiptap img.ProseMirror-selectednode {
   border: 1px solid var(--vscode-badge-background, #bfe2b6);
+}
+
+.image-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.image-delete-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  font-size: 0.7rem;
+}
+
+.image-wrapper:hover .image-delete-button {
+  opacity: 1;
 }
