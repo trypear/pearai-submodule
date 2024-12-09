@@ -386,6 +386,7 @@ async startAiderChat(model: string, apiKey: string | undefined, isRestarting: bo
     if (this.aiderProcess.stderr) {
       this.aiderProcess.stderr.on('data', (data: Buffer) => {
         console.error('Aider process stderr:', data.toString());
+        this.captureAiderOutput(data); // Capture stderr output too
       });
     }
 

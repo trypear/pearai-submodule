@@ -159,6 +159,7 @@ class Aider extends BaseLLM {
     let potentialCompletion = false;
     let potentialCompletionTimeout: NodeJS.Timeout | null = null;
     let startedListening = false;
+    let hasStderr = false;
 
     const escapeDollarSigns = (text: string | undefined) => {
       if (!text) {
@@ -197,7 +198,8 @@ class Aider extends BaseLLM {
         lastProcessedIndex = Aider.aiderProcess?.aiderOutput.length || 0;
         
         // Start listening once we see a newline-prefixed message
-        if (!startedListening && newOutput.startsWith('\n')) {
+        // Start listening if we see a newline-prefixed message or if we've received stderr
+        if (!startedListening && (hasStderr || newOutput.startsWith(IS_WINDOWS ? '\r\n' : '\n'))) {
           startedListening = true;
         }
 
