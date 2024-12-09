@@ -37,7 +37,6 @@ import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
   StopButton,
-  StepsDiv,
   NewSessionButton,
   fallbackRender,
 } from "../../pages/gui";
@@ -45,6 +44,26 @@ import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import AiderManualInstallation from "./AiderManualInstallation";
 import { cn } from "@/lib/utils";
 import type { AiderState } from "../../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
+import styled from "styled-components";
+import { lightGray } from "@/components";
+
+
+const StepsDiv = styled.div`
+  padding-bottom: 8px;
+  position: relative;
+  background-color: transparent;
+
+  & > * {
+    position: relative;
+  }
+
+  .thread-message {
+    margin: 16px 8px 0 8px;
+  }
+  .thread-message:not(:first-child) {
+    border-top: 1px solid ${lightGray}22;
+  }
+`;
 
 function AiderGUI() {
   const posthog = usePostHog();
