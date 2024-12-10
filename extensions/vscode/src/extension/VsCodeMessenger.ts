@@ -343,6 +343,7 @@ export class VsCodeMessenger {
         vscode.window.showErrorMessage(
           "No active editor to apply edits to. Please open a file you'd like to apply the edits to first.",
         );
+        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
         return;
       }
 
@@ -350,10 +351,11 @@ export class VsCodeMessenger {
         const originalContent = editor.document.getText();
         const changesToApply = msg.data.contentToApply;
 
-        // document can be empty if user is in a new file
-        // if (!originalContent) {
-        //   throw new Error("Original content not found");
-        // }
+        if (originalContent?.trim() === '') {
+          await ide.writeFile(editor.document.uri.fsPath, changesToApply);
+          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+          return;
+        }
 
         let modifiedContent = await getFastApplyChangesWithRelace(
           originalContent,
@@ -381,6 +383,7 @@ export class VsCodeMessenger {
 
       } catch (error) {
         vscode.window.showErrorMessage(`Fast Apply Inline failed: ${error}`);
+        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
       }
     });
 
