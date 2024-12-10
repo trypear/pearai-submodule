@@ -313,8 +313,7 @@ export class AiderProcessManager {
 
   private captureAiderOutput(data: Buffer, type: 'stdout' | 'stderr'): void {
     const output = data.toString();
-    console.dir(`Raw Aider ${type}:`) 
-    console.dir(JSON.stringify(output));
+    console.log(`Raw Aider ${type}:`, JSON.stringify(output));
 
     let cleanOutput = output.replace(/\x1B\[[0-9;]*[JKmsu]/g, "");
     const specialLoadingChars = /⠋|⠙|⠹|⠸|⠼|⠴|⠦|⠧|⠇|⠏/g;
