@@ -73,10 +73,19 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
 }
 
 export function extractCodeFromMarkdown(text: string): string {
-  // Match code blocks with language specification
-  const codeBlockRegex = /^```[\w-]*\n([\s\S]*?)\n```$/m;
-  const match = text.match(codeBlockRegex);
-  
+  // Match code blocks with optional language specification
+  const codeBlockRegex = /```[\w-]*\n([\s\S]*?)\n```/m;
+  let match = text.match(codeBlockRegex);
+
+  if (!match) {
+    const lines = text.split('\n');
+    if (lines[0].trim().startsWith('```') && lines[lines.length - 1].trim().startsWith('```')) {
+      // remove first and last line
+      const codeLines = lines.slice(1, -1);
+      match = ['', codeLines.join('\n')];
+    }
+  }
+
   // If it's a code block, return the code inside
   // Otherwise return the original text
   return match ? match[1] : text;
