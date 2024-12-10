@@ -91,7 +91,7 @@ class OpenAI extends BaseLLM {
 
   protected _convertArgs(options: any, messages: ChatMessage[]) {
     const url = new URL(this.apiBase!);
-    const finalOptions = {
+    const finalOptions: any = {
       messages: messages.map(this._convertMessage),
       model: this._convertModelName(options.model),
       max_tokens: options.maxTokens,
@@ -113,7 +113,15 @@ class OpenAI extends BaseLLM {
               : options.stop,
     };
 
+    if (options.model?.toLowerCase().startsWith('o1-')) {
+      if (finalOptions.max_tokens !== undefined) {
+        finalOptions.max_completion_tokens = finalOptions.max_tokens;
+        delete finalOptions.max_tokens;
+      }
+    }
+    
     return finalOptions;
+  
   }
 
   protected _getHeaders() {
@@ -221,7 +229,7 @@ class OpenAI extends BaseLLM {
       stream: true,
     };
     // Empty messages cause an error in LM Studio
-    body.messages = body.messages.map((m) => ({
+    body.messages = body.messages.map((m: { content: string; }) => ({
       ...m,
       content: m.content === "" ? " " : m.content,
     })) as any;
@@ -282,3 +290,4 @@ class OpenAI extends BaseLLM {
 }
 
 export default OpenAI;
+
