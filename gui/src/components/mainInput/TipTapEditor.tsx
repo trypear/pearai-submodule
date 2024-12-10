@@ -26,6 +26,9 @@ import {
   vscForeground,
   vscInputBackground,
   vscInputBorder,
+  vscSidebarBorder,
+  vscBackground,
+  vscEditorBackground,
   vscInputBorderFocus,
 } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
@@ -50,6 +53,7 @@ import {
 import CodeBlockExtension from "./CodeBlockExtension";
 import { SlashCommand } from "./CommandsExtension";
 import InputToolbar from "./InputToolbar";
+import ContextToolbar from "./ContextToolbar";
 import { Mention } from "./MentionExtension";
 import "./TipTapEditor.css";
 import {
@@ -63,19 +67,19 @@ import { TipTapContextMenu } from './TipTapContextMenu';
 
 
 const InputBoxDiv = styled.div`
+	position: relative;
   resize: none;
-
-  padding: 8px 12px;
-  padding-bottom: 4px;
+  gap: 12px;
+  padding: 12px;
   font-family: inherit;
   border-radius: ${defaultBorderRadius};
   margin: 0;
   height: auto;
   width: calc(100% - 18px);
-  background-color: ${vscInputBackground};
+  background-color: ${vscEditorBackground};
   color: ${vscForeground};
-  z-index: 1;
-  outline: none;
+  z-index: 20;
+  outline: 1px solid ${vscSidebarBorder};
   font-size: ${getFontSize()}px;
   &:focus {
     outline: none;
@@ -89,6 +93,11 @@ const InputBoxDiv = styled.div`
 
   display: flex;
   flex-direction: column;
+
+  .ProseMirror {
+    min-height: 40px;
+    flex: 1;
+  }
 `;
 
 const HoverDiv = styled.div`
@@ -99,11 +108,13 @@ const HoverDiv = styled.div`
   left: 0;
   opacity: 0.5;
   background-color: ${vscBadgeBackground};
+	border-radius: ${defaultBorderRadius};
   color: ${vscForeground};
-  z-index: 100;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
+	pointer-events: none;
 `;
 
 const HoverTextDiv = styled.div`
@@ -113,10 +124,11 @@ const HoverTextDiv = styled.div`
   top: 0;
   left: 0;
   color: ${vscForeground};
-  z-index: 100;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
+	pointer-events: none;
 `;
 
 
@@ -1032,6 +1044,7 @@ const TipTapEditor = memo(function TipTapEditor({
   }, [editor]);
 
   return (
+
     <InputBoxDiv
       onKeyDown={(e) => {
         if (e.key === "Alt") {
@@ -1085,7 +1098,27 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     >
-      {/* {(!isPerplexity && !isAider) && <TopBar />} */}
+      <ContextToolbar
+hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
+        onImageFileSelected={(file) => {
+          handleImageFile(file).then(([img, dataUrl]) => {
+            const { schema } = editor.state;
+            const node = schema.nodes.image.create({ src: dataUrl });
+            editor.commands.command(({ tr }) => {
+              tr.insert(0, node);
+              return true;
+            });
+          });
+        }}
+        onAddContextItem={() => {
+          if (editor.getText().endsWith("@")) {
+          } else {
+            // Add space so that if there's text right before, it still activates the dropdown
+            editor.commands.insertContent(" @");
+          }
+        }}
+      />
+
       <EditorContent
         spellCheck={false}
         editor={editor}
@@ -1124,7 +1157,7 @@ const TipTapEditor = memo(function TipTapEditor({
         ) && (
           <>
             <HoverDiv></HoverDiv>
-            <HoverTextDiv>Hold ⇧ to drop image</HoverTextDiv>
+            <HoverTextDiv>Drop Here</HoverTextDiv>
           </>
         )}
       {contextMenu && editor && (
