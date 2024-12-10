@@ -6,6 +6,7 @@ import {
   XMarkIcon,
   ArrowPathIcon,
   ArrowDownIcon,
+  CommandLineIcon
 } from "@heroicons/react/24/outline";
 import { useContext, useState } from "react";
 import styled from "styled-components";
@@ -16,7 +17,7 @@ import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "./CopyButton";
 import { isPerplexityMode } from '../../util/bareChatMode';
 import { useWebviewListener } from "../../hooks/useWebviewListener";
-import { Loader } from "lucide-react";
+import { Loader, Terminal, SquareTerminal, SquareChevronRight } from "lucide-react";
 
 
 const TopDiv = styled.div`
@@ -85,6 +86,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
   const [applying, setApplying] = useState(false);
   const [fastApplying, setFastApplying] = useState(false);
   const [isDiffVisible, setIsDiffVisible] = useState(false);
+  const [isTerminalBlock, setIsTerminalBlock] = useState(isTerminalCodeBlock(props.language, props.text));
 
   useWebviewListener("setRelaceDiffState", (state) => {
     if (state.diffVisible) {
@@ -110,9 +112,9 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
         </HeaderButtonWithText>}
         {isJetBrains() || !isPerplexityMode() && (
           <>
-            <HeaderButtonWithText
+            {!fastApplying && <HeaderButtonWithText
               text={
-                isTerminalCodeBlock(props.language, props.text)
+                isTerminalBlock
                   ? "Run in terminal"
                   : applying
                     ? "Applying..."
@@ -120,7 +122,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
               }
               disabled={applying || fastApplying}
               onClick={() => {
-                if (isTerminalCodeBlock(props.language, props.text)) {
+                if (isTerminalBlock) {
                   let text = props.text;
                   if (text.startsWith("$ ")) {
                     text = text.slice(2);
@@ -140,30 +142,34 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
               {applying ? (
                 <CheckIcon className="w-4 h-4 text-green-500" />
               ) : (
-                <PlayIcon className="w-4 h-4" />
+                isTerminalBlock ? (
+                  <Terminal className="w-4 h-4" />
+                ) : (
+                  <PlayIcon className="w-4 h-4" />
+                )
               )}
-            </HeaderButtonWithText>
+            </HeaderButtonWithText>}
 
-            <>
+            {!isTerminalBlock && <>
               {!isDiffVisible ? (
                 <>
-                <HeaderButtonWithText
-                  text={fastApplying ? "Fast Applying..." : "Fast Apply"}
-                  disabled={applying || fastApplying}
-                  onClick={() => {
-                    if (fastApplying) return;
-                    ideMessenger.post("applyWithRelaceHorizontal", {
-                      contentToApply: props.text,
-                    });
-                    setFastApplying(true);
-                  }}
-                >
-                  {fastApplying ? (
-                    <Loader className="w-4 h-4 animate-spin" />
-                  ) : (
-                    <BoltIcon className="w-4 h-4" />
-                  )}
-                </HeaderButtonWithText>
+                  <HeaderButtonWithText
+                    text={fastApplying ? "Fast Applying..." : "Fast Apply"}
+                    disabled={applying || fastApplying}
+                    onClick={() => {
+                      if (fastApplying) return;
+                      ideMessenger.post("applyWithRelaceHorizontal", {
+                        contentToApply: props.text,
+                      });
+                      setFastApplying(true);
+                    }}
+                  >
+                    {fastApplying ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <BoltIcon className="w-4 h-4" />
+                    )}
+                  </HeaderButtonWithText>
                 </>
               ) : (
                 <>
@@ -186,7 +192,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
                   </HeaderButtonWithText>
                 </>
               )}
-            </>
+            </>}
           </>
         )}
         {!isPerplexityMode() && <HeaderButtonWithText

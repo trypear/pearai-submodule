@@ -105,7 +105,7 @@ export class DiffManager {
 
     const rightUri = uriFromFilePath(newFilepath);
     const leftUri = uriFromFilePath(originalFilepath);
-    const title = "Continue Diff";
+    const title = "PearAI Diff View";
     vscode.commands.executeCommand("vscode.diff", leftUri, rightUri, title);
 
     const editor = vscode.window.activeTextEditor;
@@ -125,7 +125,7 @@ export class DiffManager {
     ) {
       vscode.window
         .showInformationMessage(
-          `Accept (${getMetaKeyLabel()}⇧⏎) or reject (${getMetaKeyLabel()}⇧⌫) at the top of the file.`,
+          `Accept (${getMetaKeyLabel()}⇧⏎) or reject (${getMetaKeyLabel()}⇧⌫) all changes.`,
           "Got it",
           "Don't show again",
         )
