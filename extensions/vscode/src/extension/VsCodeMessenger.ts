@@ -343,6 +343,7 @@ export class VsCodeMessenger {
         vscode.window.showErrorMessage(
           "No active editor to apply edits to. Please open a file you'd like to apply the edits to first.",
         );
+        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
         return;
       }
 
@@ -350,8 +351,10 @@ export class VsCodeMessenger {
         const originalContent = editor.document.getText();
         const changesToApply = msg.data.contentToApply;
 
-        if (!originalContent) {
-          throw new Error("Original content not found");
+        if (originalContent?.trim() === '') {
+          await ide.writeFile(editor.document.uri.fsPath, changesToApply);
+          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+          return;
         }
 
         let modifiedContent = await getFastApplyChangesWithRelace(
@@ -373,52 +376,21 @@ export class VsCodeMessenger {
           return;
         }
 
+        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: true});
         // Show inline diff using the original apply method
         const stepIndex = Date.now(); // Unique identifier for this diff
         await ide.showDiff(editor.document.uri.fsPath, modifiedContent, stepIndex);
 
       } catch (error) {
         vscode.window.showErrorMessage(`Fast Apply Inline failed: ${error}`);
+        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
       }
     });
 
     // Accept the changes ✅
     this.onWebview("acceptRelaceDiff", async (msg) => {
       try {
-        const relaceDiffManager = RelaceDiffManager.getInstance();
-        if (!relaceDiffManager.isDiffViewActive()) {
-            throw new Error("No active diff to apply");
-        }
-
-        const originalFile = relaceDiffManager.getOriginalFile();
-        const relaceDiffFile = relaceDiffManager.getRelaceDiffFile();
-
-        if (!originalFile) {
-          vscode.window.showErrorMessage("File to apply changes to not found");
-          throw new Error("Original file not found");
-        }
-
-        if (!relaceDiffFile) {
-          throw new Error("Relace diff document not found");
-        }
-
-        const modifiedContent = relaceDiffFile?.getText();
-    
-        // Apply changes
-        const fullRange = new vscode.Range(
-          originalFile.document.positionAt(0),
-          originalFile.document.positionAt(originalFile.document.getText().length)
-        );
-
-        const editOriginal = new vscode.WorkspaceEdit();
-        editOriginal.replace(originalFile.document.uri, fullRange, modifiedContent.trim());
-        await vscode.workspace.applyEdit(editOriginal);
-        originalFile.document.save();
-
-        await vscode.window.showTextDocument(relaceDiffFile);
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        relaceDiffManager.clearDiffState();
-        
+        vscode.commands.executeCommand("pearai.acceptDiff");
         this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
       } catch (error) {
         vscode.window.showErrorMessage(`Failed to apply changes: ${error}`);
@@ -428,18 +400,7 @@ export class VsCodeMessenger {
     // Reject the changes ❌
     this.onWebview("rejectRelaceDiff", async (msg) => {
       try {
-        const relaceDiffManager = RelaceDiffManager.getInstance();
-        if (!relaceDiffManager.isDiffViewActive()) {
-            throw new Error("No active diff view found");
-        }
-        const relaceDiffFile = relaceDiffManager.getRelaceDiffFile();
-        if (!relaceDiffFile) {
-          throw new Error("Relace diff document not found");
-        }
-        await vscode.window.showTextDocument(relaceDiffFile);
-        await vscode.commands.executeCommand('workbench.action.revertAndCloseActiveEditor');
-        relaceDiffManager.clearDiffState();
-        // Notify webview that diff is no longer visible
+        vscode.commands.executeCommand("pearai.rejectDiff");
         this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
       } catch (error) {
         vscode.window.showErrorMessage(`Failed to reject changes: ${error}`);
