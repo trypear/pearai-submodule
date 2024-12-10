@@ -4,6 +4,7 @@ import Image from "@tiptap/extension-image";
 import Paragraph from "@tiptap/extension-paragraph";
 import Placeholder from "@tiptap/extension-placeholder";
 import Text from "@tiptap/extension-text";
+import HardBreak from "@tiptap/extension-hard-break";
 import { Plugin } from "@tiptap/pm/state";
 import { Editor, EditorContent, JSONContent, useEditor } from "@tiptap/react";
 import {
@@ -62,6 +63,7 @@ import {
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
 import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
+import { TipTapContextMenu } from './TipTapContextMenu';
 
 
 const InputBoxDiv = styled.div`
@@ -145,23 +147,16 @@ const getPlaceholder = (historyLength: number, location: any) => {
     : "Ask a follow-up";
 };
 
-function getDataUrlForFile(file: File, img): string {
-  const targetWidth = 512;
-  const targetHeight = 512;
-  const scaleFactor = Math.min(
-    targetWidth / img.width,
-    targetHeight / img.height,
-  );
-
+export function getDataUrlForFile(file: File, img: HTMLImageElement): string {
   const canvas = document.createElement("canvas");
-  canvas.width = img.width * scaleFactor;
-  canvas.height = img.height * scaleFactor;
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
 
   const ctx = canvas.getContext("2d");
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  const downsizedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
-  return downsizedDataUrl;
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+  return dataUrl;
 }
 
 interface TipTapEditorProps {
@@ -173,6 +168,44 @@ interface TipTapEditorProps {
   source?: 'perplexity' | 'aider' | 'continue';
   onChange?: (newState: JSONContent) => void;
 }
+
+export const handleCopy = (editor: Editor) => {
+  const selection = editor.state.selection;
+  const text = editor.state.doc.textBetween(selection.from, selection.to, '\n');
+  navigator.clipboard.writeText(text);
+};
+
+export const handleCut = (editor: Editor) => {
+  const selection = editor.state.selection;
+  const text = editor.state.doc.textBetween(selection.from, selection.to, '\n');
+  navigator.clipboard.writeText(text);
+  editor.commands.deleteSelection();
+};
+
+export const handlePaste = async (editor: Editor) => {
+  const clipboardText = await navigator.clipboard.readText();
+  if (clipboardText) {
+    const lines = clipboardText.split(/\r?\n/);
+    const { tr } = editor.state;
+    const { schema } = editor.state;
+    let pos = editor.state.selection.from;
+
+    // Delete the selected text before inserting new text
+    tr.delete(editor.state.selection.from, editor.state.selection.to);
+
+    lines.forEach((line, index) => {
+      if (index > 0) {
+        tr.insert(pos++, schema.nodes.hardBreak.create());
+      }
+      tr.insertText(line, pos);
+      pos += line.length;
+    });
+
+    editor.view.dispatch(tr);
+    return true;
+  }
+  return false;
+};
 
 const TipTapEditor = memo(function TipTapEditor({
   availableContextProviders,
@@ -331,6 +364,34 @@ const TipTapEditor = memo(function TipTapEditor({
       Document,
       History,
       Image.extend({
+        renderHTML({ HTMLAttributes }) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'image-wrapper';
+          
+          const img = document.createElement('img');
+          Object.entries(HTMLAttributes).forEach(([key, value]) => {
+            img.setAttribute(key, value as string);
+          });
+          
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'image-delete-button';
+          deleteButton.textContent = 'Delete';
+          deleteButton.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Dispatch a custom event that we'll handle in the editor
+            const event = new CustomEvent('deleteImage', {
+              detail: { imgElement: (e.target as HTMLElement).parentElement?.querySelector('img') }
+            });
+            window.dispatchEvent(event);
+          };
+          
+          wrapper.appendChild(img);
+          wrapper.appendChild(deleteButton);
+          
+          return wrapper;
+        },
         addProseMirrorPlugins() {
           const plugin = new Plugin({
             props: {
@@ -492,6 +553,11 @@ const TipTapEditor = memo(function TipTapEditor({
         },
       }),
       CodeBlockExtension,
+      HardBreak.extend({
+        renderText() {
+          return '\n'
+        },
+      }),
     ],
     editorProps: {
       attributes: {
@@ -925,6 +991,58 @@ const TipTapEditor = memo(function TipTapEditor({
     }
   }, [editor, source]);
 
+
+  const [contextMenu, setContextMenu] = useState<{
+    position: { x: number; y: number };
+  } | null>(null);
+
+  // Add context menu handler
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleContextMenu = (event: MouseEvent) => {
+      if (!editor.view.dom.contains(event.target as Node)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      setContextMenu({
+        position: { x: event.clientX, y: event.clientY },
+      });
+    };
+
+    const editorDom = editor.view.dom;
+    editorDom.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      editorDom.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [editor]);
+
+  // Add this effect in your component
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleDeleteImage = (event: CustomEvent) => {
+      const imgElement = event.detail.imgElement;
+      if (imgElement && editor) {
+        // Find all image nodes in the editor
+        editor.state.doc.descendants((node, pos) => {
+          if (node.type.name === 'image' && node.attrs.src === imgElement.src) {
+            // Delete the specific image node at this position
+            editor.commands.deleteRange({ from: pos, to: pos + 1 });
+            return false; // Stop searching
+          }
+        });
+      }
+    };
+
+    window.addEventListener('deleteImage', handleDeleteImage as EventListener);
+    return () => {
+      window.removeEventListener('deleteImage', handleDeleteImage as EventListener);
+    };
+  }, [editor]);
+
   return (
 
     <InputBoxDiv
@@ -1042,6 +1160,16 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
             <HoverTextDiv>Drop Here</HoverTextDiv>
           </>
         )}
+      {contextMenu && editor && (
+        <TipTapContextMenu
+          editor={editor}
+          position={contextMenu.position}
+          onClose={() => setContextMenu(null)}
+          defaultModel={defaultModel}
+          ideMessenger={ideMessenger}
+          handleImageFile={handleImageFile}
+        />
+      )}
     </InputBoxDiv>
   );
 });

@@ -16,6 +16,7 @@ import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
 import { getLocalStorage } from "@/util/localStorage";
+import { Memory } from "../../integrations/mem0/mem0gui"
 
 
 export const memoizedContextItemsSelector = createSelector(
@@ -134,6 +135,7 @@ type State = {
     visitedSteps: number[] 
   };
   showInteractiveContinueTutorial: boolean;
+  memories: Memory[];  // mem0 memories
 };
 
 const initialState: State = {
@@ -178,6 +180,7 @@ const initialState: State = {
     visitedSteps: [0]
   },
   showInteractiveContinueTutorial: getLocalStorage("showTutorialCard") ?? false,
+  memories: [],
 };
 
 export const stateSlice = createSlice({
@@ -666,6 +669,11 @@ export const stateSlice = createSlice({
     setShowInteractiveContinueTutorial: (state, action: PayloadAction<boolean>) => {
       state.showInteractiveContinueTutorial = action.payload;
     },
+    setMem0Memories: (state, { payload}: PayloadAction<Memory[]>) => {
+      state.memories = payload.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+    }
   },
 });
 
@@ -703,5 +711,6 @@ export const {
   deleteMessage,
   setOnboardingState,
   setShowInteractiveContinueTutorial,
+  setMem0Memories,
 } = stateSlice.actions;
 export default stateSlice.reducer;

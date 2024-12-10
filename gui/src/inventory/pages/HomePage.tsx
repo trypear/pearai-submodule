@@ -47,6 +47,13 @@ export default function HomePage() {
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>3</Kbd></span>,
       path: "/inventory/perplexityMode",
     },
+    {
+      icon: "inventory-mem0.svg",
+      label: "Memory",
+      description: <>AI Personalization</>,
+      shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>4</Kbd></span>,
+      path: "/inventory/mem0Mode",
+    }
   ];
 
   useEffect(() => {
@@ -65,7 +72,7 @@ export default function HomePage() {
       }}
     >
       <div className="flex-1 flex items-center justify-center" onClick={(e) => closeOverlay(e)}>
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {menuItems.map((item) => (
             <div
               key={item.label}

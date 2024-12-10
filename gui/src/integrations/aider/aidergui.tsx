@@ -37,7 +37,6 @@ import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
   StopButton,
-  StepsDiv,
   NewSessionButton,
   fallbackRender,
 } from "../../pages/gui";
@@ -45,6 +44,26 @@ import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import AiderManualInstallation from "./AiderManualInstallation";
 import { cn } from "@/lib/utils";
 import type { AiderState } from "../../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
+import styled from "styled-components";
+import { lightGray } from "@/components";
+
+
+const StepsDiv = styled.div`
+  padding-bottom: 8px;
+  position: relative;
+  background-color: transparent;
+
+  & > * {
+    position: relative;
+  }
+
+  .thread-message {
+    margin: 16px 8px 0 8px;
+  }
+  .thread-message:not(:first-child) {
+    border-top: 1px solid ${lightGray}22;
+  }
+`;
 
 function AiderGUI() {
   const posthog = usePostHog();
@@ -52,6 +71,7 @@ function AiderGUI() {
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const [sessionKey, setSessionKey] = useState(0);
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
   const active = useSelector((state: RootState) => state.state.aiderActive);
@@ -135,23 +155,23 @@ function AiderGUI() {
     return () => window.removeEventListener("keydown", listener);
   }, [active]);
 
-  useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+  // useEffect(() => {
+  //   let timeoutId: NodeJS.Timeout;
 
-    if (aiderProcessState.state === "starting") {
-      timeoutId = setTimeout(() => {
-        if (aiderProcessState.state === "starting") {
-          setShowReloadButton(true);
-        }
-      }, 15000); // 15 seconds
-    } else {
-      setShowReloadButton(false);
-    }
+  //   if (aiderProcessState.state === "starting") {
+  //     timeoutId = setTimeout(() => {
+  //       if (aiderProcessState.state === "starting") {
+  //         setShowReloadButton(true);
+  //       }
+  //     }, 15000); // 15 seconds
+  //   } else {
+  //     setShowReloadButton(false);
+  //   }
 
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [aiderProcessState.state, aiderProcessState.timeStamp]);
+  //   return () => {
+  //     if (timeoutId) clearTimeout(timeoutId);
+  //   };
+  // }, [aiderProcessState.state, aiderProcessState.timeStamp]);
 
   const { streamResponse } = useChatHandler(dispatch, ideMessenger, "aider");
 
@@ -195,13 +215,13 @@ function AiderGUI() {
     "newSession",
     async () => {
       saveSession();
-      mainTextInputRef.current?.focus?.();
+      setSessionKey(prev => prev + 1);
     },
     [saveSession],
   );
 
   useEffect(() => {
-    ideMessenger.request("refreshAiderProcessState", undefined);
+    ideMessenger.request("sendAiderProcessStateToGUI", undefined);
   }, []);
 
   useWebviewListener("setAiderProcessStateInGUI", async (data) => {
@@ -209,6 +229,30 @@ function AiderGUI() {
       setAiderProcessState({state: data.state, timeStamp: Date.now()});
     }
   });
+
+  // Add effect to re-fetch state periodically only if not ready
+useEffect(() => {
+  let interval: NodeJS.Timeout | undefined;
+
+  const fetchState = () => {
+    ideMessenger.request("sendAiderProcessStateToGUI", undefined);
+  };
+
+  // Only set up polling if state is not "ready"
+  if (aiderProcessState.state !== "ready") {
+    // Initial fetch
+    fetchState();
+
+    // Set up periodic polling as a fallback
+    interval = setInterval(fetchState, 2000);
+  }
+
+  return () => {
+    if (interval) {
+      clearInterval(interval);
+    }
+  };
+}, [aiderProcessState.state]); // Add aiderProcessState.state as dependency
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
@@ -247,7 +291,14 @@ function AiderGUI() {
     if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
       return <AiderManualInstallation />;
     }
-    if (aiderProcessState.state === "starting") {
+    if (aiderProcessState.state === "installing") {
+      msg = (
+        <>
+          Installing PearAI Creator dependencies (aider), this may take a few minutes...
+        </>
+      );
+    }
+    if (aiderProcessState.state === "starting" || aiderProcessState.state === "restarting") {
       msg = (
         <>
           Spinning up PearAI Creator (Powered By aider), please give it a second...
@@ -363,6 +414,7 @@ function AiderGUI() {
                       onClick={() => {
                         saveSession();
                         ideMessenger.post("aiderResetSession", undefined);
+                        setSessionKey(prev => prev + 1);
                       }}
                       className="mr-auto"
                     >
@@ -487,6 +539,7 @@ function AiderGUI() {
               )}
             >
               <ContinueInputBox
+                key={sessionKey}
                 onEnter={(editorContent, modifiers) => {
                   sendInput(editorContent, modifiers);
                 }}
@@ -513,6 +566,7 @@ function AiderGUI() {
                 onClick={() => {
                   saveSession();
                   ideMessenger.post("aiderResetSession", undefined);
+                  setSessionKey(prev => prev + 1);
                 }}
                 className="mr-auto"
               >

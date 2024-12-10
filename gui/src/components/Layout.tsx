@@ -39,7 +39,7 @@ const isWindows = platform.includes("win");
 
 // #region Styled Components
 const HEADER_HEIGHT = "1.55rem";
-const FOOTER_HEIGHT = "1.8em";
+export const FOOTER_HEIGHT = "1.8em";
 
 const GlobalStyle = createGlobalStyle`
   :root {
@@ -70,13 +70,17 @@ const Footer = styled.footer`
   flex-direction: row;
   gap: 8px;
   justify-content: right;
-  padding: 8px;
+  padding: 4px;
   align-items: center;
   width: calc(100% - 16px);
   height: ${FOOTER_HEIGHT};
-  background-color: transparent;
+  background-color: ${vscBackground};
   backdrop-filter: blur(12px);
   overflow: hidden;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
 `;
 
 const Header = styled.header`
@@ -139,6 +143,7 @@ const HIDE_FOOTER_ON_PAGES = [
   "/inventory",
   "/inventory/aiderMode",
   "/inventory/perplexityMode",
+  "/inventory/mem0Mode",
   "/welcome"
 ];
 

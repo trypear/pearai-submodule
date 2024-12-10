@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import { v4 as uuidv4 } from "uuid";
-import type { ContextItemId, IDE, IndexingProgressUpdate } from ".";
+import type { ChatMessage, ContextItemId, IDE, IndexingProgressUpdate } from ".";
 import { CompletionProvider } from "./autocomplete/completionProvider";
 import { ConfigHandler } from "./config/ConfigHandler";
 import {
@@ -10,7 +10,7 @@ import {
   setupLocalMode,
 } from "./config/onboarding";
 import { createNewPromptFile } from "./config/promptFile";
-import { addModel, addOpenAIKey, deleteModel } from "./config/util";
+import { addModel, addOpenAIKey, deleteModel, toggleIntegration } from "./config/util";
 import { recentlyEditedFilesCache } from "./context/retrieval/recentlyEditedFilesCache";
 import { ContinueServerClient } from "./continueServer/stubs/client";
 import { getAuthUrlForTokenPage } from "./control-plane/auth/index";
@@ -242,6 +242,10 @@ export class Core {
       deleteModel(msg.data.title);
       this.configHandler.reloadConfig();
     });
+    on("config/toggleIntegration", (msg) => {
+      toggleIntegration(msg.data.name);
+      this.configHandler.reloadConfig();
+    });
 
     on("config/newPromptFile", async (msg) => {
       createNewPromptFile(
@@ -383,7 +387,14 @@ export class Core {
           });
           break;
         }
-        yield { content: next.value.content, citations: next.value?.citations };
+        // Assert that next.value is a ChatMessage
+        const chatMessage = next.value as ChatMessage;
+
+        yield {
+          content: chatMessage.content,
+          citations: chatMessage.citations
+        };
+
         next = await gen.next();
       }
 
@@ -444,7 +455,7 @@ export class Core {
       const { accessToken, refreshToken } = msg.data || {};
       const config = await this.configHandler.loadConfig();
       const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
-      const aiderModels = config.models.filter(model => model instanceof Aider) as Aider[];
+      const aiderModel = config.models.find(model => model instanceof Aider) as Aider;
 
       try {
         if (pearAIModels.length > 0) {
@@ -457,13 +468,10 @@ export class Core {
         console.warn(`Error resetting PearAI credentials: ${e}`);
         return undefined;
       }
-      // TODO @nang - handle this better
       try {
-        if (aiderModels.length > 0) {
-          aiderModels.forEach(model => {
-            model.setPearAIAccessToken(accessToken);
-            model.setPearAIRefreshToken(refreshToken);
-          });
+        if (aiderModel) {
+          aiderModel.setPearAIAccessToken(accessToken);
+          aiderModel.setPearAIRefreshToken(refreshToken);
         }
       } catch (e) {
         console.warn(`Error resetting PearAI credentials for aider: ${e}`);
