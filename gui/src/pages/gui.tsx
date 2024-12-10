@@ -361,6 +361,8 @@ function GUI() {
     [state.history],
   );
 
+  const isNewSession = state.history.length === 0;
+
   return (
     <>
       {!window.isPearOverlay && !!showTutorialCard && 
@@ -369,8 +371,8 @@ function GUI() {
         </TutorialCardDiv>
       }
       
-      {state.history.length === 0 && (
-        <FixedBottomContainer isNewSession={true}>
+      {(
+        <FixedBottomContainer isNewSession={isNewSession}>
           <ContinueInputBox
             onEnter={(editorContent, modifiers) => {
               sendInput(editorContent, modifiers);
@@ -379,7 +381,7 @@ function GUI() {
             isMainInput={true}
             hidden={active}
           />
-          {getLastSessionId() && (
+          {isNewSession && getLastSessionId() && (
             <div className="mt-2">
               <NewSessionButton
                 onClick={async () => {
@@ -521,19 +523,6 @@ function GUI() {
             {getMetaKeyLabel()} ⌫ Cancel
           </StopButton>
         </StopButtonContainer>
-      )}
-
-      {state.history.length > 0 && (
-        <FixedBottomContainer isNewSession={false}>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          />
-        </FixedBottomContainer>
       )}
     </>
   );
