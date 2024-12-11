@@ -23,29 +23,33 @@ const Shortcut = ({
   const modifierString = modifiers.join(" + ");
 
   return (
-    <div
-      className="flex gap-1 items-center text-sm text-slate-400 rounded-lg px-1 cursor-pointer select-none m-0 mx-[2px] border-solid shortcut-border border-[1px]"
-      onClick={onClick}
-    >
-      <span className={`text-[11px]`}>{description}</span>
+    <div className ="flex gap-2 items-center  cursor-pointer select-none " onClick={onClick}>
       <div
-        className="monaco-keybinding "
-        aria-label={`${modifierString}+${keyCode}`}
+        className="flex gap-1 items-center text-sm rounded-lg px-1m-0 mx-[2px] border-solid shortcut-border border-[1px]"
+        
       >
-        {modifiers.map((mod, index) => (
-          <span
-            className="monaco-keybinding-key"
-            style={{ fontSize: "10px" }}
-            key={index}
-          >
-            {mod}
+        
+        <div
+          className="monaco-keybinding "
+          aria-label={`${modifierString}+${keyCode}`}
+        >
+          {modifiers.map((mod, index) => (
+            <span
+              className="monaco-keybinding-key"
+              style={{ fontSize: "10px" }}
+              key={index}
+            >
+              {mod}
+            </span>
+          ))}
+          <span className="monaco-keybinding-key" style={{ fontSize: "10px" }}>
+            {keyCode}
           </span>
-        ))}
-        <span className="monaco-keybinding-key" style={{ fontSize: "10px" }}>
-          {keyCode}
-        </span>
+        </div>
       </div>
+      <span className={`text-[11px]`}>{description}</span>
     </div>
+
   );
 };
 
@@ -163,13 +167,10 @@ const ShortcutContainer = () => {
   ];
 
   return (
-    <div className="relative h-[1.55rem] overflow-hidden flex justify-center w-full">
-      {showArrows && <LeftArrowButton onClick={scrollLeft}>
-        <ChevronLeftIcon />
-      </LeftArrowButton>}
+    <div className="absolute bottom-3 left-3 flex justify-start">
       <div
         ref={shortcutContainerRef}
-        className="flex overflow-x-auto whitespace-nowrap no-scrollbar h-full mx-3 max-w-screen-lg"
+        className="flex-col justify-end items-start gap-3 inline-flex"
       >
         {shortcuts.map((shortcut, index) => (
           <Shortcut
