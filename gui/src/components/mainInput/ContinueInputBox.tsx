@@ -52,7 +52,6 @@ const GradientBorder = styled.div<{
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-top: 8px;
 `;
 
 const wave = keyframes`
@@ -175,12 +174,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
   }, []);
 
   return (
-    <div
-      className={cn(className)}
-      style={{
-        display: hidden ? "none" : "inherit",
-      }}
-    >
+    <div>
       <GradientBorder
         loading={active && isLastUserInput ? 1 : 0}
         isFirst={false}

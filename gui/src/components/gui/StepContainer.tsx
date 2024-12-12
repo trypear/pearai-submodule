@@ -45,7 +45,7 @@ interface StepContainerProps {
 }
 
 const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
-  padding: 4px 0px 8px 0px;
+  padding: 4px 0px;
   background-color: ${(props) =>
     props.isUserInput
       ? vscInputBackground
@@ -53,7 +53,7 @@ const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
         ? "transparent"
         : vscBackground};
   font-size: ${(props) => props.fontSize || getFontSize()}px;
-  // border-radius: ${defaultBorderRadius};
+  border-radius: ${defaultBorderRadius};
   overflow: hidden;
 `;
 
@@ -111,13 +111,13 @@ function StepContainer({
       console.error("Failed to fetch number of changes:", error);
     }
   };
-  
+
   useEffect(() => {
     if (!active && isAider) {
       fetchNumberOfChanges();
     }
   }, [active, isAider]);
-  
+
 
   const [truncatedEarly, setTruncatedEarly] = useState(false);
 

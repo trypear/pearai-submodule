@@ -64,12 +64,11 @@ import { FOOTER_HEIGHT } from "@/components/Layout";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
-  scrollbar-width: none; /* Firefox */
-  /* Hide scrollbar for Chrome, Safari and Opera */
+  scrollbar-width: none;
+	scroll-behavior: smooth;
   &::-webkit-scrollbar {
     display: none;
   }
-  height: 100%;
 `;
 
 const StopButtonContainer = styled.div`
@@ -99,27 +98,21 @@ export const StopButton = styled.div`
 export const StepsDiv = styled.div`
   padding-bottom: 8px;
   position: relative;
-  background-color: transparent;
-  margin-bottom: 120px;
+  background-color: white;
+  margin-bottom: 110px;
 
   & > * {
     position: relative;
   }
 
   .thread-message {
-    margin: 16px 8px 0 8px;
-  }
-  .thread-message:not(:first-child) {
-    border-top: 1px solid ${lightGray}22;
+    margin: 8px;
   }
 `;
 
 export const NewSessionButton = styled.div`
   width: fit-content;
-  margin-right: auto;
-  margin-left: 6px;
-  margin-top: 2px;
-  margin-bottom: 8px;
+  margin-top: 8px;
   font-size: ${getFontSize() - 2}px;
 
   border-radius: ${defaultBorderRadius};
@@ -140,19 +133,15 @@ const TutorialCardDiv = styled.header`
   z-index: 500;
   background-color: ${vscBackground}ee; // Added 'ee' for slight transparency
   display: flex;
-
   width: 100%;
 `
 
 const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
-  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
-  bottom: ${props => props.isNewSession ? 'auto' : FOOTER_HEIGHT};
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'}; // chage to make the bottom chatbox fixed
+	bottom:0;
   left: 0;
   right: 0;
-  background-color: ${vscBackground};
   padding: 8px;
-  padding-top: 0;
-  z-index: 100;
 `;
 
 export function fallbackRender({ error, resetErrorBoundary }) {
@@ -231,12 +220,12 @@ function GUI() {
       if (active && !isAtBottom) {
         if (!topGuiDivRef.current) return;
         const scrollAreaElement = topGuiDivRef.current;
-        scrollAreaElement.scrollTop = 
+        scrollAreaElement.scrollTop =
           scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
         setIsAtBottom(true);
       }
   }, [active, isAtBottom]);
-  
+
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       snapToBottom();
@@ -363,14 +352,15 @@ function GUI() {
 
   return (
     <>
-      {!window.isPearOverlay && !!showTutorialCard && 
+      {!window.isPearOverlay && !!showTutorialCard &&
         <TutorialCardDiv>
             <OnboardingTutorial onClose={onCloseTutorialCard}/>
         </TutorialCardDiv>
       }
-      
+
+			<TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
       {state.history.length === 0 && (
-        <FixedBottomContainer isNewSession={true}>
+        <div className="p-2">
           <ContinueInputBox
             onEnter={(editorContent, modifiers) => {
               sendInput(editorContent, modifiers);
@@ -379,25 +369,24 @@ function GUI() {
             isMainInput={true}
             hidden={active}
           />
+
+					{/* Get Last Session Button ----------->>>>>*/}
           {getLastSessionId() && (
-            <div className="mt-2">
               <NewSessionButton
                 onClick={async () => {
                   loadLastSession();
                 }}
-                className="mr-auto flex items-center gap-2"
+                className="flex items-center gap-2"
               >
                 <ArrowLeftIcon width="11px" height="11px" />
                 Last Session
               </NewSessionButton>
-            </div>
           )}
-        </FixedBottomContainer>
+        </div>
       )}
 
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-        <div className="mx-2">
-          <StepsDiv>
+        {/* <div className="mx-2 bg-yellow-700"> */}
+          <div className="mb-72">
             {state.history.map((item, index: number) => {
               return (
                 <Fragment key={index}>
@@ -407,9 +396,9 @@ function GUI() {
                       dispatch(newSession({session: undefined, source: 'continue'}));
                     }}
                   >
-                    <div style={{
+                    {/* <div className="bg-green-700" style={{
                       minHeight: index === state.history.length - 1 ? "50vh" : 0,
-                    }}>
+                    }}> */}
                     {item.message.role === "user" ? (
                       <ContinueInputBox
                         onEnter={async (editorState, modifiers) => {
@@ -489,20 +478,27 @@ function GUI() {
                             }
                           />
                         </TimelineItem>
+												{state.history.length > 0 && (
+        									<FixedBottomContainer isNewSession={false}>
+          									<ContinueInputBox
+            									onEnter={(editorContent, modifiers) => {
+              								sendInput(editorContent, modifiers);
+            									}}
+            									isLastUserInput={false}
+            									isMainInput={true}
+            									hidden={active}
+          									/>
+        									</FixedBottomContainer>
+      									)}
                       </div>
                     )}
-                    </div>
+                    {/* </div> */}
                   </ErrorBoundary>
                 </Fragment>
               );
             })}
-          </StepsDiv>
-        </div>
-        <ChatScrollAnchor
-          scrollAreaRef={topGuiDivRef}
-          isAtBottom={isAtBottom}
-          trackVisibility={active}
-        />
+          </div>
+        {/* </div> */}
       </TopGuiDiv>
 
       {active && (
@@ -521,19 +517,6 @@ function GUI() {
             {getMetaKeyLabel()} ⌫ Cancel
           </StopButton>
         </StopButtonContainer>
-      )}
-
-      {state.history.length > 0 && (
-        <FixedBottomContainer isNewSession={false}>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          />
-        </FixedBottomContainer>
       )}
     </>
   );

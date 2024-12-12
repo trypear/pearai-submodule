@@ -76,7 +76,7 @@ export function getAltKeyLabel(): string {
 }
 
 export function getFontSize(): number {
-  return getLocalStorage("fontSize") ?? (isJetBrains() ? 15 : 14);
+  return getLocalStorage("fontSize") ?? (isJetBrains() ? 15 : 13);
 }
 
 export function isJetBrains() {

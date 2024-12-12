@@ -23,12 +23,9 @@ const Shortcut = ({
   const modifierString = modifiers.join(" + ");
 
   return (
-    <div className ="flex gap-2 items-center  cursor-pointer select-none " onClick={onClick}>
+    <div className ="flex gap-2 bg-red items-center cursor-pointer select-none " onClick={onClick}>
       <div
-        className="flex gap-1 items-center text-sm rounded-lg px-1m-0 mx-[2px] border-solid shortcut-border border-[1px]"
-        
-      >
-        
+        className="flex gap-1 items-center text-sm rounded-lg px-1 py-1 mt-0 mx-[2px] border-solid shortcut-border border-[1px]">
         <div
           className="monaco-keybinding "
           aria-label={`${modifierString}+${keyCode}`}
@@ -53,79 +50,10 @@ const Shortcut = ({
   );
 };
 
-// Styled components for arrow buttons
-const ArrowButton = styled.button`
-  border: none;
-  background: none;
-  color: #949490;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  transition: color 0.3s;
-
-  svg {
-    width: 0.7rem;
-    height: 0.7rem;
-  }
-
-  &:hover {
-    color: #000;
-  }
-`;
-
-const LeftArrowButton = styled(ArrowButton)`
-  left: 0;
-`;
-
-const RightArrowButton = styled(ArrowButton)`
-  right: 0;
-`;
-
 const ShortcutContainer = () => {
   const ideMessenger = useContext(IdeMessengerContext);
   const shortcutContainerRef = useRef<HTMLDivElement>(null);
   const [modifier] = useState(isMac ? "Cmd" : "Ctrl");
-  const [showArrows, setShowArrows] = useState(false);
-
-  useEffect(() => {
-    const shortcutContainer = shortcutContainerRef.current;
-    if (shortcutContainer) {
-      const handleWheel = (event: WheelEvent) => {
-        if (event.deltaY !== 0) {
-          event.preventDefault();
-          shortcutContainer.scrollLeft += event.deltaY;
-        }
-      };
-      const checkOverflow = () => {
-        setShowArrows(shortcutContainer.scrollWidth > shortcutContainer.clientWidth);
-      };
-      shortcutContainer.addEventListener("wheel", handleWheel);
-      window.addEventListener('resize', checkOverflow);
-
-      return () => {
-        shortcutContainer.removeEventListener("wheel", handleWheel);
-        window.removeEventListener('resize', checkOverflow);
-      };
-    }
-  }, []);
-
-  const scrollLeft = () => {
-    if (shortcutContainerRef.current) {
-      shortcutContainerRef.current.scrollBy({ left: -200, behavior: "smooth" });
-    }
-  };
-
-  const scrollRight = () => {
-    if (shortcutContainerRef.current) {
-      shortcutContainerRef.current.scrollBy({ left: 200, behavior: "smooth" });
-    }
-  };
 
   const shortcuts = [
     {
@@ -167,7 +95,7 @@ const ShortcutContainer = () => {
   ];
 
   return (
-    <div className="absolute bottom-3 left-3 flex justify-start">
+    <div className="absolute bottom-3 mb-4 left-3 flex justify-start">
       <div
         ref={shortcutContainerRef}
         className="flex-col justify-end items-start gap-3 inline-flex"
@@ -182,10 +110,6 @@ const ShortcutContainer = () => {
           />
         ))}
       </div>
-
-      {showArrows && <RightArrowButton onClick={scrollRight}>
-        <ChevronRightIcon />
-      </RightArrowButton>}
     </div>
   );
 };

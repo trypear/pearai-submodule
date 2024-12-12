@@ -20,6 +20,29 @@ export const TipTapContextMenu: React.FC<TipTapContextMenuProps> = ({
     handleImageFile,
 }) => {
     const menuRef = useRef<HTMLDivElement>(null);
+	const MENU_WIDTH = 100;
+    const MENU_HEIGHT = 110;
+    const PADDING = 10;
+
+	const getInitialPosition = () => {
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
+
+        let x = position.x;
+        let y = position.y;
+
+        if (position.x + MENU_WIDTH > windowWidth - PADDING) {
+            x = position.x - MENU_WIDTH;
+        }
+
+        if (position.y + MENU_HEIGHT > windowHeight - PADDING) {
+            y = position.y - MENU_HEIGHT;
+        }
+
+        return { x, y };
+    };
+
+    const menuPosition = getInitialPosition();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -28,9 +51,16 @@ export const TipTapContextMenu: React.FC<TipTapContextMenuProps> = ({
             }
         };
 
+        const handleScroll = () => {
+            onClose();
+        };
+
         document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('scroll', handleScroll, true);
+
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('scroll', handleScroll, true);
         };
     }, [onClose]);
 
@@ -61,14 +91,14 @@ export const TipTapContextMenu: React.FC<TipTapContextMenuProps> = ({
     return (
         <div
             ref={menuRef}
-            className="fixed z-[9999] min-w-[160px] bg-dropdown rounded-lg shadow-lg p-2 cursor-pointer shadow-lg shadow-2xl"
-            style={{ top: position.y, left: position.x , boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), 0 3px 16px rgba(0, 0, 0, 0.4)' }}>
+            className="fixed z-10 min-w-[100px] bg-dropdown rounded-lg shadow-lg p-2 cursor-pointer"
+            style={{ top: menuPosition.y, left: menuPosition.x, boxShadow: '0 4px 16px rgba(0, 0, 0, 0.4), 0 3px 16px rgba(0, 0, 0, 0.4)' }}>
             {menuItems.map((item, index) => (
                 <div key={index}
-                    className="px-2 py-1 text-left hover:bg-list-activeSelection-background flex items-center gap-2  rounded-md" onClick={item.action}>
+                    className="px-2 py-1 text-left hover:bg-list-activeSelection-background flex items-center rounded-md" onClick={item.action}>
                     {item.label}
                 </div>
             ))}
         </div>
     );
-}; 
+};

@@ -43,6 +43,7 @@ export const FOOTER_HEIGHT = "1.8em";
 
 const GlobalStyle = createGlobalStyle`
   :root {
+	background-color:green;
     --overlay-border-radius: 12px;
     --overlay-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   }
@@ -72,35 +73,16 @@ const Footer = styled.footer`
   justify-content: right;
   padding: 4px;
   align-items: center;
-  width: calc(100% - 16px);
+  width: calc(100% - 0px);
   height: ${FOOTER_HEIGHT};
-  background-color: ${vscBackground};
+  // background-color: ${vscBackground};
+  background-color: none;
   backdrop-filter: blur(12px);
   overflow: hidden;
   position: fixed;
   bottom: 0;
   left: 0;
-  z-index: 100;
-`;
-
-const Header = styled.header`
-  position: sticky;
-  top: 0px;
-  z-index: 500;
-  background-color: ${vscBackground};
-  display: flex;
-  justify-content: right;
-  padding-top: 5px;
-  padding-bottom: 1px;
-  padding-left: 6px;
-  padding-right: 6px;
-  width: calc(100% - 12px);
-  overflow: hidden;
-`;
-
-const GridDiv = styled.div<{ showHeader: boolean, showTutorial: boolean, path: string }>`
-  display: flex-row;
-  
+  z-index: 50;
 `;
 
 const ModelDropdownPortalDiv = styled.div`
@@ -109,14 +91,6 @@ const ModelDropdownPortalDiv = styled.div`
   margin-left: 8px;
   z-index: 200;
   font-size: ${getFontSize()};
-`;
-
-const ProfileDropdownPortalDiv = styled.div`
-  background-color: ${vscInputBackground};
-  position: relative;
-  margin-left: calc(100% - 190px);
-  z-index: 200;
-  font-size: ${getFontSize() - 2};
 `;
 
 const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
@@ -131,7 +105,6 @@ const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
     background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
   `}
 `;
-
 
 // #endregion
 
@@ -269,16 +242,6 @@ const Layout = () => {
     [navigate],
   );
 
-  // login and onboarding happens from overlay now.
-  // useEffect(() => {
-  //   if (
-  //     shouldBeginOnboarding() &&
-  //     (location.pathname === "/" || location.pathname === "/index.html")
-  //   ) {
-  //     navigate("/onboarding");
-  //   }
-  // }, [location]);
-
   const [indexingState, setIndexingState] = useState<IndexingProgressUpdate>({
     desc: "Loading indexing config",
     progress: 0.0,
@@ -293,16 +256,8 @@ const Layout = () => {
   }
 
   return (
-    <div className="w-full h-full" style={{ backgroundColor: vscBackground }}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          backgroundColor: vscBackground,
-          scrollbarGutter: "stable both-edges",
-        }}
-      >
+    <>
+				{/* Pressing Cmd+L adds code block to the chat box  */}
         <TextDialog
           showDialog={showDialog}
           onEnter={() => {
@@ -313,52 +268,45 @@ const Layout = () => {
           }}
           message={dialogMessage}
         />
-        <div>
-          <PostHogPageView />
-          <Outlet />
-          <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv>
-          {HIDE_FOOTER_ON_PAGES.includes(location.pathname) || (
-            <Footer>
-              <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
-                {indexingState.status !== "indexing" && // Would take up too much space together with indexing progress
-                  defaultModel?.provider === "free-trial" && (
-                    <ProgressBar
-                      completed={parseInt(localStorage.getItem("ftc") || "0")}
-                      total={FREE_TRIAL_LIMIT_REQUESTS}
-                    />
-                  )}
-                <IndexingProgressBar indexingState={indexingState} />
-              </div>
 
-              <ProfileSwitcher />
-              <HeaderButtonWithText
-                tooltipPlacement="top-end"
-                text="Help"
-                onClick={() => {
-                  if (location.pathname === "/help") {
-                    navigate("/");
-                  } else {
-                    navigate("/help");
-                  }
-                }}
-              >
-                <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
-              </HeaderButtonWithText>
-            </Footer>
-          )}
+        <PostHogPageView />
+        <Outlet />
+				
+				{/* <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv> */}
 
-        </div>
         {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && historyLength === 0 && (
           <ShortcutContainer />
         )}
-        <ProfileDropdownPortalDiv id="profile-select-top-div"></ProfileDropdownPortalDiv>
 
+        {/* {!HIDE_FOOTER_ON_PAGES.includes(location.pathname) && (
+          <Footer>
+            <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
+              {indexingState.status !== "indexing" &&
+                defaultModel?.provider === "free-trial" && (
+                  <ProgressBar
+                    completed={parseInt(localStorage.getItem("ftc") || "0")}
+                    total={FREE_TRIAL_LIMIT_REQUESTS}
+                  />
+              )}
+              <IndexingProgressBar indexingState={indexingState} />
+            </div>
+
+            <ProfileSwitcher />
+            <HeaderButtonWithText
+              tooltipPlacement="top-end"
+              text="Help"
+              onClick={() => {
+                navigate(location.pathname === "/help" ? "/" : "/help");
+              }}
+            >
+              <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
+            </HeaderButtonWithText>
+          </Footer>
+        )} */}
 
         <BottomMessageDiv
           displayOnBottom={displayBottomMessageOnBottom}
-          onMouseEnter={() => {
-            dispatch(setBottomMessageCloseTimeout(undefined));
-          }}
+          onMouseEnter={() => dispatch(setBottomMessageCloseTimeout(undefined))}
           onMouseLeave={(e) => {
             if (!e.buttons) {
               dispatch(setBottomMessage(undefined));
@@ -368,12 +316,7 @@ const Layout = () => {
         >
           {bottomMessage}
         </BottomMessageDiv>
-      </div>
-      <div
-        style={{ fontSize: `${getFontSize() - 4}px` }}
-        id="tooltip-portal-div"
-      />
-    </div>
+    </>
   );
 };
 

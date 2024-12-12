@@ -74,18 +74,12 @@ const InputBoxDiv = styled.div`
   font-family: inherit;
   border-radius: ${defaultBorderRadius};
   margin: 0;
-  height: auto;
-  width: calc(100% - 18px);
+  width: 100%;
   background-color: ${vscEditorBackground};
+	border: 1px solid ${vscInputBorder};
   color: ${vscForeground};
-  z-index: 20;
-  outline: 1px solid ${vscSidebarBorder};
   font-size: ${getFontSize()}px;
-  &:focus {
-    outline: none;
-
-    border: 0.5px solid ${vscInputBorderFocus};
-  }
+  word-break: break-word;
 
   &::placeholder {
     color: ${lightGray}cc;
@@ -95,8 +89,10 @@ const InputBoxDiv = styled.div`
   flex-direction: column;
 
   .ProseMirror {
-    min-height: 40px;
+    min-height: 35px;
+		max-height: 180px;
     flex: 1;
+		overflow-y: auto;
   }
 `;
 
@@ -367,29 +363,29 @@ const TipTapEditor = memo(function TipTapEditor({
         renderHTML({ HTMLAttributes }) {
           const wrapper = document.createElement('div');
           wrapper.className = 'image-wrapper';
-          
+
           const img = document.createElement('img');
           Object.entries(HTMLAttributes).forEach(([key, value]) => {
             img.setAttribute(key, value as string);
           });
-          
+
           const deleteButton = document.createElement('button');
           deleteButton.className = 'image-delete-button';
           deleteButton.textContent = 'Delete';
           deleteButton.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             // Dispatch a custom event that we'll handle in the editor
             const event = new CustomEvent('deleteImage', {
               detail: { imgElement: (e.target as HTMLElement).parentElement?.querySelector('img') }
             });
             window.dispatchEvent(event);
           };
-          
+
           wrapper.appendChild(img);
           wrapper.appendChild(deleteButton);
-          
+
           return wrapper;
         },
         addProseMirrorPlugins() {
@@ -517,7 +513,7 @@ const TipTapEditor = memo(function TipTapEditor({
         },
       }).configure({
         HTMLAttributes: {
-          class: "my-1",
+          class: "m-0",
         },
       }),
       Text,
@@ -561,7 +557,7 @@ const TipTapEditor = memo(function TipTapEditor({
     ],
     editorProps: {
       attributes: {
-        class: "outline-none -mt-1 mb-1 overflow-hidden",
+        class: "outline-none",
         style: `font-size: ${getFontSize()}px;`,
       },
     },
@@ -1044,7 +1040,6 @@ const TipTapEditor = memo(function TipTapEditor({
   }, [editor]);
 
   return (
-
     <InputBoxDiv
       onKeyDown={(e) => {
         if (e.key === "Alt") {
@@ -1126,6 +1121,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
           event.stopPropagation();
         }}
       />
+
       <InputToolbar
         showNoContext={optionKeyHeld}
         hidden={!(editorFocusedRef.current || isMainInput)}
@@ -1148,6 +1144,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
           });
         }}
       />
+
       {showDragOverMsg &&
         modelSupportsImages(
           defaultModel.provider,
@@ -1159,7 +1156,8 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
             <HoverDiv></HoverDiv>
             <HoverTextDiv>Drop Here</HoverTextDiv>
           </>
-        )}
+        )
+			}
       {contextMenu && editor && (
         <TipTapContextMenu
           editor={editor}

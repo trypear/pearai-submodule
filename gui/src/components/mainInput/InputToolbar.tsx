@@ -96,15 +96,13 @@ function InputToolbar(props: InputToolbarProps) {
   }, [location, allModels]);
 
   return (
-    <>
       <StyledDiv
         isHidden={props.hidden}
         onClick={props.onClick}
         id="input-toolbar"
       >
-        <div className="flex gap-3 items-center">
           {!perplexityMode && (
-            <>
+						<div className="flex gap-3 items-center">
               <ShortcutButton
                 keys={["⎇", "⏎"]}
                 label="Use current file"
@@ -124,9 +122,8 @@ function InputToolbar(props: InputToolbarProps) {
                 }}
                 label="Use codebase"
               />
-            </>
+            </div>
           )}
-        </div>
 
 
         {/* <span className="flex gap-2 items-center whitespace-nowrap">
@@ -188,7 +185,6 @@ function InputToolbar(props: InputToolbarProps) {
             )}
         </span> */}
 
-        <span className="flex items-center gap-2 whitespace-nowrap">
           {/* {props.showNoContext ? (
             <span
               style={{
@@ -243,9 +239,7 @@ function InputToolbar(props: InputToolbarProps) {
           >
             ⏎ Send
           </EnterButton> */}
-        </span>
       </StyledDiv>
-    </>
   );
 }
 

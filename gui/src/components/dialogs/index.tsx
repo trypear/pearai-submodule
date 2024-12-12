@@ -15,7 +15,7 @@ const ScreenCover = styled.div`
   width: 100%;
   height: 100%;
   background-color: ${parseColorForHex(VSC_BACKGROUND_VAR)}aa;
-  z-index: 1000;
+  z-index: 100;
 `;
 
 const DialogContainer = styled.div`
