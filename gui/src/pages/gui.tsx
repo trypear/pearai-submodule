@@ -22,7 +22,14 @@ import {
   defaultBorderRadius,
   lightGray,
   vscBackground,
+  vscBadgeBackground,
+  vscBadgeForeground,
+  vscButtonBackground,
+  vscButtonForeground,
+  vscEditorBackground,
   vscForeground,
+  vscInputBackground,
+  vscListActiveBackground,
 } from "../components";
 import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
 import StepContainer from "../components/gui/StepContainer";
@@ -53,6 +60,7 @@ import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
 import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { FOOTER_HEIGHT } from "@/components/Layout";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
@@ -64,19 +72,26 @@ export const TopGuiDiv = styled.div`
   height: 100%;
 `;
 
+const StopButtonContainer = styled.div`
+  position: fixed;
+  bottom: calc(${FOOTER_HEIGHT} + 90px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 101;
+`;
+
 export const StopButton = styled.div`
   width: fit-content;
   margin-right: auto;
   margin-left: auto;
 
-  font-size: ${getFontSize() - 2}px;
+  font-size: ${getFontSize() - 1}px;
 
-  border: 0.5px solid ${lightGray};
   border-radius: ${defaultBorderRadius};
-  padding: 4px 8px;
-  background: ${vscBackground};
+  padding: 8px 16px;
+  background: ${vscListActiveBackground};
   z-index: 50;
-  color: var(--vscode-textPreformat-foreground);
+  color: ${vscBadgeForeground};
 
   cursor: pointer;
 `;
@@ -85,6 +100,7 @@ export const StepsDiv = styled.div`
   padding-bottom: 8px;
   position: relative;
   background-color: transparent;
+  margin-bottom: 120px;
 
   & > * {
     position: relative;
@@ -127,6 +143,17 @@ const TutorialCardDiv = styled.header`
 
   width: 100%;
 `
+
+const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
+  bottom: ${props => props.isNewSession ? 'auto' : FOOTER_HEIGHT};
+  left: 0;
+  right: 0;
+  background-color: ${vscBackground};
+  padding: 8px;
+  padding-top: 0;
+  z-index: 100;
+`;
 
 export function fallbackRender({ error, resetErrorBoundary }) {
   return (
@@ -186,22 +213,33 @@ function GUI() {
     setIsAtBottom(atBottom);
   };
 
-  useEffect(() => {
-    if (!active || !topGuiDivRef.current) return;
-
-    const scrollAreaElement = topGuiDivRef.current;
-    scrollAreaElement.scrollTop =
-      scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
-
+  const snapToBottom = useCallback(() => {
+    window.scrollTo({
+      top: topGuiDivRef.current?.scrollHeight,
+      behavior: "instant" as any,
+    });
     setIsAtBottom(true);
-  }, [active]);
+  }, []);
 
+  useEffect(() => {
+    if (active) {
+      snapToBottom();
+    }
+  }, [active])
+
+  useEffect(() => {
+      if (active && !isAtBottom) {
+        if (!topGuiDivRef.current) return;
+        const scrollAreaElement = topGuiDivRef.current;
+        scrollAreaElement.scrollTop = 
+          scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
+        setIsAtBottom(true);
+      }
+  }, [active, isAtBottom]);
+  
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      window.scrollTo({
-        top: topGuiDivRef.current?.scrollHeight,
-        behavior: "instant" as any,
-      });
+      snapToBottom();
     }, 1);
 
     return () => {
@@ -323,13 +361,42 @@ function GUI() {
     [state.history],
   );
 
+  const isNewSession = state.history.length === 0;
+
   return (
     <>
       {!window.isPearOverlay && !!showTutorialCard && 
-        <TutorialCardDiv >
+        <TutorialCardDiv>
             <OnboardingTutorial onClose={onCloseTutorialCard}/>
         </TutorialCardDiv>
       }
+      
+      {(
+        <FixedBottomContainer isNewSession={isNewSession}>
+          <ContinueInputBox
+            onEnter={(editorContent, modifiers) => {
+              sendInput(editorContent, modifiers);
+            }}
+            isLastUserInput={false}
+            isMainInput={true}
+            hidden={active}
+          />
+          {isNewSession && getLastSessionId() && (
+            <div className="mt-2">
+              <NewSessionButton
+                onClick={async () => {
+                  loadLastSession();
+                }}
+                className="mr-auto flex items-center gap-2"
+              >
+                <ArrowLeftIcon width="11px" height="11px" />
+                Last Session
+              </NewSessionButton>
+            </div>
+          )}
+        </FixedBottomContainer>
+      )}
+
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
           <StepsDiv>
@@ -342,6 +409,9 @@ function GUI() {
                       dispatch(newSession({session: undefined, source: 'continue'}));
                     }}
                   >
+                    <div style={{
+                      minHeight: index === state.history.length - 1 ? "50vh" : 0,
+                    }}>
                     {item.message.role === "user" ? (
                       <ContinueInputBox
                         onEnter={async (editorState, modifiers) => {
@@ -423,53 +493,12 @@ function GUI() {
                         </TimelineItem>
                       </div>
                     )}
+                    </div>
                   </ErrorBoundary>
                 </Fragment>
               );
             })}
           </StepsDiv>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          ></ContinueInputBox>
-          {active ? (
-            <>
-              <br />
-              <br />
-            </>
-          ) : state.history.length > 0 ? (
-            <div className="mt-2">
-              <NewSessionButton
-                onClick={() => {
-                  saveSession();
-                }}
-                className="mr-auto"
-              >
-                New Session
-                {` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
-              </NewSessionButton>
-            </div>
-          ) : (
-            <>
-              {getLastSessionId() ? (
-                <div className="mt-2">
-                  <NewSessionButton
-                    onClick={async () => {
-                      loadLastSession();
-                    }}
-                    className="mr-auto flex items-center gap-2"
-                  >
-                    <ArrowLeftIcon width="11px" height="11px" />
-                    Last Session
-                  </NewSessionButton>
-                </div>
-              ) : null}
-            </>
-          )}
         </div>
         <ChatScrollAnchor
           scrollAreaRef={topGuiDivRef}
@@ -477,21 +506,23 @@ function GUI() {
           trackVisibility={active}
         />
       </TopGuiDiv>
+
       {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setInactive());
-            if (
-              state.history[state.history.length - 1]?.message.content
-                .length === 0
-            ) {
-              dispatch(clearLastResponse("continue"));
-            }
-          }}
-        >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
+        <StopButtonContainer>
+          <StopButton
+            onClick={() => {
+              dispatch(setInactive());
+              if (
+                state.history[state.history.length - 1]?.message.content
+                  .length === 0
+              ) {
+                dispatch(clearLastResponse("continue"));
+              }
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        </StopButtonContainer>
       )}
     </>
   );

@@ -311,12 +311,17 @@ export class AiderProcessManager {
     vscode.commands.executeCommand("pearai.setAiderProcessState", this._state);
   }
 
-  private captureAiderOutput(data: Buffer): void {
+  private captureAiderOutput(data: Buffer, type: 'stdout' | 'stderr'): void {
     const output = data.toString();
-    console.log("Raw Aider output: ", JSON.stringify(output));
+    console.log(`Raw Aider ${type}:`, JSON.stringify(output));
 
     let cleanOutput = output.replace(/\x1B\[[0-9;]*[JKmsu]/g, "");
     const specialLoadingChars = /⠋|⠙|⠹|⠸|⠼|⠴|⠦|⠧|⠇|⠏/g;
+    
+    if (!IS_WINDOWS) {
+      // We can't overwrite like in terminal
+      cleanOutput = cleanOutput.replace(/\r/g, '\n\n');
+    }
     cleanOutput = cleanOutput.replace(specialLoadingChars, "");
     cleanOutput = cleanOutput.replace(/Updating repo map/g, "Updating repo map...");
 
@@ -375,7 +380,7 @@ async startAiderChat(model: string, apiKey: string | undefined, isRestarting: bo
 
     if (this.aiderProcess.stdout) {
       this.aiderProcess.stdout.on("data", (data: Buffer) => {
-        this.captureAiderOutput(data);
+        this.captureAiderOutput(data, 'stdout');
         const output = data.toString();
         if (READY_PROMPT_REGEX.test(output)) {
           this.updateState({ state: "ready" });
@@ -386,6 +391,7 @@ async startAiderChat(model: string, apiKey: string | undefined, isRestarting: bo
     if (this.aiderProcess.stderr) {
       this.aiderProcess.stderr.on('data', (data: Buffer) => {
         console.error('Aider process stderr:', data.toString());
+        this.captureAiderOutput(data, 'stderr');
       });
     }
 

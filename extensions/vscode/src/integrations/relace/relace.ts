@@ -9,7 +9,6 @@ export async function getFastApplyChangesWithRelace(
     try {
         const baseHeaders = await getHeaders();
         const auth: any = await vscode.commands.executeCommand("pearai.getPearAuth");
-        console.log("relace - sending request to server", SERVER_URL);
         const response = await fetch(`${SERVER_URL}/integrations/relace/apply`, {
             method: "POST",
             headers: {

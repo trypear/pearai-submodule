@@ -127,18 +127,18 @@ const FadeInWords: React.FC<FadeInWordsProps> = (props: FadeInWordsProps) => {
   const isStreamingMessage = active && messageIndex === history.length - 1;
 
   const words = children
-    .map((child) => {
+    .map((child, childIndex) => {
       if (typeof child === "string") {
         return child.split(/(\s+)/).map((word, index) => (
           <span 
             className={word.trim() && isStreamingMessage ? "fade-in-span" : undefined} 
-            key={index}
+            key={`${childIndex}-${index}-${word}`}
           >
             {word}
           </span>
         ));
       } else {
-        return <span className={isStreamingMessage ? "fade-in-span" : undefined}>{child}</span>;
+        return <span key={`child-${childIndex}`} className={isStreamingMessage ? "fade-in-span" : undefined}>{child}</span>;
       }
     })
     .flat();
@@ -192,19 +192,22 @@ const FadeInElement: React.FC<FadeInElementProps> = (props: FadeInElementProps) 
   }
 
   const words = children
-    .map((child) => {
+    .map((child, childIndex) => {
       if (!child) return null;
       if (typeof child === "string") {
         return child.split(/(\s+)/).map((word, index) => (
           <span 
             className={word.trim() && isStreamingMessage ? "fade-in-span" : undefined} 
-            key={index}
+            key={`${childIndex}-${index}-${word}`}
           >
             {word}
           </span>
         ));
       } else {
-        return <span className={isStreamingMessage ? "fade-in-span" : undefined}>{child}</span>;
+        return React.cloneElement(child, {
+          key: `element-${childIndex}`,
+          className: isStreamingMessage ? "fade-in-span" : undefined
+        });
       }
     })
     .filter(Boolean)

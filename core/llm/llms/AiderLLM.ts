@@ -197,7 +197,7 @@ class Aider extends BaseLLM {
         lastProcessedIndex = Aider.aiderProcess?.aiderOutput.length || 0;
         
         // Start listening once we see a newline-prefixed message
-        if (!startedListening && newOutput.startsWith('\n')) {
+        if (!startedListening && newOutput.startsWith(IS_WINDOWS ? '\r\n' : '\n')) {
           startedListening = true;
         }
 
