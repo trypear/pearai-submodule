@@ -371,7 +371,7 @@ export default function Mem0GUI() {
                     </h2>
                 </div>
             <div className="flex items-center space-x-1">
-                <span className="text-xs text-muted-foreground">powered by mem0*</span>
+                <span className="text-xs text-muted-foreground">Powered by Mem0*</span>
             </div>
         </div>
                 {(unsavedChanges.length > 0 || !isEnabled) && (
