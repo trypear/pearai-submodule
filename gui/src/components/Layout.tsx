@@ -31,6 +31,8 @@ import ProgressBar from "./loaders/ProgressBar";
 import PostHogPageView from "./PosthogPageView";
 import ProfileSwitcher from "./ProfileSwitcher";
 import ShortcutContainer from "./ShortcutContainer";
+import InventoryPreview from "../components/InventoryPreview";
+
 
 // check mac or window
 const platform = navigator.userAgent.toLowerCase();
@@ -257,6 +259,12 @@ const Layout = () => {
 
   return (
     <>
+      {location.pathname === "/" && (
+        <>
+          <InventoryPreview />
+
+        </>
+      )}
 				{/* Pressing Cmd+L adds code block to the chat box  */}
         <TextDialog
           showDialog={showDialog}

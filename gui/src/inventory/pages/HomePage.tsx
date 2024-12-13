@@ -34,21 +34,21 @@ export default function HomePage() {
       path: "/inventory",
     },
     {
-      icon: "inventory-creator.svg",
+      icon: "creator-default.svg",
       label: "Creator",
       description: <>Create new features</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>2</Kbd></span>,
       path: "/inventory/aiderMode",
     },
     {
-      icon: "inventory-search.svg",
+      icon: "search-default.svg",
       label: "Search",
       description: <>AI web search</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>3</Kbd></span>,
       path: "/inventory/perplexityMode",
     },
     {
-      icon: "inventory-mem0.svg",
+      icon: "memory-default.svg",
       label: "Memory",
       description: <>AI Personalization</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>4</Kbd></span>,
@@ -72,11 +72,11 @@ export default function HomePage() {
       }}
     >
       <div className="flex-1 flex items-center justify-center" onClick={(e) => closeOverlay(e)}>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4">
           {menuItems.map((item) => (
             <div
               key={item.label}
-              className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-2
+              className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-0
                 rounded-lg transition-all duration-200 
                 transform hover:scale-105"
               onClick={() => navigate(item.path)}
