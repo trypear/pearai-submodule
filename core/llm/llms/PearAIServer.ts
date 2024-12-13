@@ -62,18 +62,31 @@ class PearAIServer extends BaseLLM {
     try {
         const gitRepo = vscode.workspace.workspaceFolders?.[0];
         if (gitRepo) {
-            // Get the root commit hash
-            const rootCommitHash = execSync(
-              "git rev-list --max-parents=0 HEAD -n 1", 
-              { cwd: gitRepo.uri.fsPath }
-            ).toString().trim().substring(0, 7);
-            return rootCommitHash;
+          try {
+            // First check if git is initialized and has commits
+            const hasCommits = execSync(
+                "git rev-parse --verify HEAD",
+                { cwd: gitRepo.uri.fsPath }
+            ).toString().trim();
+
+            if (hasCommits) {
+                // If we have commits, get the root commit hash
+                const rootCommitHash = execSync(
+                    "git rev-list --max-parents=0 HEAD -n 1",
+                    { cwd: gitRepo.uri.fsPath }
+                ).toString().trim().substring(0, 7);
+                return rootCommitHash;
+            }
+          } catch (gitError) {
+              // Git command failed - either git isn't initialized or no commits
+              console.debug("Git repository not initialized or no commits present");
+          }
         }  // if not git initialized, id will simply be user-id (uid)
-        return "";
+        return "global";
     } catch (error) {
         console.error("Failed to initialize project ID:", error);
         console.error("Using user ID as project ID");
-        return "";
+        return "global";
     }
   }
 
