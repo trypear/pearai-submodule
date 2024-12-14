@@ -1,9 +1,10 @@
 import {
   ArrowLeftIcon,
   ChatBubbleOvalLeftIcon,
+	QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
-import { InputModifiers } from "core";
+import { IndexingProgressUpdate, InputModifiers } from "core";
 import { PostHog, usePostHog } from "posthog-js/react";
 import {
   Fragment,
@@ -61,9 +62,11 @@ import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
 import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 import { FOOTER_HEIGHT } from "@/components/Layout";
+import StatusBar from "@/components/StatusBar";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
+	padding-bottom: 200px;
   scrollbar-width: none;
 	scroll-behavior: smooth;
   &::-webkit-scrollbar {
@@ -73,7 +76,7 @@ export const TopGuiDiv = styled.div`
 
 const StopButtonContainer = styled.div`
   position: fixed;
-  bottom: calc(${FOOTER_HEIGHT} + 90px);
+  bottom: calc(${FOOTER_HEIGHT});
   left: 50%;
   transform: translateX(-50%);
   z-index: 101;
@@ -95,32 +98,14 @@ export const StopButton = styled.div`
   cursor: pointer;
 `;
 
-export const StepsDiv = styled.div`
-  padding-bottom: 8px;
-  position: relative;
-  background-color: white;
-  margin-bottom: 110px;
-
-  & > * {
-    position: relative;
-  }
-
-  .thread-message {
-    margin: 8px;
-  }
-`;
-
 export const NewSessionButton = styled.div`
   width: fit-content;
-  margin-top: 8px;
-  font-size: ${getFontSize() - 2}px;
-
-  border-radius: ${defaultBorderRadius};
-  padding: 2px 6px;
+  font-size: ${getFontSize() - 3}px;
+	background-color:blue;
+	padding: 0px 4px;
   color: ${lightGray};
 
   &:hover {
-    background-color: ${lightGray}33;
     color: ${vscForeground};
   }
 
@@ -137,11 +122,16 @@ const TutorialCardDiv = styled.header`
 `
 
 const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
-  position: ${props => props.isNewSession ? 'relative' : 'fixed'}; // chage to make the bottom chatbox fixed
+  position: fixed; // chage to make the bottom chatbox fixed
+	background-color: ${vscBackground};
 	bottom:0;
   left: 0;
   right: 0;
-  padding: 8px;
+  padding: 0rem 0.75rem 0.5rem 0.75rem;
+
+	& > * + * {
+    margin-top: 0.5rem;
+  }
 `;
 
 export function fallbackRender({ error, resetErrorBoundary }) {
@@ -358,35 +348,36 @@ function GUI() {
         </TutorialCardDiv>
       }
 
-			<TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-      {state.history.length === 0 && (
-        <div className="p-2">
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
+			{state.history.length === 0 && (
+  			<div className=" max-w-3xl mx-auto pt-2 space-y-2">
+    			{/* Main Input Chat Box */}
+    			<ContinueInputBox
+      			onEnter={(editorContent, modifiers) => {
+        			sendInput(editorContent, modifiers);
+      			}}
+      			isLastUserInput={false}
+      			isMainInput={true}
+      			hidden={active}
+    			/>
+
+					<StatusBar />
+
+				  {/* Last Session Button */}
+				  {/* {getLastSessionId() && (
+          <NewSessionButton
+            onClick={async () => {
+              loadLastSession();
             }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          />
+            className="flex items-center gap-1"
+          >
+            <ArrowLeftIcon width="10px" height="10px" />
+            Last Session
+          </NewSessionButton>
+      	  )} */}
+  			</div>
+			)}
 
-					{/* Get Last Session Button ----------->>>>>*/}
-          {getLastSessionId() && (
-              <NewSessionButton
-                onClick={async () => {
-                  loadLastSession();
-                }}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeftIcon width="11px" height="11px" />
-                Last Session
-              </NewSessionButton>
-          )}
-        </div>
-      )}
-
-        {/* <div className="mx-2 bg-yellow-700"> */}
-          <div className="mb-72">
+					<TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
             {state.history.map((item, index: number) => {
               return (
                 <Fragment key={index}>
@@ -400,6 +391,10 @@ function GUI() {
                       minHeight: index === state.history.length - 1 ? "50vh" : 0,
                     }}> */}
                     {item.message.role === "user" ? (
+											<div className="max-w-3xl mx-auto">
+
+												<div className=" max-w-80 ml-auto px-2">
+
                       <ContinueInputBox
                         onEnter={async (editorState, modifiers) => {
                           streamResponse(
@@ -413,9 +408,11 @@ function GUI() {
                         isMainInput={false}
                         editorState={item.editorState}
                         contextItems={item.contextItems}
-                      ></ContinueInputBox>
+												/>
+												</div>
+												</div>
                     ) : (
-                      <div className="thread-message">
+                      // <div className="p-4 bg-orange-500 my-4">
                         <TimelineItem
                           item={item}
                           iconElement={
@@ -478,28 +475,33 @@ function GUI() {
                             }
                           />
                         </TimelineItem>
-												{state.history.length > 0 && (
-        									<FixedBottomContainer isNewSession={false}>
-          									<ContinueInputBox
-            									onEnter={(editorContent, modifiers) => {
-              								sendInput(editorContent, modifiers);
-            									}}
-            									isLastUserInput={false}
-            									isMainInput={true}
-            									hidden={active}
-          									/>
-        									</FixedBottomContainer>
-      									)}
-                      </div>
+
+                      // </div>
                     )}
                     {/* </div> */}
                   </ErrorBoundary>
                 </Fragment>
               );
             })}
-          </div>
+					</TopGuiDiv>
+
+						{state.history.length > 0 && (
+        			<FixedBottomContainer isNewSession={false}>
+								<div className="max-w-3xl mx-auto">
+
+          			<ContinueInputBox
+            			onEnter={(editorContent, modifiers) => {
+										sendInput(editorContent, modifiers);
+            			}}
+            			isLastUserInput={false}
+            			isMainInput={true}
+            			hidden={active}
+									/>
+								<StatusBar />
+									</div>
+        			</FixedBottomContainer>
+      			)}
         {/* </div> */}
-      </TopGuiDiv>
 
       {active && (
         <StopButtonContainer>

@@ -10,6 +10,7 @@ import styled from "styled-components";
 import {
     defaultBorderRadius,
     lightGray,
+    vscBadgeForeground,
     vscButtonBackground,
     vscButtonForeground,
     vscInputBackground
@@ -19,6 +20,7 @@ import { defaultModelSelector } from "../../redux/selectors/modelSelectors"; // 
 import { isPerplexityMode } from "../../util/bareChatMode"; // Added import
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
+color: ${vscBadgeForeground};
     display: ${(props) => (props.isHidden ? "none" : "flex")};
     gap: 0.5rem;
     align-items: flex-end;

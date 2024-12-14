@@ -39,12 +39,11 @@ const InventoryPreview = () => {
     };
 
     return (
-        <div>
+        <div className="justify-center  w-full">
 
             <div
                 onClick={openInventory}
-                className={`${historyLength === 0 ? 'relative' : 'fixed top-0'
-                    } z-50 flex px-2 pt-1 w-full`}
+                className="z-10 flex max-w-3xl mx-auto relative pt-1"
             >            <div className="flex flex-row items-center">
                     <div className="overflow-hidden rounded-[12px] relative">
                         <div
@@ -85,7 +84,7 @@ const InventoryPreview = () => {
                 </div>
             </div>
             {historyLength > 0 && (
-                <div className="h-[52px]" aria-hidden="true" />
+                <div className="h-[44px]" aria-hidden="true" />
             )}
         </div>
     );

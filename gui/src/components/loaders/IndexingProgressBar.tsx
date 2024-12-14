@@ -20,8 +20,8 @@ const STATUS_COLORS = {
 };
 
 const ProgressBarWrapper = styled.div`
-  width: 100px;
-  height: 6px;
+  width: 50px;
+  height: 4px;
   border-radius: 6px;
   border: 0.5px solid ${lightGray};
 `;
@@ -43,7 +43,7 @@ const FlexDiv = styled.div`
 
 const StatusHeading = styled.div`
   color: ${lightGray};
-  font-size: ${getFontSize() - 2.4}px;
+  font-size: ${getFontSize() - 3}px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -186,12 +186,11 @@ const IndexingProgressBar = ({
           <StatusDot
             color={STATUS_COLORS.PAUSED}
             onClick={(e) => {
-              ideMessenger.post("index/setPaused", false);
+              ideMessenger.post("index/setPaused", true);
             }}
           ></StatusDot>
           <StatusHeading>
-            Indexing paused ({Math.trunc(indexingState.progress * 100)}
-            %)
+            Indexing paused
           </StatusHeading>
         </FlexDiv>
       ) : indexingState.status === "indexing" ? (
@@ -209,9 +208,9 @@ const IndexingProgressBar = ({
                 <ProgressBarFill completed={fillPercentage} />
               </ProgressBarWrapper>
 
-              <StatusHeading
+              {/* <StatusHeading
                 style={{ fontSize: `${getFontSize() - 3}px` }}
-              >{`${Math.trunc(indexingState.progress * 100)}%`}</StatusHeading>
+              >{`${Math.trunc(indexingState.progress * 100)}%`}</StatusHeading> */}
             </FlexDiv>
 
             <StatusInfo>

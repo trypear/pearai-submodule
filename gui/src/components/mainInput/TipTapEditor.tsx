@@ -76,7 +76,6 @@ const InputBoxDiv = styled.div`
   margin: 0;
   width: 100%;
   background-color: ${vscEditorBackground};
-	border: 1px solid ${vscInputBorder};
   color: ${vscForeground};
   font-size: ${getFontSize()}px;
   word-break: break-word;

@@ -19,55 +19,43 @@ interface ShortcutButtonProps {
     labelInside?: boolean; // New prop
 }
 
-const Container = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    cursor: pointer;
-    border-radius: 6px;
-    
-    color: ${vscForeground};
-`;
-
 const StyledShortcutButton = styled.div<{ offFocus: boolean }>`
-    padding: 0rem 0.25rem;
+padding: 1px 4px;
+gap: 2px;
     display: flex;
     align-items: center;
-    gap: 2px;
-        color: ${vscForeground};
+    color: ${vscForeground};
     background-color: ${vscEditorBackground};
-height: 20px;
     border: 1.5px solid ${(props) =>
-        props.offFocus ? undefined : lightGray + "33"};
-    border-radius: ${defaultBorderRadius};
+    props.offFocus ? undefined : lightGray + "33"};
+    border-radius: 6px;
 `;
 
 const LabelSpan = styled.span`
     opacity: 0.7;
-    font-size: 10px;
     margin-left: 6px;
 `;
 
-
 const KeySpan = styled.span`
+	font-weight: 500;
 `;
 
 const PlusSpan = styled.span`
+	margin-bottom: 2px;
+	font-weight: 600;
     opacity: 0.5;
 `;
 
-export function ShortcutButton({ 
-    keys, 
-    onClick, 
-    offFocus = false, 
-    className = "", 
+export function ShortcutButton({
+    keys,
+    onClick,
+    offFocus = false,
     label,
-    labelInside = false 
+    labelInside = false
 }: ShortcutButtonProps) {
     return (
-        <Container onClick={onClick} className={className}>
+        <div onClick={onClick} className="flex items-center gap-1 text-[10px] cursor-pointer">
             <StyledShortcutButton offFocus={offFocus}>
-                
                 {keys.map((key, index) => (
                     <Fragment key={index}>
                         <KeySpan>{key}</KeySpan>
@@ -76,7 +64,7 @@ export function ShortcutButton({
                 ))}
                 {labelInside && label && <LabelSpan>{label}</LabelSpan>}
             </StyledShortcutButton>
-            {!labelInside && label && <span className="text-[10px]">{label}</span>}
-        </Container>
+            {!labelInside && label}
+        </div>
     );
 }

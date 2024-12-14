@@ -1,6 +1,5 @@
-import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { IndexingProgressUpdate } from "core";
-import { useContext, useEffect, useState, useCallback } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
@@ -13,7 +12,6 @@ import {
 } from ".";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { useWebviewListener } from "../hooks/useWebviewListener";
-import { shouldBeginOnboarding } from "../pages/onboarding/utils";
 import { defaultModelSelector } from "../redux/selectors/modelSelectors";
 import {
   setBottomMessage,
@@ -21,15 +19,9 @@ import {
   setShowDialog,
 } from "../redux/slices/uiStateSlice";
 import { RootState } from "../redux/store";
-import { getFontSize, isMetaEquivalentKeyPressed } from "../util";
-import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
+import { isMetaEquivalentKeyPressed } from "../util";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
-import TextDialog from "./dialogs";
-import HeaderButtonWithText from "./HeaderButtonWithText";
-import IndexingProgressBar from "./loaders/IndexingProgressBar";
-import ProgressBar from "./loaders/ProgressBar";
 import PostHogPageView from "./PosthogPageView";
-import ProfileSwitcher from "./ProfileSwitcher";
 import ShortcutContainer from "./ShortcutContainer";
 import InventoryPreview from "../components/InventoryPreview";
 
@@ -41,7 +33,7 @@ const isWindows = platform.includes("win");
 
 // #region Styled Components
 const HEADER_HEIGHT = "1.55rem";
-export const FOOTER_HEIGHT = "1.8em";
+export const FOOTER_HEIGHT = "11rem";
 
 const GlobalStyle = createGlobalStyle`
   :root {
@@ -68,33 +60,6 @@ const BottomMessageDiv = styled.div<{ displayOnBottom: boolean }>`
   max-height: 35vh;
 `;
 
-const Footer = styled.footer`
-  display: flex;
-  flex-direction: row;
-  gap: 8px;
-  justify-content: right;
-  padding: 4px;
-  align-items: center;
-  width: calc(100% - 0px);
-  height: ${FOOTER_HEIGHT};
-  // background-color: ${vscBackground};
-  background-color: none;
-  backdrop-filter: blur(12px);
-  overflow: hidden;
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  z-index: 50;
-`;
-
-const ModelDropdownPortalDiv = styled.div`
-  background-color: ${vscInputBackground};
-  position: relative;
-  margin-left: 8px;
-  z-index: 200;
-  font-size: ${getFontSize()};
-`;
-
 const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
   ${props => props.isPearOverlay && `
     width: 100%;
@@ -107,20 +72,6 @@ const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
     background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
   `}
 `;
-
-// #endregion
-
-const HIDE_FOOTER_ON_PAGES = [
-  "/onboarding",
-  "/localOnboarding",
-  "/apiKeyOnboarding",
-  "/aiderMode",
-  "/inventory",
-  "/inventory/aiderMode",
-  "/inventory/perplexityMode",
-  "/inventory/mem0Mode",
-  "/welcome"
-];
 
 const SHOW_SHORTCUTS_ON_PAGES = ["/"];
 
@@ -183,9 +134,9 @@ const Layout = () => {
     [navigate],
   );
 
-  useWebviewListener("openSettings", async () => {
-    ideMessenger.post("openConfigJson", undefined);
-  });
+  // useWebviewListener("openSettings", async () => {
+  //   ideMessenger.post("openConfigJson", undefined);
+  // });
 
   useWebviewListener(
     "viewHistory",
@@ -258,15 +209,11 @@ const Layout = () => {
   }
 
   return (
-    <>
+    <div className="px-3" style={{ backgroundColor: vscBackground }}>
       {location.pathname === "/" && (
-        <>
           <InventoryPreview />
-
-        </>
       )}
-				{/* Pressing Cmd+L adds code block to the chat box  */}
-        <TextDialog
+        {/* <TextDialog
           showDialog={showDialog}
           onEnter={() => {
             dispatch(setShowDialog(false));
@@ -275,42 +222,14 @@ const Layout = () => {
             dispatch(setShowDialog(false));
           }}
           message={dialogMessage}
-        />
+        /> */}
 
         <PostHogPageView />
         <Outlet />
-				
-				{/* <ModelDropdownPortalDiv id="model-select-top-div"></ModelDropdownPortalDiv> */}
 
         {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && historyLength === 0 && (
           <ShortcutContainer />
         )}
-
-        {/* {!HIDE_FOOTER_ON_PAGES.includes(location.pathname) && (
-          <Footer>
-            <div className="mr-auto flex flex-grow gap-2 items-center overflow-hidden">
-              {indexingState.status !== "indexing" &&
-                defaultModel?.provider === "free-trial" && (
-                  <ProgressBar
-                    completed={parseInt(localStorage.getItem("ftc") || "0")}
-                    total={FREE_TRIAL_LIMIT_REQUESTS}
-                  />
-              )}
-              <IndexingProgressBar indexingState={indexingState} />
-            </div>
-
-            <ProfileSwitcher />
-            <HeaderButtonWithText
-              tooltipPlacement="top-end"
-              text="Help"
-              onClick={() => {
-                navigate(location.pathname === "/help" ? "/" : "/help");
-              }}
-            >
-              <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
-            </HeaderButtonWithText>
-          </Footer>
-        )} */}
 
         <BottomMessageDiv
           displayOnBottom={displayBottomMessageOnBottom}
@@ -324,7 +243,7 @@ const Layout = () => {
         >
           {bottomMessage}
         </BottomMessageDiv>
-    </>
+    </div>
   );
 };
 

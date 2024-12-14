@@ -101,14 +101,15 @@ function InputToolbar(props: InputToolbarProps) {
         onClick={props.onClick}
         id="input-toolbar"
       >
+				<div className="flex-grow">
           {!perplexityMode && (
 						<div className="flex gap-3 items-center">
               <ShortcutButton
                 keys={["⎇", "⏎"]}
                 label="Use current file"
                 onClick={() => ({
-                  // useCodebase: false,
-                  // noContext: !useActiveFile,
+                  useCodebase: false,
+                  noContext: !useActiveFile,
                 })}
               />
               {/* TODO:  add onClick to add file*/}
@@ -124,6 +125,7 @@ function InputToolbar(props: InputToolbarProps) {
               />
             </div>
           )}
+					</div>
 
 
         {/* <span className="flex gap-2 items-center whitespace-nowrap">
