@@ -13,6 +13,7 @@ import { IdeMessengerContext } from '../../context/IdeMessenger';
 import { setMem0Memories } from "@/redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useNavigate } from "react-router-dom";
+import InventoryDetails from "../../components/InventoryDetails";
 
 
 export interface Memory {
@@ -359,20 +360,27 @@ export default function Mem0GUI() {
   }, [])
 
   return (
-    <div className="flex flex-col h-full bg-background p-6">
+    <div className="flex flex-col h-full ">
+            <InventoryDetails 
+        textColor="#FFFFFF" 
+        backgroundColor ="#8E6BF0" 
+        content="Memory"
+        blurb={<div><p>When you want the AI to remember insights from past prompts you've given it. It can automatically remember details such as the Python version you're using, or other specific details of your codebase, like your coding styles, or your expertise level</p><p>Powered by Mem0.</p></div>}
+        useful={<div><p>Intelligent memory of your coding profile</p><p>Increase in accuracy of results due to personalization</p><p>Uses less credits than other tools</p></div>}
+      />
         <div className="flex items-center justify-between gap-4 mb-4">
             <div className="flex flex-col items-start space-y-0">
-                <div className="flex items-center gap-2">
+                {/* <div className="flex items-center gap-2">
                     <h2 className="text-2xl font-bold leading-none text-primary mb-2">
                         PearAI Memory
                         <Badge variant="outline" className="ml-2 text-xs relative -top-2 right-3">
                             Beta
                         </Badge>
                     </h2>
-                </div>
-            <div className="flex items-center space-x-1">
+                </div> */}
+            {/* <div className="flex items-center space-x-1">
                 <span className="text-xs text-muted-foreground">powered by mem0*</span>
-            </div>
+            </div> */}
         </div>
                 {(unsavedChanges.length > 0 || !isEnabled) && (
                     <div className="w-[300px] bg-yellow-100 dark:bg-yellow-900/30 rounded-xl items-center justify-center flex text-sm text-yellow-700 dark:text-yellow-200 px-2">

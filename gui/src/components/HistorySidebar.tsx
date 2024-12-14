@@ -12,7 +12,7 @@ export const HistorySidebar = ({ isOpen, onClose, from }: { isOpen: boolean; onC
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
+        // document.addEventListener('mousedown', handleClickOutside);
 
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -22,7 +22,7 @@ export const HistorySidebar = ({ isOpen, onClose, from }: { isOpen: boolean; onC
     return (
         <div 
             ref={sidebarRef}
-            className={cn("absolute left-0 top-0 bg-background border-r shadow-lg z-50 transition-all duration-200 h-full flex flex-col", 
+            className={cn("absolute right-0 top-0 bg-background border-r shadow-lg z-50 transition-all duration-200 h-full flex flex-col py-4", 
             isOpen ? "w-72 translate-x-0" : "-translate-x-full hidden")}
         >
             <History from={from} onClose={onClose} />

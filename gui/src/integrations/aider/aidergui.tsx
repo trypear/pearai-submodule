@@ -46,7 +46,16 @@ import { cn } from "@/lib/utils";
 import type { AiderState } from "../../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
 import styled from "styled-components";
 import { lightGray } from "@/components";
+import InventoryDetails from "../../components/InventoryDetails";
 
+const inventoryDetails = <InventoryDetails 
+textColor="#FFFFFF" 
+backgroundColor ="#FF65B7" 
+content="Creator"
+blurb={<div><p>When you need a feature or a bug fix completed, Creator will find the relevant files, and make changes directly to your code. You can see specific diff changes in your source control tab afterwards.</p><p>Powered by Aider.</p></div>}
+useful={<div><p>Full feature completions</p><p>Automated refactoring</p><p>Lower level of human intervention needed</p></div>}
+alt={<p>Use Chat to ask questions, or Search for questions needing the web.</p>}
+/>;
 
 const StepsDiv = styled.div`
   padding-bottom: 8px;
@@ -289,7 +298,7 @@ useEffect(() => {
       );
     }
     if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
-      return <AiderManualInstallation />;
+      return <div>{inventoryDetails}<AiderManualInstallation /></div>;
     }
     if (aiderProcessState.state === "installing") {
       msg = (

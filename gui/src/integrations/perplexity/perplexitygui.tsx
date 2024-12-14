@@ -3,7 +3,7 @@ import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
 import { usePostHog } from "posthog-js/react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import {
   Fragment,
   useCallback,
@@ -49,6 +49,7 @@ import { Button } from "@/components/ui/button";
 import { HistorySidebar } from "@/components/HistorySidebar";
 import styled from "styled-components";
 import { lightGray } from "@/components";
+import InventoryDetails from "../../components/InventoryDetails";
 
 
 const StepsDiv = styled.div`
@@ -250,7 +251,19 @@ function PerplexityGUI() {
 
   return (
     <>
-    <div className="relative flex h-screen overflow-hidden">
+    <div className="relative flex h-screen overflow-hidden ">
+      <InventoryDetails 
+        textColor="#FFFFFF" 
+        backgroundColor ="#0fb5af" 
+        content="Search"
+        blurb={<div><p>When you need to find information where recency is important. Regular LLMs' knowledge are outdated by several months, whereas PearAI Search is able to search the web for latest data.</p><p>Powered by Perplexity.</p></div>}
+        useful={<div><p>Most up-to-date information, real-time web search.</p><p>Also good for non-coding specific questions</p><p>Uses less credits than other tools</p></div>}
+        alt={<p>Use Chat or Creator to make changes to files.</p>}
+      />
+
+
+
+
       <HistorySidebar 
         isOpen={historySidebarOpen} 
         onClose={() => {
@@ -262,29 +275,30 @@ function PerplexityGUI() {
         className={cn(
           "flex-1 flex flex-col min-w-0",
           "transition-all duration-300 ease-in-out",
-          historySidebarOpen ? "ml-72" : "ml-0"
+          historySidebarOpen ? "mr-72" : "mr-0"
         )}
       >
-        <div className="sticky top-0 z-10 p-0 bg-background">
           <Button
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            size="icon"
             onClick={() => setHistorySidebarOpen(prev => !prev)}
-            className="flex items-center gap-2"
+            className={
+              cn(
+                "ml-auto mr-0", 
+                historySidebarOpen ? "mr-4" : "mr-0"
+              )
+}
           >
             {historySidebarOpen ? (
                 <>
-                  <ChevronLeftIcon className="h-3 w-3" />
-                  Close History
+                  <XMarkIcon className="h-6 w-6" />
                 </>
               ) : (
                 <>
-                  History
-                  <ChevronRightIcon className="h-3 w-3" />
+                  <ClockIcon className="h-6 w-6" />
                 </>
               )}
           </Button>
-        </div>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div
           className={cn(
@@ -531,7 +545,7 @@ function PerplexityGUI() {
         </StopButton>
       )}
 
-      <div className="text-[10px] text-muted-foreground mt-4 flex justify-end pr-2 pb-2">
+      <div className="text-[10px] text-muted-foreground mb-4 flex justify-end pr-2 pb-2">
         *View PearAI Disclaimer page{" "}
         <Link
           to="https://trypear.ai/disclaimer/"
