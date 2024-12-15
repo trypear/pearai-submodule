@@ -1,6 +1,9 @@
-import { useState, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useState, useRef , useCallback} from "react";
+import { useSelector , useDispatch} from "react-redux";
 import { Button } from "@/components/ui/button";
+import { RootState } from "@/redux/store";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+
 import {
     PhotoIcon,
     AtSymbolIcon,
@@ -18,6 +21,8 @@ import {
 import { modelSupportsImages } from "core/llm/autodetect"; // Updated import
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors"; // Added import
 import { isPerplexityMode } from "../../util/bareChatMode"; // Added import
+
+
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
 color: ${vscBadgeForeground};
@@ -40,7 +45,15 @@ function ContextToolbar(props: ContextToolbarProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const defaultModel = useSelector(defaultModelSelector);
     const perplexityMode = isPerplexityMode();
+    const dispatch = useDispatch();
+    const activeFilePath = useSelector((state: RootState) => state.uiState.activeFilePath);
 
+    const fileName = activeFilePath?.split(/[/\\]/)?.pop() ?? "";
+
+    const removeActiveFile = useCallback(() => {
+        dispatch(setActiveFilePath(undefined));
+      }, [])
+      
     return (
         <StyledDiv
             isHidden={props.hidden}
@@ -48,7 +61,7 @@ function ContextToolbar(props: ContextToolbarProps) {
             id="context-toolbar"
         >
             <Button
-                className="gap-1 text-xs bg-input h-6 px-2"
+                className="gap-1 text-xs bg-input text-input-foreground h-6 px-2"
                 onClick={(e) => {
                     props.onAddContextItem?.();
                 }}
@@ -59,15 +72,18 @@ function ContextToolbar(props: ContextToolbarProps) {
                 />
                 Context
             </Button>
-            <Button
-                className="gap-1 h-6 bg-input text-xs px-2"
+            {activeFilePath &&<Button
+                className="gap-1 h-6 bg-input text-input-foreground text-xs px-2 bg-transparent border-solid border-input"
+                onClick={() => {
+                    // TODO: Add file to context, like @filePath. 
+                }}
             >
                 <PlusIcon
                     width="16px"
                     height="16px"
                 />
-                Current File
-            </Button>
+                {fileName}
+            </Button>}
 
             {!perplexityMode && defaultModel &&
                 modelSupportsImages(

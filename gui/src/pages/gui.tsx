@@ -353,7 +353,7 @@ function GUI() {
       }
 
 			{state.history.length === 0 && (
-  			<div className=" max-w-3xl mx-auto pt-2 space-y-2 w-full">
+  			<div className=" max-w-3xl mx-auto pt-2 space-y-3 w-full">
     			{/* Main Input Chat Box */}
     			<ContinueInputBox
       			onEnter={(editorContent, modifiers) => {
@@ -396,25 +396,24 @@ function GUI() {
                     }}> */}
                     {item.message.role === "user" ? (
 											<div className="max-w-3xl mx-auto">
-
-												<div className=" max-w-80 ml-auto px-2">
-
-                      <ContinueInputBox
-                        onEnter={async (editorState, modifiers) => {
-                          streamResponse(
-                            editorState,
-                            modifiers,
-                            ideMessenger,
-                            index,
-                          );
-                        }}
-                        isLastUserInput={isLastUserInput(index)}
-                        isMainInput={false}
-                        editorState={item.editorState}
-                        contextItems={item.contextItems}
-												/>
+												<div className=" max-w-96 ml-auto px-2">
+                          
+                          <ContinueInputBox
+                            onEnter={async (editorState, modifiers) => {
+                              streamResponse(
+                                editorState,
+                                modifiers,
+                                ideMessenger,
+                                index,
+                              );
+                            }}
+                            isLastUserInput={isLastUserInput(index)}
+                            isMainInput={false}
+                            editorState={item.editorState}
+                            contextItems={item.contextItems}
+                            />
 												</div>
-												</div>
+                      </div>
                     ) : (
                       // <div className="p-4 bg-orange-500 my-4">
                         <TimelineItem

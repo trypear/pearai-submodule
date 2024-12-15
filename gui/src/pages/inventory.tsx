@@ -91,10 +91,10 @@ export default function Inventory() {
       }`}
     >
       {id === "inventory" ? (
-        <div className={`w-[60px] h-[60px] rounded-[16px] bg-input flex items-center justify-center ${
+        <div className={`w-[60px] h-[60px] rounded-[16px] bg-background flex items-center justify-center ${
           currentTab === id ? "shadow-[0_0_0_4px_rgba(255,255,255,0.2)]" : ""
         }`}>
-          <CogIcon className="h-[44px] w-[44px] text-input-foreground" />
+          <CogIcon className="h-[44px] w-[44px] text-foreground" />
         </div>
       ) : (
         <div className={`w-[60px] h-[60px] rounded-[16px] ${
@@ -111,7 +111,7 @@ export default function Inventory() {
 
 
   return (
-    <div className={`h-full w-full flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-sidebar-background"}`}>
+    <div className={`h-full w-full flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-background"}`}>
       <Tabs
         value={currentTab}
         defaultValue="home"
@@ -120,7 +120,7 @@ export default function Inventory() {
       >
         <div className="flex flex-row h-full">
           <div className="z-10 h-full">
-            <TabsList className={` flex flex-col bg-background justify-between h-full ${currentTab === 'home' ? 'hidden' : ''}`}>
+            <TabsList className={` flex flex-col bg-sidebar-background justify-between h-full ${currentTab === 'home' ? 'hidden' : ''}`}>
               <div className="p-4 flex flex-col gap-4">
                 <TabButton {...tabs[1]} />
                 <TabButton {...tabs[2]} />

@@ -72,7 +72,7 @@ const InputBoxDiv = styled.div`
   gap: 12px;
   padding: 12px;
   font-family: inherit;
-  border-radius: ${defaultBorderRadius};
+  border-radius: 12px;
   margin: 0;
   width: 100%;
   background-color: ${vscEditorBackground};
@@ -88,8 +88,8 @@ const InputBoxDiv = styled.div`
   flex-direction: column;
 
   .ProseMirror {
-    min-height: 35px;
-		max-height: 180px;
+    // min-height: 35px;
+		// max-height: 180px;
     flex: 1;
 		overflow-y: auto;
   }

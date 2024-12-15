@@ -28,18 +28,18 @@ const InventoryDetails = ({ textColor, backgroundColor, content, blurb, useful, 
 
 
             <div
-                className={`border-solid border-[0px] bg-input mt-[56px] z-50 fixed rounded-lg py-4 px-6 w-[400px] transition-all duration-200 transform ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0 pointer-events-none'
+                className={`border-solid border-[0px] bg-input mt-[48px] z-50 fixed rounded-lg py-2 px-4 w-[400px] transition-all duration-200 transform ${isOpen ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0 pointer-events-none'
                     }`}
                 style={{
                     borderColor: backgroundColor + '50',
                     color: textColor
                 }}
             >
-                <div className="flex flex-col  text-base">
+                <div className="flex flex-col  text-xs">
                     <div className="opacity-50">{blurb}</div>
                     {useful && (
                         <div>
-                            <h3 className="font-semibold mb-1 text-lg">Useful for</h3>
+                            <h3 className="font-semibold mb-1 text-base">Useful for</h3>
                             <div className="opacity-50">{useful}</div>
                         </div>
                     )}

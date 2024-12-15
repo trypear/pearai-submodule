@@ -14,6 +14,7 @@ import { isBareChatMode } from "../../util/bareChatMode";
 import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
 import { getFontSize } from "../../util";
 import { cn } from "@/lib/utils";
+import { Tail } from "@/components/ui/tail";
 
 const gradient = keyframes`
   0% {
@@ -52,6 +53,7 @@ const GradientBorder = styled.div<{
   display: flex;
   flex-direction: row;
   align-items: center;
+  position: relative;
 `;
 
 const wave = keyframes`
@@ -180,7 +182,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
         isFirst={false}
         isLast={false}
         borderColor={active && isLastUserInput ? undefined : vscBackground}
-        borderRadius={defaultBorderRadius}
+        borderRadius={"12px"}
       >
         <TipTapEditor
           editorState={preservedState}
@@ -193,7 +195,9 @@ const ContinueInputBox = memo(function ContinueInputBox({
           source={source}
           onChange={handleEditorChange}
         />
+        {!isMainInput && !(active&& isLastUserInput ? 1 : 0) && <Tail/>}
       </GradientBorder>
+      
       {active && isLastUserInput && (
         <LoadingContainer>
           <DotsContainer>
