@@ -39,12 +39,13 @@ const InventoryPreview = () => {
     };
 
     return (
-        <div className="justify-center  w-full">
+        <div className={`mt-2 relative w-full z-10`}>
 
             <div
                 onClick={openInventory}
-                className="z-10 flex max-w-3xl mx-auto relative pt-1"
-            >            <div className="flex flex-row items-center">
+                className="flex max-w-3xl mx-auto relative cursor-pointer"
+            >
+                <div className="flex flex-row items-center">
                     <div className="overflow-hidden rounded-[12px] relative">
                         <div
                             className="absolute inset-0 pointer-events-none rounded-[12px]"
@@ -82,10 +83,9 @@ const InventoryPreview = () => {
                         <ShortcutButton keys={["⌘", "E"]} label={"Inventory"} labelInside={true} />
                     </div>
                 </div>
+                
             </div>
-            {historyLength > 0 && (
-                <div className="h-[44px]" aria-hidden="true" />
-            )}
+
         </div>
     );
 };

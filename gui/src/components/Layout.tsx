@@ -9,6 +9,7 @@ import {
   vscForeground,
   vscInputBackground,
   vscBackground,
+  vscEditorBackground,
 } from ".";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { useWebviewListener } from "../hooks/useWebviewListener";
@@ -209,8 +210,8 @@ const Layout = () => {
   }
 
   return (
-    <div className="px-3" style={{ backgroundColor: vscBackground }}>
-      {location.pathname === "/" && (
+<div className="px-3 bg-sidebar-background h-full flex flex-col gap-2">
+{location.pathname === "/" && (
           <InventoryPreview />
       )}
         {/* <TextDialog

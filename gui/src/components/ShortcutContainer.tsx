@@ -44,7 +44,7 @@ const ShortcutContainer = () => {
   ];
 
   return (
-    <div className="pb-3 flex justify-center w-full ">
+    <div className="pb-3 flex justify-center w-full">
       <div
         ref={shortcutContainerRef}
         className="flex-col gap-2 w-full max-w-3xl inline-flex"

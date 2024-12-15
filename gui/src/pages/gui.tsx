@@ -66,7 +66,11 @@ import StatusBar from "@/components/StatusBar";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
-	padding-bottom: 200px;
+  postion: relative;
+  margin-top: -40px;
+  padding-top: 48px;
+	// padding-bottom: 200px;
+  height: 100%;
   scrollbar-width: none;
 	scroll-behavior: smooth;
   &::-webkit-scrollbar {
@@ -122,12 +126,12 @@ const TutorialCardDiv = styled.header`
 `
 
 const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
-  position: fixed; // chage to make the bottom chatbox fixed
+  // position: fixed; // chage to make the bottom chatbox fixed
 	background-color: ${vscBackground};
 	bottom:0;
   left: 0;
   right: 0;
-  padding: 0rem 0.75rem 0.5rem 0.75rem;
+  padding: 0rem 0rem 0.5rem 0rem;
 
 	& > * + * {
     margin-top: 0.5rem;
@@ -349,7 +353,7 @@ function GUI() {
       }
 
 			{state.history.length === 0 && (
-  			<div className=" max-w-3xl mx-auto pt-2 space-y-2">
+  			<div className=" max-w-3xl mx-auto pt-2 space-y-2 w-full">
     			{/* Main Input Chat Box */}
     			<ContinueInputBox
       			onEnter={(editorContent, modifiers) => {
