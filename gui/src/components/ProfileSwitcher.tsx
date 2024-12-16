@@ -2,6 +2,7 @@ import { Listbox, Transition } from "@headlessui/react";
 import {
   ChevronUpDownIcon,
   Cog6ToothIcon,
+  CogIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { ProfileDescription } from "core/config/ConfigHandler";
@@ -246,7 +247,7 @@ function ProfileSwitcher(props: {}) {
         }}
         text="Configure PearAI"
       >
-        <Cog6ToothIcon width="1.4em" height="1.4em" />
+        <CogIcon width="1.4m" height="1.4em" />
       </HeaderButtonWithText>
 
       {/* Only show login if beta explicitly enabled */}

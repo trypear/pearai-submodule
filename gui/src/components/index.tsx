@@ -352,7 +352,7 @@ export const HeaderButton = styled.button<{
   color: ${({ inverted }) => (inverted ? vscBackground : vscForeground)};
 
   border: none;
-  border-radius: ${defaultBorderRadius};
+  border-radius: 4px;
   cursor: ${({ disabled }) => (disabled ? "default" : "pointer")};
 
   &:focus {

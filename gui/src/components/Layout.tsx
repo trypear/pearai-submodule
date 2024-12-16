@@ -34,7 +34,7 @@ const isWindows = platform.includes("win");
 
 // #region Styled Components
 const HEADER_HEIGHT = "1.55rem";
-export const FOOTER_HEIGHT = "11rem";
+export const FOOTER_HEIGHT = "9.5rem";
 
 const GlobalStyle = createGlobalStyle`
   :root {

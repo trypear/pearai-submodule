@@ -1,7 +1,7 @@
 import {
-  ArrowLeftIcon,
+  BackspaceIcon,
   ChatBubbleOvalLeftIcon,
-	QuestionMarkCircleIcon,
+	ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { IndexingProgressUpdate, InputModifiers } from "core";
@@ -20,17 +20,10 @@ import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   Button,
-  defaultBorderRadius,
   lightGray,
   vscBackground,
-  vscBadgeBackground,
   vscBadgeForeground,
-  vscButtonBackground,
-  vscButtonForeground,
-  vscEditorBackground,
-  vscForeground,
-  vscInputBackground,
-  vscListActiveBackground,
+	vscForeground,
 } from "../components";
 import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
 import StepContainer from "../components/gui/StepContainer";
@@ -83,29 +76,25 @@ const StopButtonContainer = styled.div`
   bottom: calc(${FOOTER_HEIGHT});
   left: 50%;
   transform: translateX(-50%);
-  z-index: 101;
+  z-index: 50;
 `;
 
 export const StopButton = styled.div`
-  width: fit-content;
-  margin-right: auto;
-  margin-left: auto;
-
-  font-size: ${getFontSize() - 1}px;
-
-  border-radius: ${defaultBorderRadius};
-  padding: 8px 16px;
-  background: ${vscListActiveBackground};
+  border-radius: 4px;
+  padding: 4px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+background-color: rgb(147, 51, 51);
   z-index: 50;
   color: ${vscBadgeForeground};
-
   cursor: pointer;
 `;
 
 export const NewSessionButton = styled.div`
   width: fit-content;
   font-size: ${getFontSize() - 3}px;
-	background-color:blue;
+	background-color: ${vscBackground}ee;
 	padding: 0px 4px;
   color: ${lightGray};
 
@@ -397,7 +386,7 @@ function GUI() {
                     {item.message.role === "user" ? (
 											<div className="max-w-3xl mx-auto">
 												<div className=" max-w-96 ml-auto px-2">
-                          
+
                           <ContinueInputBox
                             onEnter={async (editorState, modifiers) => {
                               streamResponse(
@@ -519,7 +508,11 @@ function GUI() {
               }
             }}
           >
-            {getMetaKeyLabel()} ⌫ Cancel
+						<div className="flex items-center">
+            <ChevronUpIcon className="w-3 h-3 stroke-2" />
+						<BackspaceIcon className="w-4 h-4 stroke-2" />
+						</div>
+						<span className="text-xs font-medium">Cancel</span>
           </StopButton>
         </StopButtonContainer>
       )}

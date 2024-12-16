@@ -47,10 +47,7 @@ const StatusHeading = styled.div`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  @media (max-width: 400px) {
-    display: none;
-  }
+	user-select: none;
 `;
 
 const StatusInfo = styled.div`
@@ -202,21 +199,15 @@ const IndexingProgressBar = ({
           }}
         >
           <StatusDot shouldBlink color={STATUS_COLORS.INDEXING}></StatusDot>
-          <div>
             <FlexDiv>
               <ProgressBarWrapper>
                 <ProgressBarFill completed={fillPercentage} />
               </ProgressBarWrapper>
 
-              {/* <StatusHeading
+              <StatusHeading
                 style={{ fontSize: `${getFontSize() - 3}px` }}
-              >{`${Math.trunc(indexingState.progress * 100)}%`}</StatusHeading> */}
+              >{`${Math.trunc(indexingState.progress * 100)}%`}</StatusHeading>
             </FlexDiv>
-
-            <StatusInfo>
-              {hovered ? "Click to pause" : indexingState.desc}
-            </StatusInfo>
-          </div>
         </FlexDiv>
       ) : null}
     </div>

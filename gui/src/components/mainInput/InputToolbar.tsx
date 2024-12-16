@@ -223,13 +223,17 @@ function InputToolbar(props: InputToolbarProps) {
             </StyledSpan>
           ) : null} */}
           <Button
-                className="gap-1 h-6 bg-[#AFF349] text-[#005A4E] text-xs px-2"
-								// gap-1 h-6 bg-input text-xs px-2
-            >
-                <ArrowTurnDownLeftIcon width="12px"
-                    height="12px" ></ArrowTurnDownLeftIcon>
-                Send
-            </Button>
+            className="gap-1 h-6 bg-[#AFF349] text-[#005A4E] text-xs px-2"
+            onClick={(e) => {
+              props.onEnter?.({
+                useCodebase: false,
+                noContext: !useActiveFile
+              });
+            }}
+					>
+            <ArrowTurnDownLeftIcon width="12px" height="12px" />
+            Send
+					</Button>
           {/* <EnterButton
             offFocus={props.usingCodebase}
             onClick={(e) => {

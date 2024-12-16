@@ -1,13 +1,9 @@
 import styled from "styled-components";
 import { Fragment } from "react";
 import {
-    defaultBorderRadius,
     lightGray,
     vscEditorBackground,
-    vscBadgeBackground,
-    vscBadgeForeground,
     vscForeground,
-    vscInputBackground,
 } from "..";
 
 interface ShortcutButtonProps {

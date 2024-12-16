@@ -88,10 +88,9 @@ const InputBoxDiv = styled.div`
   flex-direction: column;
 
   .ProseMirror {
-    // min-height: 35px;
-		// max-height: 180px;
+    max-height: 180px;
     flex: 1;
-		overflow-y: auto;
+    overflow-y: auto;
   }
 `;
 
@@ -1111,6 +1110,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
             editor.commands.insertContent(" @");
           }
         }}
+				editor={editor}
       />
 
       <EditorContent
