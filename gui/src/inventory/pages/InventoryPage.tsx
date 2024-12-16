@@ -365,7 +365,11 @@ export default function AIToolInventory() {
           When you want the AI to remember insights from past prompts you've
           given it. It can automatically remember details such as
           the Python version you're using, or other specific details of your
-          codebase, like your coding styles, or your expertise level
+          codebase, like your coding styles, or your expertise level.
+          <br />
+          <br />
+          Note that all memories created are by default global to all your projects. In order to have workspace-specific memories,
+          you must have a Git repository initialized in your workspace and at least 1 commit.
         </span>
       ),
       strengths: [
