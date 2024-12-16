@@ -88,7 +88,7 @@ const InputBoxDiv = styled.div`
   flex-direction: column;
 
   .ProseMirror {
-    max-height: 180px;
+    // max-height: 600px;
     flex: 1;
     overflow-y: auto;
   }
@@ -369,7 +369,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
           const deleteButton = document.createElement('button');
           deleteButton.className = 'image-delete-button';
-          deleteButton.textContent = 'Delete';
+          deleteButton.textContent = 'Image';
           deleteButton.onclick = (e) => {
             e.preventDefault();
             e.stopPropagation();

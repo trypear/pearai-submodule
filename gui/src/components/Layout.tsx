@@ -38,7 +38,7 @@ export const FOOTER_HEIGHT = "9.5rem";
 
 const GlobalStyle = createGlobalStyle`
   :root {
-	background-color:green;
+	background-color:${vscBackground};
     --overlay-border-radius: 12px;
     --overlay-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   }
@@ -210,7 +210,7 @@ const Layout = () => {
   }
 
   return (
-<div className="px-3 bg-sidebar-background h-full flex flex-col gap-2">
+<div className="px-3 bg-sidebar-background h-full flex flex-col gap-1">
 {location.pathname === "/" && (
           <InventoryPreview />
       )}
