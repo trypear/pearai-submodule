@@ -39,14 +39,47 @@ function getSuggestion(
           }
 
           popup = tippy("body", {
-            getReferenceClientRect: props.clientRect,
+            getReferenceClientRect: () => {
+              const container = document.querySelector('.view-content')?.getBoundingClientRect();
+
+              if (!container) return props.clientRect();
+
+              return {
+                width: 0,
+                height: 0,
+                top: props.clientRect().top,
+                left: container.left + 8,
+                right: container.right - 8,
+                bottom: props.clientRect().bottom
+              };
+            },
             appendTo: () => document.body,
             content: component.element,
             showOnCreate: true,
             interactive: true,
             trigger: "manual",
-            placement: "bottom-start",
-            maxWidth: `${window.innerWidth - 24}px`,
+            placement: (() => {
+              const viewportHeight = window.innerHeight;
+              const bottomSpace = viewportHeight - props.clientRect().bottom;
+              return bottomSpace < 200 ? 'top-start' : 'bottom-start';
+            })(),
+            maxWidth: "calc(100% - 16px)",
+            popperOptions: {
+              modifiers: [{
+                name: 'preventOverflow',
+                options: {
+                  boundary: 'viewport',
+                },
+              }]
+            },
+            onCreate: (instance) => {
+              // Force content to stay within bounds
+              if (instance.popper) {
+                instance.popper.style.width = '100%';
+                instance.popper.style.maxWidth = 'calc(100% - 16px)';
+                instance.popper.style.overflowX = 'hidden';
+              }
+            }
           });
 
           onOpen();
@@ -60,7 +93,20 @@ function getSuggestion(
           }
 
           popup[0].setProps({
-            getReferenceClientRect: props.clientRect,
+            getReferenceClientRect: () => {
+              const container = document.querySelector('.view-content')?.getBoundingClientRect();
+
+              if (!container) return props.clientRect();
+
+              return {
+                width: 0,
+                height: 0,
+                top: props.clientRect().top,
+                left: container.left + 8,
+                right: container.right - 8,
+                bottom: props.clientRect().bottom
+              };
+            },
           });
         },
 
