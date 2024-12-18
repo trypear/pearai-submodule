@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { useContext } from 'react';
+import { useState, useContext } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -7,27 +6,31 @@ import { Badge } from "@/components/ui/badge";
 import { IdeMessengerContext } from '../../context/IdeMessenger';
 import { Github, Sparkles } from "lucide-react";
 
-interface StatusCardProps {
+interface StepCardProps {
+  icon: React.ReactNode;
   title: string;
   description: string;
-  showSparkles?: boolean;
-  animate?: boolean;
+  children?: React.ReactNode;
+  stepNumber: number;
 }
 
-function StatusCard({ title, description, showSparkles = false, animate = false }: StatusCardProps) {
+function StepCard({ icon, title, description, children, stepNumber }: StepCardProps) {
   return (
-    <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="relative">
-          <Github className={`w-16 h-16 ${animate ? 'animate-pulse' : ''}`} />
-          {showSparkles && (
-            <Sparkles className="w-6 h-6 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
-          )}
+    <Card className="p-2 bg-input hover:bg-input/90 hover:cursor-pointer transition-colors mx-auto">
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-sm font-medium">
+            {stepNumber}
+          </div>
+          {icon}
         </div>
-        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
-        <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
-          {description}
-        </p>
+        <div className="w-1/3">
+          <h3 className="font-semibold text-foreground">{title}</h3>
+          <p className="text-sm text-muted-foreground">{description}</p>
+        </div>
+        <div className="flex-1">
+          {children}
+        </div>
       </div>
     </Card>
   );
@@ -35,13 +38,13 @@ function StatusCard({ title, description, showSparkles = false, animate = false 
 
 export default function PearAIWrappedGUI() {
   const [githubUsername, setGithubUsername] = useState("");
-  const [currentStep, setCurrentStep] = useState(1);
+  const [hasStarred, setHasStarred] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const ideMessenger = useContext(IdeMessengerContext);
 
   const handleStarRepo = () => {
-    window.open('https://github.com/PearAI/Continue', '_blank');
-    setCurrentStep(2);
+    setHasStarred(true);
   };
 
   const handleGenerateWrapped = async () => {
@@ -49,88 +52,86 @@ export default function PearAIWrappedGUI() {
     
     try {
       setIsGenerating(true);
+      setIsLoading(true);
       // TODO: Implement the wrapped generation request
-    //   await ideMessenger.request('pearaiWrapped/generate', {
-    //     username: githubUsername
-    //   });
-      setCurrentStep(3);
+      // await ideMessenger.request('pearaiWrapped/generate', {
+      //   username: githubUsername
+      // });
     } catch (error) {
       console.error('Failed to generate PearAI Wrapped:', error);
-    } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
   };
 
-  return (
-    <div className="flex flex-col h-full bg-background p-6">
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div className="flex flex-col items-start space-y-0">
-          <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold leading-none text-primary mb-2">
-              PearAI Wrapped
-              <Badge variant="outline" className="ml-2 text-xs relative -top-2 right-3">
-                Beta
-              </Badge>
-            </h2>
-          </div>
-          <div className="flex items-center space-x-1">
-            <span className="text-xs text-muted-foreground">Your 2023 Coding Journey</span>
-          </div>
-        </div>
+  if (isLoading) {
+    return (
+      <div className="flex flex-col h-full bg-background p-6 gap-4 max-w-3xl mx-auto items-center justify-center">
+        <h2 className="text-2xl font-bold text-primary mb-4">
+          Generating Your PearAI Wrapped...
+        </h2>
+        <p className="text-muted-foreground text-center mb-8">
+          Please wait while we analyze your GitHub profile and generate your personalized summary.
+        </p>
+        <Sparkles className="w-16 h-16 animate-pulse text-primary" />
       </div>
+    );
+  }
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="flex flex-col items-center space-y-8 py-8">
-          <div className="text-center">
-            <StatusCard
-              title="Step 1: Star Our Repository"
-              description="Stars help us prevent spam and protect user privacy while maintaining access to PearAI Wrapped"
-              showSparkles={currentStep >= 1}
-            />
+  return (
+    <div className="flex flex-col h-full bg-background p-6 gap-4 max-w-3xl mx-auto">
+      <div className="flex items-center">
+        <h2 className="text-2xl font-bold text-primary">
+          PearAI Wrapped
+          <Badge variant="outline" className="ml-2 text-xs">Beta</Badge>
+        </h2>
+      </div>
+      
+      <div className="flex flex-col gap-4">
+        <StepCard
+          stepNumber={1}
+          icon={<Github className="w-8 h-8" />}
+          title="Star Our Repository"
+          description="Help us prevent spam and protect user privacy"
+        >
+          <a 
+            href="https://github.com/trypear/pearai-master"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <Button
-              className="mt-6"
               onClick={handleStarRepo}
-              variant={currentStep > 1 ? "outline" : "default"}
+              variant={hasStarred ? "outline" : "default"}
             >
               <Github className="mr-2 h-4 w-4" />
-              {currentStep > 1 ? "Repository Starred" : "Star Repository"}
+              {hasStarred ? "Starred" : "Star Repository"}
             </Button>
-          </div>
+          </a>
+        </StepCard>
 
-          <div className="text-center">
-            <StatusCard
-              title="Step 2: Enter Your GitHub Username"
-              description="Provide your GitHub username to generate your personalized wrapped"
-              showSparkles={currentStep >= 2}
-            />
-            <div className="mt-6 flex flex-col items-center gap-4">
-              <Input
-                type="text"
-                placeholder="GitHub Username"
-                value={githubUsername}
-                onChange={(e) => setGithubUsername(e.target.value)}
-                className="max-w-xs"
-              />
-            </div>
-          </div>
-
-          <div className="text-center">
-            <StatusCard
-              title="Step 3: Generate Your Wrapped"
-              description="Get ready to see your 2023 coding journey with PearAI!"
-              showSparkles={currentStep >= 3}
-              animate={isGenerating}
+        <StepCard
+          stepNumber={2}
+          icon={<Sparkles className="w-8 h-8" />}
+          title="Generate Your 2023 Wrapped"
+          description="Enter your GitHub username to see your coding journey"
+        >
+          <div className="flex gap-2 w-full">
+            <Input
+              type="text"
+              placeholder="GitHub Username"
+              value={githubUsername}
+              onChange={(e) => setGithubUsername(e.target.value)}
+              className="flex-1 text-primary-foreground"
             />
             <Button
-              className="mt-6"
               onClick={handleGenerateWrapped}
-              disabled={!githubUsername || isGenerating}
+              disabled={isGenerating || !githubUsername}
+              variant="default"
+              className="whitespace-nowrap mr-4"
             >
-              {isGenerating ? "Generating..." : "Generate PearAI Wrapped"}
-              <Sparkles className="ml-2 h-4 w-4" />
+              {isGenerating ? "Generating..." : "Create my PearAI Wrapped!"}
             </Button>
           </div>
-        </div>
+        </StepCard>
       </div>
     </div>
   );
