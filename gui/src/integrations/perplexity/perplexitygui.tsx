@@ -302,7 +302,7 @@ function PerplexityGUI() {
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div
           className={cn(
-            "mx-2",
+            "mx-auto w-full max-w-3xl px-4",
             state.perplexityHistory.length === 0 &&
               "h-full flex flex-col justify-center",
           )}
