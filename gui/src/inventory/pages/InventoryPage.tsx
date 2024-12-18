@@ -25,6 +25,7 @@ enum AIToolID {
   CREATOR = "aider",
   PAINTER = "painter",
   MEMORY = "memory",
+  WRAPPED = "wrapped",
 }
 
 interface AITool {
@@ -332,23 +333,27 @@ export default function AIToolInventory() {
       enabled: true,
     },
     {
-      id: AIToolID.PAINTER,
-      name: "Painter",
-      description: <span>AI image generation from textual descriptions</span>,
-      icon: "🎨",
+      id: AIToolID.WRAPPED,
+      name: "PearAI Wrapped",
+      description: (
+        <span>Share your coding year in review - only in PearAI! 🎉</span>
+      ),
+      icon: "🎁",
       whenToUse: (
         <span>
-          Use when you need to create unique images based on text prompts
+          Ready to show off your coding achievements? Generate a beautiful shareable summary of your
+          year in code. Perfect for social media posts and celebrating your developer journey!
         </span>
       ),
       strengths: [
-        <span>Creative image generation</span>,
-        <span>Wide range of styles</span>,
-        <span>Quick results</span>,
+        <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
+        <span>Fun stats about your coding style & achievements</span>,
+        <span>Beautiful visualizations of your tech stack</span>,
+        <span>Compare your progress with last year</span>,
       ],
       enabled: false,
-      comingSoon: true,
-      poweredBy: "Flux",
+      comingSoon: false,
+      poweredBy: "PearAI",
       installNeeded: false,
     },
     {
@@ -381,6 +386,26 @@ export default function AIToolInventory() {
       poweredBy: "Mem0",
       installNeeded: false,
       toggleable: true,
+    },
+    {
+      id: AIToolID.PAINTER,
+      name: "Painter",
+      description: <span>AI image generation from textual descriptions</span>,
+      icon: "🎨",
+      whenToUse: (
+        <span>
+          Use when you need to create unique images based on text prompts
+        </span>
+      ),
+      strengths: [
+        <span>Creative image generation</span>,
+        <span>Wide range of styles</span>,
+        <span>Quick results</span>,
+      ],
+      enabled: false,
+      comingSoon: true,
+      poweredBy: "Flux",
+      installNeeded: false,
     },
   ]);
 
