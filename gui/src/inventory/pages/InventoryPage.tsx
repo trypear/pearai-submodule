@@ -334,9 +334,9 @@ export default function AIToolInventory() {
     },
     {
       id: AIToolID.WRAPPED,
-      name: "PearAI Wrapped",
+      name: "Developer Wrapped",
       description: (
-        <span>Share your coding year in review - only in PearAI! 🎉</span>
+        <span>View your year in code - only in PearAI! 🎉</span>
       ),
       icon: "🎁",
       whenToUse: (
