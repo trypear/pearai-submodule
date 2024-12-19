@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { IdeMessengerContext } from '../../context/IdeMessenger';
-import { Github, Gift, Sparkles, Code2, Star, Timer } from "lucide-react";
+import { Github, Gift, Sparkles, Code2, Star, Timer, Hash, GitBranch, Code } from "lucide-react";
 import { motion } from "framer-motion";
 
 const YEAR = 2024;
@@ -37,8 +37,57 @@ export default function PearAIWrappedGUI() {
   }, []);
 
   return (
-    <div className="flex flex-col justify-center items-center h-full bg-primary p-8 gap-6 mx-auto">
-      <div className="text-center space-y-2 w-[600px]">
+    <div className="relative flex flex-col justify-center items-center h-full bg-primary p-8 gap-6 mx-auto overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-10 left-10 opacity-5">
+          <Code className="w-24 h-24" />
+        </div>
+        <div className="absolute bottom-10 right-10 opacity-5">
+          <GitBranch className="w-20 h-20" />
+        </div>
+        <div className="absolute top-1/2 right-20 opacity-5">
+          <Hash className="w-16 h-16" />
+        </div>
+        <div className="absolute bottom-1/4 left-20 opacity-5">
+          <Code2 className="w-16 h-16" />
+        </div>
+        <div className="absolute top-20 right-24 opacity-5">
+          <Github className="w-16 h-16" />
+        </div>
+        <motion.div
+          className="absolute top-1/4 right-1/4 opacity-5"
+          animate={{ y: [0, -20, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Star className="w-12 h-12" />
+        </motion.div>
+        <motion.div
+          className="absolute bottom-1/3 left-1/3 opacity-5"
+          animate={{ y: [0, 20, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Sparkles className="w-14 h-14" />
+        </motion.div>
+        <motion.div
+          className="absolute top-1/3 left-1/4 opacity-5"
+          animate={{ y: [0, -15, 0] }}
+          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Timer className="w-10 h-10" />
+        </motion.div>
+        <div className="absolute bottom-20 left-1/2 opacity-5">
+          <Gift className="w-18 h-18" />
+        </div>
+        <motion.div
+          className="absolute top-1/2 left-20 opacity-5"
+          animate={{ y: [0, 15, 0] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Code2 className="w-14 h-14" />
+        </motion.div>
+      </div>
+
+      <div className="text-center space-y-2 w-[600px] relative z-10">
         <div className="flex items-center justify-center gap-2">
           <div className="flex items-center justify-center h-[100px] w-full overflow-hidden">
             <motion.div
@@ -83,7 +132,7 @@ export default function PearAIWrappedGUI() {
         </div> */}
       </div>
 
-      <div className="w-[600px]">
+      <div className="w-[600px] relative z-10">
         <Card className="p-6 bg-input hover:bg-input/90 transition-colors">
           <div className="flex flex-col gap-6">
             <div className="flex flex-col items-center gap-4">
