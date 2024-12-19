@@ -107,6 +107,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   navigateToCreator: [undefined, void];
   navigateToSearch: [undefined, void];
   navigateToMem0: [undefined, void];
+  navigateToWrapped: [undefined, void];
   toggleOverlay: [undefined, void];
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
