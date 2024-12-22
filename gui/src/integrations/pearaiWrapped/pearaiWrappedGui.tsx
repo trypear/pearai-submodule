@@ -182,10 +182,10 @@ export default function PearAIWrappedGUI() {
         </div>
       </div>
 
-      <div className="flex flex-col items-center gap-6 z-10">
-        <div className="text-center space-y-2 w-[600px]">
+      <div className="flex flex-col items-center gap-4 md:gap-6 z-10">
+        <div className="text-center space-y-2 w-full max-w-[600px] px-4 md:px-0">
           <div className="flex items-center justify-center gap-2">
-            <div className="flex items-center justify-center h-[100px] w-full overflow-hidden">
+            <div className="flex items-center justify-center h-[200px] w-full overflow-hidden">
               <motion.div
                 key={currentIndex}
                 initial={{ x: 100, opacity: 0 }}
@@ -195,7 +195,7 @@ export default function PearAIWrappedGUI() {
                   duration: 0.7,
                   ease: "easeInOut"
                 }}
-                className="text-6xl font-bold text-primary sm:text-4xl break-words"
+                className="text-3xl md:text-4xl lg:text-6xl font-bold text-primary break-words"
               >
                 {CAROUSEL_ITEMS[currentIndex]}
               </motion.div>
@@ -205,30 +205,30 @@ export default function PearAIWrappedGUI() {
             {CAROUSEL_ITEMS.map((_, index) => (
               <div
                 key={index}
-                className={`h-2 w-2 rounded-full transition-colors duration-300 ${index === currentIndex ? 'bg-teal-200' : 'bg-gray-400'
+                className={`h-2 w-1.5 md:w-2 rounded-full transition-colors duration-300 ${index === currentIndex ? 'bg-teal-200' : 'bg-gray-400'
                   }`}
               />
             ))}
           </div>
         </div>
 
-        <div className="w-[600px]">
-          <Card className="p-6 bg-input hover:bg-input/90 transition-colors">
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col items-center gap-4">
-                <div className="flex items-center justify-center bg-muted rounded-lg">
-                  <Gift className="w-8 h-8 text-button-foreground" />
-                  <div className="text-xl mx-3 font-bold text-button-foreground">Generate Your {YEAR} in Code</div>
-                  <Gift className="w-8 h-8 text-button-foreground" />
+        <div className="w-full max-w-[600px] px-4">
+          <Card className="p-3 md:p-4 lg:p-6 bg-input hover:bg-input/90 transition-colors">
+            <div className="flex flex-col gap-3 md:gap-4 lg:gap-6">
+              <div className="flex flex-col items-center gap-2 md:gap-3 lg:gap-4">
+                <div className="flex items-center justify-center bg-muted rounded-lg p-2 md:p-3">
+                  <Gift className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-button-foreground" />
+                  <div className="text-base md:text-lg lg:text-xl mx-2 md:mx-3 font-bold text-button-foreground text-center">Generate Your {YEAR} in Code</div>
+                  <Gift className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-button-foreground" />
                 </div>
                 <div className="w-full">
-                  <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-2 md:gap-3 lg:gap-4">
                     <input
                       type="text"
                       placeholder=" Enter your github username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="rounded-lg border-none text-foreground bg-background p-4 text-sm focus:outline-none placeholder:opacity-50"
+                      className="rounded-lg border-none text-foreground bg-background p-2 md:p-3 lg:p-4 text-sm focus:outline-none placeholder:opacity-50"
                     />
                     <a
                       href={`https://developerwrapped.com/${username}`}
@@ -238,7 +238,7 @@ export default function PearAIWrappedGUI() {
                     >
                       <Button
                         variant="default"
-                        className="w-full whitespace-nowrap bg-button hover:bg-button-hover text-button-foreground cursor-pointer"
+                        className="w-full whitespace-nowrap bg-button hover:bg-button-hover text-button-foreground cursor-pointer text-sm md:text-base"
                         disabled={!username}
                       >
                         Create My Wrapped
