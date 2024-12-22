@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { IdeMessengerContext } from '../../context/IdeMessenger';
-import { Github, Gift, Sparkles, Code2, Star, Timer, Hash, GitBranch, Code } from "lucide-react";
+import { Github, Gift, Sparkles, Code2, Star, Timer, Hash, GitBranch, Code, TreePine, Snowflake, Candy } from "lucide-react";
 import { motion } from "framer-motion";
 
 const YEAR = 2024;
@@ -40,7 +40,7 @@ export default function PearAIWrappedGUI() {
     <div className="absolute inset-0 flex items-center justify-center bg-primary">
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute top-[13%] left-[12%] opacity-5">
-          <Code className="w-16 h-16" />
+          <TreePine className="w-16 h-16" />
         </div>
         <div className="absolute top-[12%] right-[18%] opacity-5">
           <Github className="w-14 h-14" />
@@ -128,7 +128,14 @@ export default function PearAIWrappedGUI() {
           <GitBranch className="w-24 h-24" />
         </div>
         <motion.div
-          className="absolute bottom-[17%] right-[12%] opacity-5"
+          className="absolute bottom-[27%] right-[22%] opacity-5"
+          animate={{ y: [0, 20, 0] }}
+          transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <TreePine className="w-20 h-20" />
+        </motion.div>
+        <motion.div
+          className="absolute bottom-[13%] right-[10%] opacity-5"
           animate={{ y: [0, 20, 0] }}
           transition={{ duration: 6.2, repeat: Infinity, ease: "easeInOut" }}
         >
@@ -140,6 +147,29 @@ export default function PearAIWrappedGUI() {
           transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut" }}
         >
           <Code className="w-30 h-30" />
+        </motion.div>
+        
+        <motion.div
+          className="absolute top-[8%] right-[28%] opacity-5"
+          animate={{ y: [0, -15, 0] }}
+          transition={{ duration: 5.3, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Snowflake className="w-16 h-16" />
+        </motion.div>
+        
+        <motion.div
+          className="absolute bottom-[45%] left-[22%] opacity-5"
+          animate={{ y: [0, 18, 0] }}
+          transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Candy className="w-20 h-20" />
+        </motion.div>
+        <motion.div
+          className="absolute bottom-[18%] left-[45%] opacity-5"
+          animate={{ y: [0, 15, 0] }}
+          transition={{ duration: 5.7, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Snowflake className="w-24 h-24" />
         </motion.div>
       </div>
 
@@ -186,13 +216,13 @@ export default function PearAIWrappedGUI() {
                   <div className="flex flex-col gap-4">
                     <input
                       type="text"
-                      placeholder="Enter your github username"
+                      placeholder=" Enter your github username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="rounded-lg border-none text-foreground bg-background p-4 text-sm"
+                      className="rounded-lg border-none text-foreground bg-background p-4 text-sm focus:outline-none placeholder:opacity-50"
                     />
                     <a
-                      href={`https://developerwrapped.com/create?user=${username}`}
+                      href={`https://developerwrapped.com/${username}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`${!username ? 'pointer-events-none opacity-50' : ''}`}
