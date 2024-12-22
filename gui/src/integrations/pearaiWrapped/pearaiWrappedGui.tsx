@@ -54,7 +54,7 @@ export default function PearAIWrappedGUI() {
           <Star className="w-12 h-12" />
         </motion.div> */}
         <motion.div
-          className="absolute top-[32%] left-[8%] opacity-5"
+          className="absolute top-[36%] left-[4%] opacity-5"
           animate={{ y: [0, -20, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         >
@@ -75,7 +75,7 @@ export default function PearAIWrappedGUI() {
         >
           <Code2 className="w-24 h-24" />
         </motion.div>
-        <div className="absolute top-[37%] right-[9%] opacity-5">
+        <div className="absolute top-[37%] right-[6%] opacity-5">
           <Hash className="w-16 h-16" />
         </div>
         
@@ -101,13 +101,13 @@ export default function PearAIWrappedGUI() {
         >
           <Sparkles className="w-28 h-28" />
         </motion.div>
-        <motion.div
+        {/* <motion.div
           className="absolute bottom-[38%] right-[10%] opacity-5"
           animate={{ y: [0, -18, 0] }}
           transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
         >
           <Star className="w-26 h-26" />
-        </motion.div>
+        </motion.div> */}
         
         <motion.div
           className="absolute bottom-[9%] left-[62%] opacity-5"
@@ -142,11 +142,11 @@ export default function PearAIWrappedGUI() {
           <Gift className="w-24 h-24" />
         </motion.div>
         <motion.div
-          className="absolute bottom-[22%] right-[44%] opacity-5"
+          className="absolute bottom-[6%] right-[44%] opacity-5"
           animate={{ y: [0, 25, 0] }}
           transition={{ duration: 6.5, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Code className="w-30 h-30" />
+          <Code className="w-14 h-14" />
         </motion.div>
         
         <motion.div
@@ -158,7 +158,7 @@ export default function PearAIWrappedGUI() {
         </motion.div>
         
         <motion.div
-          className="absolute bottom-[45%] left-[22%] opacity-5"
+          className="absolute bottom-[65%] left-[20%] opacity-5"
           animate={{ y: [0, 18, 0] }}
           transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
         >
@@ -170,6 +170,14 @@ export default function PearAIWrappedGUI() {
           transition={{ duration: 5.7, repeat: Infinity, ease: "easeInOut" }}
         >
           <Snowflake className="w-24 h-24" />
+        </motion.div>
+        <motion.div
+          className="absolute bottom-[34%] right-[10%] opacity-5"
+          // className="absolute bottom-[18%] left-[45%] opacity-5"
+          animate={{ y: [0, 15, 0] }}
+          transition={{ duration: 5.7, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Snowflake className="w-16 h-16" />
         </motion.div>
       </div>
 
