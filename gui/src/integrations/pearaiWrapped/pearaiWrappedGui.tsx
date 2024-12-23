@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 const YEAR = 2024;
 
 const CAROUSEL_ITEMS = [
-  `${YEAR} Developer Wrapped`,
+  `Developer Wrapped ${YEAR}`,
   "How many lines of code did you write this year?",
   "Total commits you made?",
   <div className="flex flex-col items-center justify-center">
@@ -223,7 +223,7 @@ export default function PearAIWrappedGUI() {
               <div className="flex flex-col items-center gap-2 md:gap-3 lg:gap-4">
                 <div className="flex items-center justify-center bg-muted rounded-lg p-2 md:p-3">
                   <Gift className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-button-foreground" />
-                  <div className="text-base md:text-lg lg:text-xl mx-2 md:mx-3 font-bold text-button-foreground text-center">Create Your {YEAR} Developer Wrapped</div>
+                  <div className="text-base md:text-lg lg:text-xl mx-2 md:mx-3 font-bold text-button-foreground text-center">Create Your Developer Wrapped {YEAR}</div>
                   <Gift className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-button-foreground" />
                 </div>
                 <div className="w-full">
