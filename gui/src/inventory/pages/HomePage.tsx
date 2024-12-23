@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { getMetaKeyLabel } from "@/util";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
@@ -53,6 +53,13 @@ export default function HomePage() {
       description: <>AI Personalization</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>4</Kbd></span>,
       path: "/inventory/mem0Mode",
+    },
+    {
+      icon: "wrapped.svg",
+      label: "Developer Wrapped",
+      description: <>2024</>,
+      // shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>5</Kbd></span>,
+      path: "/inventory/wrappedMode",
     }
   ];
 
@@ -64,6 +71,26 @@ export default function HomePage() {
 
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+
+  useEffect(() => {
+    const hasSeenWrapped = localStorage.getItem('hasSeenWrapped2024');
+    if (!hasSeenWrapped) {
+      // Initial animation state
+      setShouldAnimate(false);
+      
+      // Animation interval
+      const intervalId = setInterval(() => {
+        setShouldAnimate(true);
+        setTimeout(() => {
+          setShouldAnimate(false);
+        }, 2000);
+      }, 5000);
+
+      return () => clearInterval(intervalId); // Cleanup on unmount
+    }
+  }, []);
+
   return (
     <div 
       className="h-full flex flex-col items-center" 
@@ -72,14 +99,21 @@ export default function HomePage() {
       }}
     >
       <div className="flex-1 flex items-center justify-center" onClick={(e) => closeOverlay(e)}>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-5 gap-2">
           {menuItems.map((item) => (
             <div
               key={item.label}
-              className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-2
+              className={`text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-2
                 rounded-lg transition-all duration-200 
-                transform hover:scale-105"
-              onClick={() => navigate(item.path)}
+                transform hover:scale-105
+                ${item.label === "Developer Wrapped" && shouldAnimate ? "animate-wrapped" : ""}`}
+              onClick={() => {
+                if (item.label === "Developer Wrapped") {
+                  localStorage.setItem('hasSeenWrapped2024', 'true');
+                  setShouldAnimate(false);
+                }
+                navigate(item.path);
+              }}
             >
               <div>{item.shortcut}</div>
               <img 
