@@ -24,7 +24,7 @@ const CAROUSEL_ITEMS = [
   "Discover your year in code."
 ];
 
-const obfuscateUsername = (username: string): string => {
+const base64Username = (username: string): string => {
   // Basic obfuscation using base64
   return btoa(username);
 };
@@ -236,7 +236,7 @@ export default function PearAIWrappedGUI() {
                       className="rounded-lg border-none text-foreground bg-background p-2 md:p-3 lg:p-4 text-sm focus:outline-none placeholder:opacity-50"
                     />
                     <a
-                      href={`https://developerwrapped.com/${obfuscateUsername(username)}`}
+                      href={`https://developerwrapped.com/${base64Username(username)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`${!username ? 'pointer-events-none opacity-50' : ''}`}
