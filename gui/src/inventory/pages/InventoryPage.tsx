@@ -25,6 +25,7 @@ enum AIToolID {
   CREATOR = "aider",
   PAINTER = "painter",
   MEMORY = "memory",
+  WRAPPED = "wrapped",
 }
 
 interface AITool {
@@ -332,26 +333,6 @@ export default function AIToolInventory() {
       enabled: true,
     },
     {
-      id: AIToolID.PAINTER,
-      name: "Painter",
-      description: <span>AI image generation from textual descriptions</span>,
-      icon: "🎨",
-      whenToUse: (
-        <span>
-          Use when you need to create unique images based on text prompts
-        </span>
-      ),
-      strengths: [
-        <span>Creative image generation</span>,
-        <span>Wide range of styles</span>,
-        <span>Quick results</span>,
-      ],
-      enabled: false,
-      comingSoon: true,
-      poweredBy: "Flux",
-      installNeeded: false,
-    },
-    {
       id: AIToolID.MEMORY,
       name: "Memory",
       description: (
@@ -381,6 +362,47 @@ export default function AIToolInventory() {
       poweredBy: "Mem0",
       installNeeded: false,
       toggleable: true,
+    },
+    {
+      id: AIToolID.WRAPPED,
+      name: "Developer Wrapped",
+      description: (
+        <span>View your year in code - only in PearAI! 🎉</span>
+      ),
+      icon: "🎁",
+      whenToUse: (
+        <span>
+          Ready to show off your coding achievements? Generate a fun summary of your year in code. Perfect for sharing on social media and celebrating your developer journey!
+        </span>
+      ),
+      strengths: [
+        <span>Fun stats about your coding style & achievements this year</span>,
+        <span>Visualize total lines of code written, top languages, top projects, and much more</span>,
+        <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
+      ],
+      enabled: false,
+      comingSoon: false,
+      installNeeded: false,
+    },
+    {
+      id: AIToolID.PAINTER,
+      name: "Painter",
+      description: <span>AI image generation from textual descriptions</span>,
+      icon: "🎨",
+      whenToUse: (
+        <span>
+          Use when you need to create unique images based on text prompts
+        </span>
+      ),
+      strengths: [
+        <span>Creative image generation</span>,
+        <span>Wide range of styles</span>,
+        <span>Quick results</span>,
+      ],
+      enabled: false,
+      comingSoon: true,
+      poweredBy: "Flux",
+      installNeeded: false,
     },
   ]);
 
@@ -536,9 +558,11 @@ export default function AIToolInventory() {
                       )}
                       {focusedTool.name}
                     </div>
-                    <Badge variant="outline" className="pl-0">
-                      Powered by {focusedTool.poweredBy}*
-                    </Badge>
+                    {focusedTool.poweredBy && (
+                      <Badge variant="outline" className="pl-0">
+                        Powered by {focusedTool.poweredBy}*
+                      </Badge>
+                    )}
                   </h2>
                   <p className="mb-2">{focusedTool.description}</p>{" "}
                   <h3 className="font-semibold mb-1">When to use:</h3>
