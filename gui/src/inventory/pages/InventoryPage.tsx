@@ -367,17 +367,17 @@ export default function AIToolInventory() {
       id: AIToolID.WRAPPED,
       name: "Developer Wrapped",
       description: (
-        <span>Jump into your year in code - only in PearAI! 🎉</span>
+        <span>View your year in code - only in PearAI! 🎉</span>
       ),
       icon: "🎁",
       whenToUse: (
         <span>
-          Ready to show off your coding achievements? Generate a beautiful shareable summary of your year in code. Perfect for social media posts and celebrating your developer journey!
+          Ready to show off your coding achievements? Generate a fun summary of your year in code. Perfect for sharing on social media and celebrating your developer journey!
         </span>
       ),
       strengths: [
         <span>Fun stats about your coding style & achievements this year</span>,
-        <span>View lines written, top languages, top projects, and much more</span>,
+        <span>Visualize total lines of code written, top languages, top projects, and much more</span>,
         <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
       ],
       enabled: false,
