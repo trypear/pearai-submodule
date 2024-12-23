@@ -10,18 +10,18 @@ import { motion } from "framer-motion";
 const YEAR = 2024;
 
 const CAROUSEL_ITEMS = [
-  `${YEAR} DEVELOPER WRAPPED`,
-  "How many lines of code did you write ?",
-  "Total Commits made by you ?",
+  `${YEAR} Developer Wrapped`,
+  "How many lines of code did you write this year?",
+  "Total commits you made?",
   <div className="flex flex-col items-center justify-center">
     <div >
-      Top Language you coded in ?
+      Top language you coded in?
     </div>
     <div className="text-sm mt-3">
-      find out in your wrapped!
+      find out in your wrapped.
     </div>
   </div>,
-  "Discover your coding journey through beautiful insights"
+  "Discover your year in code."
 ];
 
 export default function PearAIWrappedGUI() {
@@ -31,7 +31,7 @@ export default function PearAIWrappedGUI() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % CAROUSEL_ITEMS.length);
-    }, 3000);
+    }, 6000);
 
     return () => clearInterval(timer);
   }, []);
@@ -218,14 +218,14 @@ export default function PearAIWrappedGUI() {
               <div className="flex flex-col items-center gap-2 md:gap-3 lg:gap-4">
                 <div className="flex items-center justify-center bg-muted rounded-lg p-2 md:p-3">
                   <Gift className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-button-foreground" />
-                  <div className="text-base md:text-lg lg:text-xl mx-2 md:mx-3 font-bold text-button-foreground text-center">Generate Your {YEAR} in Code</div>
+                  <div className="text-base md:text-lg lg:text-xl mx-2 md:mx-3 font-bold text-button-foreground text-center">Create Your {YEAR} Developer Wrapped</div>
                   <Gift className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-button-foreground" />
                 </div>
                 <div className="w-full">
                   <div className="flex flex-col gap-2 md:gap-3 lg:gap-4">
                     <input
                       type="text"
-                      placeholder=" Enter your github username"
+                      placeholder=" Enter your Github username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       className="rounded-lg border-none text-foreground bg-background p-2 md:p-3 lg:p-4 text-sm focus:outline-none placeholder:opacity-50"
@@ -241,7 +241,7 @@ export default function PearAIWrappedGUI() {
                         className="w-full whitespace-nowrap bg-button hover:bg-button-hover text-button-foreground cursor-pointer text-sm md:text-base"
                         disabled={!username}
                       >
-                        Create My Wrapped
+                        Create
                       </Button>
                     </a>
                   </div>
