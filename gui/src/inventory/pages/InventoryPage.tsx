@@ -333,27 +333,6 @@ export default function AIToolInventory() {
       enabled: true,
     },
     {
-      id: AIToolID.WRAPPED,
-      name: "Developer Wrapped",
-      description: (
-        <span>View your year in code - only in PearAI! 🎉</span>
-      ),
-      icon: "🎁",
-      whenToUse: (
-        <span>
-          Ready to show off your coding achievements? Generate a beautiful shareable summary of your year in code. Perfect for social media posts and celebrating your developer journey!
-        </span>
-      ),
-      strengths: [
-        <span>Fun stats about your coding style & achievements this year</span>,
-        <span>View lines written, top languages, top projects, and much more</span>,
-        <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
-      ],
-      enabled: false,
-      comingSoon: false,
-      installNeeded: false,
-    },
-    {
       id: AIToolID.MEMORY,
       name: "Memory",
       description: (
@@ -383,6 +362,27 @@ export default function AIToolInventory() {
       poweredBy: "Mem0",
       installNeeded: false,
       toggleable: true,
+    },
+    {
+      id: AIToolID.WRAPPED,
+      name: "Developer Wrapped",
+      description: (
+        <span>View your year in code - only in PearAI! 🎉</span>
+      ),
+      icon: "🎁",
+      whenToUse: (
+        <span>
+          Ready to show off your coding achievements? Generate a beautiful shareable summary of your year in code. Perfect for social media posts and celebrating your developer journey!
+        </span>
+      ),
+      strengths: [
+        <span>Fun stats about your coding style & achievements this year</span>,
+        <span>View lines written, top languages, top projects, and much more</span>,
+        <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
+      ],
+      enabled: false,
+      comingSoon: false,
+      installNeeded: false,
     },
     {
       id: AIToolID.PAINTER,
