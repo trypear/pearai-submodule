@@ -244,9 +244,6 @@ export default function PearAIWrappedGUI() {
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       onKeyDown={(e) => {
-                        console.dir("HIHI")
-                        console.dir(e.key)
-                        console.dir(username)
                         if (e.key === 'Enter' && username) {
                           handleSubmit(username);
                         }
