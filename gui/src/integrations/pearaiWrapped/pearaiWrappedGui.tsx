@@ -231,11 +231,6 @@ export default function PearAIWrappedGUI() {
           <Card className="p-3 md:p-4 lg:p-6 bg-input hover:bg-input/90 transition-colors">
             <div className="flex flex-col gap-3 md:gap-4 lg:gap-6">
               <div className="flex flex-col items-center gap-2 md:gap-3 lg:gap-4">
-                <div className="flex items-center justify-center bg-muted rounded-lg p-2 md:p-3">
-                  <Gift className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-button-foreground" />
-                  <div className="text-base md:text-lg lg:text-xl mx-2 md:mx-3 font-bold text-button-foreground text-center">Create Your Developer Wrapped {YEAR}</div>
-                  <Gift className="w-5 h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-button-foreground" />
-                </div>
                 <div className="w-full">
                   <div className="flex flex-col gap-2 md:gap-3 lg:gap-4">
                     <input
