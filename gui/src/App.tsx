@@ -11,6 +11,7 @@ import ErrorPage from "./pages/error";
 import GUI from "./pages/gui";
 import { default as Help, default as HelpPage } from "./pages/help";
 import History from "./pages/history";
+import Feedback from "./pages/feedback"
 import MigrationPage from "./pages/migration";
 import MonacoPage from "./pages/monaco";
 import ApiKeyAutocompleteOnboarding from "./pages/onboarding/apiKeyAutocompleteOnboarding";
@@ -84,6 +85,10 @@ const router = createMemoryRouter(
           element: <HelpPage />,
         },
         {
+        path: "/feedback",
+        element: <Feedback />,
+        },
+        {
           path: "/monaco",
           element: <MonacoPage />,
         },
@@ -128,7 +133,7 @@ const router = createMemoryRouter(
     // FOR DEV'ing welcome:
     // initialEntries: [window.isPearOverlay ? "/welcome" : window.initialRoute],
   },
-]);
+);
 
 function App() {
   const dispatch = useDispatch();

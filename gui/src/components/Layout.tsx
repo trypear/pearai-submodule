@@ -150,15 +150,12 @@ const HIDE_FOOTER_ON_PAGES = [
   "/onboarding",
   "/localOnboarding",
   "/apiKeyOnboarding",
-<<<<<<< HEAD
-=======
   "/aiderMode",
   "/inventory",
   "/inventory/aiderMode",
   "/inventory/perplexityMode",
   "/inventory/mem0Mode",
   "/welcome"
->>>>>>> origin/main
 ];
 
 const SHOW_SHORTCUTS_ON_PAGES = ["/"];
@@ -367,6 +364,19 @@ const Layout = () => {
                 >
                   <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
                 </HeaderButtonWithText>
+                <HeaderButtonWithText
+                tooltipPlacement="top-end"
+                text="Send Feedback"
+                onClick={() => {
+                  if (location.pathname === "/feedback") {
+                    navigate("/");
+                  } else {
+                    navigate("/feedback");
+                  }
+                }}
+              >
+                <InboxStackIcon width="1.4em" height="1.4em" />
+              </HeaderButtonWithText>
               </Footer>
             )}
           </GridDiv>
