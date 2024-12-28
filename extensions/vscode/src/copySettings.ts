@@ -3,11 +3,23 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 
+export const FIRST_LAUNCH_KEY = 'pearai.firstLaunch';
 const pearAISettingsDir = path.join(os.homedir(), '.pearai');
 const pearAIDevExtensionsDir = path.join(os.homedir(), '.pearai', 'extensions');
 
 const firstLaunchFlag = path.join(pearAISettingsDir, 'firstLaunch.flag');
-export const isFirstLaunch = fs.existsSync(firstLaunchFlag);
+const firstPearAICreatorLaunchFlag = path.join(pearAISettingsDir, 'firstLaunchCreator.flag');
+export const isFirstPearAICreatorLaunch = !fs.existsSync(firstPearAICreatorLaunchFlag);
+
+// Removed file based flag migration, we show new onboarding to old users
+export function isFirstLaunch(context: vscode.ExtensionContext): boolean {
+    const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
+    console.log("isFirstLaunch");
+    console.log(!stateExists);
+    // If state is set and is true, it's not first launch
+    return !stateExists;
+}
+
 
 function getPearAISettingsDir() {
     const platform = process.platform;
@@ -25,42 +37,45 @@ function getVSCodeExtensionsDir() {
 }
 
 
-function copyVSCodeSettingsToPearAIDir() {
+async function copyVSCodeSettingsToPearAIDir() {
     const vscodeSettingsDir = getVSCodeSettingsDir();
     const pearAIDevSettingsDir = getPearAISettingsDir();
     const vscodeExtensionsDir = getVSCodeExtensionsDir();
 
-    if (!fs.existsSync(pearAIDevSettingsDir)) {
-        fs.mkdirSync(pearAIDevSettingsDir, { recursive: true });
-    }
-
-    if (!fs.existsSync(pearAIDevExtensionsDir)) {
-        fs.mkdirSync(pearAIDevExtensionsDir, { recursive: true });
-    }
+    await fs.promises.mkdir(pearAIDevSettingsDir, { recursive: true });
+    await fs.promises.mkdir(pearAIDevExtensionsDir, { recursive: true });
 
     const itemsToCopy = ['settings.json', 'keybindings.json', 'snippets', 'sync', 'globalStorage/state.vscdb', 'globalStorage/state.vscdb.backup'];
-    itemsToCopy.forEach(item => {
+    
+    for (const item of itemsToCopy) {
         const source = path.join(vscodeSettingsDir, item);
         const destination = path.join(pearAIDevSettingsDir, item);
-        if (fs.existsSync(source)) {
-            if (fs.lstatSync(source).isDirectory()) {
-                copyDirectoryRecursiveSync(source, destination);
-            } else {
-                fs.copyFileSync(source, destination);
+        
+        try {
+            if (await fs.promises.access(source).then(() => true).catch(() => false)) {
+                const stats = await fs.promises.lstat(source);
+                if (stats.isDirectory()) {
+                    await copyDirectoryRecursiveSync(source, destination);
+                } else {
+                    await fs.promises.copyFile(source, destination);
+                }
             }
+        } catch (error) {
+            console.error(`Error copying ${item}: ${error}`);
         }
-    });
-
-
-    const exclusions = ['pearai.pearai', 'continue.continue']
-    const platform = process.platform;
-    const arch = process.arch;
-
-    if (platform === "darwin" && arch === "arm64") {
-        exclusions.push('vscode-pylance');
     }
 
-    copyDirectoryRecursiveSync(vscodeExtensionsDir, pearAIDevExtensionsDir, exclusions);
+    const exclusions = [
+        'pearai.pearai',
+        'ms-python.vscode-pylance',
+        'ms-python.python',
+        'supermaven',
+        'codeium',
+        'github.copilot',
+        'continue'
+    ];
+
+    await copyDirectoryRecursiveSync(vscodeExtensionsDir, pearAIDevExtensionsDir, exclusions);
 }
 
 function getVSCodeSettingsDir() {
@@ -74,38 +89,59 @@ function getVSCodeSettingsDir() {
     }
 }
 
-function copyDirectoryRecursiveSync(source: string, destination: string, exclusions: string[] = []) {
-    if (!fs.existsSync(destination)) {
-        fs.mkdirSync(destination, { recursive: true });
-    }
-    fs.readdirSync(source).forEach(item => {
+async function copyDirectoryRecursiveSync(source: string, destination: string, exclusions: string[] = []) {
+    await fs.promises.mkdir(destination, { recursive: true });
+    
+    const items = await fs.promises.readdir(source);
+    for (const item of items) {
         const sourcePath = path.join(source, item);
         const destinationPath = path.join(destination, item);
 
-        // Check if the current item should be excluded
         const shouldExclude = exclusions.some(exclusion =>
             sourcePath.toLowerCase().includes(exclusion.toLowerCase())
+            
         );
 
         if (!shouldExclude) {
-            if (fs.lstatSync(sourcePath).isDirectory()) {
-                copyDirectoryRecursiveSync(sourcePath, destinationPath, exclusions);
+            const stats = await fs.promises.lstat(sourcePath);
+            if (stats.isDirectory()) {
+                await copyDirectoryRecursiveSync(sourcePath, destinationPath, exclusions);
             } else {
-                fs.copyFileSync(sourcePath, destinationPath);
+                await fs.promises.copyFile(sourcePath, destinationPath);
             }
         }
-    });
+    }
 }
 
-export function importUserSettingsFromVSCode() {
-    // this function is synchronous and copying files takes time
-    // thats why run it after 3 seconds, until which extension activates.
-    setTimeout(() => {
-        if (!fs.existsSync(firstLaunchFlag)) {
-            vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
-            copyVSCodeSettingsToPearAIDir();
-            fs.writeFileSync(firstLaunchFlag, 'This is the first launch flag file');
-            vscode.window.showInformationMessage('Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.', 'Ok');
+
+export async function importUserSettingsFromVSCode() {
+    try {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
+        await copyVSCodeSettingsToPearAIDir();
+        
+        vscode.window.showInformationMessage(
+            'Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.',
+            'Ok'
+        );
+    } catch (error) {
+        vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
+    }
+}
+
+export async function markCreatorOnboardingCompleteFileBased() {
+    try {
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        const flagFile = firstPearAICreatorLaunchFlag;
+        const productName = 'PearAI Creator';
+        
+        const exists = await fs.promises.access(flagFile).then(() => true).catch(() => false);
+        if (!exists) {
+            await fs.promises.writeFile(flagFile, `This is the first launch flag file for ${productName}`);
         }
-    }, 3000);
+    } catch (error) {
+        console.error('Error marking creator onboarding complete:', error);
+    }
 }

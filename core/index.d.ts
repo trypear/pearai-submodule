@@ -195,6 +195,14 @@ export interface IContextProvider {
   loadSubmenuItems(args: LoadSubmenuItemsArgs): Promise<ContextSubmenuItem[]>;
 }
 
+export interface IntegrationHistoryMap {
+  perplexityHistory: 'perplexity';
+  aiderHistory: 'aider';
+  history: 'continue';
+}
+
+export type IntegrationType = IntegrationHistoryMap[keyof IntegrationHistoryMap];
+
 export interface PersistedSessionInfo {
   history: ChatHistory;
   perplexityHistory: ChatHistory;
@@ -209,6 +217,7 @@ export interface SessionInfo {
   title: string;
   dateCreated: string;
   workspaceDirectory: string;
+  integrationType: IntegrationType;
 }
 
 export interface RangeInFile {
@@ -262,6 +271,7 @@ export type MessageContent = string | MessagePart[];
 export interface ChatMessage {
   role: ChatMessageRole;
   content: MessageContent;
+  citations?: string[];
 }
 
 export interface ContextItemId {
@@ -307,12 +317,18 @@ export interface PromptLog {
   completion: string;
 }
 
+export interface Citation {
+  url: string;
+  title: string;
+}
+
 export interface ChatHistoryItem {
   message: ChatMessage;
   editorState?: any;
   modifiers?: InputModifiers;
   contextItems: ContextItemWithId[];
   promptLogs?: PromptLog[];
+  citations?: Citation[];
 }
 
 export type ChatHistory = ChatHistoryItem[];
@@ -581,7 +597,8 @@ type ContextProviderName =
   | "gitlab-mr"
   | "os"
   | "currentFile"
-  | "relativefilecontext";
+  | "relativefilecontext"
+  | "relativegitfilecontext";
 
 type TemplateType =
   | "llama2"
@@ -630,6 +647,7 @@ type ModelProvider =
   | "openai-aiohttp"
   | "msty"
   | "watsonx"
+  | "openrouter"
   | "pearai_server"
   | "aider"
   | "perplexity"
@@ -705,6 +723,7 @@ export type ModelName =
   | "starcoder-3b"
   | "starcoder2-3b"
   | "stable-code-3b"
+  // PearAI
   | "pearai_model"
   | "aider"
   | "perplexity";
@@ -782,6 +801,12 @@ export interface ModelDescription {
   promptTemplates?: { [key: string]: string };
   capabilities?: ModelCapability;
   isDefault?: boolean;
+}
+
+export interface IntegrationDescription {
+  name: string;
+  description?: string;
+  enabled: boolean;
 }
 
 export type EmbeddingsProviderName =
@@ -926,6 +951,7 @@ export interface SerializedContinueConfig {
   env?: string[];
   allowAnonymousTelemetry?: boolean;
   models: ModelDescription[];
+  integrations?: IntegrationDescription[];
   systemMessage?: string;
   completionOptions?: BaseCompletionOptions;
   requestOptions?: RequestOptions;
@@ -1018,6 +1044,7 @@ export interface ContinueConfig {
   analytics?: AnalyticsConfig;
   docs?: SiteIndexingConfig[];
   isBetaAccess?: boolean;
+  integrations?: IntegrationDescription[];
 }
 
 export interface BrowserSerializedContinueConfig {
@@ -1037,6 +1064,7 @@ export interface BrowserSerializedContinueConfig {
   experimental?: ExperimentalConfig;
   analytics?: AnalyticsConfig;
   isBetaAccess?: boolean;
+  integrations?: IntegrationDescription[];
 }
 
 export interface PearAuth {

@@ -32,7 +32,7 @@ import { Battery } from "../util/battery";
 import { TabAutocompleteModel } from "../util/loadAutocompleteModel";
 import type { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { VsCodeMessenger } from "./VsCodeMessenger";
-import { handleAiderMode } from "../integrations/aider/aider";
+import { startAiderProcess } from "../integrations/aider/aiderUtil";
 
 export class VsCodeExtension {
   // Currently some of these are public so they can be used in testing (test/test-suites)
@@ -137,6 +137,7 @@ export class VsCodeExtension {
     );
 
     // handleURI
+    // This is the entry point when user signs in from web app
     context.subscriptions.push(
       vscode.window.registerUriHandler({
         handleUri(uri: vscode.Uri) {
@@ -153,7 +154,6 @@ export class VsCodeExtension {
                 accessToken: queryParams.get("accessToken"),
                 refreshToken: queryParams.get("refreshToken"),
               };
-
               vscode.commands.executeCommand("pearai.updateUserAuth", data);
             }
           }
@@ -293,7 +293,7 @@ export class VsCodeExtension {
       if (filepath.endsWith(".pearairc.json") || filepath.endsWith(".prompt")) {
         this.configHandler.reloadConfig();
       } else if (
-        filepath.endsWith(".continueignore") ||
+        filepath.endsWith(".pearaiignore") ||
         filepath.endsWith(".gitignore")
       ) {
         // Reindex the workspaces
@@ -367,11 +367,21 @@ export class VsCodeExtension {
       ),
     );
 
-    this.ide.onDidChangeActiveTextEditor((filepath) => {
-      this.core.invoke("didChangeActiveTextEditor", { filepath });
+    vscode.workspace.onDidCloseTextDocument(async () => {
+      const openFiles = vscode.workspace.textDocuments;
+      if (openFiles.length === 1) {
+        // the count is amount of last open files
+        this.sidebar.webviewProtocol.request("setActiveFilePath", "", [PEAR_CONTINUE_VIEW_ID]);
+      }
     });
 
-    handleAiderMode(this.core, this.sidebar, this.extensionContext);
+    this.ide.onDidChangeActiveTextEditor((filepath) => {
+      this.core.invoke("didChangeActiveTextEditor", { filepath });
+      this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
+    });
+
+    this.updateNewWindowActiveFilePath()
+    startAiderProcess(this.core);
   }
 
   static continueVirtualDocumentScheme = "pearai";
@@ -381,6 +391,11 @@ export class VsCodeExtension {
 
   private async refreshContextProviders() {
     this.sidebar.webviewProtocol.request("refreshSubmenuItems", undefined); // Refresh all context providers
+  }
+
+  private async updateNewWindowActiveFilePath() {
+    const currentFile = await this.ide.getCurrentFile();
+    this.sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
   }
 
   registerCustomContextProvider(contextProvider: IContextProvider) {

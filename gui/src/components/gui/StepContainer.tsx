@@ -23,11 +23,11 @@ import {
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import useUIConfig from "../../hooks/useUIConfig";
 import { RootState } from "../../redux/store";
-import { getFontSize } from "../../util";
+import { getMetaKeyLabel, getFontSize } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
-import { isBareChatMode, isPerplexityMode } from '../../util/bareChatMode';
+import { isAiderMode, isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
 
 interface StepContainerProps {
   item: ChatHistoryItem;
@@ -47,7 +47,11 @@ interface StepContainerProps {
 const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
   padding: 4px 0px 8px 0px;
   background-color: ${(props) =>
-    props.isUserInput ? vscInputBackground : window.isPearOverlay ?  "transparent" : vscBackground};
+    props.isUserInput
+      ? vscInputBackground
+      : window.isPearOverlay
+        ? "transparent"
+        : vscBackground};
   font-size: ${(props) => props.fontSize || getFontSize()}px;
   // border-radius: ${defaultBorderRadius};
   overflow: hidden;
@@ -60,19 +64,26 @@ function StepContainer({
   onRetry,
   onContinueGeneration,
   onDelete,
-  open, 
-  isFirst, 
-  isLast, 
-  index, 
-  modelTitle, 
+  open,
+  isFirst,
+  isLast,
+  index,
+  modelTitle,
   source = "continue",
 }: StepContainerProps) {
-  const [isHovered, setIsHovered] = useState(false);
   const isUserInput = item.message.role === "user";
-  const active = source === "continue" ? useSelector((store: RootState) => store.state.active) : source === "perplexity" ? useSelector((store: RootState) => store.state.perplexityActive) : useSelector((store: RootState) => store.state.aiderActive);
+  const active =
+    source === "continue"
+      ? useSelector((store: RootState) => store.state.active)
+      : source === "perplexity"
+        ? useSelector((store: RootState) => store.state.perplexityActive)
+        : useSelector((store: RootState) => store.state.aiderActive);
   const ideMessenger = useContext(IdeMessengerContext);
   const bareChatMode = isBareChatMode();
   const isPerplexity = isPerplexityMode();
+  const isAider = isAiderMode();
+
+  const [numChanges, setNumChanges] = useState<number | null>(null);
 
   const [feedback, setFeedback] = useState<boolean | undefined>(undefined);
 
@@ -89,6 +100,24 @@ function StepContainer({
       }
     }
   };
+
+  const fetchNumberOfChanges = async () => {
+    try {
+      const response = await ideMessenger.request("getNumberOfChanges", undefined);
+      if(typeof response === 'number') {
+        setNumChanges(response);
+      }
+    } catch (error) {
+      console.error("Failed to fetch number of changes:", error);
+    }
+  };
+  
+  useEffect(() => {
+    if (!active && isAider) {
+      fetchNumberOfChanges();
+    }
+  }, [active, isAider]);
+  
 
   const [truncatedEarly, setTruncatedEarly] = useState(false);
 
@@ -113,17 +142,30 @@ function StepContainer({
     }
   }, [item.message.content, active]);
 
+  // Add effect to handle keyboard shortcut
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'g' && isLast && !active) {
+        if (isPerplexity) {
+          ideMessenger.post("addPerplexityContext", {
+            text: stripImages(item.message.content),
+            language: "",
+          });
+        } else if (isAider) {
+          ideMessenger.post("openAiderChanges", undefined);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [isLast, active, isPerplexity, item.message.content, ideMessenger]);
+
   return (
-    <div
-      onMouseEnter={() => {
-        setIsHovered(true);
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-      }}
-    >
+    <div>
       <div className="relative">
         <ContentDiv
+          className="max-w-4xl mx-auto"
           hidden={!open}
           isUserInput={isUserInput}
           fontSize={getFontSize()}
@@ -139,21 +181,44 @@ function StepContainer({
             <StyledMarkdownPreview
               source={stripImages(item.message.content)}
               showCodeBorder={true}
+              isStreaming={active}
+              isLast={isLast}
+              messageIndex={index}
+              integrationSource={source}
+              citations={isPerplexity ? item.citations : undefined}
             />
           )}
         </ContentDiv>
-        {!active && isPerplexity && <HeaderButtonWithText
-          onClick={() => {
-            ideMessenger.post("addPerplexityContext", { text: stripImages(item.message.content), language: "" });
-          }}>
-          <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-          Add to PearAI chat context
-        </HeaderButtonWithText>}
-        {(isHovered || typeof feedback !== "undefined") && !active && (
+        {!active && isPerplexity && (
+          <HeaderButtonWithText
+            onClick={() => {
+              ideMessenger.post("addPerplexityContext", {
+                text: stripImages(item.message.content),
+                language: "",
+              });
+            }}
+          >
+            <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+            Add to PearAI chat context {isLast && <span className="ml-1 text-xs opacity-60"><kbd className="font-mono">{getMetaKeyLabel()}</kbd> <kbd className="font-mono bg-vscButtonBackground/10 px-1">G</kbd></span>}
+          </HeaderButtonWithText>
+        )}
+        {
+          !active && isAider && numChanges && (
+            <HeaderButtonWithText
+              onClick={() => {
+                ideMessenger.post("openAiderChanges", undefined);
+              }}
+            >
+              <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+              See {numChanges} changed file{numChanges === 1 ? '' : 's'} {isLast && <span className="ml-1 text-xs opacity-60"><kbd className="font-mono">{getMetaKeyLabel()}</kbd> <kbd className="font-mono bg-vscButtonBackground/10 px-1">G</kbd></span>}
+            </HeaderButtonWithText>
+          )
+        }
+        {!active && (
           <div
             className="flex gap-1 absolute -bottom-2 right-0"
             style={{
-              zIndex: 200,
+              zIndex: 100,
               color: lightGray,
               fontSize: getFontSize() - 3,
             }}
@@ -185,7 +250,7 @@ function StepContainer({
                 />
               </HeaderButtonWithText>
             )}
-            
+
             <CopyButton
               text={stripImages(item.message.content)}
               color={lightGray}
@@ -197,11 +262,11 @@ function StepContainer({
                   onRetry();
                 }}
               >
-              <ArrowUturnLeftIcon
-                color={lightGray}
-                width="1.2em"
-                height="1.2em"
-              />
+                <ArrowUturnLeftIcon
+                  color={lightGray}
+                  width="1.2em"
+                  height="1.2em"
+                />
               </HeaderButtonWithText>
             )}
             <HeaderButtonWithText text="Delete Message">

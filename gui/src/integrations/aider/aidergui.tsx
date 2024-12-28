@@ -12,7 +12,7 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChatScrollAnchor } from "../../components/ChatScrollAnchor";
 import StepContainer from "../../components/gui/StepContainer";
 import TimelineItem from "../../components/gui/TimelineItem";
@@ -28,7 +28,6 @@ import {
   deleteMessage,
   newSession,
   setAiderInactive,
-  updateAiderProcessStatus,
 } from "../../redux/slices/stateSlice";
 import { RootState } from "../../redux/store";
 import { getMetaKeyLabel, isMetaEquivalentKeyPressed } from "../../util";
@@ -38,11 +37,33 @@ import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
   StopButton,
-  StepsDiv,
   NewSessionButton,
   fallbackRender,
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
+import AiderManualInstallation from "./AiderManualInstallation";
+import { cn } from "@/lib/utils";
+import type { AiderState } from "../../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
+import styled from "styled-components";
+import { lightGray } from "@/components";
+
+
+const StepsDiv = styled.div`
+  padding-bottom: 8px;
+  position: relative;
+  background-color: transparent;
+
+  & > * {
+    position: relative;
+  }
+
+  .thread-message {
+    margin: 16px 8px 0 8px;
+  }
+  .thread-message:not(:first-child) {
+    border-top: 1px solid ${lightGray}22;
+  }
+`;
 
 function AiderGUI() {
   const posthog = usePostHog();
@@ -50,6 +71,7 @@ function AiderGUI() {
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const [sessionKey, setSessionKey] = useState(0);
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
   const active = useSelector((state: RootState) => state.state.aiderActive);
@@ -59,6 +81,10 @@ function AiderGUI() {
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
+  const [aiderProcessState, setAiderProcessState] = useState<AiderState>({
+    state: "starting",
+    timeStamp: Date.now(),
+  });
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
   // many users won't reach onboarding screen due to cache. So set it manually,
@@ -72,6 +98,8 @@ function AiderGUI() {
     setLocalStorage("showAiderTutorialCard", false);
     setShowAiderTutorialCard(false);
   };
+
+  const [showReloadButton, setShowReloadButton] = useState(false);
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -114,11 +142,36 @@ function AiderGUI() {
         !e.shiftKey
       ) {
         dispatch(setAiderInactive());
+      } else if (
+        e.key === "." &&
+        isMetaEquivalentKeyPressed(e) &&
+        !e.shiftKey
+      ) {
+        saveSession();
+        ideMessenger.post("aiderResetSession", undefined);
       }
     };
     window.addEventListener("keydown", listener);
     return () => window.removeEventListener("keydown", listener);
   }, [active]);
+
+  // useEffect(() => {
+  //   let timeoutId: NodeJS.Timeout;
+
+  //   if (aiderProcessState.state === "starting") {
+  //     timeoutId = setTimeout(() => {
+  //       if (aiderProcessState.state === "starting") {
+  //         setShowReloadButton(true);
+  //       }
+  //     }, 15000); // 15 seconds
+  //   } else {
+  //     setShowReloadButton(false);
+  //   }
+
+  //   return () => {
+  //     if (timeoutId) clearTimeout(timeoutId);
+  //   };
+  // }, [aiderProcessState.state, aiderProcessState.timeStamp]);
 
   const { streamResponse } = useChatHandler(dispatch, ideMessenger, "aider");
 
@@ -162,18 +215,44 @@ function AiderGUI() {
     "newSession",
     async () => {
       saveSession();
-      mainTextInputRef.current?.focus?.();
+      setSessionKey(prev => prev + 1);
     },
     [saveSession],
   );
 
-  useWebviewListener(
-    "aiderProcessStateUpdate",
-    async (data) => {
-      dispatch(updateAiderProcessStatus({ status: data.status }));
-    },
-    [],
-  );
+  useEffect(() => {
+    ideMessenger.request("sendAiderProcessStateToGUI", undefined);
+  }, []);
+
+  useWebviewListener("setAiderProcessStateInGUI", async (data) => {
+    if (data) {
+      setAiderProcessState({state: data.state, timeStamp: Date.now()});
+    }
+  });
+
+  // Add effect to re-fetch state periodically only if not ready
+useEffect(() => {
+  let interval: NodeJS.Timeout | undefined;
+
+  const fetchState = () => {
+    ideMessenger.request("sendAiderProcessStateToGUI", undefined);
+  };
+
+  // Only set up polling if state is not "ready"
+  if (aiderProcessState.state !== "ready") {
+    // Initial fetch
+    fetchState();
+
+    // Set up periodic polling as a fallback
+    interval = setInterval(fetchState, 2000);
+  }
+
+  return () => {
+    if (interval) {
+      clearInterval(interval);
+    }
+  };
+}, [aiderProcessState.state]); // Add aiderProcessState.state as dependency
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
@@ -189,33 +268,164 @@ function AiderGUI() {
     [state.aiderHistory],
   );
 
+  if (aiderProcessState.state !== "ready") {
+    let msg: string | JSX.Element = "";
+    if (aiderProcessState.state === "signedOut") {
+      msg = (
+        <>
+          Please{" "}
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              ideMessenger.post("pearaiLogin", undefined);
+            }}
+            className="underline text-foreground"
+          >
+            sign in
+          </a>{" "}
+          to use PearAI Creator.
+        </>
+      );
+    }
+    if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
+      return <AiderManualInstallation />;
+    }
+    if (aiderProcessState.state === "installing") {
+      msg = (
+        <>
+          Installing PearAI Creator dependencies (aider), this may take a few minutes...
+        </>
+      );
+    }
+    if (aiderProcessState.state === "starting" || aiderProcessState.state === "restarting") {
+      msg = (
+        <>
+          Spinning up PearAI Creator (Powered By aider), please give it a second...
+          {showReloadButton && (
+            <>
+              <div className="text-sm mt-6 p-2">
+                Aider not starting? try to restart aider or reload window
+              </div>
+              <div className="flex justify-center mt-4 gap-x-4">
+                <button
+                  className="tracking-wide py-3 px-6 border-none rounded-lg bg-button text-button-foreground transition-colors cursor-pointer"
+                  onClick={() => {
+                    setAiderProcessState({state: "starting", timeStamp: Date.now()});
+                    setShowReloadButton(false); // Reset the state
+                    ideMessenger.post("aiderResetSession", undefined);
+                  }}
+                >
+                  Restart Aider Session
+                </button>
+                <button
+                  className="tracking-wide py-3 px-6 border-none rounded-lg bg-button text-button-foreground transition-colors cursor-pointer"
+                  onClick={() => ideMessenger.post("reloadWindow", undefined)}
+                >
+                  Reload window
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      );
+    }
+    if (aiderProcessState.state === "notgitrepo") {
+      msg = (<>To use PearAI Creator, please open a git repository or initialize current workspace directory as a git repository.
+        {/* <div className="flex justify-center mt-4">
+          <div
+            className="text-sm bg-button text-white py-3 px-6 rounded-lg cursor-pointer"
+            onClick={() => ideMessenger.post("aiderGitInit", undefined)}
+          >
+            Initialize Git
+          </div>
+        </div> */}
+      </>)
+    }
+
+    return (
+      <div className="h-[calc(100%-200px)] p-40 bg-opacity-50 z-10 flex items-center justify-center">
+        <div className="text-2xl text-center">
+          <div className="spinner" role="status">
+            <span>{msg}</span>
+          </div>
+          {/* {(aiderProcessState.state === "stopped" ||
+            aiderProcessState.state === "crashed") && (
+            <div className="flex justify-center mt-4">
+              <button
+                className="font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                onClick={() =>
+                  ideMessenger.post("aiderResetSession", undefined)
+                }
+              >
+                Restart
+              </button>
+            </div>
+          )} */}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-        <div className="mx-2">
-          <div className="pl-2 border-b border-gray-700">
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold mb-2">PearAI Creator</h1>
-              <Badge variant="outline" className="pl-0">
-                Beta (Powered by{" "}
-                <a
-                  href="https://aider.chat/2024/06/02/main-swe-bench.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline px-1"
-                >
-                  aider)
-                </a>
-              </Badge>
-            </div>
-            <div className="flex items-center mt-0 justify-between pr-1">
-              <p className="text-sm text-gray-400 m-0">
+        <div
+          className={cn(
+            "mx-2",
+            state.aiderHistory.length === 0 &&
+              "h-full flex flex-col justify-center",
+          )}
+        >
+          {state.aiderHistory.length === 0 ? (
+            <div className="max-w-2xl mx-auto w-full text-center">
+              <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
+                <div className="flex-1" />
+                  <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Creator</h1>
+                  <div className="flex-1 flex items-center justify-start">
+                    <Badge variant="outline" className="lg:relative lg:top-[2px]">
+                      Beta (Powered by Aider*)
+                    </Badge>
+                  </div>
+              </div>
+              <p className="text-sm text-foreground">
                 Ask for a feature, describe a bug to fix, or ask for a change to
                 your project. Creator will make and apply the changes to your
                 files directly.
               </p>
             </div>
-          </div>
+          ) : (
+            <div className="pl-2">
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold mb-2">PearAI Creator</h1>
+                <Badge variant="outline" className="pl-0">
+                  Beta (Powered by aider*)
+                </Badge>
+              </div>
+              <div className="flex items-center mt-0 justify-between pr-1">
+                <p className="text-sm text-foreground m-0">
+                  Ask for a feature, describe a bug to fix, or ask for a change
+                  to your project. Creator will make and apply the changes to
+                  your files directly.
+                </p>
+                {state.aiderHistory.length > 0 && (
+                  <div>
+                    <NewSessionButton
+                      onClick={() => {
+                        saveSession();
+                        ideMessenger.post("aiderResetSession", undefined);
+                        setSessionKey(prev => prev + 1);
+                      }}
+                      className="mr-auto"
+                    >
+                      Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
+                    </NewSessionButton>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <>
             <StepsDiv>
               {state.aiderHistory.map((item, index: number) => (
@@ -301,7 +511,7 @@ function AiderGUI() {
                             onDelete={() => {
                               dispatch(
                                 deleteMessage({
-                                  index: index + 1,
+                                  index: index,
                                   source: "aider",
                                 }),
                               );
@@ -319,16 +529,32 @@ function AiderGUI() {
                 </Fragment>
               ))}
             </StepsDiv>
-            <ContinueInputBox
-              onEnter={(editorContent, modifiers) => {
-                sendInput(editorContent, modifiers);
-              }}
-              isLastUserInput={false}
-              isMainInput={true}
-              hidden={active}
-              source="aider"
-            />
+
+            <div
+              className={cn(
+                "transition-all duration-300",
+                state.aiderHistory.length === 0
+                  ? "max-w-2xl mx-auto w-full"
+                  : "w-full",
+              )}
+            >
+              <ContinueInputBox
+                key={sessionKey}
+                onEnter={(editorContent, modifiers) => {
+                  sendInput(editorContent, modifiers);
+                }}
+                isLastUserInput={false}
+                isMainInput={true}
+                hidden={active}
+                source="aider"
+                className={cn(
+                  "transition-all duration-300",
+                  state.aiderHistory.length === 0 && "shadow-lg",
+                )}
+              />
+            </div>
           </>
+
           {active ? (
             <>
               <br />
@@ -340,10 +566,11 @@ function AiderGUI() {
                 onClick={() => {
                   saveSession();
                   ideMessenger.post("aiderResetSession", undefined);
+                  setSessionKey(prev => prev + 1);
                 }}
                 className="mr-auto"
               >
-                Clear chat
+                Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
               </NewSessionButton>
             </div>
           ) : (
@@ -384,6 +611,17 @@ function AiderGUI() {
           {getMetaKeyLabel()} ⌫ Cancel
         </StopButton>
       )}
+      <div className="text-[10px] text-muted-foreground mt-4 flex justify-end pr-2 pb-2">
+        *View PearAI Disclaimer page{" "}
+        <Link
+          to="https://trypear.ai/disclaimer/"
+          target="_blank"
+          className="text-muted-foreground no-underline hover:no-underline ml-1"
+        >
+          here
+        </Link>
+        .
+      </div>
     </>
   );
 }
@@ -391,11 +629,14 @@ function AiderGUI() {
 export default AiderGUI;
 
 const tutorialContent = {
-  goodFor: "direct feature implementations, bug fixes, code refactoring",
+  goodFor: "Direct feature implementations, bug fixes, code refactoring",
   notGoodFor:
-    "anything not requiring actual code changes (use PearAI Chat instead)",
+    "Questions unrelated to feature creation and bugs (use PearAI Chat instead)",
   example: {
-    text: '"make a new FAQ page for my website"',
-    copyText: "make a new FAQ page for my website",
+    text: '"Make a new FAQ page for my website"',
+    copyText: "Make a new FAQ page for my website",
   },
+  moreInfo: [
+    "- Ignore system ```<<< SEARCH REPLACE >>>``` messages. These are for the system to make edits for you automatically.",
+  ],
 };

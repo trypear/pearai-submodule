@@ -21,6 +21,7 @@ export const WEBVIEW_TO_CORE_PASS_THROUGH: (keyof ToCoreFromWebviewProtocol)[] =
     "config/getSerializedProfileInfo",
     "config/deleteModel",
     "config/reload",
+    "config/toggleIntegration",
     "context/getContextItems",
     "context/loadSubmenuItems",
     "context/addDocs",
@@ -57,5 +58,4 @@ export const CORE_TO_WEBVIEW_PASS_THROUGH: (keyof ToWebviewFromCoreProtocol)[] =
     "refreshSubmenuItems",
     "isContinueInputFocused",
     "didChangeAvailableProfiles",
-    "aiderProcessStateUpdate"
   ];

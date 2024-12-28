@@ -19,79 +19,114 @@ import LocalOnboarding from "./pages/onboarding/LocalOnboarding";
 import Onboarding from "./pages/onboarding/Onboarding";
 import SettingsPage from "./pages/settings";
 import Stats from "./pages/stats";
-import Feedback from "./pages/feedback"
+import Inventory from "./pages/inventory";
+import AiderGUI from "./integrations/aider/aidergui";
+import PerplexityGUI from "./integrations/perplexity/perplexitygui";
+import Welcome from "./pages/welcome/welcomeGui";
+import { ContextMenuProvider } from './components/ContextMenuProvider';
 
-const router = createMemoryRouter([
+declare global {
+  interface Window {
+    initialRoute?: string;
+    isFirstLaunch?: boolean;
+  }
+}
+
+const router = createMemoryRouter(
+  [
+    {
+      path: "/",
+      element: <Layout />,
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          path: "/index.html",
+          element: <GUI />,
+        },
+        {
+          path: "/",
+          element: <GUI />,
+        },
+        {
+          path: "/aiderMode",
+          element: <AiderGUI />,
+        },
+        {
+          path: "/perplexityMode",
+          element: <PerplexityGUI />,
+        },
+        {
+          path: "/history",
+          element: <History />,
+        },
+        {
+          path: "/stats",
+          element: <Stats />,
+        },
+        {
+          path: "/help",
+          element: <Help />,
+        },
+        {
+          path: "/settings",
+          element: <SettingsPage />,
+        },
+        {
+          path: "/addModel",
+          element: <AddNewModel />,
+        },
+        {
+          path: "/addModel/provider/:providerName",
+          element: <ConfigureProvider />,
+        },
+        {
+          path: "/help",
+          element: <HelpPage />,
+        },
+        {
+          path: "/monaco",
+          element: <MonacoPage />,
+        },
+        {
+          path: "/onboarding",
+          element: <Onboarding />,
+        },
+        {
+          path: "/localOnboarding",
+          element: <LocalOnboarding />,
+        },
+        {
+          path: "/migration",
+          element: <MigrationPage />,
+        },
+        {
+          path: "/apiKeysOnboarding",
+          element: <ApiKeysOnboarding />,
+        },
+        {
+          path: "/apiKeyAutocompleteOnboarding",
+          element: <ApiKeyAutocompleteOnboarding />,
+        },
+        {
+          path: "/inventory/*",
+          element: <Inventory />,
+        },
+        {
+          path: "/welcome",
+          element: <Welcome/>
+        },
+      ],
+    },
+  ],
+  // TODO: Remove replace /welcome with /inventory when done testing
   {
-    path: "/",
-    element: <Layout />,
-    errorElement: <ErrorPage />,
-    children: [
-      {
-        path: "/index.html",
-        element: <GUI />,
-      },
-      {
-        path: "/",
-        element: <GUI />,
-      },
-      {
-        path: "/history",
-        element: <History />,
-      },
-      {
-        path: "/stats",
-        element: <Stats />,
-      },
-      {
-        path: "/help",
-        element: <Help />,
-      },
-      {
-        path: "/settings",
-        element: <SettingsPage />,
-      },
-      {
-        path: "/addModel",
-        element: <AddNewModel />,
-      },
-      {
-        path: "/addModel/provider/:providerName",
-        element: <ConfigureProvider />,
-      },
-      {
-        path: "/help",
-        element: <HelpPage />,
-      },
-      {
-        path: "/monaco",
-        element: <MonacoPage />,
-      },
-      {
-        path: "/onboarding",
-        element: <Onboarding />,
-      },
-      {
-        path: "/localOnboarding",
-        element: <LocalOnboarding />,
-      },
-      {
-        path: "/migration",
-        element: <MigrationPage />,
-      },
-      {
-        path: "/apiKeysOnboarding",
-        element: <ApiKeysOnboarding />,
-      },
-      {
-        path: "/apiKeyAutocompleteOnboarding",
-        element: <ApiKeyAutocompleteOnboarding />,
-      },
-      {
-        path: "/feedback",
-        element: <Feedback/>,
-      },
+    initialEntries: [
+      window.isPearOverlay
+        ? (window.isFirstLaunch ? "/welcome" : "/inventory/home")
+        : window.initialRoute
     ],
+    // FOR DEV'ing welcome:
+    // initialEntries: [window.isPearOverlay ? "/welcome" : window.initialRoute],
   },
 ]);
 
@@ -104,13 +139,15 @@ function App() {
   const submenuContextProvidersMethods = useSubmenuContextProviders();
 
   return (
-    <VscThemeContext.Provider value={vscTheme}>
-      <SubmenuContextProvidersContext.Provider
-        value={submenuContextProvidersMethods}
-      >
-        <RouterProvider router={router} />
-      </SubmenuContextProvidersContext.Provider>
-    </VscThemeContext.Provider>
+    <ContextMenuProvider>
+      <VscThemeContext.Provider value={vscTheme}>
+        <SubmenuContextProvidersContext.Provider
+          value={submenuContextProvidersMethods}
+        >
+          <RouterProvider router={router} />
+        </SubmenuContextProvidersContext.Provider>
+      </VscThemeContext.Provider>
+    </ContextMenuProvider>
   );
 }
 

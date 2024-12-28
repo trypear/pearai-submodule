@@ -44,7 +44,7 @@ const PROVIDER_HANDLES_TEMPLATING: ModelProvider[] = [
   "bedrock",
   "continue-proxy",
   "mistral",
-  "pearai_server"
+  "pearai_server",
 ];
 
 const PROVIDER_SUPPORTS_IMAGES: ModelProvider[] = [
@@ -57,6 +57,7 @@ const PROVIDER_SUPPORTS_IMAGES: ModelProvider[] = [
   "bedrock",
   "continue-proxy",
   "pearai_server",
+  "openrouter",
 ];
 
 const MODEL_SUPPORTS_IMAGES: string[] = [
@@ -79,9 +80,9 @@ function modelSupportsImages(
   provider: ModelProvider,
   model: string,
   title: string | undefined,
-  capabilities: ModelCapability | undefined
+  capabilities: ModelCapability | undefined,
 ): boolean {
-  if (capabilities?.uploadImage !== undefined) return capabilities.uploadImage
+  if (capabilities?.uploadImage !== undefined) return capabilities.uploadImage;
   if (!PROVIDER_SUPPORTS_IMAGES.includes(provider)) {
     return false;
   }
@@ -211,10 +212,10 @@ function autodetectTemplateType(model: string): TemplateType | undefined {
     return "none";
   }
 
-  if (lower.includes("aider")) {
+  if (lower.includes("aider") || lower.includes("creator")) {
     return "none";
   }
-  if (lower.includes("perplexity")) {
+  if (lower.includes("perplexity") || lower.includes("search")) {
     return "none";
   }
   return "chatml";

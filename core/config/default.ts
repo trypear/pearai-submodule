@@ -42,14 +42,13 @@ export const defaultContextProvidersVsCode: ContextProviderWithParams[] = [
   { name: "terminal", params: {} },
   { name: "problems", params: {} },
   { name: "folder", params: {} },
-  { name: "relativefilecontext", params: {} },
-   // TODO: Known bug v.1.3.0. codebase works on its own, but doesnt send a message if there is text in the same message as the @Codebase
+  // { name: "relativefilecontext", params: {} }, // This is unused currently
+  { name: "relativegitfilecontext", params: {} },
+  // TODO: Known bug v.1.3.0. codebase works on its own, but doesnt send a message if there is text in the same message as the @Codebase
   { name: "codebase", params: {} },
-
 ];
 
-export const defaultContextProvidersJetBrains: ContextProviderWithParams[] = [
-];
+export const defaultContextProvidersJetBrains: ContextProviderWithParams[] = [];
 
 export const defaultSlashCommandsVscode: SlashCommandDescription[] = [
   {
@@ -111,7 +110,7 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       model: "gpt-4o",
       contextLength: 300000,
-      title: "GPT-4o (PearAI)",
+      title: "GPT-4o",
       systemMessage:
         "You are an expert software developer. You give helpful and concise responses.",
       provider: "pearai_server",
@@ -120,7 +119,7 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       model: "claude-3-5-sonnet",
       contextLength: 3000000,
-      title: "Claude 3.5 Sonnet (PearAI)",
+      title: "Claude 3.5 Sonnet - New",
       systemMessage:
         "You are an expert software developer. You give helpful and concise responses.",
       provider: "pearai_server",
@@ -129,20 +128,21 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       model: "perplexity",
       title: "PearAI Search (Powered by Perplexity)",
-      systemMessage: "You are an expert software developer. You give helpful and concise responses based on the latest software engineering practices and documentation.",
+      systemMessage:
+        "You are an expert documentation and information gatherer. You give succinct responses based on the latest software engineering practices and documentation. Always go to the web to get the latest information and data.",
       provider: "pearai_server",
       isDefault: true,
     },
     {
-      model: "claude-3-haiku",
-      title: "Claude 3 Haiku (PearAI)",
+      model: "claude-3-5-haiku",
+      title: "Claude 3.5 Haiku",
       provider: "pearai_server",
       isDefault: true,
     },
     {
       model: "gemini-1.5-pro",
       contextLength: 3000000,
-      title: "Gemini 1.5 Pro (PearAI)",
+      title: "Gemini 1.5 Pro",
       systemMessage:
         "You are an expert software developer. You give helpful and concise responses.",
       provider: "pearai_server",
@@ -151,8 +151,20 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       model: "pearai_model",
       contextLength: 300000,
-      title: "PearAI Creator (Powered by aider)",
+      title: "pearai_model (PearAI Creator)",
       provider: "aider",
+      isDefault: true,
+    },
+    {
+      model: "o1-mini",
+      title: "GPT o1-mini",
+      provider: "pearai_server",
+      isDefault: true,
+    },
+    {
+      model: "o1-preview",
+      title: "GPT o1-preview (high cost)",
+      provider: "pearai_server",
       isDefault: true,
     },
   ],
@@ -172,6 +184,13 @@ export const defaultConfig: SerializedContinueConfig = {
   // },
   contextProviders: defaultContextProvidersVsCode,
   slashCommands: defaultSlashCommandsVscode,
+  integrations: [
+    {
+      name: "mem0",
+      description: "PearAI Personalized Chat powered by Mem0",
+      enabled: false,
+    }
+  ],
 };
 
 export const defaultCustomCommands: CustomCommand[] = [

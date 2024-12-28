@@ -89,6 +89,28 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   authenticatePear: [undefined, void];
   getCurrentDirectory: [undefined, string];
 
+  // new welcome page
+  markNewOnboardingComplete: [undefined, void];
+  importUserSettingsFromVSCode: [undefined, void];
+  pearWelcomeOpenFolder: [undefined, void];
+  pearInstallCommandLine: [undefined, void];
+  installVscodeExtension: [{ extensionId: string }, void];
+  is_vscode_extension_installed: [{ extensionId: string }, boolean];
+  isAiderInstalled: [undefined, boolean];
+
+  // overlay
+  closeOverlay: [undefined, void];
+  lockOverlay: [undefined, void];
+  unlockOverlay: [undefined, void];
+
+  /* dont overuse invokeVSCodeCommandById, use it only for devving,
+  and if you find yourself writing redundant code just to invoke a
+  command not related to pearai. (workbench, other extension)
+  */
+  invokeVSCodeCommandById: [
+    { commandId: string; args?: any[] },
+    any | undefined,
+  ];
 };
 
 export type ToWebviewOrCoreFromIdeProtocol = {

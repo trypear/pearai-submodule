@@ -31,13 +31,14 @@ import Mistral from "./Mistral.js";
 import Msty from "./Msty.js";
 import Ollama from "./Ollama.js";
 import OpenAI from "./OpenAI.js";
+import OpenRouter from "./OpenRouter.js";
 import Replicate from "./Replicate.js";
 import TextGenWebUI from "./TextGenWebUI.js";
 import Together from "./Together.js";
 import WatsonX from "./WatsonX.js";
 import ContinueProxy from "./stubs/ContinueProxy.js";
 import PearAIServer from "./PearAIServer.js";
-import Aider from "./Aider.js";
+import Aider from "./AiderLLM.js";
 
 
 function convertToLetter(num: number): string {
@@ -134,6 +135,7 @@ const LLMs = [
   WatsonX,
   PearAIServer,
   Aider,
+  OpenRouter,
 ];
 
 export async function llmFromDescription(

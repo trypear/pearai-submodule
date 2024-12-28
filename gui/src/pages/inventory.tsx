@@ -1,98 +1,134 @@
 import InventoryPage from "../inventory/pages/InventoryPage";
+import HomePage from "@/inventory/pages/HomePage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
 import AiderGUI from "@/integrations/aider/aidergui";
+import Mem0GUI from "@/integrations/mem0/mem0gui";
+import PearAIWrappedGUI from "@/integrations/pearaiWrapped/pearaiWrappedGui";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState, ReactNode } from "react";
+import { useWebviewListener } from "@/hooks/useWebviewListener";
 
 const tabs = [
-  { id: "inventory", name: "Inventory", component: <InventoryPage /> },
-  {
-    id: "aiderMode",
-    name: "Creator (aider)",
-    component: <AiderGUI />,
+  { 
+    id: "home", 
+    name: "Inventory", 
+    component: <HomePage />, 
+    shortcut: <kbd className="ml-[1.5px]">1</kbd> 
+  },
+  { 
+    id: "aiderMode", 
+    name: "Creator", 
+    component: <AiderGUI />, 
+    shortcut: <kbd className="ml-[1.5px]">2</kbd> 
+  },
+  { 
+    id: "perplexityMode", 
+    name: "Search", 
+    component: <PerplexityGUI />, 
+    shortcut: <kbd className="ml-[1.5px]">3</kbd> 
+  },
+  { 
+    id: "inventory", 
+    name: "Inventory Settings", 
+    component: <InventoryPage />, 
+    shortcut: <><kbd className="ml-[1.5px]">SHIFT</kbd><kbd className="ml-[1.5px]">1</kbd></> 
   },
   {
-    id: "perplexityMode",
-    name: "Search (Perplexity)",
-    component: <PerplexityGUI />,
+    id: "mem0Mode",
+    name: "Memory",
+    component: <Mem0GUI />,
+    shortcut: <kbd className="ml-[1.5px]">4</kbd> 
   },
+  {
+    id: "wrappedMode",
+    name: "Wrapped",
+    component: <PearAIWrappedGUI />,
+    shortcut: <kbd className="ml-[1.5px]">5</kbd> 
+  }
 ];
+
+interface TabButtonProps {
+  id: string;
+  name: string;
+  shortcut: ReactNode;
+}
 
 export default function Inventory() {
   const location = useLocation();
   const navigate = useNavigate();
-  const currentTab = location.pathname.split("/").pop() || "inventory";
-
-  const handleTabChange = (value: string) => {
-    if (value === "inventory") {
-      navigate("/inventory");
-      return;
-    }
-    navigate(`/inventory/${value}`);
-  };
+  const [activeTab, setActiveTab] = useState("home");
+  const currentTab = location.pathname.split("/").pop() || "home";
+  const isMac = navigator.userAgent.toLowerCase().includes("mac");
+  const modifierKey = isMac ? '⌘' : "Ctrl";
 
   useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      const activeElement = document.activeElement;
-      if (
-        activeElement instanceof HTMLElement &&
-        (activeElement.isContentEditable ||
-          activeElement.tagName === "INPUT" ||
-          activeElement.tagName === "TEXTAREA" ||
-          activeElement.tagName === "SELECT")
-      ) {
-        return;
-      }
-      if (event.key >= "1" && event.key <= "3") {
-        // Convert key to index (0-2)
-        const index = parseInt(event.key) - 1;
-        if (index >= 0 && index < tabs.length) {
-          handleTabChange(tabs[index].id);
-        }
-      }
-    };
+    const tab = location.pathname.split("/").pop() || "home";
+    setActiveTab(tab);
+  }, [location]);
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, []);
+  useWebviewListener("navigateToInventoryHome", () => handleTabChange("home"), []);
+  useWebviewListener("navigateToCreator", () => handleTabChange("aiderMode"), []);
+  useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
+  useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
+  useWebviewListener("navigateToWrapped", () => handleTabChange("wrappedMode"), []);
+  useWebviewListener("toggleOverlay", () => handleTabChange("inventory"), []);
+  useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
+
+  const handleTabChange = async (value: string) => {
+    setActiveTab(value);
+    navigate(value === "inventory" ? "/inventory" : `/inventory/${value}`);
+  };
+
+  const TabButton = ({ id, name, shortcut }: TabButtonProps) => (
+    <TabsTrigger
+      value={id}
+      className={`text-xs font-medium px-3 py-1 rounded transition-all duration-300 ${
+        currentTab === id
+          ? ""
+          : "hover:opacity-80 hover:text-muted-foreground"
+      }`}
+    >
+      {name}
+      <kbd className="ml-1">{modifierKey}</kbd>
+      {shortcut}
+    </TabsTrigger>
+  );
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-background">
+    <div className={`h-full w-full flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-background"}`}>
       <Tabs
         value={currentTab}
-        defaultValue="inventory"
+        defaultValue="home"
         onValueChange={handleTabChange}
         className="flex flex-col h-full"
       >
         <div className="flex flex-col h-full">
           <div className="top-0 px-4 pt-4 z-10">
-            <TabsList className="bg-input text-center">
-              {tabs.map((tab, index) => (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className={`text-xs font-medium px-3 py-1 rounded transition-all duration-300 ${
-                    currentTab === tab.id
-                      ? "bg-primary text-primary-foreground border-b-2 border-accent"
-                      : "text-foreground hover:bg-muted hover:text-muted-foreground"
-                  }`}
-                >
-                  {`${tab.name}`}
-                  <kbd className="ml-1">{index + 1}</kbd>
-                </TabsTrigger>
-              ))}
+            <TabsList className={`flex justify-between ${currentTab === 'home' ? 'hidden' : ''}`}>
+              <div className="flex">
+                <TabButton {...tabs[0]} />
+              </div>
+              <div className="flex gap-1">
+                <TabButton {...tabs[1]} />
+                <TabButton {...tabs[2]} />
+                <TabButton {...tabs[4]} />
+                <TabButton {...tabs[5]} />
+              </div>
+              <div className="flex">
+                <TabButton {...tabs[3]} />
+              </div>
             </TabsList>
           </div>
 
-          <div className="flex-1 min-h-0 p-4 pt-0 overflow-hidden">
-            {tabs.map((tab) => (
+          <div className="flex-1 p-4 pt-0 overflow-hidden">
+            {tabs.map(({ id, component }) => (
               <TabsContent
-                key={tab.id}
-                value={tab.id}
+                key={id}
+                value={id}
                 className="h-full data-[state=active]:flex flex-col"
               >
-                {tab.component}
+                {component}
               </TabsContent>
             ))}
           </div>

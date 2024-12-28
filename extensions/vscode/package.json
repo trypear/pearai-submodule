@@ -3,7 +3,7 @@
   "name": "pearai",
   "publisher": "pearai",
   "icon": "media/icon.png",
-  "version": "1.4.1",
+  "version": "1.6.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/trypear/pearai-submodule"
@@ -156,6 +156,36 @@
         "command": "pearai.quickEdit",
         "category": "PearAI",
         "title": "Generate Code",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.toggleCreator",
+        "category": "PearAI",
+        "title": "Toggle PearAI Creator",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.toggleSearch",
+        "category": "PearAI",
+        "title": "Toggle PearAI Search",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.toggleMem0",
+        "category": "PearAI",
+        "title": "Toggle PearAI Memory",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.toggleOverlay",
+        "category": "PearAI",
+        "title": "Toggle PearAI Inventory",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.developer.restFirstLaunch",
+        "category": "PearAI Developer",
+        "title": "Reset PearAI Onboarding",
         "group": "PearAI"
       },
       {
@@ -322,9 +352,40 @@
         "category": "PearAI",
         "title": "Open PearAI Search",
         "group": "PearAI"
+      },
+      {
+        "command": "pearai.showInteractiveContinueTutorial",
+        "category": "PearAI",
+        "title": "Show Chat Tutorial",
+        "group": "PearAI"
       }
     ],
     "keybindings": [
+      {
+        "command": "pearai.toggleInventoryHome",
+        "mac": "cmd+1",
+        "key": "ctrl+1"
+      },
+      {
+        "command": "pearai.toggleOverlay",
+        "mac": "cmd+shift+1",
+        "key": "ctrl+shift+1"
+      },
+      {
+        "command": "pearai.toggleCreator",
+        "mac": "cmd+2",
+        "key": "ctrl+2"
+      },
+      {
+        "command": "pearai.toggleSearch",
+        "mac": "cmd+3",
+        "key": "ctrl+3"
+      },
+      {
+        "command": "pearai.toggleMem0",
+        "mac": "cmd+4",
+        "key": "ctrl+4"
+      },
       {
         "command": "pearai.focusContinueInput",
         "mac": "cmd+l",
@@ -428,6 +489,15 @@
           "command": "pearai.quickEdit"
         },
         {
+          "command": "pearai.toggleCreator"
+        },
+        {
+          "command": "pearai.toggleSearch"
+        },
+        {
+          "command": "pearai.toggleOverlay"
+        },
+        {
           "command": "pearai.focusContinueInput"
         },
         {
@@ -441,6 +511,9 @@
         },
         {
           "command": "pearai.newSession"
+        },
+        {
+          "command": "pearai.showInteractiveContinueTutorial"
         }
       ],
       "editor/context": [
@@ -531,7 +604,7 @@
           "id": "PearAI",
           "title": "PearAI Chat",
           "icon": "media/sidebar-icon.png",
-          "description": "Fork of Continue"
+          "description": "Powered by Continue"
         }
       ]
     },

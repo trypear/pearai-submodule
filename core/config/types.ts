@@ -542,7 +542,8 @@ declare global {
     | "docs"
     | "gitlab-mr"
     | "os"
-    | "relativefilecontext";
+    | "relativefilecontext"
+    | "relativegitfilecontext";
 
 
   type TemplateType =
@@ -653,7 +654,7 @@ declare global {
     | "starcoder2-3b"
     | "stable-code-3b"
     | "pearai_model"
-    | "aider"
+    | "pearai_model"
     | "perplexity";
 
   export interface RequestOptions {

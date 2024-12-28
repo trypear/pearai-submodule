@@ -56,6 +56,7 @@ export type ToCoreFromIdeOrWebviewProtocol = {
   "config/deleteModel": [{ title: string }, void];
   "config/reload": [undefined, BrowserSerializedContinueConfig];
   "config/listProfiles": [undefined, ProfileDescription[]];
+  "config/toggleIntegration": [{name: string}, void];
   "context/getContextItems": [
     {
       name: string;
@@ -93,7 +94,7 @@ export type ToCoreFromIdeOrWebviewProtocol = {
     },
     string,
   ];
-  "llm/resetPearAICredentials": [undefined | string, void];
+  "llm/setPearAICredentials": [{ accessToken?: string; refreshToken?: string }, void];
   "llm/startAiderProcess": [undefined, void];
   "llm/killAiderProcess": [undefined, void];
   "llm/listModels": [{ title: string }, string[] | undefined];

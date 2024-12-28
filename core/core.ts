@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import { v4 as uuidv4 } from "uuid";
-import type { ContextItemId, IDE, IndexingProgressUpdate } from ".";
+import type { ChatMessage, ContextItemId, IDE, IndexingProgressUpdate } from ".";
 import { CompletionProvider } from "./autocomplete/completionProvider";
 import { ConfigHandler } from "./config/ConfigHandler";
 import {
@@ -10,7 +10,7 @@ import {
   setupLocalMode,
 } from "./config/onboarding";
 import { createNewPromptFile } from "./config/promptFile";
-import { addModel, addOpenAIKey, deleteModel } from "./config/util";
+import { addModel, addOpenAIKey, deleteModel, toggleIntegration } from "./config/util";
 import { recentlyEditedFilesCache } from "./context/retrieval/recentlyEditedFilesCache";
 import { ContinueServerClient } from "./continueServer/stubs/client";
 import { getAuthUrlForTokenPage } from "./control-plane/auth/index";
@@ -29,13 +29,11 @@ import { editConfigJson } from "./util/paths";
 import { Telemetry } from "./util/posthog";
 import { streamDiffLines } from "./util/verticalEdit";
 import PearAIServer from "./llm/llms/PearAIServer";
-import Aider from "./llm/llms/Aider";
+import Aider from "./llm/llms/AiderLLM";
 import {
   startAiderProcess,
   killAiderProcess,
-  aiderCtrlC,
-  aiderResetSession
-} from "../extensions/vscode/src/integrations/aider/aider";
+} from "../extensions/vscode/src/integrations/aider/aiderUtil";
 
 
 export class Core {
@@ -244,6 +242,10 @@ export class Core {
       deleteModel(msg.data.title);
       this.configHandler.reloadConfig();
     });
+    on("config/toggleIntegration", (msg) => {
+      toggleIntegration(msg.data.name);
+      this.configHandler.reloadConfig();
+    });
 
     on("config/newPromptFile", async (msg) => {
       createNewPromptFile(
@@ -385,7 +387,14 @@ export class Core {
           });
           break;
         }
-        yield { content: next.value.content };
+        // Assert that next.value is a ChatMessage
+        const chatMessage = next.value as ChatMessage;
+
+        yield {
+          content: chatMessage.content,
+          citations: chatMessage.citations
+        };
+
         next = await gen.next();
       }
 
@@ -442,20 +451,30 @@ export class Core {
       return completion;
     });
 
-    on("llm/resetPearAICredentials", async (msg) => {
+    on("llm/setPearAICredentials", async (msg) => {
+      const { accessToken, refreshToken } = msg.data || {};
       const config = await this.configHandler.loadConfig();
       const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
+      const aiderModel = config.models.find(model => model instanceof Aider) as Aider;
 
       try {
         if (pearAIModels.length > 0) {
           pearAIModels.forEach(model => {
-            model.setPearAIAccessToken(undefined);
-            model.setPearAIRefreshToken(undefined);
+            model.setPearAIAccessToken(accessToken);
+            model.setPearAIRefreshToken(refreshToken);
           });
         }
-        return undefined;
       } catch (e) {
         console.warn(`Error resetting PearAI credentials: ${e}`);
+        return undefined;
+      }
+      try {
+        if (aiderModel) {
+          aiderModel.setPearAIAccessToken(accessToken);
+          aiderModel.setPearAIRefreshToken(refreshToken);
+        }
+      } catch (e) {
+        console.warn(`Error resetting PearAI credentials for aider: ${e}`);
         return undefined;
       }
     });

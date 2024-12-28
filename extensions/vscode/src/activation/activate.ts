@@ -5,10 +5,50 @@ import * as vscode from "vscode";
 import { VsCodeExtension } from "../extension/VsCodeExtension";
 import registerQuickFixProvider from "../lang-server/codeActions";
 import { getExtensionVersion } from "../util/util";
-import { getExtensionUri } from "../util/vscode";
 import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
-import { isFirstLaunch, importUserSettingsFromVSCode } from "../copySettings";
+import { isFirstLaunch } from "../copySettings";
+
+
+export async function isVSCodeExtensionInstalled(extensionId: string): Promise<boolean> {
+  return vscode.extensions.getExtension(extensionId) !== undefined;
+};
+
+export async function attemptInstallExtension(extensionId: string): Promise<void> {
+  // Check if extension is already installed
+  const extension = vscode.extensions.getExtension(extensionId);
+
+  if (extension) {
+      // vscode.window.showInformationMessage(`Extension ${extensionId} is already installed.`);
+      return;
+  }
+
+  try {
+      await vscode.commands.executeCommand('workbench.extensions.installExtension', extensionId);
+      // vscode.window.showInformationMessage(`Successfully installed extension: ${extensionId}`);
+  } catch (error) {
+      // vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
+      console.error(error);
+  }
+}
+
+export async function attemptUninstallExtension(extensionId: string): Promise<void> {
+  // Check if extension is installed
+  const extension = vscode.extensions.getExtension(extensionId);
+
+  if (!extension) {
+      // Extension is not installed
+      return;
+  }
+
+  try {
+      await vscode.commands.executeCommand('workbench.extensions.uninstallExtension', extensionId);
+      // vscode.window.showInformationMessage(`Successfully uninstalled extension: ${extensionId}`);
+  } catch (error) {
+      // vscode.window.showErrorMessage(`Failed to uninstall extension: ${extensionId}`);
+      console.error(error);
+  }
+}
 
 export async function activateExtension(context: vscode.ExtensionContext) {
   // Add necessary files
@@ -21,21 +61,29 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
   const vscodeExtension = new VsCodeExtension(context);
 
-  setupPearAPPLayout();
+  // migrate("showWelcome_1", () => {
+  //   vscode.commands.executeCommand(
+  //     "markdown.showPreview",
+  //     vscode.Uri.file(
+  //       path.join(getExtensionUri().fsPath, "media", "welcome.md"),
+  //     ),
+  //   );
 
-  migrate("showWelcome_1", () => {
-    vscode.commands.executeCommand(
-      "markdown.showPreview",
-      vscode.Uri.file(
-        path.join(getExtensionUri().fsPath, "media", "welcome.md"),
-      ),
-    );
+  //   vscode.commands.executeCommand("pearai.focusContinueInput");
+  // });
 
-    vscode.commands.executeCommand("pearai.focusContinueInput");
-  });
 
-  vscode.commands.executeCommand("pearai.focusContinueInput");
-  importUserSettingsFromVSCode();
+  // for DEV'ing welcome page
+  // if (true || isFirstLaunch(context)) {
+  //   vscode.commands.executeCommand("pearai.startOnboarding");
+  // }
+
+  if (isFirstLaunch(context)) {
+    vscode.commands.executeCommand("pearai.startOnboarding");
+    setupPearAPPLayout(context);
+  }
+
+  // vscode.commands.executeCommand("pearai.focusContinueInput");
 
   // Load PearAI configuration
   if (!context.globalState.get("hasBeenInstalled")) {
@@ -65,17 +113,8 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 }
 
 // Custom Layout settings that we want default for PearAPP
-const setupPearAPPLayout = () => {
-  // * always * move pearai extension to auxiliary bar (secondary side bar)
+const setupPearAPPLayout = async (context: vscode.ExtensionContext) => {
   vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
-
   // set activity bar position to top
   vscode.commands.executeCommand("workbench.action.activityBarLocation.top");
-
-  // Apply the remaining layout settings only on the first launch
-  if (isFirstLaunch) {
-    return;
-  }
-
-  // first launch layout settings here.
 };

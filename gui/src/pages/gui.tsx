@@ -4,7 +4,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
-import { usePostHog } from "posthog-js/react";
+import { PostHog, usePostHog } from "posthog-js/react";
 import {
   Fragment,
   useCallback,
@@ -22,7 +22,14 @@ import {
   defaultBorderRadius,
   lightGray,
   vscBackground,
+  vscBadgeBackground,
+  vscBadgeForeground,
+  vscButtonBackground,
+  vscButtonForeground,
+  vscEditorBackground,
   vscForeground,
+  vscInputBackground,
+  vscListActiveBackground,
 } from "../components";
 import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
 import StepContainer from "../components/gui/StepContainer";
@@ -40,6 +47,7 @@ import {
   deleteMessage,
   newSession,
   setInactive,
+  setShowInteractiveContinueTutorial,
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
 import {
@@ -49,19 +57,27 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
-import { getLocalStorage, setLocalStorage } from "../util/localStorage";
+import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
+import OnboardingTutorial from "./onboarding/OnboardingTutorial";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { FOOTER_HEIGHT } from "@/components/Layout";
 
 export const TopGuiDiv = styled.div`
   overflow-y: scroll;
-
   scrollbar-width: none; /* Firefox */
-
   /* Hide scrollbar for Chrome, Safari and Opera */
   &::-webkit-scrollbar {
     display: none;
   }
-
   height: 100%;
+`;
+
+const StopButtonContainer = styled.div`
+  position: fixed;
+  bottom: calc(${FOOTER_HEIGHT} + 90px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 101;
 `;
 
 export const StopButton = styled.div`
@@ -69,14 +85,13 @@ export const StopButton = styled.div`
   margin-right: auto;
   margin-left: auto;
 
-  font-size: ${getFontSize() - 2}px;
+  font-size: ${getFontSize() - 1}px;
 
-  border: 0.5px solid ${lightGray};
   border-radius: ${defaultBorderRadius};
-  padding: 4px 8px;
-  background: ${vscBackground};
+  padding: 8px 16px;
+  background: ${vscListActiveBackground};
   z-index: 50;
-  color: var(--vscode-textPreformat-foreground);
+  color: ${vscBadgeForeground};
 
   cursor: pointer;
 `;
@@ -85,6 +100,7 @@ export const StepsDiv = styled.div`
   padding-bottom: 8px;
   position: relative;
   background-color: transparent;
+  margin-bottom: 120px;
 
   & > * {
     position: relative;
@@ -118,6 +134,27 @@ export const NewSessionButton = styled.div`
   cursor: pointer;
 `;
 
+const TutorialCardDiv = styled.header`
+  position: sticky;
+  top: 0px;
+  z-index: 500;
+  background-color: ${vscBackground}ee; // Added 'ee' for slight transparency
+  display: flex;
+
+  width: 100%;
+`
+
+const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
+  bottom: ${props => props.isNewSession ? 'auto' : FOOTER_HEIGHT};
+  left: 0;
+  right: 0;
+  background-color: ${vscBackground};
+  padding: 8px;
+  padding-top: 0;
+  z-index: 100;
+`;
+
 export function fallbackRender({ error, resetErrorBoundary }) {
   return (
     <div
@@ -145,20 +182,25 @@ function GUI() {
   const defaultModel = useSelector(defaultModelSelector);
   const active = useSelector((state: RootState) => state.state.active);
   const [stepsOpen, setStepsOpen] = useState<(boolean | undefined)[]>([]);
+  // If getting this from redux state, it is false. So need to get from localStorage directly.
+  // This is likely because it becomes true only after user onboards, upon which the local storage is updated.
+  // On first launch, showTutorialCard will be null, so we want to show it (true)
+  // Once it's been shown and closed, it will be false in localStorage
+  const showTutorialCard = getLocalStorage("showTutorialCard") ?? (setLocalStorage("showTutorialCard", true), true);
+  useEffect(() => {
+    // Set the redux state to the updated localStorage value (true)
+    dispatch(setShowInteractiveContinueTutorial(showTutorialCard ?? false));
+  }, [])
+  const onCloseTutorialCard = useCallback(() => {
+      posthog.capture("closedTutorialCard");
+      setLocalStorage("showTutorialCard", false);
+      dispatch(setShowInteractiveContinueTutorial(false));
+  }, []);
 
   const mainTextInputRef = useRef<HTMLInputElement>(null);
   const topGuiDivRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
-  const [showTutorialCard, setShowTutorialCard] = useState<boolean>(
-    getLocalStorage("showTutorialCard"),
-  );
-
-  const onCloseTutorialCard = () => {
-    posthog.capture("closedTutorialCard");
-    setLocalStorage("showTutorialCard", false);
-    setShowTutorialCard(false);
-  };
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -171,22 +213,33 @@ function GUI() {
     setIsAtBottom(atBottom);
   };
 
-  useEffect(() => {
-    if (!active || !topGuiDivRef.current) return;
-
-    const scrollAreaElement = topGuiDivRef.current;
-    scrollAreaElement.scrollTop =
-      scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
-
+  const snapToBottom = useCallback(() => {
+    window.scrollTo({
+      top: topGuiDivRef.current?.scrollHeight,
+      behavior: "instant" as any,
+    });
     setIsAtBottom(true);
-  }, [active]);
+  }, []);
 
+  useEffect(() => {
+    if (active) {
+      snapToBottom();
+    }
+  }, [active])
+
+  useEffect(() => {
+      if (active && !isAtBottom) {
+        if (!topGuiDivRef.current) return;
+        const scrollAreaElement = topGuiDivRef.current;
+        scrollAreaElement.scrollTop = 
+          scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
+        setIsAtBottom(true);
+      }
+  }, [active, isAtBottom]);
+  
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      window.scrollTo({
-        top: topGuiDivRef.current?.scrollHeight,
-        behavior: "instant" as any,
-      });
+      snapToBottom();
     }, 1);
 
     return () => {
@@ -250,7 +303,7 @@ function GUI() {
   );
 
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
-    useHistory(dispatch);
+    useHistory(dispatch, 'continue');
 
   useWebviewListener(
     "newSession",
@@ -262,12 +315,36 @@ function GUI() {
   );
 
   useWebviewListener(
+    "setActiveFilePath",
+    async (data) => {
+      dispatch(setActiveFilePath(data));
+    },
+    []
+  );
+
+  useWebviewListener(
     "loadMostRecentChat",
     async () => {
       await loadMostRecentChat();
       mainTextInputRef.current?.focus?.();
     },
     [loadMostRecentChat],
+  );
+
+  useWebviewListener("restFirstLaunchInGUI", async () => {
+    setLocalStorage("showTutorialCard", true);
+    localStorage.removeItem("onboardingSelectedTools");
+    localStorage.removeItem("importUserSettingsFromVSCode");
+    dispatch(setShowInteractiveContinueTutorial(true));
+  });
+
+  useWebviewListener(
+    "showInteractiveContinueTutorial",
+    async () => {
+      setLocalStorage("showTutorialCard", true);
+      dispatch(setShowInteractiveContinueTutorial(true));
+    },
+    [],
   );
 
   const isLastUserInput = useCallback(
@@ -284,8 +361,42 @@ function GUI() {
     [state.history],
   );
 
+  const isNewSession = state.history.length === 0;
+
   return (
     <>
+      {!window.isPearOverlay && !!showTutorialCard && 
+        <TutorialCardDiv>
+            <OnboardingTutorial onClose={onCloseTutorialCard}/>
+        </TutorialCardDiv>
+      }
+      
+      {(
+        <FixedBottomContainer isNewSession={isNewSession}>
+          <ContinueInputBox
+            onEnter={(editorContent, modifiers) => {
+              sendInput(editorContent, modifiers);
+            }}
+            isLastUserInput={false}
+            isMainInput={true}
+            hidden={active}
+          />
+          {isNewSession && getLastSessionId() && (
+            <div className="mt-2">
+              <NewSessionButton
+                onClick={async () => {
+                  loadLastSession();
+                }}
+                className="mr-auto flex items-center gap-2"
+              >
+                <ArrowLeftIcon width="11px" height="11px" />
+                Last Session
+              </NewSessionButton>
+            </div>
+          )}
+        </FixedBottomContainer>
+      )}
+
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
         <div className="mx-2">
           <StepsDiv>
@@ -298,6 +409,9 @@ function GUI() {
                       dispatch(newSession({session: undefined, source: 'continue'}));
                     }}
                   >
+                    <div style={{
+                      minHeight: index === state.history.length - 1 ? "50vh" : 0,
+                    }}>
                     {item.message.role === "user" ? (
                       <ContinueInputBox
                         onEnter={async (editorState, modifiers) => {
@@ -366,7 +480,7 @@ function GUI() {
                             onDelete={() => {
                               dispatch(
                                 deleteMessage({
-                                  index: index + 1,
+                                  index: index,
                                   source: "continue",
                                 }),
                               );
@@ -379,58 +493,12 @@ function GUI() {
                         </TimelineItem>
                       </div>
                     )}
+                    </div>
                   </ErrorBoundary>
                 </Fragment>
               );
             })}
           </StepsDiv>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          ></ContinueInputBox>
-          {active ? (
-            <>
-              <br />
-              <br />
-            </>
-          ) : state.history.length > 0 ? (
-            <div className="mt-2">
-              <NewSessionButton
-                onClick={() => {
-                  saveSession();
-                }}
-                className="mr-auto"
-              >
-                New Session
-                {` (${getMetaKeyLabel()} ${isJetBrains() ? "J" : "L"})`}
-              </NewSessionButton>
-            </div>
-          ) : (
-            <>
-              {getLastSessionId() ? (
-                <div className="mt-2">
-                  <NewSessionButton
-                    onClick={async () => {
-                      loadLastSession();
-                    }}
-                    className="mr-auto flex items-center gap-2"
-                  >
-                    <ArrowLeftIcon width="11px" height="11px" />
-                    Last Session
-                  </NewSessionButton>
-                </div>
-              ) : null}
-              {!!showTutorialCard && (
-                <div className="flex justify-center w-full">
-                  <TutorialCard onClose={onCloseTutorialCard} />
-                </div>
-              )}
-            </>
-          )}
         </div>
         <ChatScrollAnchor
           scrollAreaRef={topGuiDivRef}
@@ -438,21 +506,23 @@ function GUI() {
           trackVisibility={active}
         />
       </TopGuiDiv>
+
       {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setInactive());
-            if (
-              state.history[state.history.length - 1]?.message.content
-                .length === 0
-            ) {
-              dispatch(clearLastResponse("continue"));
-            }
-          }}
-        >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
+        <StopButtonContainer>
+          <StopButton
+            onClick={() => {
+              dispatch(setInactive());
+              if (
+                state.history[state.history.length - 1]?.message.content
+                  .length === 0
+              ) {
+                dispatch(clearLastResponse("continue"));
+              }
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        </StopButtonContainer>
       )}
     </>
   );

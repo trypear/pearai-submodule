@@ -5,6 +5,7 @@ import * as vscode from "vscode";
 import { getExtensionVersion } from "./util/util";
 import { getExtensionUri, getNonce, getUniqueId } from "./util/vscode";
 import { VsCodeWebviewProtocol } from "./webviewProtocol";
+import { isFirstLaunch } from "./copySettings";
 
 // The overlay's webview title/id is defined in pearai-app's PearOverlayParts.ts
 // A unique identifier is needed for the messaging protocol to distinguish the webviews.
@@ -236,6 +237,7 @@ export class ContinueGUIWebviewViewProvider
             (folder) => folder.uri.fsPath,
           ) || [],
         )}</script>
+        <script>window.isFirstLaunch = ${isFirstLaunch(this.extensionContext)}</script>
         <script>window.isFullScreen = ${isFullScreen}</script>
         <script>window.isPearOverlay = ${isOverlay}</script>
         <script>window.initialRoute = "${initialRoute}"</script>
@@ -247,6 +249,36 @@ export class ContinueGUIWebviewViewProvider
         }
         ${page ? `<script>window.location.pathname = "${page}"</script>` : ""}
       </body>
+      ${isOverlay ? `
+          <style>
+            body {
+              margin: 0;
+              padding: 0;
+              background-color: transparent;
+              width: 100vw;
+              height: 100vh;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              position: fixed;
+              top: 0;
+              left: 0;
+            }
+            
+            #root {
+              width: 80%;
+              height: 80%;
+            }
+          </style>
+          <script>
+            document.body.addEventListener('click', function(e) {
+                if (e.target === document.body) {
+                    vscode.postMessage({ messageType: 'closeOverlay', messageId: "closeOverlay" });
+                    vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
+                }
+            });
+          </script>
+      `: ""}
     </html>`;
   }
 }

@@ -25,7 +25,11 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ModelSelect from "../modelSelection/ModelSelect";
-import { isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
+import {
+  isBareChatMode,
+  isPerplexityMode,
+  isAiderMode,
+} from "../../util/bareChatMode";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useLocation } from "react-router-dom";
@@ -97,6 +101,7 @@ function InputToolbar(props: InputToolbarProps) {
   const defaultModel = useSelector(defaultModelSelector);
   const bareChatMode = isBareChatMode();
   const perplexityMode = isPerplexityMode();
+  const aiderMode = isAiderMode();
 
   const useActiveFile = useSelector(selectUseActiveFile);
   const allModels = useSelector(
@@ -109,7 +114,7 @@ function InputToolbar(props: InputToolbarProps) {
   useEffect(() => {
     if (location.pathname.split("/").pop() === "aiderMode") {
       const aider = allModels.find((model) =>
-        model?.title?.toLowerCase().includes("aider"),
+        model?.title?.toLowerCase().includes("creator"),
       );
       dispatch(setDefaultModel({ title: aider?.title }));
     } else if (location.pathname.split("/").pop() === "perplexityMode") {
@@ -128,20 +133,18 @@ function InputToolbar(props: InputToolbarProps) {
         id="input-toolbar"
       >
         <span className="flex gap-2 items-center whitespace-nowrap">
-          {!bareChatMode && (
-            <>
-              {!perplexityMode && <ModelSelect />}
-              <StyledSpan
-                onClick={(e) => {
-                  props.onAddContextItem();
-                }}
-                className="hover:underline cursor-pointer"
-              >
-                Add Context{" "}
-                <PlusIcon className="h-2.5 w-2.5" aria-hidden="true" />
-              </StyledSpan>
-            </>
-          )}
+          <>
+            {!perplexityMode && <ModelSelect />}
+            <StyledSpan
+              onClick={(e) => {
+                props.onAddContextItem();
+              }}
+              className="hover:underline cursor-pointer"
+            >
+              Add Context{" "}
+              <PlusIcon className="h-2.5 w-2.5" aria-hidden="true" />
+            </StyledSpan>
+          </>
           {defaultModel &&
             modelSupportsImages(
               defaultModel.provider,

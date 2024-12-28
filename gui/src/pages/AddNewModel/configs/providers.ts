@@ -5,6 +5,7 @@ import { FREE_TRIAL_LIMIT_REQUESTS } from "../../../util/freeTrial";
 import { completionParamsInputs } from "./completionParamsInputs";
 import type { ModelPackage } from "./models";
 import { models } from "./models";
+import { loadOpenRouterPackages } from "../OpenRouterServices";
 
 export interface InputDescriptor {
   inputType: HTMLInputTypeAttribute;
@@ -56,6 +57,8 @@ export const apiBaseInput: InputDescriptor = {
   required: false,
 };
 
+loadOpenRouterPackages();
+
 export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
   pearai_server: {
     title: "PearAI Server",
@@ -93,11 +96,11 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
   other: {
     title: "Other",
     provider: "other",
-    description: "Use your own API key for different cloud, local, and other LLM providers (i.e. OpenAI).",
+    description:
+      "Use your own API key for different cloud, local, and other LLM providers (i.e. OpenAI).",
     icon: "openai.png",
     tags: [ModelProviderTags.RequiresApiKey],
-    packages: [
-    ],
+    packages: [],
     showInMenu: false,
   },
   openai: {
@@ -212,6 +215,30 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
       },
       ...completionParamsInputsConfigs,
     ],
+  },
+  openrouter: {
+    title: "OpenRouter API",
+    provider: "openrouter" as ModelProvider,
+    description:
+      "A platform that provides a unified API for accessing various large language models (LLMs) from different providers.",
+    icon: "open-router.png",
+    longDescription: `OpenRouter aims to simplify the integration and management of models by offering a single interface, allowing developers to leverage the capabilities of multiple LLMs without dealing with the complexities of each individual API.  Obtain a API key from the [OpenRouter Dashboard](https://openrouter.ai/settings/keys).`,
+    tags: [ModelProviderTags.RequiresApiKey],
+    params: {
+      apiKey: "",
+    },
+    collectInputFor: [
+      {
+        inputType: "password",
+        key: "apiKey",
+        label: "API Key",
+        placeholder: "Enter your OpenRouter API key",
+        required: true,
+      },
+      ...completionParamsInputsConfigs,
+    ],
+    packages: [],
+    apiKeyUrl: "https://openrouter.ai/settings/keys",
   },
   mistral: {
     title: "Mistral API",

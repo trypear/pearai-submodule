@@ -9,7 +9,7 @@ import { useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { defaultBorderRadius, lightGray, vscInputBackground } from "..";
+import { defaultBorderRadius, lightGray, vscButtonBackground, vscEditorBackground, vscInputBackground, vscBadgeForeground, vscInputBorder, vscListActiveBackground, vscBadgeBackground, vscSidebarBorder } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
@@ -24,6 +24,7 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog";
+import { isAiderMode, isPerplexityMode } from "@/util/bareChatMode";
 
 const StyledListboxButton = styled(Listbox.Button)`
   font-family: inherit;
@@ -40,20 +41,51 @@ const StyledListboxButton = styled(Listbox.Button)`
   }
 `;
 
-const StyledListboxOptions = styled(Listbox.Options)`
+const StyledListboxOptions = styled(Listbox.Options)<{ newSession: boolean }>`
   margin-top: 4px;
   position: absolute;
+  bottom: ${(props) => props.newSession ? 'auto' : '100%'};
+  left: 0;
   list-style: none;
   padding: 4px;
   white-space: nowrap;
   cursor: default;
+  z-index: 1100;
 
-  border-radius: ${defaultBorderRadius};
-  border: 0.5px solid ${lightGray};
-  background-color: ${vscInputBackground};
-
-  max-height: 300px;
+  border-radius: 10px;
+  background-color: ${vscEditorBackground};
+  max-height: 450px;
   overflow-y: auto;
+
+  /* Custom Scrollbar Styles */
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    margin: 4px 0; /* Add space at top and bottom of track */
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: ${lightGray}44;
+    border-radius: 4px;
+    
+    &:hover {
+      background: ${lightGray}88;
+    }
+  }
+
+  /* Firefox Scrollbar */
+  scrollbar-width: thin;
+  scrollbar-color: ${lightGray}44 transparent;
+
+  /* Adjust content padding to account for rounded corners */
+  & > * {
+    margin: 2px 0;
+  }
+
 `;
 
 const StyledListboxOption = styled(Listbox.Option)`
@@ -77,7 +109,7 @@ const StyledTrashIcon = styled(TrashIcon)`
 
 const Divider = styled.div`
   height: 1px;
-  background-color: ${lightGray};
+  background-color: ${lightGray}35;
   margin: 4px;
 `;
 
@@ -162,14 +194,18 @@ interface Option {
 }
 
 function ModelSelect() {
+  const state = useSelector((state: RootState) => state.state);
   const dispatch = useDispatch();
   const defaultModel = useSelector(defaultModelSelector);
+  const perplexityMode = isPerplexityMode();
+  const aiderMode = isAiderMode();
   const allModels = useSelector(
     (state: RootState) => state.state.config.models,
   );
 
   const location = useLocation();
   const navigate = useNavigate();
+  const ideMessenger = useContext(IdeMessengerContext);
 
   const [options, setOptions] = useState<Option[]>([]);
   const selectedProfileId = useSelector(
@@ -179,7 +215,17 @@ function ModelSelect() {
   useEffect(() => {
     setOptions(
       allModels
-        .filter((model) => !model?.title?.toLowerCase().includes("aider") && !model?.title?.toLowerCase().includes("perplexity"))
+        .filter((model) => {
+          if (aiderMode) {
+            // In Aider mode, only include models with "aider" in title
+            return model?.title?.toLowerCase().includes("creator");
+          }
+          // In normal mode, exclude aider and perplexity models
+          return (
+            !model?.title?.toLowerCase().includes("creator") &&
+            !model?.title?.toLowerCase().includes("perplexity")
+          );
+        })
         .map((model) => {
           return {
             value: model.title,
@@ -188,7 +234,7 @@ function ModelSelect() {
           };
         }),
     );
-  }, [allModels]);
+  }, [allModels, aiderMode]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -216,7 +262,7 @@ function ModelSelect() {
         dispatch(setDefaultModel({ title: val }));
       }}
     >
-      <div className="relative">
+      <div className="relative inline-block">
         <StyledListboxButton
           className="h-[18px] overflow-hidden"
           style={{ padding: 0 }}
@@ -226,15 +272,48 @@ function ModelSelect() {
             <ChevronDownIcon className="h-2.5 w-2.5" aria-hidden="true" />
           </span>
         </StyledListboxButton>
-        <StyledListboxOptions>
-          {options.filter((option) => option.isDefault).map((option, idx) => (
-            <ModelOption
-              option={option}
-              idx={idx}
-              key={idx}
-              showDelete={!option.isDefault}
-            />
-          ))}
+        <StyledListboxOptions newSession={state.history.length === 0 ? true : false}>
+          <span
+            style={{
+              color: lightGray,
+              padding: "4px",
+              marginTop: "4px",
+              display: "block",
+              textAlign: "right",
+            }}
+          >
+            Press <kbd className="font-mono">{getMetaKeyLabel()}</kbd> <kbd className="font-mono">'</kbd> to cycle between models.
+          </span>
+          <Divider />
+          <StyledListboxOption
+            key={options.length}
+            onClick={(e) => {
+              if (aiderMode) {
+                ideMessenger.post("openConfigJson", undefined);
+                return;
+              }
+              e.stopPropagation();
+              e.preventDefault();
+              navigate("/addModel");
+            }}
+            value={"addModel" as any}
+          >
+            <div className="flex items-center">
+              <PlusIcon className="w-4 h-4 mr-2" />
+              Add Model
+            </div>
+          </StyledListboxOption>
+          <Divider />
+          {options
+            .filter((option) => option.isDefault)
+            .map((option, idx) => (
+              <ModelOption
+                option={option}
+                idx={idx}
+                key={idx}
+                showDelete={!option.isDefault}
+              />
+            ))}
 
           {selectedProfileId === "local" && (
             <>
@@ -250,36 +329,8 @@ function ModelSelect() {
                     showDelete={!option.isDefault}
                   />
                 ))}
-
-              <StyledListboxOption
-                key={options.length}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  navigate("/addModel");
-                }}
-                value={"addModel" as any}
-              >
-                <div className="flex items-center">
-                  <PlusIcon className="w-4 h-4 mr-2" />
-                  Add Model
-                </div>
-              </StyledListboxOption>
             </>
           )}
-
-          <Divider />
-
-          <i
-            style={{
-              color: lightGray,
-              padding: "4px",
-              marginTop: "4px",
-              display: "block",
-            }}
-          >
-            Press {getMetaKeyLabel()}+' to toggle
-          </i>
         </StyledListboxOptions>
       </div>
     </Listbox>

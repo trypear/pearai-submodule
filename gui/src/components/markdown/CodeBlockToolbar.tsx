@@ -2,6 +2,11 @@ import {
   ArrowLeftEndOnRectangleIcon,
   CheckIcon,
   PlayIcon,
+  BoltIcon,
+  XMarkIcon,
+  ArrowPathIcon,
+  ArrowDownIcon,
+  CommandLineIcon
 } from "@heroicons/react/24/outline";
 import { useContext, useState } from "react";
 import styled from "styled-components";
@@ -11,6 +16,9 @@ import { isJetBrains } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "./CopyButton";
 import { isPerplexityMode } from '../../util/bareChatMode';
+import { useWebviewListener } from "../../hooks/useWebviewListener";
+import { Loader, Terminal, SquareTerminal, SquareChevronRight } from "lucide-react";
+
 
 const TopDiv = styled.div`
   position: sticky;
@@ -76,6 +84,19 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
 
   const [copied, setCopied] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [fastApplying, setFastApplying] = useState(false);
+  const [isDiffVisible, setIsDiffVisible] = useState(false);
+  const [isTerminalBlock, setIsTerminalBlock] = useState(isTerminalCodeBlock(props.language, props.text));
+
+  useWebviewListener("setRelaceDiffState", (state) => {
+    if (state.diffVisible) {
+      setIsDiffVisible(true);
+    } else {
+      setIsDiffVisible(false);
+      setFastApplying(false);
+    }
+    return Promise.resolve();
+  });
 
   return (
     <TopDiv>
@@ -90,44 +111,92 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
           <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
         </HeaderButtonWithText>}
         {isJetBrains() || !isPerplexityMode() && (
-          <HeaderButtonWithText
-            text={
-              isTerminalCodeBlock(props.language, props.text)
-                ? "Run in terminal"
-                : applying
-                  ? "Applying..."
-                  : "Apply to current file"
-            }
-            disabled={applying}
-            style={{ backgroundColor: vscEditorBackground }}
-            onClick={() => {
-              if (isTerminalCodeBlock(props.language, props.text)) {
-                let text = props.text;
-                if (text.startsWith("$ ")) {
-                  text = text.slice(2);
-                }
-                ideMessenger.ide.runCommand(text);
-                return;
+          <>
+            {!fastApplying && <HeaderButtonWithText
+              text={
+                isTerminalBlock
+                  ? "Run in terminal"
+                  : applying
+                    ? "Applying..."
+                    : "Apply to current file"
               }
+              disabled={applying || fastApplying}
+              onClick={() => {
+                if (isTerminalBlock) {
+                  let text = props.text;
+                  if (text.startsWith("$ ")) {
+                    text = text.slice(2);
+                  }
+                  ideMessenger.ide.runCommand(text);
+                  return;
+                }
 
-              if (applying) return;
-              ideMessenger.post("applyToCurrentFile", {
-                text: props.text,
-              });
-              setApplying(true);
-              setTimeout(() => setApplying(false), 2000);
-            }}
-          >
-            {applying ? (
-              <CheckIcon className="w-4 h-4 text-green-500" />
-            ) : (
-              <PlayIcon className="w-4 h-4" />
-            )}
-          </HeaderButtonWithText>
+                if (applying) return;
+                ideMessenger.post("applyToCurrentFile", {
+                  text: props.text,
+                });
+                setApplying(true);
+                setTimeout(() => setApplying(false), 2000);
+              }}
+            >
+              {applying ? (
+                <CheckIcon className="w-4 h-4 text-green-500" />
+              ) : (
+                isTerminalBlock ? (
+                  <Terminal className="w-4 h-4" />
+                ) : (
+                  <PlayIcon className="w-4 h-4" />
+                )
+              )}
+            </HeaderButtonWithText>}
+
+            {!isTerminalBlock && <>
+              {!isDiffVisible ? (
+                <>
+                  <HeaderButtonWithText
+                    text={fastApplying ? "Fast Applying..." : "Fast Apply"}
+                    disabled={applying || fastApplying}
+                    onClick={() => {
+                      if (fastApplying) return;
+                      ideMessenger.post("applyWithRelaceHorizontal", {
+                        contentToApply: props.text,
+                      });
+                      setFastApplying(true);
+                    }}
+                  >
+                    {fastApplying ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <BoltIcon className="w-4 h-4" />
+                    )}
+                  </HeaderButtonWithText>
+                </>
+              ) : (
+                <>
+                  <HeaderButtonWithText
+                    text="Accept Changes"
+                    onClick={() => {
+                      ideMessenger.post("acceptRelaceDiff", undefined);
+                    }}
+                  >
+                    <CheckIcon className="w-4 h-4 text-green-500" />
+                  </HeaderButtonWithText>
+                  <HeaderButtonWithText
+                    text="Reject Changes"
+                    onClick={() => {
+                      ideMessenger.post("rejectRelaceDiff", undefined);
+                      setIsDiffVisible(false);
+                    }}
+                  >
+                    <XMarkIcon className="w-4 h-4 text-red-600" />
+                  </HeaderButtonWithText>
+                </>
+              )}
+            </>}
+          </>
         )}
         {!isPerplexityMode() && <HeaderButtonWithText
           text="Insert at cursor"
-          style={{ backgroundColor: vscEditorBackground }}
           onClick={() => {
             ideMessenger.post("insertAtCursor", { text: props.text });
           }}
