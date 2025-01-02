@@ -1,4 +1,4 @@
-import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import { QuestionMarkCircleIcon, InboxStackIcon } from "@heroicons/react/24/outline";
 import { IndexingProgressUpdate } from "core";
 import { useContext, useEffect, useState, useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -364,6 +364,19 @@ const Layout = () => {
                 >
                   <QuestionMarkCircleIcon width="1.4em" height="1.4em" />
                 </HeaderButtonWithText>
+                <HeaderButtonWithText
+                tooltipPlacement="top-end"
+                text="Send Feedback"
+                onClick={() => {
+                  if (location.pathname === "/feedback") {
+                    navigate("/");
+                  } else {
+                    navigate("/feedback");
+                  }
+                }}
+              >
+                <InboxStackIcon width="1.4em" height="1.4em" />
+              </HeaderButtonWithText>
               </Footer>
             )}
           </GridDiv>
