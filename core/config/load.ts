@@ -66,6 +66,7 @@ import {
   getPromptFiles,
   slashCommandFromPromptFile,
 } from "./promptFile.js";
+import { SERVER_URL } from "../util/parameters";
 
 function resolveSerializedConfig(filepath: string): SerializedContinueConfig {
   let content = fs.readFileSync(filepath, "utf8");
@@ -595,7 +596,7 @@ async function buildConfigTs() {
   return fs.readFileSync(getConfigJsPath(), "utf8");
 }
 function addDefaults(config: SerializedContinueConfig): void {
-  addDefaultModels(config);
+  Promise.resolve(addDefaultModels(config));
   addDefaultCustomCommands(config);
   addDefaultContextProviders(config);
   addDefaultSlashCommands(config);
@@ -621,11 +622,20 @@ function addDefaultIntegrations(config: SerializedContinueConfig): void {
   });
 }
 
-function addDefaultModels(config: SerializedContinueConfig): void {
-  const defaultModels = defaultConfig.models.filter(
-    (model) => model.isDefault === true,
-  );
-  defaultModels.forEach((defaultModel) => {
+const getDefaultModels = async () => {
+  try {
+    const res = await fetch(`${SERVER_URL}/getDefaultConfig`);
+    const config = await res.json();
+    return config.models;
+  } catch {
+    return [];
+  }
+};
+
+async function addDefaultModels(config: SerializedContinueConfig): Promise<void> {
+  const defaultModels = await getDefaultModels();
+  console.dir(defaultModels)
+  defaultModels.forEach((defaultModel: ModelDescription) => {
     const modelExists = config.models.some(
       (configModel) =>
         configModel.title === defaultModel.title &&
