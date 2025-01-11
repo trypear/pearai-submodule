@@ -298,7 +298,12 @@ useEffect(() => {
       );
     }
     if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
-      return <div>{inventoryDetails}<AiderManualInstallation /></div>;
+      return (
+        <div className="h-full overflow-auto">
+          {inventoryDetails}
+          <AiderManualInstallation />
+        </div>
+      );
     }
     if (aiderProcessState.state === "installing") {
       msg = (
@@ -378,7 +383,7 @@ useEffect(() => {
 
   return (
     <>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} className="h-full overflow-auto">
         <div
           className={cn(
             "mx-2",

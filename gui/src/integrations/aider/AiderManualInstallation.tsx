@@ -12,8 +12,8 @@ const AiderManualInstallation: React.FC = () => {
   }
 
   return (
-    <div className="flex items-center justify-center h-screen overflow-y-auto">
-      <div className="px-6 py-2 bg-input rounded-lg shadow-md">
+    <div className="flex items-center justify-center h-full w-full overflow-auto">
+      <div className="px-6 py-2 bg-input rounded-lg shadow-md m-4">
         <h2 className="text-2xl font-bold mb-4">Manual Installation Guide for PearAI Creator (Powered by aider*)</h2>
         <p className="mb-4">
           Automatic installation of PearAI Creator (Powered by aider*) was unsuccessful. Please follow the steps below to manually install it to get it working.
