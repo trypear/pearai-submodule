@@ -274,29 +274,22 @@ function PerplexityGUI() {
       <div 
         className={cn(
           "flex-1 flex flex-col min-w-0",
-          "transition-all duration-300 ease-in-out",
           historySidebarOpen ? "mr-72" : "mr-0"
         )}
       >
           <Button
             variant="ghost"
-            size="icon"
             onClick={() => setHistorySidebarOpen(prev => !prev)}
             className={
               cn(
                 "ml-auto mr-0", 
-                historySidebarOpen ? "mr-10" : "mr-0", 
                 'z-10'
               )
 }
           >
-            {historySidebarOpen ? (
+            {!historySidebarOpen && (
                 <>
-                  <XMarkIcon className="h-6 w-6" />
-                </>
-              ) : (
-                <>
-                  <ClockIcon className="h-6 w-6" />
+                <ClockIcon className="h-6 w-6" />
                 </>
               )}
           </Button>
