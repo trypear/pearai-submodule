@@ -121,7 +121,7 @@ export default function Inventory() {
         <div className="flex flex-row h-full">
           <div className="z-10 h-full">
             <TabsList className={` flex flex-col bg-background justify-between h-full ${currentTab === 'home' ? 'hidden' : ''}`}>
-              <div className="p-3 flex flex-col gap-4">
+              <div className="mt-2 p-3 flex flex-col gap-4">
                 <TabButton {...tabs[1]} />
                 <TabButton {...tabs[2]} />
                 <TabButton {...tabs[4]} />
