@@ -622,6 +622,24 @@ function addDefaultIntegrations(config: SerializedContinueConfig): void {
   });
 }
 
+const STATIC_MODELS: ModelDescription[] = [
+  {
+    model: "pearai_model",
+    contextLength: 300000,
+    title: "PearAI Model",
+    systemMessage: "You are an expert software developer. You give helpful and concise responses.",
+    provider: "pearai_server",
+    isDefault: true,
+  },
+  {
+    model: "perplexity",
+    title: "PearAI Search (Powered by Perplexity)",
+    systemMessage: "You are an expert documentation and information gatherer. You give succinct responses based on the latest software engineering practices and documentation. Always go to the web to get the latest information and data.",
+    provider: "pearai_server",
+    isDefault: true,
+  }
+];
+
 const getDefaultModels = async () => {
   try {
     const res = await fetch(`${SERVER_URL}/getDefaultConfig`);
@@ -633,13 +651,26 @@ const getDefaultModels = async () => {
 };
 
 async function addDefaultModels(config: SerializedContinueConfig): Promise<void> {
-  const defaultModels = await getDefaultModels();
-  console.dir(defaultModels)
-  defaultModels.forEach((defaultModel: ModelDescription) => {
+  // First, add static models
+  STATIC_MODELS.forEach((staticModel) => {
+    const modelExists = config.models.some(
+      (configModel) =>
+        configModel.title === staticModel.title &&
+        configModel.provider === staticModel.provider
+    );
+
+    if (!modelExists) {
+      config.models.push({ ...staticModel });
+    }
+  });
+
+  // Then, add dynamic models from server
+  const dynamicModels = await getDefaultModels();
+  dynamicModels.forEach((defaultModel: ModelDescription) => {
     const modelExists = config.models.some(
       (configModel) =>
         configModel.title === defaultModel.title &&
-        configModel.provider === defaultModel.provider,
+        configModel.provider === defaultModel.provider
     );
 
     if (!modelExists) {
