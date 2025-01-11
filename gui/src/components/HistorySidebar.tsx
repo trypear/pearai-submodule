@@ -22,7 +22,7 @@ export const HistorySidebar = ({ isOpen, onClose, from }: { isOpen: boolean; onC
     return (
         <div 
             ref={sidebarRef}
-            className={cn("absolute right-0 top-0 bg-background border-r shadow-lg z-50 transition-all duration-200 h-full flex flex-col py-4", 
+            className={cn("px-4 py-4 absolute rounded-xl right-0 top-0 bg-background border-r shadow-lg z-50 transition-all duration-200 h-[95%] flex flex-col", 
             isOpen ? "w-72 translate-x-0" : "-translate-x-full hidden")}
         >
             <History from={from} onClose={onClose} />

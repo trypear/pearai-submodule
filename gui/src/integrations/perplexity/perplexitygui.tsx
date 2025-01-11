@@ -285,7 +285,8 @@ function PerplexityGUI() {
             className={
               cn(
                 "ml-auto mr-0", 
-                historySidebarOpen ? "mr-4" : "mr-0"
+                historySidebarOpen ? "mr-10" : "mr-0", 
+                'z-10'
               )
 }
           >
