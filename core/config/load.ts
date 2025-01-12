@@ -595,8 +595,9 @@ async function buildConfigTs() {
   }
   return fs.readFileSync(getConfigJsPath(), "utf8");
 }
-function addDefaults(config: SerializedContinueConfig): void {
-  Promise.resolve(addDefaultModels(config));
+
+async function addDefaults(config: SerializedContinueConfig) {
+  await addDefaultModels(config);
   addDefaultCustomCommands(config);
   addDefaultContextProviders(config);
   addDefaultSlashCommands(config);
@@ -737,7 +738,7 @@ async function loadFullConfigNode(
   );
 
   // check and enforce default models
-  addDefaults(serialized);
+  await addDefaults(serialized);
 
   // Convert serialized to intermediate config
   let intermediate = await serializedToIntermediateConfig(serialized, ide);
