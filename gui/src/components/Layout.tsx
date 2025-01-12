@@ -20,7 +20,7 @@ import {
   setShowDialog,
 } from "../redux/slices/uiStateSlice";
 import { RootState } from "../redux/store";
-import { isMetaEquivalentKeyPressed } from "../util";
+import { getFontSize, isMetaEquivalentKeyPressed } from "../util";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 import PostHogPageView from "./PosthogPageView";
 import ShortcutContainer from "./ShortcutContainer";
@@ -245,6 +245,10 @@ const Layout = () => {
       >
         {bottomMessage}
       </BottomMessageDiv>
+      <div
+        style={{ fontSize: `${getFontSize() - 4}px` }}
+        id="tooltip-portal-div"
+      />
     </div>
   );
 };
