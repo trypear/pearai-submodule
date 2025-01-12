@@ -99,24 +99,7 @@ export const defaultSlashCommandsJetBrains = [
 ];
 
 export const defaultConfig: SerializedContinueConfig = {
-  models: [
-    {
-      model: "pearai_model",
-      contextLength: 300000,
-      title: "PearAI Model", 
-      systemMessage:
-        "You are an expert software developer. You give helpful and concise responses.",
-      provider: "pearai_server",
-      isDefault: true,
-    },
-    {
-      model: "perplexity",
-      title: "PearAI Search (Powered by Perplexity)",
-      systemMessage: "You are an expert documentation and information gatherer. You give succinct responses based on the latest software engineering practices and documentation. Always go to the web to get the latest information and data.",
-      provider: "pearai_server", 
-      isDefault: true,
-    },
-  ],
+  models: [],
   customCommands: [
     {
       name: "test",
