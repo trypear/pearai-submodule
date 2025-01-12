@@ -41,6 +41,7 @@ import {
   StopButton,
   NewSessionButton,
   fallbackRender,
+  StopButtonContainer,
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import { cn } from "@/lib/utils";
@@ -261,9 +262,6 @@ function PerplexityGUI() {
           alt={<p>Use Chat or Creator to make changes to files.</p>}
         />
 
-
-
-
         <HistorySidebar
           isOpen={historySidebarOpen}
           onClose={() => {
@@ -295,6 +293,7 @@ function PerplexityGUI() {
             )}
           </Button>
           <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+
             <div
               className={cn(
                 "mx-2",
@@ -351,193 +350,200 @@ function PerplexityGUI() {
                   </div>
                 </div>
               )}
-
-              <StepsDiv>
-                {state.perplexityHistory.map((item, index: number) => (
-                  <Fragment key={index}>
-                    <ErrorBoundary
-                      FallbackComponent={fallbackRender}
-                      onReset={() => {
-                        dispatch(
-                          newSession({ session: undefined, source: "perplexity" }),
-                        );
-                      }}
-                    >
-                      {item.message.role === "user" ? (
-                        <ContinueInputBox
-                          key={historyKeyRef.current}
-                          onEnter={async (editorState, modifiers) => {
-                            streamResponse(
-                              editorState,
-                              modifiers,
-                              ideMessenger,
-                              index,
-                              "perplexity",
-                            );
-                          }}
-                          isLastUserInput={isLastUserInput(index)}
-                          isMainInput={false}
-                          editorState={item.editorState}
-                          contextItems={item.contextItems}
-                          source="perplexity"
-                        />
-                      ) : (
-                        <div className="thread-message">
-                          <TimelineItem
-                            item={item}
-                            iconElement={
-                              <ChatBubbleOvalLeftIcon width="16px" height="16px" />
-                            }
-                            open={
-                              typeof stepsOpen[index] === "undefined"
-                                ? true
-                                : stepsOpen[index]!
-                            }
-                            onToggle={() => { }}
-                          >
-                            {item.citations &&
-                              <Citations
-                                citations={item.citations}
-                                isLast={
-                                  index === sessionState.perplexityHistory.length - 1
-                                }
-                                active={active}
-                              />}
-                            <StepContainer
-                              index={index}
-                              isLast={
-                                index === sessionState.perplexityHistory.length - 1
+              <div className="max-w-3xl mx-auto w-full px-4 mt-6">
+                <StepsDiv>
+                  {state.perplexityHistory.map((item, index: number) => (
+                    <Fragment key={index}>
+                      <ErrorBoundary
+                        FallbackComponent={fallbackRender}
+                        onReset={() => {
+                          dispatch(
+                            newSession({ session: undefined, source: "perplexity" }),
+                          );
+                        }}
+                      >
+                        {item.message.role === "user" ? (
+                          <div className="max-w-3xl mx-auto">
+                            <div className="max-w-96 ml-auto px-2">
+                              <ContinueInputBox
+                                key={historyKeyRef.current}
+                                onEnter={async (editorState, modifiers) => {
+                                  streamResponse(
+                                    editorState,
+                                    modifiers,
+                                    ideMessenger,
+                                    index,
+                                    "perplexity",
+                                  );
+                                }}
+                                isLastUserInput={isLastUserInput(index)}
+                                isMainInput={false}
+                                editorState={item.editorState}
+                                contextItems={item.contextItems}
+                                source="perplexity"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="thread-message">
+                            <TimelineItem
+                              item={item}
+                              iconElement={
+                                <ChatBubbleOvalLeftIcon width="16px" height="16px" />
                               }
-                              isFirst={index === 0}
                               open={
                                 typeof stepsOpen[index] === "undefined"
                                   ? true
                                   : stepsOpen[index]!
                               }
-                              key={index}
-                              onUserInput={(input: string) => { }}
-                              item={item}
-                              onReverse={() => { }}
-                              onRetry={() => {
-                                streamResponse(
-                                  state.perplexityHistory[index - 1].editorState,
-                                  state.perplexityHistory[index - 1].modifiers ??
-                                  defaultInputModifiers,
-                                  ideMessenger,
-                                  index - 1,
-                                  "perplexity",
-                                );
-                              }}
-                              onContinueGeneration={() => {
-                                window.postMessage(
-                                  {
-                                    messageType: "userInput",
-                                    data: {
-                                      input: "Keep going.",
+                              onToggle={() => { }}
+                            >
+                              {item.citations &&
+                                <Citations
+                                  citations={item.citations}
+                                  isLast={
+                                    index === sessionState.perplexityHistory.length - 1
+                                  }
+                                  active={active}
+                                />}
+                              <StepContainer
+                                index={index}
+                                isLast={
+                                  index === sessionState.perplexityHistory.length - 1
+                                }
+                                isFirst={index === 0}
+                                open={
+                                  typeof stepsOpen[index] === "undefined"
+                                    ? true
+                                    : stepsOpen[index]!
+                                }
+                                key={index}
+                                onUserInput={(input: string) => { }}
+                                item={item}
+                                onReverse={() => { }}
+                                onRetry={() => {
+                                  streamResponse(
+                                    state.perplexityHistory[index - 1].editorState,
+                                    state.perplexityHistory[index - 1].modifiers ??
+                                    defaultInputModifiers,
+                                    ideMessenger,
+                                    index - 1,
+                                    "perplexity",
+                                  );
+                                }}
+                                onContinueGeneration={() => {
+                                  window.postMessage(
+                                    {
+                                      messageType: "userInput",
+                                      data: {
+                                        input: "Keep going.",
+                                      },
                                     },
-                                  },
-                                  "*",
-                                );
-                              }}
-                              onDelete={() => {
-                                dispatch(
-                                  deleteMessage({
-                                    index: index,
-                                    source: "perplexity",
-                                  }),
-                                );
-                              }}
-                              modelTitle={
-                                item.promptLogs?.[0]?.completionOptions?.model ?? ""
-                              }
-                              source="perplexity"
-                            />
-                          </TimelineItem>
-                        </div>
-                      )}
-                    </ErrorBoundary>
-                  </Fragment>
-                ))}
-              </StepsDiv>
+                                    "*",
+                                  );
+                                }}
+                                onDelete={() => {
+                                  dispatch(
+                                    deleteMessage({
+                                      index: index,
+                                      source: "perplexity",
+                                    }),
+                                  );
+                                }}
+                                modelTitle={
+                                  item.promptLogs?.[0]?.completionOptions?.model ?? ""
+                                }
+                                source="perplexity"
+                              />
+                            </TimelineItem>
+                          </div>
+                        )}
+                      </ErrorBoundary>
+                    </Fragment>
+                  ))}
+                </StepsDiv>
 
-              <div
-                className={cn(
-                  state.perplexityHistory.length === 0
-                    ? "max-w-2xl mx-auto w-full"
-                    : "w-full",
-                )}
-              >
-                <ContinueInputBox
-                  key={sessionKeyRef.current}
-                  onEnter={(editorContent, modifiers) => {
-                    sendInput(editorContent, modifiers);
-                  }}
-                  isLastUserInput={false}
-                  isMainInput={true}
-                  hidden={active}
-                  source="perplexity"
+                <div
                   className={cn(
-                    state.perplexityHistory.length === 0 && "shadow-lg",
+                    state.perplexityHistory.length === 0
+                      ? "max-w-2xl mx-auto w-full"
+                      : "w-full",
                   )}
-                />
+                >
+                  <ContinueInputBox
+                    key={sessionKeyRef.current}
+                    onEnter={(editorContent, modifiers) => {
+                      sendInput(editorContent, modifiers);
+                    }}
+                    isLastUserInput={false}
+                    isMainInput={true}
+                    hidden={active}
+                    source="perplexity"
+                    className={cn(
+                      state.perplexityHistory.length === 0 && "shadow-lg",
+                    )}
+                  />
+                </div>
+
+                {active ? (
+                  <>
+                    <br />
+                    <br />
+                  </>
+                ) : state.perplexityHistory.length > 0 ? (
+                  <div className="mt-2">
+                    <NewSessionButton
+                      onClick={() => {
+                        saveSession();
+                        sessionKeyRef.current += 1;
+                      }}
+                      className="mr-auto"
+                    >
+                      Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
+                    </NewSessionButton>
+                  </div>
+                ) : (
+                  <>
+                    {" "}
+                    {/** TODO: Prevent removing tutorial card for now. Set to showerPerplexityTutorialCard later */}
+                    {true && (
+                      <div className="flex justify-center w-full mt-10">
+                        <CustomTutorialCard
+                          content={tutorialContent}
+                          onClose={onCloseTutorialCard}
+                        />{" "}
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
 
-              {active ? (
-                <>
-                  <br />
-                  <br />
-                </>
-              ) : state.perplexityHistory.length > 0 ? (
-                <div className="mt-2">
-                  <NewSessionButton
-                    onClick={() => {
-                      saveSession();
-                      sessionKeyRef.current += 1;
-                    }}
-                    className="mr-auto"
-                  >
-                    Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
-                  </NewSessionButton>
-                </div>
-              ) : (
-                <>
-                  {" "}
-                  {/** TODO: Prevent removing tutorial card for now. Set to showerPerplexityTutorialCard later */}
-                  {true && (
-                    <div className="flex justify-center w-full mt-10">
-                      <CustomTutorialCard
-                        content={tutorialContent}
-                        onClose={onCloseTutorialCard}
-                      />{" "}
-                    </div>
-                  )}
-                </>
-              )}
+              <ChatScrollAnchor
+                scrollAreaRef={topGuiDivRef}
+                isAtBottom={isAtBottom}
+                trackVisibility={active}
+              />
             </div>
-
-            <ChatScrollAnchor
-              scrollAreaRef={topGuiDivRef}
-              isAtBottom={isAtBottom}
-              trackVisibility={active}
-            />
           </TopGuiDiv>
         </div>
       </div>
       {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setPerplexityInactive());
-            if (
-              state.perplexityHistory[state.perplexityHistory.length - 1]
-                ?.message.content.length === 0
-            ) {
-              dispatch(clearLastResponse("perplexity"));
-            }
-          }}
-        >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
+        <StopButtonContainer>
+          <StopButton
+            className="mt-auto mb-4 sticky bottom-4"
+            onClick={() => {
+              dispatch(setPerplexityInactive());
+              if (
+                state.perplexityHistory[state.perplexityHistory.length - 1]
+                  ?.message.content.length === 0
+              ) {
+                dispatch(clearLastResponse("perplexity"));
+              }
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        </StopButtonContainer>
       )}
 
       <div className="text-[10px] text-muted-foreground mb-4 flex justify-end pr-2 pb-2">
