@@ -463,7 +463,7 @@ function PerplexityGUI() {
                   ))}
                 </StepsDiv>
 
-                <div
+                {!active && <div
                   className={cn(
                     state.perplexityHistory.length === 0
                       ? "max-w-2xl mx-auto w-full"
@@ -483,7 +483,7 @@ function PerplexityGUI() {
                       state.perplexityHistory.length === 0 && "shadow-lg",
                     )}
                   />
-                </div>
+                </div>}
 
                 {active ? (
                   <>
@@ -530,7 +530,7 @@ function PerplexityGUI() {
       {active && (
         <StopButtonContainer>
           <StopButton
-            className="mt-auto mb-4 sticky bottom-4"
+            className="mt-auto mb-24 sticky bottom-4"
             onClick={() => {
               dispatch(setPerplexityInactive());
               if (
