@@ -624,7 +624,7 @@ export default function Mem0GUI() {
                 </div>
             )}
         
-            <div className="flex flex-1 justify-end">
+            <div className="flex flex-1 justify-end mb-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     {filteredMemories.length > 0 && (
                         <>
