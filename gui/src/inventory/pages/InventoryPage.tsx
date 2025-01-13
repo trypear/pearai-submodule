@@ -332,6 +332,37 @@ export default function AIToolInventory() {
       enabled: true,
     },
     {
+      id: AIToolID.MEMORY,
+      name: "Memory",
+      description: (
+        <span>
+          Personalization: let PearAI get to know your coding preferences
+        </span>
+      ),
+      icon: "inventory-mem0.svg",
+      whenToUse: (
+        <span>
+          When you want the AI to remember insights from past prompts you've
+          given it. It can automatically remember details such as
+          the Python version you're using, or other specific details of your
+          codebase, like your coding styles, or your expertise level.
+          <br />
+          <br />
+          Note that all memories created are by default global to all your projects. In order to have workspace-specific memories,
+          you must have a Git repository initialized in your workspace and at least 1 commit.
+        </span>
+      ),
+      strengths: [
+        <span>Intelligent memory of your coding profile</span>,
+        <span>Increase in accuracy of results due to personalization</span>,
+      ],
+      enabled: false,
+      comingSoon: false,
+      poweredBy: "Mem0",
+      installNeeded: false,
+      toggleable: true,
+    },
+    {
       id: AIToolID.PAINTER,
       name: "Painter",
       description: <span>AI image generation from textual descriptions</span>,
@@ -350,33 +381,6 @@ export default function AIToolInventory() {
       comingSoon: true,
       poweredBy: "Flux",
       installNeeded: false,
-    },
-    {
-      id: AIToolID.MEMORY,
-      name: "Memory",
-      description: (
-        <span>
-          Personalization: let PearAI get to know your coding preferences
-        </span>
-      ),
-      icon: "inventory-mem0.svg",
-      whenToUse: (
-        <span>
-          When you want the AI to remember insights from past prompts you've
-          given it. It can automatically remember details such as
-          the Python version you're using, or other specific details of your
-          codebase, like your coding styles, or your expertise level
-        </span>
-      ),
-      strengths: [
-        <span>Intelligent memory of your coding profile</span>,
-        <span>Increase in accuracy of results due to personalization</span>,
-      ],
-      enabled: false,
-      comingSoon: false,
-      poweredBy: "Mem0",
-      installNeeded: false,
-      toggleable: true,
     },
   ]);
 
@@ -532,9 +536,11 @@ export default function AIToolInventory() {
                       )}
                       {focusedTool.name}
                     </div>
-                    <Badge variant="outline" className="pl-0">
-                      Powered by {focusedTool.poweredBy}*
-                    </Badge>
+                    {focusedTool.poweredBy && (
+                      <Badge variant="outline" className="pl-0">
+                        Powered by {focusedTool.poweredBy}*
+                      </Badge>
+                    )}
                   </h2>
                   <p className="mb-2">{focusedTool.description}</p>{" "}
                   <h3 className="font-semibold mb-1">When to use:</h3>

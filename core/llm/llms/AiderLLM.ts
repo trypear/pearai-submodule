@@ -41,10 +41,9 @@ class Aider extends BaseLLM {
 
   static defaultOptions: Partial<LLMOptions> = {
     model: "pearai_model",
-    contextLength: 8192,
+    contextLength: 200_000,
     completionOptions: {
       model: "pearai_model",
-      maxTokens: 2048,
     },
   };
 

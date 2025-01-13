@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { getMetaKeyLabel } from "@/util";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
@@ -65,8 +65,8 @@ export default function HomePage() {
   const ideMessenger = useContext(IdeMessengerContext);
 
   return (
-    <div 
-      className="h-full flex flex-col items-center" 
+    <div
+      className="h-full flex flex-col items-center"
       onClick={(e) => {
         closeOverlay(e);
       }}
@@ -79,13 +79,15 @@ export default function HomePage() {
               className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-0
                 rounded-lg transition-all duration-200 
                 transform hover:scale-105"
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                navigate(item.path);
+              }}
             >
               <div>{item.shortcut}</div>
-              <img 
-                src={`${getLogoPath(item.icon)}`} 
-                width="80%" 
-                height="80%" 
+              <img
+                src={`${getLogoPath(item.icon)}`}
+                width="80%"
+                height="80%"
                 alt={`${item.label} logo`}
                 className="mb-2"
               />

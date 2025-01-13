@@ -46,7 +46,6 @@ const tabs = [
     component: <Mem0GUI />,
     shortcut: <kbd className="ml-[1.5px]">4</kbd>,
     icon: "memory-default.svg",
-
   }
 ];
 

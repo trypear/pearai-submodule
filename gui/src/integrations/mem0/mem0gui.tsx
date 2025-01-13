@@ -151,7 +151,7 @@ export default function Mem0GUI() {
     const newMemory: Memory = {
       id: Date.now().toString(), // temporary ID generation, this should be the id value returned from the API
       content: "",
-      timestamp: "Just now",
+      timestamp: new Date().toISOString(),
       isNew: true  // handle creation on BE
     };
     dispatch(setMem0Memories([newMemory, ...memories])); // Add to beginning of list for edit mode on new memory

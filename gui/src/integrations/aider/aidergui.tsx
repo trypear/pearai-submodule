@@ -385,6 +385,7 @@ function AiderGUI() {
   return (
     <>
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} className="h-full overflow-auto">
+        {inventoryDetails}
         <div
           className={cn(
             "mx-2",
