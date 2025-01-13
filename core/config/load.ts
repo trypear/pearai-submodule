@@ -66,6 +66,7 @@ import {
   getPromptFiles,
   slashCommandFromPromptFile,
 } from "./promptFile.js";
+import { SERVER_URL } from "../util/parameters";
 
 function resolveSerializedConfig(filepath: string): SerializedContinueConfig {
   let content = fs.readFileSync(filepath, "utf8");
@@ -594,8 +595,9 @@ async function buildConfigTs() {
   }
   return fs.readFileSync(getConfigJsPath(), "utf8");
 }
-function addDefaults(config: SerializedContinueConfig): void {
-  addDefaultModels(config);
+
+async function addDefaults(config: SerializedContinueConfig) {
+  await addDefaultModels(config);
   addDefaultCustomCommands(config);
   addDefaultContextProviders(config);
   addDefaultSlashCommands(config);
@@ -621,15 +623,55 @@ function addDefaultIntegrations(config: SerializedContinueConfig): void {
   });
 }
 
-function addDefaultModels(config: SerializedContinueConfig): void {
-  const defaultModels = defaultConfig.models.filter(
-    (model) => model.isDefault === true,
-  );
-  defaultModels.forEach((defaultModel) => {
+const STATIC_MODELS: ModelDescription[] = [
+  {
+    model: "pearai_model",
+    contextLength: 300000,
+    title: "PearAI Model",
+    systemMessage: "You are an expert software developer. You give helpful and concise responses.",
+    provider: "pearai_server",
+    isDefault: true,
+  },
+  {
+    model: "perplexity",
+    title: "PearAI Search (Powered by Perplexity)",
+    systemMessage: "You are an expert documentation and information gatherer. You give succinct responses based on the latest software engineering practices and documentation. Always go to the web to get the latest information and data.",
+    provider: "pearai_server",
+    isDefault: true,
+  }
+];
+
+const getDefaultModels = async () => {
+  try {
+    const res = await fetch(`${SERVER_URL}/getDefaultConfig`);
+    const config = await res.json();
+    return config.models;
+  } catch {
+    return [];
+  }
+};
+
+async function addDefaultModels(config: SerializedContinueConfig): Promise<void> {
+  // First, add static models
+  STATIC_MODELS.forEach((staticModel) => {
+    const modelExists = config.models.some(
+      (configModel) =>
+        configModel.title === staticModel.title &&
+        configModel.provider === staticModel.provider
+    );
+
+    if (!modelExists) {
+      config.models.push({ ...staticModel });
+    }
+  });
+
+  // Then, add dynamic models from server
+  const dynamicModels = await getDefaultModels();
+  dynamicModels.forEach((defaultModel: ModelDescription) => {
     const modelExists = config.models.some(
       (configModel) =>
         configModel.title === defaultModel.title &&
-        configModel.provider === defaultModel.provider,
+        configModel.provider === defaultModel.provider
     );
 
     if (!modelExists) {
@@ -696,7 +738,7 @@ async function loadFullConfigNode(
   );
 
   // check and enforce default models
-  addDefaults(serialized);
+  await addDefaults(serialized);
 
   // Convert serialized to intermediate config
   let intermediate = await serializedToIntermediateConfig(serialized, ide);

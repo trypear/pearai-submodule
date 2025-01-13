@@ -333,6 +333,8 @@ function GUI() {
     [state.history],
   );
 
+  const isNewSession = state.history.length === 0;
+
   return (
     <>
       {!window.isPearOverlay && !!showTutorialCard &&

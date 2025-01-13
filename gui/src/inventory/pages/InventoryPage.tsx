@@ -25,6 +25,7 @@ enum AIToolID {
   CREATOR = "aider",
   PAINTER = "painter",
   MEMORY = "memory",
+  WRAPPED = "wrapped",
 }
 
 interface AITool {
@@ -332,6 +333,58 @@ export default function AIToolInventory() {
       enabled: true,
     },
     {
+      id: AIToolID.MEMORY,
+      name: "Memory",
+      description: (
+        <span>
+          Personalization: let PearAI get to know your coding preferences
+        </span>
+      ),
+      icon: "inventory-mem0.svg",
+      whenToUse: (
+        <span>
+          When you want the AI to remember insights from past prompts you've
+          given it. It can automatically remember details such as
+          the Python version you're using, or other specific details of your
+          codebase, like your coding styles, or your expertise level.
+          <br />
+          <br />
+          Note that all memories created are by default global to all your projects. In order to have workspace-specific memories,
+          you must have a Git repository initialized in your workspace and at least 1 commit.
+        </span>
+      ),
+      strengths: [
+        <span>Intelligent memory of your coding profile</span>,
+        <span>Increase in accuracy of results due to personalization</span>,
+      ],
+      enabled: false,
+      comingSoon: false,
+      poweredBy: "Mem0",
+      installNeeded: false,
+      toggleable: true,
+    },
+    {
+      id: AIToolID.WRAPPED,
+      name: "Developer Wrapped",
+      description: (
+        <span>View your year in code - only in PearAI! 🎉</span>
+      ),
+      icon: "🎁",
+      whenToUse: (
+        <span>
+          Ready to show off your coding achievements? Generate a fun summary of your year in code. Perfect for sharing on social media and celebrating your developer journey!
+        </span>
+      ),
+      strengths: [
+        <span>Fun stats about your coding style & achievements this year</span>,
+        <span>Visualize total lines of code written, top languages, top projects, and much more</span>,
+        <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
+      ],
+      enabled: false,
+      comingSoon: false,
+      installNeeded: false,
+    },
+    {
       id: AIToolID.PAINTER,
       name: "Painter",
       description: <span>AI image generation from textual descriptions</span>,
@@ -350,33 +403,6 @@ export default function AIToolInventory() {
       comingSoon: true,
       poweredBy: "Flux",
       installNeeded: false,
-    },
-    {
-      id: AIToolID.MEMORY,
-      name: "Memory",
-      description: (
-        <span>
-          Personalization: let PearAI get to know your coding preferences
-        </span>
-      ),
-      icon: "inventory-mem0.svg",
-      whenToUse: (
-        <span>
-          When you want the AI to remember insights from past prompts you've
-          given it. It can automatically remember details such as
-          the Python version you're using, or other specific details of your
-          codebase, like your coding styles, or your expertise level
-        </span>
-      ),
-      strengths: [
-        <span>Intelligent memory of your coding profile</span>,
-        <span>Increase in accuracy of results due to personalization</span>,
-      ],
-      enabled: false,
-      comingSoon: false,
-      poweredBy: "Mem0",
-      installNeeded: false,
-      toggleable: true,
     },
   ]);
 
@@ -532,9 +558,11 @@ export default function AIToolInventory() {
                       )}
                       {focusedTool.name}
                     </div>
-                    <Badge variant="outline" className="pl-0">
-                      Powered by {focusedTool.poweredBy}*
-                    </Badge>
+                    {focusedTool.poweredBy && (
+                      <Badge variant="outline" className="pl-0">
+                        Powered by {focusedTool.poweredBy}*
+                      </Badge>
+                    )}
                   </h2>
                   <p className="mb-2">{focusedTool.description}</p>{" "}
                   <h3 className="font-semibold mb-1">When to use:</h3>

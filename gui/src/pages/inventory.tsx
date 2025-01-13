@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
 import AiderGUI from "@/integrations/aider/aidergui";
 import Mem0GUI from "@/integrations/mem0/mem0gui";
+import PearAIWrappedGUI from "@/integrations/pearaiWrapped/pearaiWrappedGui";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState, ReactNode } from "react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
@@ -46,7 +47,6 @@ const tabs = [
     component: <Mem0GUI />,
     shortcut: <kbd className="ml-[1.5px]">4</kbd>,
     icon: "memory-default.svg",
-
   }
 ];
 
@@ -75,6 +75,7 @@ export default function Inventory() {
   useWebviewListener("navigateToCreator", () => handleTabChange("aiderMode"), []);
   useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
   useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
+  useWebviewListener("navigateToWrapped", () => handleTabChange("wrappedMode"), []);
   useWebviewListener("toggleOverlay", () => handleTabChange("inventory"), []);
   useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
 
@@ -125,6 +126,7 @@ export default function Inventory() {
                 <TabButton {...tabs[1]} />
                 <TabButton {...tabs[2]} />
                 <TabButton {...tabs[4]} />
+                <TabButton {...tabs[5]} />
               </div>
 
               <div className="p-2 pb-4 flex">

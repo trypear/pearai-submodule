@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { getMetaKeyLabel } from "@/util";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
@@ -53,6 +53,13 @@ export default function HomePage() {
       description: <>AI Personalization</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>4</Kbd></span>,
       path: "/inventory/mem0Mode",
+    },
+    {
+      icon: "wrapped.svg",
+      label: "Developer Wrapped",
+      description: <>2024</>,
+      // shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>5</Kbd></span>,
+      path: "/inventory/wrappedMode",
     }
   ];
 
@@ -63,6 +70,26 @@ export default function HomePage() {
   }, []);
 
   const ideMessenger = useContext(IdeMessengerContext);
+
+  const [shouldAnimate, setShouldAnimate] = useState(false);
+
+  useEffect(() => {
+    const hasSeenWrapped = localStorage.getItem('hasSeenWrapped2024');
+    if (!hasSeenWrapped) {
+      // Initial animation state
+      setShouldAnimate(false);
+      
+      // Animation interval
+      const intervalId = setInterval(() => {
+        setShouldAnimate(true);
+        setTimeout(() => {
+          setShouldAnimate(false);
+        }, 2000);
+      }, 5000);
+
+      return () => clearInterval(intervalId); // Cleanup on unmount
+    }
+  }, []);
 
   return (
     <div 
@@ -79,7 +106,13 @@ export default function HomePage() {
               className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-0
                 rounded-lg transition-all duration-200 
                 transform hover:scale-105"
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                if (item.label === "Developer Wrapped") {
+                  localStorage.setItem('hasSeenWrapped2024', 'true');
+                  setShouldAnimate(false);
+                }
+                navigate(item.path);
+              }}
             >
               <div>{item.shortcut}</div>
               <img 
