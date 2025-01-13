@@ -25,7 +25,6 @@ enum AIToolID {
   CREATOR = "aider",
   PAINTER = "painter",
   MEMORY = "memory",
-  WRAPPED = "wrapped",
 }
 
 interface AITool {
@@ -362,27 +361,6 @@ export default function AIToolInventory() {
       poweredBy: "Mem0",
       installNeeded: false,
       toggleable: true,
-    },
-    {
-      id: AIToolID.WRAPPED,
-      name: "Developer Wrapped",
-      description: (
-        <span>View your year in code - only in PearAI! 🎉</span>
-      ),
-      icon: "🎁",
-      whenToUse: (
-        <span>
-          Ready to show off your coding achievements? Generate a fun summary of your year in code. Perfect for sharing on social media and celebrating your developer journey!
-        </span>
-      ),
-      strengths: [
-        <span>Fun stats about your coding style & achievements this year</span>,
-        <span>Visualize total lines of code written, top languages, top projects, and much more</span>,
-        <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
-      ],
-      enabled: false,
-      comingSoon: false,
-      installNeeded: false,
     },
     {
       id: AIToolID.PAINTER,

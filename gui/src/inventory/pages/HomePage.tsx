@@ -53,13 +53,6 @@ export default function HomePage() {
       description: <>AI Personalization</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>4</Kbd></span>,
       path: "/inventory/mem0Mode",
-    },
-    {
-      icon: "wrapped.svg",
-      label: "Developer Wrapped",
-      description: <>2024</>,
-      // shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>5</Kbd></span>,
-      path: "/inventory/wrappedMode",
     }
   ];
 
@@ -71,29 +64,9 @@ export default function HomePage() {
 
   const ideMessenger = useContext(IdeMessengerContext);
 
-  const [shouldAnimate, setShouldAnimate] = useState(false);
-
-  useEffect(() => {
-    const hasSeenWrapped = localStorage.getItem('hasSeenWrapped2024');
-    if (!hasSeenWrapped) {
-      // Initial animation state
-      setShouldAnimate(false);
-      
-      // Animation interval
-      const intervalId = setInterval(() => {
-        setShouldAnimate(true);
-        setTimeout(() => {
-          setShouldAnimate(false);
-        }, 2000);
-      }, 5000);
-
-      return () => clearInterval(intervalId); // Cleanup on unmount
-    }
-  }, []);
-
   return (
-    <div 
-      className="h-full flex flex-col items-center" 
+    <div
+      className="h-full flex flex-col items-center"
       onClick={(e) => {
         closeOverlay(e);
       }}
@@ -107,18 +80,14 @@ export default function HomePage() {
                 rounded-lg transition-all duration-200 
                 transform hover:scale-105"
               onClick={() => {
-                if (item.label === "Developer Wrapped") {
-                  localStorage.setItem('hasSeenWrapped2024', 'true');
-                  setShouldAnimate(false);
-                }
                 navigate(item.path);
               }}
             >
               <div>{item.shortcut}</div>
-              <img 
-                src={`${getLogoPath(item.icon)}`} 
-                width="80%" 
-                height="80%" 
+              <img
+                src={`${getLogoPath(item.icon)}`}
+                width="80%"
+                height="80%"
                 alt={`${item.label} logo`}
                 className="mb-2"
               />
