@@ -39,6 +39,7 @@ import {
   StopButton,
   NewSessionButton,
   fallbackRender,
+  StopButtonContainer,
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import AiderManualInstallation from "./AiderManualInstallation";
@@ -48,13 +49,13 @@ import styled from "styled-components";
 import { lightGray } from "@/components";
 import InventoryDetails from "../../components/InventoryDetails";
 
-const inventoryDetails = <InventoryDetails 
-textColor="#FFFFFF" 
-backgroundColor ="#FF65B7" 
-content="Creator"
-blurb={<div><p>When you need a feature or a bug fix completed, Creator will find the relevant files, and make changes directly to your code. You can see specific diff changes in your source control tab afterwards.</p><p>Powered by Aider.</p></div>}
-useful={<div><p>Full feature completions</p><p>Automated refactoring</p><p>Lower level of human intervention needed</p></div>}
-alt={<p>Use Chat to ask questions, or Search for questions needing the web.</p>}
+const inventoryDetails = <InventoryDetails
+  textColor="#FFFFFF"
+  backgroundColor="#FF65B7"
+  content="Creator"
+  blurb={<div><p>When you need a feature or a bug fix completed, Creator will find the relevant files, and make changes directly to your code. You can see specific diff changes in your source control tab afterwards.</p><p>Powered by Aider.</p></div>}
+  useful={<div><p>Full feature completions</p><p>Automated refactoring</p><p>Lower level of human intervention needed</p></div>}
+  alt={<p>Use Chat to ask questions, or Search for questions needing the web.</p>}
 />;
 
 const StepsDiv = styled.div`
@@ -235,33 +236,33 @@ function AiderGUI() {
 
   useWebviewListener("setAiderProcessStateInGUI", async (data) => {
     if (data) {
-      setAiderProcessState({state: data.state, timeStamp: Date.now()});
+      setAiderProcessState({ state: data.state, timeStamp: Date.now() });
     }
   });
 
   // Add effect to re-fetch state periodically only if not ready
-useEffect(() => {
-  let interval: NodeJS.Timeout | undefined;
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
 
-  const fetchState = () => {
-    ideMessenger.request("sendAiderProcessStateToGUI", undefined);
-  };
+    const fetchState = () => {
+      ideMessenger.request("sendAiderProcessStateToGUI", undefined);
+    };
 
-  // Only set up polling if state is not "ready"
-  if (aiderProcessState.state !== "ready") {
-    // Initial fetch
-    fetchState();
+    // Only set up polling if state is not "ready"
+    if (aiderProcessState.state !== "ready") {
+      // Initial fetch
+      fetchState();
 
-    // Set up periodic polling as a fallback
-    interval = setInterval(fetchState, 2000);
-  }
-
-  return () => {
-    if (interval) {
-      clearInterval(interval);
+      // Set up periodic polling as a fallback
+      interval = setInterval(fetchState, 2000);
     }
-  };
-}, [aiderProcessState.state]); // Add aiderProcessState.state as dependency
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [aiderProcessState.state]); // Add aiderProcessState.state as dependency
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
@@ -298,7 +299,12 @@ useEffect(() => {
       );
     }
     if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
-      return <div>{inventoryDetails}<AiderManualInstallation /></div>;
+      return (
+        <div className="h-full overflow-auto">
+          {inventoryDetails}
+          <AiderManualInstallation />
+        </div>
+      );
     }
     if (aiderProcessState.state === "installing") {
       msg = (
@@ -320,7 +326,7 @@ useEffect(() => {
                 <button
                   className="tracking-wide py-3 px-6 border-none rounded-lg bg-button text-button-foreground transition-colors cursor-pointer"
                   onClick={() => {
-                    setAiderProcessState({state: "starting", timeStamp: Date.now()});
+                    setAiderProcessState({ state: "starting", timeStamp: Date.now() });
                     setShowReloadButton(false); // Reset the state
                     ideMessenger.post("aiderResetSession", undefined);
                   }}
@@ -378,24 +384,24 @@ useEffect(() => {
 
   return (
     <>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} className="h-full overflow-auto">
         <div
           className={cn(
             "mx-2",
             state.aiderHistory.length === 0 &&
-              "h-full flex flex-col justify-center",
+            "h-full flex flex-col justify-center",
           )}
         >
           {state.aiderHistory.length === 0 ? (
             <div className="max-w-2xl mx-auto w-full text-center">
               <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
                 <div className="flex-1" />
-                  <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Creator</h1>
-                  <div className="flex-1 flex items-center justify-start">
-                    <Badge variant="outline" className="lg:relative lg:top-[2px]">
-                      Beta (Powered by Aider*)
-                    </Badge>
-                  </div>
+                <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Creator</h1>
+                <div className="flex-1 flex items-center justify-start">
+                  <Badge variant="outline" className="lg:relative lg:top-[2px]">
+                    Beta (Powered by Aider*)
+                  </Badge>
+                </div>
               </div>
               <p className="text-sm text-foreground">
                 Ask for a feature, describe a bug to fix, or ask for a change to
@@ -479,7 +485,7 @@ useEffect(() => {
                               ? true
                               : stepsOpen[index]!
                           }
-                          onToggle={() => {}}
+                          onToggle={() => { }}
                         >
                           <StepContainer
                             index={index}
@@ -493,14 +499,14 @@ useEffect(() => {
                                 : stepsOpen[index]!
                             }
                             key={index}
-                            onUserInput={(input: string) => {}}
+                            onUserInput={(input: string) => { }}
                             item={item}
-                            onReverse={() => {}}
+                            onReverse={() => { }}
                             onRetry={() => {
                               streamResponse(
                                 state.aiderHistory[index - 1].editorState,
                                 state.aiderHistory[index - 1].modifiers ??
-                                  defaultInputModifiers,
+                                defaultInputModifiers,
                                 ideMessenger,
                                 index - 1,
                                 "aider",
@@ -539,7 +545,7 @@ useEffect(() => {
               ))}
             </StepsDiv>
 
-            <div
+            {!active && <div
               className={cn(
                 "transition-all duration-300",
                 state.aiderHistory.length === 0
@@ -561,7 +567,7 @@ useEffect(() => {
                   state.aiderHistory.length === 0 && "shadow-lg",
                 )}
               />
-            </div>
+            </div>}
           </>
 
           {active ? (
@@ -604,23 +610,25 @@ useEffect(() => {
         />
       </TopGuiDiv>
       {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setAiderInactive());
-            if (
-              state.aiderHistory[state.aiderHistory.length - 1]?.message.content
-                .length === 0
-            ) {
-              dispatch(clearLastResponse("aider"));
-            }
-            ideMessenger.post("aiderCtrlC", undefined);
-          }}
-        >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
+        <StopButtonContainer>
+          <StopButton
+            className="mt-auto mb-4 sticky bottom-4"
+            onClick={() => {
+              dispatch(setAiderInactive());
+              if (
+                state.aiderHistory[state.aiderHistory.length - 1]?.message.content
+                  .length === 0
+              ) {
+                dispatch(clearLastResponse("aider"));
+              }
+              ideMessenger.post("aiderCtrlC", undefined);
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        </StopButtonContainer>
       )}
-      <div className="text-[10px] text-muted-foreground mt-4 flex justify-end pr-2 pb-2">
+      <div className="text-[10px] text-muted-foreground mt-4 flex justify-end pr-2 pb-6">
         *View PearAI Disclaimer page{" "}
         <Link
           to="https://trypear.ai/disclaimer/"

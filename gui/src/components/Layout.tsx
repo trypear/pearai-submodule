@@ -20,7 +20,7 @@ import {
   setShowDialog,
 } from "../redux/slices/uiStateSlice";
 import { RootState } from "../redux/store";
-import { isMetaEquivalentKeyPressed } from "../util";
+import { getFontSize, isMetaEquivalentKeyPressed } from "../util";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 import PostHogPageView from "./PosthogPageView";
 import ShortcutContainer from "./ShortcutContainer";
@@ -68,8 +68,9 @@ const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
     border-radius: var(--overlay-border-radius, 12px);
     box-shadow: ${props.path === "/inventory/home" ? "none" : "var(--overlay-box-shadow, 0 8px 24px rgba(0, 0, 0, 0.25))"};
     position: relative;
-    overflow: hidden;
+    overflow: hidden; // Ensure content doesn't overflow
     display: flex;
+    flex-direction: column; // Add this to ensure proper content flow
     background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
   `}
 `;
@@ -210,11 +211,11 @@ const Layout = () => {
   }
 
   return (
-<div className="px-3 bg-sidebar-background h-full flex flex-col gap-1">
-{location.pathname === "/" && (
-          <InventoryPreview />
+    <div className="px-3 bg-sidebar-background flex flex-col gap-1">
+      {location.pathname === "/" && (
+        <InventoryPreview />
       )}
-        {/* <TextDialog
+      {/* <TextDialog
           showDialog={showDialog}
           onEnter={() => {
             dispatch(setShowDialog(false));
@@ -225,25 +226,29 @@ const Layout = () => {
           message={dialogMessage}
         /> */}
 
-        <PostHogPageView />
-        <Outlet />
+      <PostHogPageView />
+      <Outlet />
 
-        {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && historyLength === 0 && (
-          <ShortcutContainer />
-        )}
+      {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && historyLength === 0 && (
+        <ShortcutContainer />
+      )}
 
-        <BottomMessageDiv
-          displayOnBottom={displayBottomMessageOnBottom}
-          onMouseEnter={() => dispatch(setBottomMessageCloseTimeout(undefined))}
-          onMouseLeave={(e) => {
-            if (!e.buttons) {
-              dispatch(setBottomMessage(undefined));
-            }
-          }}
-          hidden={!bottomMessage}
-        >
-          {bottomMessage}
-        </BottomMessageDiv>
+      <BottomMessageDiv
+        displayOnBottom={displayBottomMessageOnBottom}
+        onMouseEnter={() => dispatch(setBottomMessageCloseTimeout(undefined))}
+        onMouseLeave={(e) => {
+          if (!e.buttons) {
+            dispatch(setBottomMessage(undefined));
+          }
+        }}
+        hidden={!bottomMessage}
+      >
+        {bottomMessage}
+      </BottomMessageDiv>
+      <div
+        style={{ fontSize: `${getFontSize() - 4}px` }}
+        id="tooltip-portal-div"
+      />
     </div>
   );
 };

@@ -71,7 +71,7 @@ export const TopGuiDiv = styled.div`
   }
 `;
 
-const StopButtonContainer = styled.div`
+export const StopButtonContainer = styled.div`
   position: fixed;
   bottom: calc(${FOOTER_HEIGHT});
   left: 50%;
@@ -85,7 +85,7 @@ export const StopButton = styled.div`
 	display: flex;
 	align-items: center;
 	gap: 6px;
-background-color: rgb(147, 51, 51);
+  background-color: rgb(147, 51, 51);
   z-index: 50;
   color: ${vscBadgeForeground};
   cursor: pointer;

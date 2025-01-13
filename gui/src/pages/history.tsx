@@ -24,18 +24,16 @@ import { useNavigationListener } from "../hooks/useNavigationListener";
 import { getFontSize } from "../util";
 
 const SearchBar = styled.input`
-  padding: 4px 8px;
+  padding: 8px 8px;
+  border: none;
   border-radius: ${defaultBorderRadius};
-  border: 0.5px solid #888;
   outline: none;
-  width: calc(100% - 32px);
+  width: calc(90% );
   max-width: 500px;
-  margin: 8px auto;
-  display: block;
+  margin: 8px;
   background-color: ${vscInputBackground};
   color: ${vscForeground};
   &:focus {
-    border: 0.5px solid ${vscBadgeBackground};
     outline: none;
   }
 `;
@@ -212,8 +210,8 @@ function lastPartOfPath(path: string): string {
 export type HistorySource = 'continue' | 'perplexity' | 'aider';
 
 export function History({
-  from='continue',
-  onClose=() => {}
+  from = 'continue',
+  onClose = () => { }
 }: {
   from?: HistorySource,
   onClose?: () => void
@@ -358,36 +356,36 @@ export function History({
 
   return (
     <div
-      className="overflow-y-scroll"
+      className="flex flex-col"
       style={{ fontSize: getFontSize() }}
       tabIndex={0}
       ref={tableRef}
     >
       {from === 'perplexity' ?
-        <h2>Search History</h2> 
+        <h2>Search History</h2>
         :
-      <div
-        ref={stickyHistoryHeaderRef}
-        className="sticky top-0"
-        style={{ backgroundColor: vscBackground }}
-      >
         <div
-          className="items-center flex m-0 p-0"
-          style={{
-            borderBottom: `0.5px solid ${lightGray}`,
-          }}
+          ref={stickyHistoryHeaderRef}
+          className="sticky top-0"
+          style={{ backgroundColor: vscBackground }}
         >
-          <ArrowLeftIcon
-            width="1.2em"
-            height="1.2em"
-            onClick={() => navigate("/")}
-            className="inline-block ml-4 cursor-pointer"
-          />
-          <h3 className="text-lg font-bold m-2 inline-block">History</h3>
-        </div>
-      </div>}
+          <div
+            className="items-center flex m-0 p-0"
+            style={{
+              borderBottom: `0.5px solid ${lightGray}`,
+            }}
+          >
+            <ArrowLeftIcon
+              width="1.2em"
+              height="1.2em"
+              onClick={() => navigate("/")}
+              className="inline-block ml-4 cursor-pointer"
+            />
+            <h3 className="text-lg font-bold m-2 inline-block">History</h3>
+          </div>
+        </div>}
 
-      <div>
+      <div className="flex flex-col h-full">
         <SearchBar
           placeholder="Search past sessions"
           type="text"
@@ -396,13 +394,16 @@ export function History({
 
         {filteredAndSortedSessions.length === 0 && (
           <div className="text-center m-4">
-            No past sessions found. To start a new session, either click the "+"
-            button or use the keyboard shortcut: <b>Option + Command + N</b>
+            No past sessions found.
+            <br />
+            To start a new session, either click the "+"
+            button or use the keyboard shortcut:
+            <br />
+            <b>Option + Command + N</b>
           </div>
         )}
 
-        <table className="w-full border-spacing-0 border-collapse"
-        >
+        <table className="w-full border-spacing-0 border-collapse">
           <tbody>
             {filteredAndSortedSessions.map((session, index) => {
               const prevDate =
@@ -431,10 +432,7 @@ export function History({
                         This Month
                       </SectionHeader>
                     )}
-
-                  <Tr
-                    key={index}
-                  >
+                  <Tr key={index}>
                     <TableRow
                       session={session}
                       date={date}
@@ -449,10 +447,11 @@ export function History({
             })}
           </tbody>
         </table>
-        <br />
-        <i className="text-sm ml-4">
-          All session data is saved in ~/.pearai/sessions
-        </i>
+        <div className="flex-grow" />
+      </div>
+      <div className="flex-grow"></div>
+      <div className="text-center text-sm mb-4 text-gray-500">
+        All session data is saved in ~/.pearai/sessions
       </div>
     </div>
   );
