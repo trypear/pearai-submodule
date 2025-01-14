@@ -479,7 +479,7 @@ function GUI() {
             })}
 					</TopGuiDiv>
 
-						{state.history.length > 0 && (
+						{state.history.length > 0 && !active && (
         			<FixedBottomContainer isNewSession={false}>
 								<div className="max-w-3xl mx-auto">
 
