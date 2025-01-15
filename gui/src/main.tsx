@@ -1,3 +1,4 @@
+import { Inspector } from 'react-dev-inspector'
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { Provider } from "react-redux";
@@ -11,6 +12,7 @@ import "./shortcuts-bar.css";
 (async () => {
   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <React.StrictMode>
+      {process.env.NODE_ENV === 'development' ?? <Inspector />}
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <CustomPostHogProvider>
