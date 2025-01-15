@@ -12,7 +12,7 @@ import "./shortcuts-bar.css";
 (async () => {
   ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <React.StrictMode>
-      {process.env.NODE_ENV === 'development' ?? <Inspector />}
+      {process.env.NODE_ENV === 'development' ? <Inspector /> : null}
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
           <CustomPostHogProvider>
