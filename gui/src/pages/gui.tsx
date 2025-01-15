@@ -1,7 +1,7 @@
 import {
   BackspaceIcon,
   ChatBubbleOvalLeftIcon,
-	ChevronUpIcon,
+  ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { IndexingProgressUpdate, InputModifiers } from "core";
@@ -23,7 +23,7 @@ import {
   lightGray,
   vscBackground,
   vscBadgeForeground,
-	vscForeground,
+  vscForeground,
 } from "../components";
 import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
 import StepContainer from "../components/gui/StepContainer";
@@ -115,17 +115,18 @@ const TutorialCardDiv = styled.header`
 `
 
 const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
-  // position: fixed; // chage to make the bottom chatbox fixed
-	background-color: ${vscBackground};
-	bottom:0;
-  left: 0;
-  right: 0;
+  background-color: ${vscBackground};
+  ${props =>
+    props.isNewSession
+      ? "position: fixed; top: 48px; left: 0; right: 0;" /* add some space from top */
+      : "position: fixed; bottom: 0; left: 0; right: 0;"}
   padding: 0rem 0rem 0.5rem 0rem;
 
-	& > * + * {
+  & > * + * {
     margin-top: 0.5rem;
   }
 `;
+
 
 export function fallbackRender({ error, resetErrorBoundary }) {
   return (
@@ -164,9 +165,9 @@ function GUI() {
     dispatch(setShowInteractiveContinueTutorial(showTutorialCard ?? false));
   }, [])
   const onCloseTutorialCard = useCallback(() => {
-      posthog.capture("closedTutorialCard");
-      setLocalStorage("showTutorialCard", false);
-      dispatch(setShowInteractiveContinueTutorial(false));
+    posthog.capture("closedTutorialCard");
+    setLocalStorage("showTutorialCard", false);
+    dispatch(setShowInteractiveContinueTutorial(false));
   }, []);
 
   const mainTextInputRef = useRef<HTMLInputElement>(null);
@@ -200,13 +201,13 @@ function GUI() {
   }, [active])
 
   useEffect(() => {
-      if (active && !isAtBottom) {
-        if (!topGuiDivRef.current) return;
-        const scrollAreaElement = topGuiDivRef.current;
-        scrollAreaElement.scrollTop =
-          scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
-        setIsAtBottom(true);
-      }
+    if (active && !isAtBottom) {
+      if (!topGuiDivRef.current) return;
+      const scrollAreaElement = topGuiDivRef.current;
+      scrollAreaElement.scrollTop =
+        scrollAreaElement.scrollHeight - scrollAreaElement.clientHeight;
+      setIsAtBottom(true);
+    }
   }, [active, isAtBottom]);
 
   useEffect(() => {
@@ -339,163 +340,133 @@ function GUI() {
     <>
       {!window.isPearOverlay && !!showTutorialCard &&
         <TutorialCardDiv>
-            <OnboardingTutorial onClose={onCloseTutorialCard}/>
+          <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>
       }
-
-			{state.history.length === 0 && (
-  			<div className=" max-w-3xl mx-auto pt-2 space-y-3 w-full">
-    			{/* Main Input Chat Box */}
-    			<ContinueInputBox
-      			onEnter={(editorContent, modifiers) => {
-        			sendInput(editorContent, modifiers);
-      			}}
-      			isLastUserInput={false}
-      			isMainInput={true}
-      			hidden={active}
-    			/>
-
-					<StatusBar />
-
-				  {/* Last Session Button */}
-				  {/* {getLastSessionId() && (
-          <NewSessionButton
-            onClick={async () => {
-              loadLastSession();
-            }}
-            className="flex items-center gap-1"
-          >
-            <ArrowLeftIcon width="10px" height="10px" />
-            Last Session
-          </NewSessionButton>
-      	  )} */}
-  			</div>
-			)}
-
-					<TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-            {state.history.map((item, index: number) => {
-              return (
-                <Fragment key={index}>
-                  <ErrorBoundary
-                    FallbackComponent={fallbackRender}
-                    onReset={() => {
-                      dispatch(newSession({session: undefined, source: 'continue'}));
-                    }}
-                  >
-                    {/* <div className="bg-green-700" style={{
+      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+        {state.history.map((item, index: number) => {
+          return (
+            <Fragment key={index}>
+              <ErrorBoundary
+                FallbackComponent={fallbackRender}
+                onReset={() => {
+                  dispatch(newSession({ session: undefined, source: 'continue' }));
+                }}
+              >
+                {/* <div className="bg-green-700" style={{
                       minHeight: index === state.history.length - 1 ? "50vh" : 0,
                     }}> */}
-                    {item.message.role === "user" ? (
-											<div className="max-w-3xl mx-auto">
-												<div className=" max-w-96 ml-auto px-2">
+                {item.message.role === "user" ? (
+                  <div className="max-w-3xl mx-auto">
+                    <div className=" max-w-96 ml-auto px-2">
 
-                          <ContinueInputBox
-                            onEnter={async (editorState, modifiers) => {
-                              streamResponse(
-                                editorState,
-                                modifiers,
-                                ideMessenger,
-                                index,
-                              );
-                            }}
-                            isLastUserInput={isLastUserInput(index)}
-                            isMainInput={false}
-                            editorState={item.editorState}
-                            contextItems={item.contextItems}
-                            />
-												</div>
-                      </div>
-                    ) : (
-                      // <div className="p-4 bg-orange-500 my-4">
-                        <TimelineItem
-                          item={item}
-                          iconElement={
-                            <ChatBubbleOvalLeftIcon
-                              width="16px"
-                              height="16px"
-                            />
-                          }
-                          open={
-                            typeof stepsOpen[index] === "undefined"
-                              ? true
-                              : stepsOpen[index]!
-                          }
-                          onToggle={() => {}}
-                        >
-                          <StepContainer
-                            index={index}
-                            isLast={index === sessionState.history.length - 1}
-                            isFirst={index === 0}
-                            open={
-                              typeof stepsOpen[index] === "undefined"
-                                ? true
-                                : stepsOpen[index]!
-                            }
-                            key={index}
-                            onUserInput={(input: string) => {}}
-                            item={item}
-                            onReverse={() => {}}
-                            onRetry={() => {
-                              streamResponse(
-                                state.history[index - 1].editorState,
-                                state.history[index - 1].modifiers ??
-                                  defaultInputModifiers,
-                                ideMessenger,
-                                index - 1,
-                              );
-                            }}
-                            onContinueGeneration={() => {
-                              window.postMessage(
-                                {
-                                  messageType: "userInput",
-                                  data: {
-                                    input: "Keep going.",
-                                  },
-                                },
-                                "*",
-                              );
-                            }}
-                            onDelete={() => {
-                              dispatch(
-                                deleteMessage({
-                                  index: index,
-                                  source: "continue",
-                                }),
-                              );
-                            }}
-                            modelTitle={
-                              item.promptLogs?.[0]?.completionOptions?.model ??
-                              ""
-                            }
-                          />
-                        </TimelineItem>
+                      <ContinueInputBox
+                        onEnter={async (editorState, modifiers) => {
+                          streamResponse(
+                            editorState,
+                            modifiers,
+                            ideMessenger,
+                            index,
+                          );
+                        }}
+                        isLastUserInput={isLastUserInput(index)}
+                        isMainInput={false}
+                        editorState={item.editorState}
+                        contextItems={item.contextItems}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  // <div className="p-4 bg-orange-500 my-4">
+                  <TimelineItem
+                    item={item}
+                    iconElement={
+                      <ChatBubbleOvalLeftIcon
+                        width="16px"
+                        height="16px"
+                      />
+                    }
+                    open={
+                      typeof stepsOpen[index] === "undefined"
+                        ? true
+                        : stepsOpen[index]!
+                    }
+                    onToggle={() => { }}
+                  >
+                    <StepContainer
+                      index={index}
+                      isLast={index === sessionState.history.length - 1}
+                      isFirst={index === 0}
+                      open={
+                        typeof stepsOpen[index] === "undefined"
+                          ? true
+                          : stepsOpen[index]!
+                      }
+                      key={index}
+                      onUserInput={(input: string) => { }}
+                      item={item}
+                      onReverse={() => { }}
+                      onRetry={() => {
+                        streamResponse(
+                          state.history[index - 1].editorState,
+                          state.history[index - 1].modifiers ??
+                          defaultInputModifiers,
+                          ideMessenger,
+                          index - 1,
+                        );
+                      }}
+                      onContinueGeneration={() => {
+                        window.postMessage(
+                          {
+                            messageType: "userInput",
+                            data: {
+                              input: "Keep going.",
+                            },
+                          },
+                          "*",
+                        );
+                      }}
+                      onDelete={() => {
+                        dispatch(
+                          deleteMessage({
+                            index: index,
+                            source: "continue",
+                          }),
+                        );
+                      }}
+                      modelTitle={
+                        item.promptLogs?.[0]?.completionOptions?.model ??
+                        ""
+                      }
+                    />
+                  </TimelineItem>
 
-                      // </div>
-                    )}
-                    {/* </div> */}
-                  </ErrorBoundary>
-                </Fragment>
-              );
-            })}
-					</TopGuiDiv>
+                  // </div>
+                )}
+                {/* </div> */}
+              </ErrorBoundary>
+            </Fragment>
+          );
+        })}
+      </TopGuiDiv>
 
-						{state.history.length > 0 && !active && (
-        			<FixedBottomContainer isNewSession={false}>
-								<div className="max-w-3xl mx-auto">
+      {!active && (
+        <FixedBottomContainer isNewSession={isNewSession} className={`${isNewSession ? "mt-0" : "mt-auto"}`}>
+          <div className="max-w-3xl mx-auto">
 
-          			<ContinueInputBox
-            			onEnter={(editorContent, modifiers) => {
-										sendInput(editorContent, modifiers);
-            			}}
-            			isLastUserInput={false}
-            			isMainInput={true}
-            			hidden={active}
-									/>
-								<StatusBar />
-									</div>
-        			</FixedBottomContainer>
-      			)}
-        {/* </div> */}
+            <ContinueInputBox
+              onEnter={(editorContent, modifiers) => {
+                sendInput(editorContent, modifiers);
+              }}
+              isLastUserInput={false}
+              isMainInput={true}
+              hidden={active}
+            />
+            <StatusBar />
+          </div>
+        </FixedBottomContainer>
+      )}
+      {/* </div> */}
 
       {active && (
         <StopButtonContainer>
@@ -510,11 +481,11 @@ function GUI() {
               }
             }}
           >
-						<div className="flex items-center">
-            <ChevronUpIcon className="w-3 h-3 stroke-2" />
-						<BackspaceIcon className="w-4 h-4 stroke-2" />
-						</div>
-						<span className="text-xs font-medium">Cancel</span>
+            <div className="flex items-center">
+              <ChevronUpIcon className="w-3 h-3 stroke-2" />
+              <BackspaceIcon className="w-4 h-4 stroke-2" />
+            </div>
+            <span className="text-xs font-medium">Cancel</span>
           </StopButton>
         </StopButtonContainer>
       )}

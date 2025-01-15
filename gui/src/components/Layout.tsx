@@ -211,7 +211,7 @@ const Layout = () => {
   }
 
   return (
-    <div className="px-3 bg-sidebar-background flex flex-col gap-1">
+    <div className="px-3 bg-sidebar-background flex flex-col gap-1 h-screen">
       {location.pathname === "/" && (
         <InventoryPreview />
       )}
