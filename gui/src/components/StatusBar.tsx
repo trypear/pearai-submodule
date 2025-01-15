@@ -38,6 +38,7 @@ const StatusBar = () => {
         <HeaderButtonWithText
           tooltipPlacement="top-end"
           text="Help"
+          className="z-10"
           onClick={() => {
             navigate(location.pathname === "/help" ? "/" : "/help");
           }}

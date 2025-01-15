@@ -235,6 +235,7 @@ function ProfileSwitcher(props: {}) {
       {/* Settings button (either opens config.json or /settings page in control plane) */}
       <HeaderButtonWithText
         tooltipPlacement="top-end"
+        className="z-10"
         onClick={() => {
           if (selectedProfileId === "local") {
             ideMessenger.post("openConfigJson", undefined);
