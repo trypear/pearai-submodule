@@ -363,8 +363,8 @@
     "keybindings": [
       {
         "command": "pearai.toggleInventoryHome",
-        "mac": "cmd+1",
-        "key": "ctrl+1"
+        "mac": "cmd+e",
+        "key": "ctrl+e"
       },
       {
         "command": "pearai.toggleOverlay",
@@ -373,17 +373,17 @@
       },
       {
         "command": "pearai.toggleCreator",
+        "mac": "cmd+1",
+        "key": "ctrl+1"
+      },
+      {
+        "command": "pearai.toggleSearch",
         "mac": "cmd+2",
         "key": "ctrl+2"
       },
       {
-        "command": "pearai.toggleSearch",
-        "mac": "cmd+3",
-        "key": "ctrl+3"
-      },
-      {
         "command": "pearai.toggleMem0",
-        "mac": "cmd+4",
+        "mac": "cmd+3",
         "key": "ctrl+4"
       },
       {

@@ -1,3 +1,5 @@
+// DEVELOPER WRAPPED 2024
+
 import { useState, useContext, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
