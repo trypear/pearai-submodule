@@ -436,7 +436,6 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
           ) : (
             <ItemDiv className="item">No results</ItemDiv>
           )}
-          {/* </CustomScrollbarDiv> */}
         </>
       )}
     </ItemsDiv>
