@@ -116,23 +116,10 @@ const TutorialCardDiv = styled.header`
 
 const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
   background-color: ${vscBackground};
-  margin-left: 1rem;
-  margin-right: 1rem;
   ${props =>
     props.isNewSession
-      ? `
-        position: fixed;
-        top: 48px;
-        left: 0;
-        right: 0;
-      `
-      : `
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-      `}
-  padding: 0rem 0rem 0.5rem 0rem;
+    ? "position: fixed; top: 48px; left: 0; right: 0;" /* add some space from top */
+    : "position: fixed; bottom: 0; left: 0; right: 0;"}
 
   & > * + * {
     margin-top: 0.5rem;
