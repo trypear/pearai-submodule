@@ -116,23 +116,18 @@ const TutorialCardDiv = styled.header`
 
 const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
   background-color: ${vscBackground};
-  margin-left: 1rem;
-  margin-right: 1rem;
   ${props =>
     props.isNewSession
       ? `
-        position: fixed;
         top: 48px;
         left: 0;
         right: 0;
       `
       : `
-        position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
       `}
-  padding: 0rem 0rem 0.5rem 0rem;
 
   & > * + * {
     margin-top: 0.5rem;
@@ -366,8 +361,8 @@ function GUI() {
                 }}
               >
                 {/* <div className="bg-green-700" style={{
-                      minHeight: index === state.history.length - 1 ? "50vh" : 0,
-                    }}> */}
+                    minHeight: index === state.history.length - 1 ? "50vh" : 0,
+                  }}> */}
                 {item.message.role === "user" ? (
                   <div className="max-w-3xl mx-auto">
                     <div className=" max-w-96 ml-auto px-2">
