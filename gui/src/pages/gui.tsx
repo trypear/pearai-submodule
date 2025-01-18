@@ -119,6 +119,7 @@ const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
   ${props =>
     props.isNewSession
       ? `
+        position: fixed;
         top: 48px;
         left: 0;
         right: 0;
