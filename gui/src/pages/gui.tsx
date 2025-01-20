@@ -56,16 +56,16 @@ import OnboardingTutorial from "./onboarding/OnboardingTutorial";
 import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 import { FOOTER_HEIGHT } from "@/components/Layout";
 import StatusBar from "@/components/StatusBar";
+import InventoryPreview from "@/components/InventoryPreview";
 
-export const TopGuiDiv = styled.div`
+export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   overflow-y: scroll;
-  postion: relative;
+  position: relative;
   margin-top: -40px;
   padding-top: 48px;
-	// padding-bottom: 200px;
+  padding-bottom: ${props => props.isNewSession ? '0' : FOOTER_HEIGHT};
   height: 100%;
   scrollbar-width: none;
-	scroll-behavior: smooth;
   &::-webkit-scrollbar {
     display: none;
   }
@@ -115,28 +115,14 @@ const TutorialCardDiv = styled.header`
 `
 
 const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
+  bottom: ${props => props.isNewSession ? 'auto' : 0};
+  left: 0;
+  right: 0;
   background-color: ${vscBackground};
-  padding: 0 0.75rem; // Add consistent padding
-  ${props =>
-    props.isNewSession
-      ? `
-        position: fixed;
-        top: 48px;
-        left: 0;
-        right: 0;
-        padding-top: 1rem;
-        padding-bottom: 1rem;
-      `
-      : `
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding-bottom: 0.5rem;
-      `}
-
-  & > * + * {
-    margin-top: 0.5rem;
-  }
+  padding: 8px;
+  padding-top: 0;
+  z-index: 100;
 `;
 
 
@@ -355,7 +341,30 @@ function GUI() {
           <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>
       }
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+      <div className="pb-1 flex px-2">
+        <div
+          className="flex-col gap-2 "
+        >
+          <InventoryPreview />
+        </div>
+      </div>
+
+      {!active && (
+        <FixedBottomContainer isNewSession={isNewSession}>
+          <ContinueInputBox
+            onEnter={(editorContent, modifiers) => {
+              sendInput(editorContent, modifiers);
+            }}
+            isLastUserInput={false}
+            isMainInput={true}
+            hidden={active}
+          />
+          <StatusBar />
+        </FixedBottomContainer>
+      )}
+
+
+      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
           return (
             <Fragment key={index}>
@@ -365,119 +374,104 @@ function GUI() {
                   dispatch(newSession({ session: undefined, source: 'continue' }));
                 }}
               >
-                {/* <div className="bg-green-700" style={{
-                    minHeight: index === state.history.length - 1 ? "50vh" : 0,
-                  }}> */}
-                {item.message.role === "user" ? (
-                  <div className="max-w-3xl mx-auto">
-                    <div className=" max-w-96 ml-auto px-2">
+                <div style={{
+                  minHeight: index === state.history.length - 1 ? "50vh" : 0,
+                }}>
+                  {item.message.role === "user" ? (
+                    <div className="max-w-3xl mx-auto">
+                      <div className=" max-w-96 ml-auto px-2">
 
-                      <ContinueInputBox
-                        onEnter={async (editorState, modifiers) => {
-                          streamResponse(
-                            editorState,
-                            modifiers,
-                            ideMessenger,
-                            index,
-                          );
-                        }}
-                        isLastUserInput={isLastUserInput(index)}
-                        isMainInput={false}
-                        editorState={item.editorState}
-                        contextItems={item.contextItems}
-                      />
+                        <ContinueInputBox
+                          onEnter={async (editorState, modifiers) => {
+                            streamResponse(
+                              editorState,
+                              modifiers,
+                              ideMessenger,
+                              index,
+                            );
+                          }}
+                          isLastUserInput={isLastUserInput(index)}
+                          isMainInput={false}
+                          editorState={item.editorState}
+                          contextItems={item.contextItems}
+                        />
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  // <div className="p-4 bg-orange-500 my-4">
-                  <TimelineItem
-                    item={item}
-                    iconElement={
-                      <ChatBubbleOvalLeftIcon
-                        width="16px"
-                        height="16px"
-                      />
-                    }
-                    open={
-                      typeof stepsOpen[index] === "undefined"
-                        ? true
-                        : stepsOpen[index]!
-                    }
-                    onToggle={() => { }}
-                  >
-                    <StepContainer
-                      index={index}
-                      isLast={index === sessionState.history.length - 1}
-                      isFirst={index === 0}
+                  ) : (
+                    // <div className="p-4 bg-orange-500 my-4">
+                    <TimelineItem
+                      item={item}
+                      iconElement={
+                        <ChatBubbleOvalLeftIcon
+                          width="16px"
+                          height="16px"
+                        />
+                      }
                       open={
                         typeof stepsOpen[index] === "undefined"
                           ? true
                           : stepsOpen[index]!
                       }
-                      key={index}
-                      onUserInput={(input: string) => { }}
-                      item={item}
-                      onReverse={() => { }}
-                      onRetry={() => {
-                        streamResponse(
-                          state.history[index - 1].editorState,
-                          state.history[index - 1].modifiers ??
-                          defaultInputModifiers,
-                          ideMessenger,
-                          index - 1,
-                        );
-                      }}
-                      onContinueGeneration={() => {
-                        window.postMessage(
-                          {
-                            messageType: "userInput",
-                            data: {
-                              input: "Keep going.",
+                      onToggle={() => { }}
+                    >
+                      <StepContainer
+                        index={index}
+                        isLast={index === sessionState.history.length - 1}
+                        isFirst={index === 0}
+                        open={
+                          typeof stepsOpen[index] === "undefined"
+                            ? true
+                            : stepsOpen[index]!
+                        }
+                        key={index}
+                        onUserInput={(input: string) => { }}
+                        item={item}
+                        onReverse={() => { }}
+                        onRetry={() => {
+                          streamResponse(
+                            state.history[index - 1].editorState,
+                            state.history[index - 1].modifiers ??
+                            defaultInputModifiers,
+                            ideMessenger,
+                            index - 1,
+                          );
+                        }}
+                        onContinueGeneration={() => {
+                          window.postMessage(
+                            {
+                              messageType: "userInput",
+                              data: {
+                                input: "Keep going.",
+                              },
                             },
-                          },
-                          "*",
-                        );
-                      }}
-                      onDelete={() => {
-                        dispatch(
-                          deleteMessage({
-                            index: index,
-                            source: "continue",
-                          }),
-                        );
-                      }}
-                      modelTitle={
-                        item.promptLogs?.[0]?.completionOptions?.model ??
-                        ""
-                      }
-                    />
-                  </TimelineItem>
+                            "*",
+                          );
+                        }}
+                        onDelete={() => {
+                          dispatch(
+                            deleteMessage({
+                              index: index,
+                              source: "continue",
+                            }),
+                          );
+                        }}
+                        modelTitle={
+                          item.promptLogs?.[0]?.completionOptions?.model ??
+                          ""
+                        }
+                      />
+                    </TimelineItem>
 
-                  // </div>
-                )}
-                {/* </div> */}
+                    // </div>
+                  )}
+                </div>
               </ErrorBoundary>
             </Fragment>
           );
         })}
       </TopGuiDiv>
 
-      {!active && (
-        <FixedBottomContainer isNewSession={isNewSession} className={`${isNewSession ? "mt-0" : "mt-auto"}`}>
-          <div className="max-w-3xl mx-auto">
 
-            <ContinueInputBox
-              onEnter={(editorContent, modifiers) => {
-                sendInput(editorContent, modifiers);
-              }}
-              isLastUserInput={false}
-              isMainInput={true}
-              hidden={active}
-            />
-            <StatusBar />
-          </div>
-        </FixedBottomContainer>
-      )}
       {/* </div> */}
 
       {active && (
@@ -494,7 +488,7 @@ function GUI() {
             }}
           >
             <div className="flex items-center">
-              <ChevronUpIcon className="w-3 h-3 stroke-2" />
+              <ChevronUpIcon className="w-3 h-4 stroke-2 pr-1" />
               <BackspaceIcon className="w-4 h-4 stroke-2" />
             </div>
             <span className="text-xs font-medium">Cancel</span>

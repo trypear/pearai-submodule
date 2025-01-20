@@ -212,11 +212,6 @@ const Layout = () => {
 
   return (
     <div className="bg-sidebar-background flex flex-col gap-1 h-screen">
-      {location.pathname === "/" && (
-        <div className="px-3">
-          <InventoryPreview />
-        </div>
-      )}
       {/* <TextDialog
           showDialog={showDialog}
           onEnter={() => {
