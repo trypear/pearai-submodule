@@ -211,9 +211,11 @@ const Layout = () => {
   }
 
   return (
-    <div className="px-3 bg-sidebar-background flex flex-col gap-1 h-screen">
+    <div className="bg-sidebar-background flex flex-col gap-1 h-screen">
       {location.pathname === "/" && (
-        <InventoryPreview />
+        <div className="px-3">
+          <InventoryPreview />
+        </div>
       )}
       {/* <TextDialog
           showDialog={showDialog}
@@ -230,7 +232,9 @@ const Layout = () => {
       <Outlet />
 
       {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && historyLength === 0 && (
-        <ShortcutContainer />
+        <div className="px-3">
+          <ShortcutContainer />
+        </div>
       )}
 
       <BottomMessageDiv

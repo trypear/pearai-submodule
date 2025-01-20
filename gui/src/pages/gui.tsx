@@ -116,6 +116,7 @@ const TutorialCardDiv = styled.header`
 
 const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
   background-color: ${vscBackground};
+  padding: 0 0.75rem; // Add consistent padding
   ${props =>
     props.isNewSession
       ? `
@@ -123,11 +124,14 @@ const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
         top: 48px;
         left: 0;
         right: 0;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
       `
       : `
         bottom: 0;
         left: 0;
         right: 0;
+        padding-bottom: 0.5rem;
       `}
 
   & > * + * {
