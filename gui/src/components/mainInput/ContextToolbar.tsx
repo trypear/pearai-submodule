@@ -80,8 +80,9 @@ function ContextToolbar(props: ContextToolbarProps) {
 
 			{/* Context Button */}
             <Button
-                className="gap-1 text-xs bg-input text-input-foreground h-6 px-2"
+                className="gap-1 text-xs bg-input text-input-foreground h-6 px-2 hover:bg-sidebar-background"
                 onClick={(e) => {
+                    e.stopPropagation();
                     props.onAddContextItem?.();
                 }}
             >
@@ -95,7 +96,7 @@ function ContextToolbar(props: ContextToolbarProps) {
 
 			{/* Add Current File Button */}
             <Button
-                className={`gap-1 h-6 text-input-foreground text-xs px-2 bg-transparent border-solid border-input
+                className={`gap-1 h-6 text-input-foreground text-xs px-2 bg-transparent hover:bg-sidebar-background border-solid border-input
                     ${!activeFilePath ? 'opacity-50 cursor-not-allowed' : ''}
                     ${isFileAlreadyAdded() ? 'opacity-50 cursor-not-allowed' : ''}`}
                 onClick={async () => {
