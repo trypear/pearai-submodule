@@ -23,6 +23,13 @@ export default function InstallTools({
 
     const tools: Tool[] = [
         {
+            id: "cline",
+            name: "Cline",
+            description: "Autonomous coding agent right in your IDE, capable of creating/editing files, executing commands, using the browser, and more with your permission every step of the way.",
+            icon: "inventory-cline.svg",
+            preInstalled: false
+        },
+        {
             id: "aider",
             name: "PearAI Creator",
             description: "PearAI Creator is a no-code tool powered by aider* that let's you build complete features with just a prompt.",
