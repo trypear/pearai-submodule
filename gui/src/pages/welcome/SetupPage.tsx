@@ -34,7 +34,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       const nextFeature = currentFeature + 1;
       setCurrentFeature(nextFeature);
       if (!visitedSteps.includes(nextFeature)) {
-        dispatch(setOnboardingState({...onboardingState, visitedSteps: [...visitedSteps, nextFeature]}));
+        dispatch(setOnboardingState({ ...onboardingState, visitedSteps: [...visitedSteps, nextFeature] }));
       }
       setTimestamp(Date.now());
     } else {
@@ -73,13 +73,13 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     },
   ];
 
-  const setupSteps = allSetupSteps.filter(step => 
+  const setupSteps = allSetupSteps.filter(step =>
     !step.platformSpecific || step.platformSpecific === getPlatform()
   );
 
   return (
     <div className="flex w-full overflow-hidden text-foreground h-full">
-      <div className="w-[35%] flex flex-col">
+      <div className="hidden md:flex w-[35%] flex-col">
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6 pt-8">
             <div>
@@ -94,20 +94,18 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
               {setupSteps.map((feature, index) => (
                 <Card
                   key={index}
-                  className={`border-none p-3 transition-all duration-200 ${
-                    currentFeature === index
+                  className={`border-none p-3 transition-all duration-200 ${currentFeature === index
                       ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]"
                       : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
-                  } ${!visitedSteps.includes(index) ? 'cursor-not-allowed' : 'hover:scale-[1.02] cursor-pointer'}`}
+                    } ${!visitedSteps.includes(index) ? 'cursor-not-allowed' : 'hover:scale-[1.02] cursor-pointer'}`}
                   onClick={() => handleFeatureChange(index)}
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`p-1.5 rounded-lg ${
-                        currentFeature === index
+                      className={`p-1.5 rounded-lg ${currentFeature === index
                           ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]"
                           : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
-                      }`}
+                        }`}
                     >
                       {feature.icon}
                     </div>
@@ -130,20 +128,19 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
 
       </div>
 
-        <div className="w-[65%] flex flex-col h-full justify-center relative bg-background">
-            {setupSteps.map((setupStep, index) => (
-                <div
-                key={index}
-                className={`transition-opacity duration-300 ease-in-out ${
-                    currentFeature === index
-                    ? "opacity-100 z-10"
-                    : "opacity-0 z-0"
-                }`}
-                >
-                {index === currentFeature && setupStep.component}
-                </div>
-            ))}
-        </div>
+      <div className="w-full md:w-[65%] flex flex-col h-full justify-center relative bg-background">
+        {setupSteps.map((setupStep, index) => (
+          <div
+            key={index}
+            className={`transition-opacity duration-300 ease-in-out ${currentFeature === index
+                ? "opacity-100 z-10"
+                : "opacity-0 z-0"
+              }`}
+          >
+            {index === currentFeature && setupStep.component}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
