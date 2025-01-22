@@ -1,17 +1,34 @@
-import InventoryPage from "../inventory/pages/InventoryPage";
 import { CogIcon } from "@heroicons/react/24/outline";
-
-import HomePage from "@/inventory/pages/HomePage";
+import InventoryPage from "../inventory/pages/InventoryPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
+import { useWebviewListener } from "@/hooks/useWebviewListener";
 import AiderGUI from "@/integrations/aider/aidergui";
 import Mem0GUI from "@/integrations/mem0/mem0gui";
-import { useLocation, useNavigate } from "react-router-dom";
-import { useEffect, useState, ReactNode } from "react";
-import { useWebviewListener } from "@/hooks/useWebviewListener";
+import PearAIWrappedGUI from "@/integrations/pearaiWrapped/pearaiWrappedGui";
+import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
+import HomePage from "@/inventory/pages/HomePage";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
+import { DEVELOPER_WRAPPED_FEATURE_FLAG } from "@/util/featureflags";
+import { ReactNode, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
-const tabs = [
+interface Tab {
+  id: string;
+  name: string;
+  component: React.ReactNode;
+  shortcut: ReactNode;
+  icon: string;
+  featureflag?: boolean;
+}
+
+const tabs: Tab[] = [
+  {
+    id: "inventory",
+    name: "Inventory Settings",
+    component: <InventoryPage />,
+    shortcut: <><kbd className="ml-[1.5px]">SHIFT</kbd><kbd className="ml-[1.5px]">1</kbd></>,
+    icon: "inventory.svg",
+  },
   {
     id: "home",
     name: "Inventory",
@@ -34,18 +51,19 @@ const tabs = [
     icon: "search-default.svg",
   },
   {
-    id: "inventory",
-    name: "Inventory Settings",
-    component: <InventoryPage />,
-    shortcut: <><kbd className="ml-[1.5px]">SHIFT</kbd><kbd className="ml-[1.5px]">1</kbd></>,
-    icon: "inventory.svg",
-  },
-  {
     id: "mem0Mode",
     name: "Memory",
     component: <Mem0GUI />,
     shortcut: <kbd className="ml-[1.5px]">4</kbd>,
     icon: "memory-default.svg",
+  },
+  {
+    id: "wrappedMode",
+    name: "Wrapped 2024",
+    featureflag: DEVELOPER_WRAPPED_FEATURE_FLAG,
+    component: <PearAIWrappedGUI />,
+    shortcut: <kbd className="ml-[1.5px]">5</kbd>,
+    icon: "wrapped.svg",
   }
 ];
 
@@ -74,6 +92,7 @@ export default function Inventory() {
   useWebviewListener("navigateToCreator", () => handleTabChange("aiderMode"), []);
   useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
   useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
+  useWebviewListener("navigateToWrapped", () => handleTabChange("wrappedMode"), []);
   useWebviewListener("toggleOverlay", () => handleTabChange("inventory"), []);
   useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
 
@@ -85,20 +104,17 @@ export default function Inventory() {
   const TabButton = ({ id, name, shortcut, icon }: TabButtonProps) => (
     <TabsTrigger
       value={id}
-      className={`text-sm font-medium flex flex-col gap-2 transition-all duration-300 w-[72px] min-w-[72px] ${
-        currentTab === id ? "" : "hover:opacity-80 hover:text-muted-foreground"
-      }`}
+      className={`text-sm font-medium flex flex-col gap-2 transition-all duration-300 w-[72px] min-w-[72px] ${currentTab === id ? "" : "hover:opacity-80 hover:text-muted-foreground"
+        }`}
     >
       {id === "inventory" ? (
-        <div className={`w-[40px] h-[40px] rounded-[14px] bg-background flex items-center justify-center ${
-          currentTab === id ? "shadow-[0_0_0_4px_rgba(255,255,255,0.2)]" : ""
-        }`}>
+        <div className={`w-[40px] h-[40px] rounded-[14px] bg-background flex items-center justify-center ${currentTab === id ? "shadow-[0_0_0_4px_rgba(255,255,255,0.2)]" : ""
+          }`}>
           <CogIcon className="h-[44px] w-[44px] text-foreground" />
         </div>
       ) : (
-        <div className={`w-[50px] h-[50px] rounded-[14px] ${
-          currentTab === id ? "shadow-[0_0_0_6px_rgba(255,255,255,0.2)]" : ""
-        }`}>
+        <div className={`w-[50px] h-[50px] rounded-[14px] ${currentTab === id ? "shadow-[0_0_0_6px_rgba(255,255,255,0.2)]" : ""
+          }`}>
           <img src={getLogoPath(icon)} alt={`${name} icon`} />
         </div>
       )}
@@ -121,19 +137,19 @@ export default function Inventory() {
           <div className="z-10 h-full">
             <TabsList className={` flex flex-col bg-background justify-between h-full ${currentTab === 'home' ? 'hidden' : ''}`}>
               <div className="mt-2 p-3 flex flex-col gap-4">
-                <TabButton {...tabs[1]} />
-                <TabButton {...tabs[2]} />
-                <TabButton {...tabs[4]} />
+                {tabs.slice(2).filter(tab => tab.featureflag !== false).map((tab) => (
+                  <TabButton {...tab} />
+                ))}
               </div>
 
               <div className="p-2 pb-4 flex">
-                <TabButton {...tabs[3]} />
+                <TabButton {...tabs[0]} />
               </div>
             </TabsList>
           </div>
 
           <div className="flex-1 overflow-hidden">
-            {tabs.map(({ id, component }) => (
+            {tabs.filter(tab => tab.featureflag !== false).map(({ id, component }) => (
               <TabsContent
                 key={id}
                 value={id}

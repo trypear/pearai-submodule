@@ -3,9 +3,19 @@ import { useContext, useEffect, useState } from "react";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { getMetaKeyLabel } from "@/util";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { DEVELOPER_WRAPPED_FEATURE_FLAG } from "@/util/featureflags";
 
 interface KbdProps {
   children: React.ReactNode;
+}
+
+interface MenuItem {
+  icon: string;
+  label: string;
+  description: React.ReactNode;
+  shortcut?: React.ReactNode;
+  path: string;
+  featureflag?: boolean;
 }
 
 export function Kbd({ children }: KbdProps) {
@@ -25,7 +35,7 @@ export default function HomePage() {
     }
   }
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       icon: "inventory.svg",
       label: "Inventory Settings",
@@ -53,6 +63,14 @@ export default function HomePage() {
       description: <>AI Personalization</>,
       shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>4</Kbd></span>,
       path: "/inventory/mem0Mode",
+    },
+    {
+      icon: "wrapped.svg",
+      label: "Developer Wrapped",
+      description: <>2024</>,
+      // shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>5</Kbd></span>,
+      path: "/inventory/wrappedMode",
+      featureflag: DEVELOPER_WRAPPED_FEATURE_FLAG,
     }
   ];
 
@@ -73,7 +91,7 @@ export default function HomePage() {
     >
       <div className="flex-1 flex items-center justify-center" onClick={(e) => closeOverlay(e)}>
         <div className="grid grid-cols-4">
-          {menuItems.map((item) => (
+          {menuItems.filter(item => item.featureflag !== false).map((item) => (
             <div
               key={item.label}
               className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-0
