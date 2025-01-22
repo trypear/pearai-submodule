@@ -16,7 +16,7 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   Button,
@@ -53,10 +53,12 @@ import {
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
-import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { CircleAlert } from "lucide-react";
 import { FOOTER_HEIGHT } from "@/components/Layout";
 import StatusBar from "@/components/StatusBar";
 import InventoryPreview from "@/components/InventoryPreview";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import WarningCard from "@/components/ui/warningcard";
 
 export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   overflow-y: scroll;
@@ -366,8 +368,24 @@ function GUI() {
 
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
+          // Insert warning card after the 30th message
+          const showWarningHere = index === 29;
+
           return (
             <Fragment key={index}>
+              {showWarningHere && (
+                <WarningCard >
+                  <span>
+                    Your chat is getting quite lengthy (more than 30 messages).
+                    Lengthy sessions can use credits/tokens faster.
+                    <br />
+                    Consider starting a new chat session to optimize performance and maintain better context.
+                    <br />
+                    <br />
+                    <Link to="command:pearai.newSession">Start new chat</Link>
+                  </span>
+                </WarningCard>
+              )}
               <ErrorBoundary
                 FallbackComponent={fallbackRender}
                 onReset={() => {
