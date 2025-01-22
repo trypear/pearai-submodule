@@ -292,7 +292,7 @@ function PerplexityGUI() {
               </>
             )}
           </Button>
-          <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+          <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={state.history.length === 0}>
 
             <div
               className={cn(

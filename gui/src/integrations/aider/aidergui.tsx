@@ -384,7 +384,7 @@ function AiderGUI() {
 
   return (
     <>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} className="h-full overflow-auto">
+      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} className="h-full overflow-auto" isNewSession={state.history.length === 0}>
         {inventoryDetails}
         <div
           className={cn(
