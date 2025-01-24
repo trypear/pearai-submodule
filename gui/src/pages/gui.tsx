@@ -16,13 +16,15 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import {
   Button,
   lightGray,
   vscBackground,
+  vscBadgeBackground,
   vscBadgeForeground,
+  vscButtonForeground,
   vscForeground,
 } from "../components";
 import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
@@ -53,10 +55,12 @@ import {
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
-import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { CircleAlert } from "lucide-react";
 import { FOOTER_HEIGHT } from "@/components/Layout";
 import StatusBar from "@/components/StatusBar";
 import InventoryPreview from "@/components/InventoryPreview";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import WarningCard from "@/components/ui/warningcard";
 import ShortcutContainer from "@/components/ShortcutContainer";
 
 export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
@@ -73,7 +77,7 @@ export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
 
 export const StopButtonContainer = styled.div`
   position: fixed;
-  bottom: calc(${FOOTER_HEIGHT});
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
@@ -339,8 +343,12 @@ function GUI() {
 
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
+          // Insert warning card after the 30th message
+          const showWarningHere = index === 3;
+
           return (
             <Fragment key={index}>
+
               <ErrorBoundary
                 FallbackComponent={fallbackRender}
                 onReset={() => {
@@ -433,7 +441,21 @@ function GUI() {
                           ""
                         }
                       />
+                      {showWarningHere && (
+                        <WarningCard >
+                          <span className="flex items-center gap-2">
+                            Your chat is getting lengthy, which may run slower and use tokens faster.
+                            Consider starting a new chat to optimize performance and maintain better context.
+                            <Link to="command:pearai.newSession">
+                              <Button className="min-w-20" style={{ backgroundColor: `${vscBadgeBackground}` }}>
+                                New chat
+                              </Button>
+                            </Link>
+                          </span>
+                        </WarningCard>
+                      )}
                     </TimelineItem>
+
 
                     // </div>
                   )}
