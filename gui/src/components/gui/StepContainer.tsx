@@ -28,6 +28,7 @@ import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
 import { isAiderMode, isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
+import { getModelImage } from "@/util/aibrandimages";
 
 interface StepContainerProps {
   item: ChatHistoryItem;
@@ -199,7 +200,15 @@ function StepContainer({
           >
             {modelTitle && (
               <div className="flex items-center font-[500]">
-                <CubeIcon className="w-[14px] h-[14px] mr-1 stroke-2" />
+                {getModelImage(modelTitle) !== 'not found' ? (
+                  <img
+                    src={`${window.vscMediaUrl}/logos/${getModelImage(modelTitle)}`}
+                    className="w-3.5 h-3.5 mr-2 object-contain rounded-sm"
+                    alt={modelTitle}  
+                  />
+                ) : (
+                  <CubeIcon className="w-[14px] h-[14px] mr-1 stroke-2" />
+                )}
                 {modelTitle}
               </div>
             )}
