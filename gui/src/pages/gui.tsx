@@ -445,7 +445,7 @@ function GUI() {
       </TopGuiDiv>
 
       {(
-        <div className="p-2">
+        <div className="flex flex-col gap-0.5 px-2">
           <ContinueInputBox
             onEnter={(editorContent, modifiers) => {
               sendInput(editorContent, modifiers);

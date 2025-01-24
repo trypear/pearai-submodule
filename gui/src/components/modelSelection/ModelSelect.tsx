@@ -137,12 +137,42 @@ function ModelOption({
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center justify-between w-full">
-
         <div className="flex items-center">
-          <CubeIcon className="w-3.5 h-3.5 stroke-2 mr-2 flex-shrink-0" />
+          {option.provider === 'pearai_server' ? (
+            <div className="flex items-center gap-1 mr-2">
+              <img
+                src={`${window.vscMediaUrl}/logos/pearai-color.png`}
+                className="w-3.5 h-3.5 object-contain"
+              />
+              {option.title !== 'PearAI Model' && <img
+                src={`${window.vscMediaUrl}/logos/${(() => {
+                  const modelTitle = option.title.toLowerCase();
+                  switch (true) {
+                    case modelTitle === 'pearai model':
+                      return 'pearai-color.png';
+                    case modelTitle.includes('claude'):
+                      return 'anthropic.png';
+                    case modelTitle.includes('gpt'):
+                      return 'openai.png';
+                    case modelTitle.includes('deepseek'):
+                      return 'deepseek-svg.svg';
+                    case modelTitle.includes('gemini'):
+                      return 'gemini-icon.png';
+                    default:
+                      return 'default.png';
+                  }
+                })()}`}
+                className="w-3.5 h-3.5 object-contain rounded-sm"
+              />}
+            </div>
+          ) : (
+            option.provider ? <img
+              src={`${window.vscMediaUrl}/logos/${providers[option.provider]?.icon}`}
+              className="w-3.5 h-3.5 mr-2 flex-shrink-0 object-contain rounded-sm"
+            /> : <CubeIcon className="w-3.5 h-3.5 stroke-2 mr-2 flex-shrink-0" />
+          )}
           <span>{option.title}</span>
         </div>
-
         <StyledTrashIcon
           style={{ visibility: hovered && showDelete ? "visible" : "hidden" }}
           className="ml-auto"
@@ -277,14 +307,41 @@ function ModelSelect() {
               ref={buttonRef}
               className="h-[18px] overflow-hidden"
             >
-              <img
-                src={`${window.vscMediaUrl}/logos/${providers[defaultModel?.provider].icon}`}
-                width="18px"
-                height="18px"
-                style={{
-                  objectFit: "contain",
-                }}
-              />
+              {defaultModel?.provider === 'pearai_server' ? (
+                <div className="flex items-center">
+                  <img
+                    src={`${window.vscMediaUrl}/logos/pearai-color.png`}
+                    className="w-[15px] h-[15px] object-contain"
+                  />
+                  {defaultModel.title !== 'PearAI Model' && <img
+                    src={`${window.vscMediaUrl}/logos/${(() => {
+                      const modelTitle = defaultModel.title.toLowerCase();
+                      switch (true) {
+                        case modelTitle.includes('claude'):
+                          return 'anthropic.png';
+                        case modelTitle.includes('gpt'):
+                          return 'openai.png';
+                        case modelTitle.includes('deepseek'):
+                          return 'deepseek-svg.svg';
+                        case modelTitle.includes('gemini'):
+                          return 'gemini-icon.png';
+                        default:
+                          return 'default.png';
+                      }
+                    })()}`}
+                    className="w-[15px] h-[12px] object-contain rounded-sm  "
+                  />}
+                </div>
+              ) : (
+                <img
+                  src={`${window.vscMediaUrl}/logos/${providers[defaultModel?.provider]?.icon}`}
+                  width="18px"
+                  height="18px"
+                  style={{
+                    objectFit: "contain",
+                  }}
+                />
+              )}
               {modelSelectTitle(defaultModel) || "Select model"}{" "}
             </StyledListboxButton>
 
