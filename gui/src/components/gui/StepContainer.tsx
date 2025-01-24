@@ -45,6 +45,8 @@ interface StepContainerProps {
 }
 
 const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
+  padding-left: 10px;
+  padding-right: 10px;
   background-color: ${(props) =>
     props.isUserInput
       ? vscInputBackground
@@ -163,7 +165,7 @@ function StepContainer({
   return (
       <div className="relative pb-[13px]">
         <ContentDiv
-          className="max-w-3xl mx-auto"
+          className="max-w-4xl mx-auto"
           hidden={!open}
           isUserInput={isUserInput}
           fontSize={getFontSize()}
