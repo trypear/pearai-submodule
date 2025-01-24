@@ -22,7 +22,9 @@ import {
   Button,
   lightGray,
   vscBackground,
+  vscBadgeBackground,
   vscBadgeForeground,
+  vscButtonForeground,
   vscForeground,
 } from "../components";
 import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
@@ -369,23 +371,11 @@ function GUI() {
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
           // Insert warning card after the 30th message
-          const showWarningHere = index === 29;
+          const showWarningHere = index === 3;
 
           return (
             <Fragment key={index}>
-              {showWarningHere && (
-                <WarningCard >
-                  <span>
-                    Your chat is getting quite lengthy (more than 30 messages).
-                    Lengthy sessions can use credits/tokens faster.
-                    <br />
-                    Consider starting a new chat session to optimize performance and maintain better context.
-                    <br />
-                    <br />
-                    <Link to="command:pearai.newSession">Start new chat</Link>
-                  </span>
-                </WarningCard>
-              )}
+
               <ErrorBoundary
                 FallbackComponent={fallbackRender}
                 onReset={() => {
@@ -478,7 +468,21 @@ function GUI() {
                           ""
                         }
                       />
+                      {showWarningHere && (
+                        <WarningCard >
+                          <span className="flex items-center gap-2">
+                            Your chat is getting lengthy, which may run slower and use tokens faster.
+                            Consider starting a new chat to optimize performance and maintain better context.
+                            <Link to="command:pearai.newSession">
+                              <Button className="min-w-20" style={{ backgroundColor: `${vscBadgeBackground}` }}>
+                                New chat
+                              </Button>
+                            </Link>
+                          </span>
+                        </WarningCard>
+                      )}
                     </TimelineItem>
+
 
                     // </div>
                   )}

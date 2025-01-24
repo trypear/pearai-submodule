@@ -1,13 +1,11 @@
 import { CircleAlert } from "lucide-react";
 import { vscBackground, vscBadgeBackground, vscForeground } from "..";
 import styled from "styled-components";
-
 const StyledWarningCard = styled.div`
-  margin: 12px auto;
+  margin: 16px auto;
   max-width: 600px;
   padding: 8px 16px;
   background-color: ${vscBadgeBackground}ee;
-  border: 2px solid ${vscForeground};
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -15,6 +13,12 @@ const StyledWarningCard = styled.div`
   color: ${vscForeground};
 `;
 
+const StyledCircleAlert = styled(CircleAlert)`
+  margin-right: 2px;
+  width: 19px;
+  height: 19px;
+  flex-shrink: 0;
+`;
 
 interface WarningCardProps {
     children?: React.ReactNode;
@@ -24,7 +28,7 @@ export default function WarningCard({ children }: WarningCardProps) {
     return (
         <div className="max-w-3xl mx-auto px-2">
             <StyledWarningCard>
-                <CircleAlert className="w-6 h-6 stroke-2" />
+                <StyledCircleAlert className="stroke-2" />
                 <span>
                     {children}
                 </span>
