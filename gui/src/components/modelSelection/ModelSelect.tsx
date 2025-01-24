@@ -25,29 +25,33 @@ import {
 } from "../../util";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog";
 import { isAiderMode, isPerplexityMode } from "@/util/bareChatMode";
+import { providers } from "../../pages/AddNewModel/configs/providers";
 
 const StyledListboxButton = styled(Listbox.Button)`
-  font-family: inherit;
+  border: solid 1px ${lightGray}30;
+  // background-color: ${lightGray}30;
+  background-color: transparent;
+  border-radius: 4px;  
+  padding: 2px 4px;
   display: flex;
   align-items: center;
   gap: 2px;
-  border: none;
 	user-select: none;
   cursor: pointer;
   font-size: ${getFontSize() - 3}px;
-  background: transparent;
   color: ${lightGray};
   &:focus {
     outline: none;
   }
 `;
 
-const StyledListboxOptions = styled(Listbox.Options)<{ newSession: boolean }>`
+const StyledListboxOptions = styled(Listbox.Options) <{ newSession: boolean }>`
   list-style: none;
-  padding: 2px;
+  padding: 6px;
   white-space: nowrap;
   cursor: default;
   z-index: 50;
+  border: 1px solid ${lightGray}30; 
   border-radius: 10px;
   background-color: ${vscEditorBackground};
   max-height: 300px;
@@ -70,8 +74,8 @@ const StyledListboxOptions = styled(Listbox.Options)<{ newSession: boolean }>`
 
 const StyledListboxOption = styled(Listbox.Option)`
   cursor: pointer;
-  border-radius: ${defaultBorderRadius};
-  padding: 3px 4px;
+  border-radius: 6px;
+  padding: 5px 4px;
 
   &:hover {
     background: ${(props) => `${lightGray}33`};
@@ -135,10 +139,41 @@ function ModelOption({
     >
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center">
-          <CubeIcon className="w-3.5 h-3.5 stroke-2 mr-2 flex-shrink-0" />
+          {option.provider === 'pearai_server' ? (
+            <div className="flex items-center gap-1 mr-2">
+              <img
+                src={`${window.vscMediaUrl}/logos/pearai-color.png`}
+                className="w-4 h-4 object-contain"
+              />
+              {option.title !== 'PearAI Model' && <img
+                src={`${window.vscMediaUrl}/logos/${(() => {
+                  const modelTitle = option.title.toLowerCase();
+                  switch (true) {
+                    case modelTitle === 'pearai model':
+                      return 'pearai-color.png';
+                    case modelTitle.includes('claude'):
+                      return 'anthropic.png';
+                    case modelTitle.includes('gpt'):
+                      return 'openai.png';
+                    case modelTitle.includes('deepseek'):
+                      return 'deepseek-svg.svg';
+                    case modelTitle.includes('gemini'):
+                      return 'gemini-icon.png';
+                    default:
+                      return 'default.png';
+                  }
+                })()}`}
+                className="w-3.5 h-3.5 object-contain rounded-sm"
+              />}
+            </div>
+          ) : (
+            option.provider ? <img
+              src={`${window.vscMediaUrl}/logos/${providers[option.provider]?.icon}`}
+              className="w-3.5 h-3.5 mr-2 flex-shrink-0 object-contain rounded-sm"
+            /> : <CubeIcon className="w-3.5 h-3.5 stroke-2 mr-2 flex-shrink-0" />
+          )}
           <span>{option.title}</span>
         </div>
-
         <StyledTrashIcon
           style={{ visibility: hovered && showDelete ? "visible" : "hidden" }}
           className="ml-auto"
@@ -165,6 +200,7 @@ function modelSelectTitle(model: any): string {
 interface Option {
   value: string;
   title: string;
+  provider: string;
   isDefault: boolean;
 }
 
@@ -200,6 +236,7 @@ function ModelSelect() {
         .map((model) => ({
           value: model.title,
           title: modelSelectTitle(model),
+          provider: model.provider,
           isDefault: model?.isDefault,
         }))
     );
@@ -210,19 +247,18 @@ function ModelSelect() {
       if (!buttonRef.current || !isOpen) return;
 
       const buttonRect = buttonRef.current.getBoundingClientRect();
-      const MENU_WIDTH = 200;
+      const MENU_WIDTH = 312;
       const MENU_HEIGHT = 320;
       const PADDING = 10;
 
-      let left = buttonRect.left;
+      let left = Math.max(PADDING, Math.min(
+        buttonRect.left,
+        window.innerWidth - MENU_WIDTH - PADDING
+      ));
+
       let top = buttonRect.bottom + 5;
-
-      if (left + MENU_WIDTH > window.innerWidth - PADDING) {
-        left = window.innerWidth - MENU_WIDTH - PADDING;
-      }
-
       if (top + MENU_HEIGHT > window.innerHeight - PADDING) {
-        top = buttonRect.top - MENU_HEIGHT - 5;
+        top = Math.max(PADDING, buttonRect.top - MENU_HEIGHT - 5);
       }
 
       setMenuPosition({ top, left });
@@ -270,10 +306,43 @@ function ModelSelect() {
             <StyledListboxButton
               ref={buttonRef}
               className="h-[18px] overflow-hidden"
-              style={{ padding: 0 }}
             >
+              {defaultModel?.provider === 'pearai_server' ? (
+                <div className="flex items-center">
+                  <img
+                    src={`${window.vscMediaUrl}/logos/pearai-color.png`}
+                    className="w-[15px] h-[15px] object-contain"
+                  />
+                  {defaultModel.title !== 'PearAI Model' && <img
+                    src={`${window.vscMediaUrl}/logos/${(() => {
+                      const modelTitle = defaultModel.title.toLowerCase();
+                      switch (true) {
+                        case modelTitle.includes('claude'):
+                          return 'anthropic.png';
+                        case modelTitle.includes('gpt'):
+                          return 'openai.png';
+                        case modelTitle.includes('deepseek'):
+                          return 'deepseek-svg.svg';
+                        case modelTitle.includes('gemini'):
+                          return 'gemini-icon.png';
+                        default:
+                          return 'default.png';
+                      }
+                    })()}`}
+                    className="w-[15px] h-[12px] object-contain rounded-sm  "
+                  />}
+                </div>
+              ) : (
+                <img
+                  src={`${window.vscMediaUrl}/logos/${providers[defaultModel?.provider]?.icon}`}
+                  width="18px"
+                  height="18px"
+                  style={{
+                    objectFit: "contain",
+                  }}
+                />
+              )}
               {modelSelectTitle(defaultModel) || "Select model"}{" "}
-              <ChevronDownIcon className="h-2.5 w-2.5 stroke-2" aria-hidden="true" />
             </StyledListboxButton>
 
             {open && (
@@ -292,7 +361,7 @@ function ModelSelect() {
                     marginTop: "2px",
                     display: "block",
                     textAlign: "center",
-										fontSize: getFontSize() - 3,
+                    fontSize: getFontSize() - 3,
                   }}
                 >
                   Press <kbd className="font-mono">{getMetaKeyLabel()}</kbd>{" "}
