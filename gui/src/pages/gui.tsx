@@ -42,6 +42,7 @@ import {
   clearLastResponse,
   deleteMessage,
   newSession,
+  setDefaultModel,
   setInactive,
   setShowInteractiveContinueTutorial,
 } from "../redux/slices/stateSlice";
@@ -309,6 +310,10 @@ function GUI() {
     },
     [],
   );
+
+  useWebviewListener("switchModel", async (model: string) => {
+    dispatch(setDefaultModel({ title: model }));
+  });
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
