@@ -42,6 +42,7 @@ import {
   clearLastResponse,
   deleteMessage,
   newSession,
+  setDefaultModel,
   setInactive,
   setShowInteractiveContinueTutorial,
 } from "../redux/slices/stateSlice";
@@ -310,6 +311,10 @@ function GUI() {
     [],
   );
 
+  useWebviewListener("switchModel", async (model: string) => {
+    dispatch(setDefaultModel({ title: model }));
+  });
+
   const isLastUserInput = useCallback(
     (index: number): boolean => {
       let foundLaterUserInput = false;
@@ -344,7 +349,7 @@ function GUI() {
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
           // Insert warning card after the 30th message
-          const showWarningHere = index === 3;
+          const showWarningHere = index === 29;
 
           return (
             <Fragment key={index}>
@@ -467,7 +472,7 @@ function GUI() {
       </TopGuiDiv>
 
       {!active && (
-        <div className="flex flex-col gap-0.5 px-2">
+        <div className="flex flex-col gap-0.5 px-2 rounded-t-lg">
           <ContinueInputBox
             onEnter={(editorContent, modifiers) => {
               sendInput(editorContent, modifiers);

@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
@@ -16,22 +16,26 @@ const InventoryPreview = () => {
     {
       icon: "chat-default.svg",
       path: "/inventory/aiderMode",
-      tooltip: "Creator",
+      tooltip: "Inventory",
+      command: "pearai.toggleInventoryHome",
     },
     {
       icon: "creator-default.svg",
       path: "/inventory/aiderMode",
       tooltip: "Creator",
+      command: "pearai.toggleCreator",
     },
     {
       icon: "search-default.svg",
       path: "/inventory/perplexityMode",
       tooltip: "Search",
+      command: "pearai.toggleSearch",
     },
     {
       icon: "memory-default.svg",
       path: "/inventory/mem0Mode",
       tooltip: "Memory",
+      command: "pearai.toggleMem0",
     }
   ];
 
@@ -43,9 +47,7 @@ const InventoryPreview = () => {
     <div className={`mt-2 relative w-full z-10`}>
 
       <div
-        onClick={openInventory}
         className="flex cursor-pointer"
-        title={`Open Inventory (${getMetaKeyLabel()}E)`}
       >
         <div className="flex flex-row items-center">
           <div className="overflow-hidden rounded-[12px] relative">
@@ -60,14 +62,17 @@ const InventoryPreview = () => {
                 <div
                   key={item.path}
                   className="relative group w-6 h-6 rounded-lg"
+                  title={item.tooltip}
                 >
-                  <img
-                    src={getLogoPath(item.icon)}
-                    className="w-6 h-6 rounded-lg"
-                    style={index === 0 ? {
-                      boxShadow: '0px 0px 40px 8px #AFF349'
-                    } : undefined}
-                  />
+                  <a href={`command:${item.command}`}>
+                    <img
+                      src={getLogoPath(item.icon)}
+                      className="w-6 h-6 rounded-lg"
+                      style={index === 0 ? {
+                        boxShadow: '0px 0px 40px 8px #AFF349'
+                      } : undefined}
+                    />
+                  </a>
                   {index === 0 && (
                     <div
                       className="absolute inset-0 pointer-events-none rounded-lg"

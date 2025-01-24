@@ -17,6 +17,7 @@ import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
+import { DEVELOPER_WRAPPED_FEATURE_FLAG } from "@/util/featureflags";
 
 enum AIToolID {
   SEARCH = "search",
@@ -31,6 +32,7 @@ enum AIToolID {
 interface AITool {
   id: string;
   name: string;
+  featureFlag?: boolean;
   description: ReactElement;
   icon: string;
   whenToUse: ReactElement;
@@ -366,6 +368,7 @@ export default function AIToolInventory() {
     {
       id: AIToolID.WRAPPED,
       name: "Developer Wrapped",
+      featureFlag: DEVELOPER_WRAPPED_FEATURE_FLAG,
       description: (
         <span>View your year in code - only in PearAI! 🎉</span>
       ),
@@ -417,7 +420,8 @@ export default function AIToolInventory() {
   // ]);
 
   const filteredTools = tools.filter((tool) =>
-    tool.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    tool.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    (tool.featureFlag !== false)
   );
 
   const handleToggle = (id: string) => {
