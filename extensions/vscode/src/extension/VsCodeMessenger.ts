@@ -106,8 +106,9 @@ export class VsCodeMessenger {
     this.onWebview("unlockOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.unlockOverlay");
     });
-    this.onWebview("importUserSettingsFromVSCode", (msg) => {
-      vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
+    this.onWebview("importUserSettingsFromVSCode", async (msg) => {
+      await vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
+      return true; // Signal completion
     });
     this.onWebview("installVscodeExtension", (msg) => {
       attemptInstallExtension(msg.data.extensionId);

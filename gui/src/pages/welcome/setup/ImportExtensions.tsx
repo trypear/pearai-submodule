@@ -15,11 +15,19 @@ export default function ImportExtensions({
   onNext: () => void;
 }) {
   const [isImporting, setIsImporting] = useState(false);
+  const messenger = useContext(IdeMessengerContext);
 
-  const handleImport = () => {
+  const handleImport = async () => {
     localStorage.setItem('importUserSettingsFromVSCode', 'true');
     setIsImporting(true);
-    onNext();
+    try {
+      // Wait for the import to complete
+      await messenger.request('importUserSettingsFromVSCode', undefined);
+      onNext();
+    } catch (error) {
+      console.error('Failed to import settings:', error);
+      setIsImporting(false);
+    }
   };
 
   const handleSkip = () => {

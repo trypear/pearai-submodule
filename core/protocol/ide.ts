@@ -91,7 +91,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
 
   // new welcome page
   markNewOnboardingComplete: [undefined, void];
-  importUserSettingsFromVSCode: [undefined, void];
+  importUserSettingsFromVSCode: [undefined, boolean];
   pearWelcomeOpenFolder: [undefined, void];
   pearInstallCommandLine: [undefined, void];
   installVscodeExtension: [{ extensionId: string }, void];

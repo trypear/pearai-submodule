@@ -122,7 +122,7 @@ export async function importUserSettingsFromVSCode() {
         await copyVSCodeSettingsToPearAIDir();
         
         vscode.window.showInformationMessage(
-            'Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.',
+            'Your VSCode settings and extensions have been transferred over to PearAI!',
             'Ok'
         );
     } catch (error) {
