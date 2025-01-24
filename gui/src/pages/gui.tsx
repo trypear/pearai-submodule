@@ -77,7 +77,7 @@ export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
 
 export const StopButtonContainer = styled.div`
   position: fixed;
-  bottom: calc(${FOOTER_HEIGHT});
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 50;
@@ -466,7 +466,7 @@ function GUI() {
         })}
       </TopGuiDiv>
 
-      {(
+      {!active && (
         <div className="flex flex-col gap-0.5 px-2">
           <ContinueInputBox
             onEnter={(editorContent, modifiers) => {
