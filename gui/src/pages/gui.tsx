@@ -344,7 +344,7 @@ function GUI() {
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
           // Insert warning card after the 30th message
-          const showWarningHere = index === 3;
+          const showWarningHere = index === 29;
 
           return (
             <Fragment key={index}>
