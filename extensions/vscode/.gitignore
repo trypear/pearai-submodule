@@ -11,6 +11,7 @@ bin
 assets
 
 gui/*
+!gui/logos
 !gui/onigasm.wasm
 
 .devcontainer
