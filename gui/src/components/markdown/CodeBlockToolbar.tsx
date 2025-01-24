@@ -4,42 +4,25 @@ import {
   PlayIcon,
   BoltIcon,
   XMarkIcon,
-  ArrowPathIcon,
-  ArrowDownIcon,
-  CommandLineIcon
+	CodeBracketIcon,
 } from "@heroicons/react/24/outline";
 import { useContext, useState } from "react";
 import styled from "styled-components";
-import { defaultBorderRadius, vscEditorBackground } from "..";
+import { vscBackground, vscEditorBackground } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { isJetBrains } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "./CopyButton";
 import { isPerplexityMode } from '../../util/bareChatMode';
 import { useWebviewListener } from "../../hooks/useWebviewListener";
-import { Loader, Terminal, SquareTerminal, SquareChevronRight } from "lucide-react";
-
-
-const TopDiv = styled.div`
-  position: sticky;
-  top: 0;
-  left: 100%;
-  height: 0;
-  width: 0;
-  overflow: visible;
-  z-index: 100;
-`;
+import { Loader, Terminal } from "lucide-react";
 
 const SecondDiv = styled.div<{ bottom: boolean }>`
-  position: absolute;
-  ${(props) => (props.bottom ? "bottom: 3px;" : "top: -11px;")}
-  right: 10px;
   display: flex;
-  padding: 1px 2px;
+  padding: 2px;
   gap: 4px;
-  border: 0.5px solid #8888;
-  border-radius: ${defaultBorderRadius};
-  background-color: ${vscEditorBackground};
+  border-radius: 4px;
+  background-color: ${vscBackground};
 `;
 
 interface CodeBlockToolBarProps {
@@ -99,7 +82,10 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
   });
 
   return (
-    <TopDiv>
+    <div className="flex justify-between w-[calc(100%-8px)] items-center p-1 absolute">
+			<div className="ml-1">
+				<CodeBracketIcon className="w-4 h-4 stroke-2"></CodeBracketIcon>
+			</div>
       <SecondDiv bottom={props.bottom || false}>
         {isPerplexityMode() && <HeaderButtonWithText
           text="Add to PearAI chat context"
@@ -205,7 +191,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
         </HeaderButtonWithText>}
         <CopyButton text={props.text} />
       </SecondDiv>
-    </TopDiv>
+    </div>
   );
 }
 

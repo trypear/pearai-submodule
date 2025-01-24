@@ -925,6 +925,7 @@ const commandsMap: (
         // limit reached, switching to free model
         vscode.window.showInformationMessage(msg.warningMsg);
         extensionContext.globalState.update("freeModelSwitched", true);
+        sidebar.webviewProtocol?.request("switchModel", "PearAI Model", ["pearai.pearAIChatView"]);
       }
     },
     "pearai.patchWSL": async () => {

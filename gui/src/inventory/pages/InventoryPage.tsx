@@ -17,6 +17,7 @@ import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { RootState } from "@/redux/store";
 import { useSelector } from "react-redux";
+import { DEVELOPER_WRAPPED_FEATURE_FLAG } from "@/util/featureflags";
 
 enum AIToolID {
   SEARCH = "search",
@@ -25,11 +26,13 @@ enum AIToolID {
   CREATOR = "aider",
   PAINTER = "painter",
   MEMORY = "memory",
+  WRAPPED = "wrapped",
 }
 
 interface AITool {
   id: string;
   name: string;
+  featureFlag?: boolean;
   description: ReactElement;
   icon: string;
   whenToUse: ReactElement;
@@ -73,7 +76,7 @@ function AIToolCard({
         onClick={tool.comingSoon ? undefined : onClick}
       >
         <CardContent className="px-3">
-          
+
           <h3
             className={`flex items-center gap-2 text-base font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
           >
@@ -90,7 +93,7 @@ function AIToolCard({
             {tool.comingSoon ? "Coming soon" : tool.description}
           </p>
           {tool.toggleable && !tool.comingSoon && (
-          <Tooltip>
+            <Tooltip>
               <TooltipTrigger asChild>
                 <Switch
                   checked={tool.enabled}
@@ -332,26 +335,6 @@ export default function AIToolInventory() {
       enabled: true,
     },
     {
-      id: AIToolID.PAINTER,
-      name: "Painter",
-      description: <span>AI image generation from textual descriptions</span>,
-      icon: "🎨",
-      whenToUse: (
-        <span>
-          Use when you need to create unique images based on text prompts
-        </span>
-      ),
-      strengths: [
-        <span>Creative image generation</span>,
-        <span>Wide range of styles</span>,
-        <span>Quick results</span>,
-      ],
-      enabled: false,
-      comingSoon: true,
-      poweredBy: "Flux",
-      installNeeded: false,
-    },
-    {
       id: AIToolID.MEMORY,
       name: "Memory",
       description: (
@@ -382,6 +365,48 @@ export default function AIToolInventory() {
       installNeeded: false,
       toggleable: true,
     },
+    {
+      id: AIToolID.WRAPPED,
+      name: "Developer Wrapped",
+      featureFlag: DEVELOPER_WRAPPED_FEATURE_FLAG,
+      description: (
+        <span>View your year in code - only in PearAI! 🎉</span>
+      ),
+      icon: "🎁",
+      whenToUse: (
+        <span>
+          Ready to show off your coding achievements? Generate a fun summary of your year in code. Perfect for sharing on social media and celebrating your developer journey!
+        </span>
+      ),
+      strengths: [
+        <span>Fun stats about your coding style & achievements this year</span>,
+        <span>Visualize total lines of code written, top languages, top projects, and much more</span>,
+        <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
+      ],
+      enabled: false,
+      comingSoon: false,
+      installNeeded: false,
+    },
+    {
+      id: AIToolID.PAINTER,
+      name: "Painter",
+      description: <span>AI image generation from textual descriptions</span>,
+      icon: "🎨",
+      whenToUse: (
+        <span>
+          Use when you need to create unique images based on text prompts
+        </span>
+      ),
+      strengths: [
+        <span>Creative image generation</span>,
+        <span>Wide range of styles</span>,
+        <span>Quick results</span>,
+      ],
+      enabled: false,
+      comingSoon: true,
+      poweredBy: "Flux",
+      installNeeded: false,
+    },
   ]);
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -395,7 +420,8 @@ export default function AIToolInventory() {
   // ]);
 
   const filteredTools = tools.filter((tool) =>
-    tool.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    tool.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+    (tool.featureFlag !== false)
   );
 
   const handleToggle = (id: string) => {
@@ -536,9 +562,11 @@ export default function AIToolInventory() {
                       )}
                       {focusedTool.name}
                     </div>
-                    <Badge variant="outline" className="pl-0">
-                      Powered by {focusedTool.poweredBy}*
-                    </Badge>
+                    {focusedTool.poweredBy && (
+                      <Badge variant="outline" className="pl-0">
+                        Powered by {focusedTool.poweredBy}*
+                      </Badge>
+                    )}
                   </h2>
                   <p className="mb-2">{focusedTool.description}</p>{" "}
                   <h3 className="font-semibold mb-1">When to use:</h3>
