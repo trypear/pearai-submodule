@@ -57,14 +57,14 @@ import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 import { FOOTER_HEIGHT } from "@/components/Layout";
 import StatusBar from "@/components/StatusBar";
 import InventoryPreview from "@/components/InventoryPreview";
+import ShortcutContainer from "@/components/ShortcutContainer";
 
 export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   overflow-y: scroll;
   position: relative;
   margin-top: -40px;
   padding-top: 48px;
-  padding-bottom: ${props => props.isNewSession ? '0' : FOOTER_HEIGHT};
-  height: 100%;
+  padding-bottom: ${props => props.isNewSession ? '0' : '120px'};
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -113,18 +113,6 @@ const TutorialCardDiv = styled.header`
   display: flex;
   width: 100%;
 `
-
-const FixedBottomContainer = styled.div<{ isNewSession: boolean }>`
-  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
-  bottom: ${props => props.isNewSession ? 'auto' : 0};
-  left: 0;
-  right: 0;
-  background-color: ${vscBackground};
-  padding: 8px;
-  padding-top: 0;
-  z-index: 100;
-`;
-
 
 export function fallbackRender({ error, resetErrorBoundary }) {
   return (
@@ -349,21 +337,6 @@ function GUI() {
         </div>
       </div>
 
-      {!active && (
-        <FixedBottomContainer isNewSession={isNewSession}>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          />
-          <StatusBar />
-        </FixedBottomContainer>
-      )}
-
-
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
           return (
@@ -471,8 +444,28 @@ function GUI() {
         })}
       </TopGuiDiv>
 
+      {(
+        <div className="flex flex-col gap-0.5 px-2">
+          <ContinueInputBox
+            onEnter={(editorContent, modifiers) => {
+              sendInput(editorContent, modifiers);
+            }}
+            isLastUserInput={false}
+            isMainInput={true}
+            hidden={active}
+          />
+          <StatusBar />
+        </div>
+      )}
 
-      {/* </div> */}
+      {isNewSession &&
+        <>
+          <div style={{ height: "100%" }}></div>
+          <div className="px-3">
+            <ShortcutContainer />
+          </div>
+        </>
+      }
 
       {active && (
         <StopButtonContainer>

@@ -75,8 +75,6 @@ const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
   `}
 `;
 
-const SHOW_SHORTCUTS_ON_PAGES = ["/"];
-
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -225,13 +223,6 @@ const Layout = () => {
 
       <PostHogPageView />
       <Outlet />
-
-      {SHOW_SHORTCUTS_ON_PAGES.includes(location.pathname) && historyLength === 0 && (
-        <div className="px-3">
-          <ShortcutContainer />
-        </div>
-      )}
-
       <BottomMessageDiv
         displayOnBottom={displayBottomMessageOnBottom}
         onMouseEnter={() => dispatch(setBottomMessageCloseTimeout(undefined))}
