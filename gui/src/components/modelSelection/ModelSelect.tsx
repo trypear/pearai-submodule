@@ -47,10 +47,11 @@ const StyledListboxButton = styled(Listbox.Button)`
 
 const StyledListboxOptions = styled(Listbox.Options) <{ newSession: boolean }>`
   list-style: none;
-  padding: 2px;
+  padding: 6px;
   white-space: nowrap;
   cursor: default;
   z-index: 50;
+  border: 1px solid ${lightGray}30; 
   border-radius: 10px;
   background-color: ${vscEditorBackground};
   max-height: 300px;
@@ -73,8 +74,8 @@ const StyledListboxOptions = styled(Listbox.Options) <{ newSession: boolean }>`
 
 const StyledListboxOption = styled(Listbox.Option)`
   cursor: pointer;
-  border-radius: ${defaultBorderRadius};
-  padding: 3px 4px;
+  border-radius: 6px;
+  padding: 5px 4px;
 
   &:hover {
     background: ${(props) => `${lightGray}33`};
@@ -142,7 +143,7 @@ function ModelOption({
             <div className="flex items-center gap-1 mr-2">
               <img
                 src={`${window.vscMediaUrl}/logos/pearai-color.png`}
-                className="w-3.5 h-3.5 object-contain"
+                className="w-4 h-4 object-contain"
               />
               {option.title !== 'PearAI Model' && <img
                 src={`${window.vscMediaUrl}/logos/${(() => {
@@ -246,19 +247,18 @@ function ModelSelect() {
       if (!buttonRef.current || !isOpen) return;
 
       const buttonRect = buttonRef.current.getBoundingClientRect();
-      const MENU_WIDTH = 200;
+      const MENU_WIDTH = 312;
       const MENU_HEIGHT = 320;
       const PADDING = 10;
 
-      let left = buttonRect.left;
+      let left = Math.max(PADDING, Math.min(
+        buttonRect.left,
+        window.innerWidth - MENU_WIDTH - PADDING
+      ));
+
       let top = buttonRect.bottom + 5;
-
-      if (left + MENU_WIDTH > window.innerWidth - PADDING) {
-        left = window.innerWidth - MENU_WIDTH - PADDING;
-      }
-
       if (top + MENU_HEIGHT > window.innerHeight - PADDING) {
-        top = buttonRect.top - MENU_HEIGHT - 5;
+        top = Math.max(PADDING, buttonRect.top - MENU_HEIGHT - 5);
       }
 
       setMenuPosition({ top, left });
