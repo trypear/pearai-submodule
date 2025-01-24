@@ -470,7 +470,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                           key={example}
                           text={example}
                           side="top"
-                          variant="ghost"
+                          variant="secondary"
                           onTextClick={onExampleClick}
                         />
                       ))}
