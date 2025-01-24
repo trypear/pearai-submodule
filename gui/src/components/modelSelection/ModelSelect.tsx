@@ -25,24 +25,27 @@ import {
 } from "../../util";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog";
 import { isAiderMode, isPerplexityMode } from "@/util/bareChatMode";
+import { providers } from "../../pages/AddNewModel/configs/providers";
 
 const StyledListboxButton = styled(Listbox.Button)`
-  font-family: inherit;
+  border: solid 1px ${lightGray}30;
+  // background-color: ${lightGray}30;
+  background-color: transparent;
+  border-radius: 4px;  
+  padding: 2px 4px;
   display: flex;
   align-items: center;
   gap: 2px;
-  border: none;
 	user-select: none;
   cursor: pointer;
   font-size: ${getFontSize() - 3}px;
-  background: transparent;
   color: ${lightGray};
   &:focus {
     outline: none;
   }
 `;
 
-const StyledListboxOptions = styled(Listbox.Options)<{ newSession: boolean }>`
+const StyledListboxOptions = styled(Listbox.Options) <{ newSession: boolean }>`
   list-style: none;
   padding: 2px;
   white-space: nowrap;
@@ -134,6 +137,7 @@ function ModelOption({
       onMouseLeave={() => setHovered(false)}
     >
       <div className="flex items-center justify-between w-full">
+
         <div className="flex items-center">
           <CubeIcon className="w-3.5 h-3.5 stroke-2 mr-2 flex-shrink-0" />
           <span>{option.title}</span>
@@ -165,6 +169,7 @@ function modelSelectTitle(model: any): string {
 interface Option {
   value: string;
   title: string;
+  provider: string;
   isDefault: boolean;
 }
 
@@ -200,6 +205,7 @@ function ModelSelect() {
         .map((model) => ({
           value: model.title,
           title: modelSelectTitle(model),
+          provider: model.provider,
           isDefault: model?.isDefault,
         }))
     );
@@ -270,10 +276,16 @@ function ModelSelect() {
             <StyledListboxButton
               ref={buttonRef}
               className="h-[18px] overflow-hidden"
-              style={{ padding: 0 }}
             >
+              <img
+                src={`${window.vscMediaUrl}/logos/${providers[defaultModel?.provider].icon}`}
+                width="18px"
+                height="18px"
+                style={{
+                  objectFit: "contain",
+                }}
+              />
               {modelSelectTitle(defaultModel) || "Select model"}{" "}
-              <ChevronDownIcon className="h-2.5 w-2.5 stroke-2" aria-hidden="true" />
             </StyledListboxButton>
 
             {open && (
@@ -292,7 +304,7 @@ function ModelSelect() {
                     marginTop: "2px",
                     display: "block",
                     textAlign: "center",
-										fontSize: getFontSize() - 3,
+                    fontSize: getFontSize() - 3,
                   }}
                 >
                   Press <kbd className="font-mono">{getMetaKeyLabel()}</kbd>{" "}
