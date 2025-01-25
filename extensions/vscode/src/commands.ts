@@ -282,7 +282,9 @@ const commandsMap: (
       );
     },
     "pearai.welcome.importUserSettingsFromVSCode": async () => {
+      console.log("command called");
       if (!isFirstLaunch(extensionContext)) {
+        console.log("first launch");
         vscode.window.showInformationMessage(
           "Welcome back! User settings import is skipped as this is not the first launch.",
         );
@@ -291,7 +293,9 @@ const commandsMap: (
         );
         return;
       }
+      console.log("await import user settings");
       await importUserSettingsFromVSCode();
+      console.log("done await import user settings");
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);

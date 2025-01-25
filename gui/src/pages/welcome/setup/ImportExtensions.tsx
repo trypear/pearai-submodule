@@ -12,13 +12,17 @@ export const getLogoPath = (assetName: string) => {
 // look here
 export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   const [isImporting, setIsImporting] = useState(false);
+  const [doneImporting, setDoneImporting] = useState(false);
   const ideMessenger = useContext(IdeMessengerContext);
 
-  const handleImport = () => {
+  const handleImport = async () => {
     localStorage.setItem("importUserSettingsFromVSCode", "true");
     setIsImporting(true);
-    ideMessenger.post("importUserSettingsFromVSCode", undefined);
-    onNext();
+    console.log("LEN HUANG LOOK HERE before request");
+    const result = await ideMessenger.request("importUserSettingsFromVSCode", undefined);
+    console.log("LEN HUANG LOOK HERE after request", result);
+    setDoneImporting(true);
+    // onNext();
   };
 
   const handleSkip = () => {
@@ -40,12 +44,14 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
       ) {
         event.preventDefault();
         onNext();
+      } else if (doneImporting) {
+        onNext();
       }
     };
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isImporting]); // Include isImporting in dependencies to prevent import when already in progress
+  }, [isImporting, doneImporting]); // Include isImporting in dependencies to prevent import when already in progress
 
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
@@ -68,7 +74,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
             />
           </div>
 
-          {!isImporting ? (
+          {!doneImporting ? (
             <div className="absolute bottom-8 right-8 flex items-center gap-4">
               <div
                 onClick={handleSkip}
@@ -115,7 +121,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
             </div>
           ) : (
             <div className="flex flex-col items-center gap-4 mb-24">
-              <div>Import in progress! You can leave this page</div>
+              <div>Done importing! You can leave this page</div>
               <div
                 onClick={onNext}
                 className="flex items-center gap-2 cursor-pointer"
