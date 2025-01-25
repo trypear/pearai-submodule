@@ -22,21 +22,31 @@ import {
   quickPickStatusText,
   setupStatusBar,
 } from "./autocomplete/statusBar";
-import { ContinueGUIWebviewViewProvider, PEAR_OVERLAY_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
+import {
+  ContinueGUIWebviewViewProvider,
+  PEAR_CONTINUE_VIEW_ID,
+  PEAR_OVERLAY_VIEW_ID,
+} from "./ContinueGUIWebviewViewProvider";
+import {
+  FIRST_LAUNCH_KEY,
+  importUserSettingsFromVSCode,
+  isFirstLaunch,
+} from "./copySettings";
 import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
+import {
+  aiderCtrlC,
+  aiderResetSession,
+  installAider,
+  sendAiderProcessStateToGUI,
+  uninstallAider,
+} from "./integrations/aider/aiderUtil";
+import { AiderState } from "./integrations/aider/types/aiderTypes";
 import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
-import type { VsCodeWebviewProtocol } from "./webviewProtocol";
-import { getExtensionUri } from "./util/vscode";
-import { aiderCtrlC, aiderResetSession, openAiderPanel, sendAiderProcessStateToGUI, installAider, uninstallAider } from './integrations/aider/aiderUtil';
-import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
-import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
-import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
-import { attemptInstallExtension } from "./activation/activate";
-import { AiderState } from "./integrations/aider/types/aiderTypes";
-
+import { getExtensionUri } from "./util/vscode";
+import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
 
@@ -46,7 +56,6 @@ function getFullScreenTab() {
     (tab.input as any)?.viewType?.endsWith("pearai.pearAIChatView"),
   );
 }
-
 
 type TelemetryCaptureParams = Parameters<typeof Telemetry.capture>;
 
@@ -86,12 +95,16 @@ function addCodeToContextFromRange(
     },
   };
 
-  webviewProtocol?.request("highlightedCode", {
-    rangeInFileWithContents,
-    prompt,
-    // Assume `true` since range selection is currently only used for quick actions/fixes
-    shouldRun: true,
-  }, ["pearai.pearAIChatView"]);
+  webviewProtocol?.request(
+    "highlightedCode",
+    {
+      rangeInFileWithContents,
+      prompt,
+      // Assume `true` since range selection is currently only used for quick actions/fixes
+      shouldRun: true,
+    },
+    ["pearai.pearAIChatView"],
+  );
 }
 
 async function addHighlightedCodeToContext(
@@ -105,14 +118,18 @@ async function addHighlightedCodeToContext(
         filepath: editor.document.uri.fsPath,
         contents: "",
         range: {
-          start: { line: 0, character: 0, },
-          end: { line: 0, character: 0, },
+          start: { line: 0, character: 0 },
+          end: { line: 0, character: 0 },
         },
       };
 
-      webviewProtocol?.request("highlightedCode", {
-        rangeInFileWithContents,
-      }, ["pearai.pearAIChatView"]);
+      webviewProtocol?.request(
+        "highlightedCode",
+        {
+          rangeInFileWithContents,
+        },
+        ["pearai.pearAIChatView"],
+      );
 
       return;
     }
@@ -135,9 +152,13 @@ async function addHighlightedCodeToContext(
       },
     };
 
-    webviewProtocol?.request("highlightedCode", {
-      rangeInFileWithContents,
-    }, ["pearai.pearAIChatView"]);
+    webviewProtocol?.request(
+      "highlightedCode",
+      {
+        rangeInFileWithContents,
+      },
+      ["pearai.pearAIChatView"],
+    );
   }
 }
 
@@ -179,9 +200,13 @@ async function addEntireFileToContext(
     },
   };
 
-  webviewProtocol?.request("highlightedCode", {
-    rangeInFileWithContents,
-  }, ["pearai.pearAIChatView"]);
+  webviewProtocol?.request(
+    "highlightedCode",
+    {
+      rangeInFileWithContents,
+    },
+    ["pearai.pearAIChatView"],
+  );
 }
 
 // Copy everything over from extension.ts
@@ -258,49 +283,66 @@ const commandsMap: (
     },
     "pearai.welcome.importUserSettingsFromVSCode": async () => {
       if (!isFirstLaunch(extensionContext)) {
-        vscode.window.showInformationMessage("Welcome back! User settings import is skipped as this is not the first launch.");
-        console.dir("Extension launch detected as a subsequent launch. Skipping user settings import.");
+        vscode.window.showInformationMessage(
+          "Welcome back! User settings import is skipped as this is not the first launch.",
+        );
+        console.dir(
+          "Extension launch detected as a subsequent launch. Skipping user settings import.",
+        );
         return;
       }
       await importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
-      await vscode.commands.executeCommand('pearai.unlockOverlay');
-      await vscode.commands.executeCommand('pearai.hideOverlay');
+      await vscode.commands.executeCommand("pearai.unlockOverlay");
+      await vscode.commands.executeCommand("pearai.hideOverlay");
     },
     "pearai.restFirstLaunchInGUI": async () => {
-      sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [
+        PEAR_CONTINUE_VIEW_ID,
+      ]);
     },
     "pearai.showInteractiveContinueTutorial": async () => {
-      sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request(
+        "showInteractiveContinueTutorial",
+        undefined,
+        [PEAR_CONTINUE_VIEW_ID],
+      );
     },
     "pearai.openAiderChanges": async () => {
       // Close overlay
-      await vscode.commands.executeCommand('pearai.hideOverlay');
+      await vscode.commands.executeCommand("pearai.hideOverlay");
       // Open source control
-      await vscode.commands.executeCommand('workbench.view.scm');
+      await vscode.commands.executeCommand("workbench.view.scm");
 
       // Get Git extension
-      const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+      const gitExtension =
+        vscode.extensions.getExtension("vscode.git")?.exports;
       const repository = gitExtension?.getAPI(1).repositories[0];
       if (repository) {
-          // Get unstaged changes
-          const unstagedChanges = repository.state.workingTreeChanges;
-          if (unstagedChanges.length > 0) {
-              // Open the diff view of the first staged change
-              await vscode.commands.executeCommand(
-                  'git.openChange',
-                  unstagedChanges[0].uri
-              );
-          }
+        // Get unstaged changes
+        const unstagedChanges = repository.state.workingTreeChanges;
+        if (unstagedChanges.length > 0) {
+          // Open the diff view of the first staged change
+          await vscode.commands.executeCommand(
+            "git.openChange",
+            unstagedChanges[0].uri,
+          );
+        }
       }
     },
     "pearai.highlightElement": async (msg) => {
-      vscode.commands.executeCommand("pearai.highlightElements", msg.data.elementSelectors);
+      vscode.commands.executeCommand(
+        "pearai.highlightElements",
+        msg.data.elementSelectors,
+      );
     },
     "pearai.unhighlightElement": async (msg) => {
-      vscode.commands.executeCommand("pearai.removeHighlight", msg.data.elementSelectors);
+      vscode.commands.executeCommand(
+        "pearai.removeHighlight",
+        msg.data.elementSelectors,
+      );
     },
     "pearai.acceptDiff": async (newFilepath?: string | vscode.Uri) => {
       captureCommandTelemetry("acceptDiff");
@@ -377,20 +419,45 @@ const commandsMap: (
     },
     "pearai.toggleCreator": async () => {
       await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey(
+        "navigateToCreator",
+        "aiderMode",
+        sidebar,
+        [PEAR_OVERLAY_VIEW_ID],
+      );
     },
     "pearai.toggleSearch": async () => {
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey(
+        "navigateToSearch",
+        "perplexityMode",
+        sidebar,
+        [PEAR_OVERLAY_VIEW_ID],
+      );
     },
     "pearai.toggleMem0": async () => {
-      await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey(
+        "navigateToMem0",
+        "mem0Mode",
+        sidebar,
+        [PEAR_OVERLAY_VIEW_ID],
+      );
     },
     "pearai.toggleOverlay": async () => {
-      await handleIntegrationShortcutKey("toggleOverlay", "inventory", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+      await handleIntegrationShortcutKey(
+        "toggleOverlay",
+        "inventory",
+        sidebar,
+        [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID],
+      );
       vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     },
     "pearai.toggleInventoryHome": async () => {
-      await handleIntegrationShortcutKey("navigateToInventoryHome", "home", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+      await handleIntegrationShortcutKey(
+        "navigateToInventoryHome",
+        "home",
+        sidebar,
+        [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID],
+      );
     },
     "pearai.startOnboarding": async () => {
       if (isFirstLaunch(extensionContext)) {
@@ -402,15 +469,21 @@ const commandsMap: (
         }, 6000);
       }
       await vscode.commands.executeCommand("pearai.showOverlay");
-      await vscode.commands.executeCommand("pearai.showInteractiveContinueTutorial");
+      await vscode.commands.executeCommand(
+        "pearai.showInteractiveContinueTutorial",
+      );
     },
     "pearai.developer.restFirstLaunch": async () => {
       vscode.commands.executeCommand("pearai.restFirstLaunchInGUI");
       extensionContext.globalState.update(FIRST_LAUNCH_KEY, false);
-      vscode.window.showInformationMessage("Successfully reset PearAI first launch flag, RELOAD WINDOW TO SEE WELCOME PAGE", 'Reload Window')
-        .then(selection => {
-          if (selection === 'Reload Window') {
-            vscode.commands.executeCommand('workbench.action.reloadWindow');
+      vscode.window
+        .showInformationMessage(
+          "Successfully reset PearAI first launch flag, RELOAD WINDOW TO SEE WELCOME PAGE",
+          "Reload Window",
+        )
+        .then((selection) => {
+          if (selection === "Reload Window") {
+            vscode.commands.executeCommand("workbench.action.reloadWindow");
           }
         });
       console.log("FIRST PEARAI LAUNCH FLAG RESET");
@@ -424,7 +497,9 @@ const commandsMap: (
         // focus fullscreen
         fullScreenPanel?.reveal();
       }
-      sidebar.webviewProtocol?.request("focusContinueInput", undefined, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("focusContinueInput", undefined, [
+        "pearai.pearAIChatView",
+      ]);
       await addHighlightedCodeToContext(sidebar.webviewProtocol);
     },
     "pearai.focusContinueInputWithoutClear": async () => {
@@ -463,7 +538,9 @@ const commandsMap: (
     "pearai.quickEdit": async (args: QuickEditShowParams) => {
       captureCommandTelemetry("quickEdit");
       quickEdit.show(args);
-      sidebar.webviewProtocol?.request("quickEdit", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("quickEdit", undefined, [
+        PEAR_CONTINUE_VIEW_ID,
+      ]);
     },
     "pearai.writeCommentsForCode": async () => {
       captureCommandTelemetry("writeCommentsForCode");
@@ -522,9 +599,13 @@ const commandsMap: (
 
       vscode.commands.executeCommand("pearai.pearAIChatView.focus");
 
-      sidebar.webviewProtocol?.request("userInput", {
-        input: `I got the following error, can you please help explain how to fix it?\n\n${terminalContents.trim()}`,
-      }, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request(
+        "userInput",
+        {
+          input: `I got the following error, can you please help explain how to fix it?\n\n${terminalContents.trim()}`,
+        },
+        ["pearai.pearAIChatView"],
+      );
     },
     "pearai.hideInlineTip": () => {
       vscode.workspace
@@ -537,11 +618,15 @@ const commandsMap: (
       captureCommandTelemetry("addModel");
 
       vscode.commands.executeCommand("pearai.pearAIChatView.focus");
-      sidebar.webviewProtocol?.request("addModel", undefined, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("addModel", undefined, [
+        "pearai.pearAIChatView",
+      ]);
     },
     "pearai.openSettingsUI": () => {
       vscode.commands.executeCommand("pearai.pearAIChatView.focus");
-      sidebar.webviewProtocol?.request("openSettings", undefined, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("openSettings", undefined, [
+        "pearai.pearAIChatView",
+      ]);
     },
     "pearai.sendMainUserInput": (text: string) => {
       sidebar.webviewProtocol?.request("userInput", {
@@ -575,9 +660,13 @@ const commandsMap: (
       ide.runCommand(text);
     },
     "pearai.newSession": async () => {
-      sidebar.webviewProtocol?.request("newSession", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("newSession", undefined, [
+        PEAR_CONTINUE_VIEW_ID,
+      ]);
       const currentFile = await ide.getCurrentFile();
-      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [
+        PEAR_CONTINUE_VIEW_ID,
+      ]);
     },
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, [
@@ -647,7 +736,12 @@ const commandsMap: (
     },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey(
+        "navigateToCreator",
+        "aiderMode",
+        sidebar,
+        [PEAR_OVERLAY_VIEW_ID],
+      );
     },
     "pearai.aiderCtrlC": async () => {
       await aiderCtrlC(core);
@@ -659,11 +753,18 @@ const commandsMap: (
       await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
     },
     "pearai.setAiderProcessState": async (state: AiderState) => {
-      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEAR_OVERLAY_VIEW_ID]);
+      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [
+        PEAR_OVERLAY_VIEW_ID,
+      ]);
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey(
+        "navigateToSearch",
+        "perplexityMode",
+        sidebar,
+        [PEAR_OVERLAY_VIEW_ID],
+      );
     },
     "pearai.addPerplexityContext": (msg) => {
       const fullScreenTab = getFullScreenTab();
@@ -671,7 +772,9 @@ const commandsMap: (
         // focus sidebar
         vscode.commands.executeCommand("pearai.pearAIChatView.focus");
       }
-      sidebar.webviewProtocol?.request("addPerplexityContextinChat", msg.data, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("addPerplexityContextinChat", msg.data, [
+        "pearai.pearAIChatView",
+      ]);
     },
     "pearai.openConfigJson": () => {
       ide.openFile(getConfigJsonPath());
@@ -759,8 +862,8 @@ const commandsMap: (
           currentStatus === StatusBarStatus.Paused
             ? StatusBarStatus.Enabled
             : currentStatus === StatusBarStatus.Disabled
-              ? StatusBarStatus.Paused
-              : StatusBarStatus.Disabled;
+            ? StatusBarStatus.Paused
+            : StatusBarStatus.Disabled;
       } else {
         // Toggle between Disabled and Enabled
         targetStatus =
@@ -872,7 +975,10 @@ const commandsMap: (
     "pearai.logout": async () => {
       await extensionContext.secrets.delete("pearai-token");
       await extensionContext.secrets.delete("pearai-refresh");
-      core.invoke("llm/setPearAICredentials", { accessToken: undefined, refreshToken: undefined });
+      core.invoke("llm/setPearAICredentials", {
+        accessToken: undefined,
+        refreshToken: undefined,
+      });
       vscode.window.showInformationMessage("PearAI: Successfully logged out!");
     },
     "pearai.updateUserAuth": async (data: {
@@ -889,7 +995,10 @@ const commandsMap: (
 
       extensionContext.secrets.store("pearai-token", data.accessToken);
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
-      core.invoke("llm/setPearAICredentials", { accessToken: data.accessToken, refreshToken: data.refreshToken });
+      core.invoke("llm/setPearAICredentials", {
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+      });
       sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
       core.invoke("llm/startAiderProcess", undefined);
@@ -898,8 +1007,12 @@ const commandsMap: (
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
     },
     "pearai.loadRecentChat": () => {
-      sidebar.webviewProtocol?.request("loadMostRecentChat", undefined, ["pearai.pearAIChatView"]);
-      sidebar.webviewProtocol?.request("focusContinueInput", undefined, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("loadMostRecentChat", undefined, [
+        "pearai.pearAIChatView",
+      ]);
+      sidebar.webviewProtocol?.request("focusContinueInput", undefined, [
+        "pearai.pearAIChatView",
+      ]);
     },
     "pearai.resizeAuxiliaryBarWidth": () => {
       vscode.commands.executeCommand(
@@ -917,7 +1030,9 @@ const commandsMap: (
       const flagSet = extensionContext.globalState.get("freeModelSwitched");
       if (!warnMsg && flagSet) {
         // credit restored
-        vscode.window.showInformationMessage("Credit restored. Switched back to PearAI Pro model.");
+        vscode.window.showInformationMessage(
+          "Credit restored. Switched back to PearAI Pro model.",
+        );
         extensionContext.globalState.update("freeModelSwitched", false);
         return;
       }
@@ -925,26 +1040,39 @@ const commandsMap: (
         // limit reached, switching to free model
         vscode.window.showInformationMessage(msg.warningMsg);
         extensionContext.globalState.update("freeModelSwitched", true);
-        sidebar.webviewProtocol?.request("switchModel", "PearAI Model", ["pearai.pearAIChatView"]);
+        sidebar.webviewProtocol?.request("switchModel", "PearAI Model", [
+          "pearai.pearAIChatView",
+        ]);
       }
     },
     "pearai.patchWSL": async () => {
-      if (process.platform !== 'win32') {
+      if (process.platform !== "win32") {
         vscode.window.showWarningMessage("WSL is for Windows only.");
         return;
       }
 
-      const wslExtension = vscode.extensions.getExtension('ms-vscode-remote.remote-wsl');
+      const wslExtension = vscode.extensions.getExtension(
+        "ms-vscode-remote.remote-wsl",
+      );
 
       if (!wslExtension) {
-        vscode.window.showInformationMessage("Please install WSL extension first, then try again.");
+        vscode.window.showInformationMessage(
+          "Please install WSL extension first, then try again.",
+        );
         return;
       }
 
       const wslExtensionPath = wslExtension.extensionPath;
       const pearExtensionPath = extensionContext.extensionPath;
-      const wslDownloadScript = path.join( wslExtensionPath, "scripts", "wslDownload.sh" );
-      const patchScript = path.join(pearExtensionPath, "wsl-scripts/wslPatch.sh");
+      const wslDownloadScript = path.join(
+        wslExtensionPath,
+        "scripts",
+        "wslDownload.sh",
+      );
+      const patchScript = path.join(
+        pearExtensionPath,
+        "wsl-scripts/wslPatch.sh",
+      );
 
       if (!fs.existsSync(patchScript)) {
         vscode.window.showWarningMessage("Patch script not found.");
@@ -970,9 +1098,7 @@ const commandsMap: (
       }
 
       if (!PEAR_COMMIT_ID) {
-        vscode.window.showWarningMessage(
-          "Unable to retrieve PEAR commit ID.",
-        );
+        vscode.window.showWarningMessage("Unable to retrieve PEAR commit ID.");
         return;
       }
 
@@ -990,14 +1116,18 @@ const commandsMap: (
       try {
         terminal = vscode.window.createTerminal({
           name: "WSL Patch",
-          shellPath: "wsl.exe"
+          shellPath: "wsl.exe",
         });
       } catch (error) {
-        vscode.window.showErrorMessage("WSL is not installed. Please install WSL and try again.");
+        vscode.window.showErrorMessage(
+          "WSL is not installed. Please install WSL and try again.",
+        );
         return;
       }
 
-      terminal.sendText(`$(wslpath '${patchScript}') $(wslpath '${wslDownloadScript}') '${PEAR_COMMIT_ID}' '${VSC_COMMIT_ID}'`);
+      terminal.sendText(
+        `$(wslpath '${patchScript}') $(wslpath '${wslDownloadScript}') '${PEAR_COMMIT_ID}' '${VSC_COMMIT_ID}'`,
+      );
       terminal.show();
     },
   };

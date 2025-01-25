@@ -1,67 +1,69 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { FolderOpen } from "lucide-react";
+import { useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function FinalStep({ onNext }: { onNext: () => void }) {
-
   const navigate = useNavigate();
-  const selectedTools = JSON.parse(localStorage.getItem('onboardingSelectedTools'));
-  const installExtensions = localStorage.getItem('importUserSettingsFromVSCode') === 'true';
+  const selectedTools = JSON.parse(
+    localStorage.getItem("onboardingSelectedTools"),
+  );
 
   const initiateInstallations = () => {
-    ideMessenger.post("pearAIinstallation", {tools: selectedTools, installExtensions: installExtensions})
+    ideMessenger.post("pearAIinstallation", {
+      tools: selectedTools,
+    });
     ideMessenger.post("markNewOnboardingComplete", undefined);
   };
 
   const handleOpenFolder = () => {
     ideMessenger.post("pearWelcomeOpenFolder", undefined);
     initiateInstallations();
-    onNext() // navigates to inventory page
+    onNext(); // navigates to inventory page
   };
 
   const handleClose = () => {
     initiateInstallations();
-    onNext() // navigates to inventory page
+    onNext(); // navigates to inventory page
   };
 
   useEffect(() => {
     // unlock overlay when we get to last page
     ideMessenger.post("unlockOverlay", undefined);
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
+      if (event.key === "Enter") {
         handleOpenFolder();
-        onNext()
+        onNext();
       }
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         initiateInstallations();
-        onNext()
+        onNext();
       }
     };
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
   const ideMessenger = useContext(IdeMessengerContext);
   return (
     <div className="flex w-full overflow-hidden text-foreground">
-    <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6 pt-8">
-          <div>
-            <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
-              You're all set!
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Let's get started by opening a folder.
-            </p>
+      <div className="w-[35%] min-w-[320px] max-w-[420px] flex flex-col h-screen">
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-6 space-y-6 pt-8">
+            <div>
+              <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
+                You're all set!
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Let's get started by opening a folder.
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
       <div className="w-full flex flex-col h-screen relative bg-background">
         <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-6 lg:p-10">
@@ -91,7 +93,7 @@ export default function FinalStep({ onNext }: { onNext: () => void }) {
               onClick={handleClose}
               className="flex items-center gap-2 cursor-pointer"
             >
-            <span className="text-center w-full">Close</span>
+              <span className="text-center w-full">Close</span>
             </div>
           </div>
         </div>

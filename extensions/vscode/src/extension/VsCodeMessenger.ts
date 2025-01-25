@@ -1,6 +1,7 @@
 // Note: This file has been modified significantly from its original contents. New commands have been added, and there has been renaming from Continue to PearAI. pearai-submodule is a fork of Continue (https://github.com/continuedev/continue).
 
 import { ConfigHandler } from "core/config/ConfigHandler";
+import PearAIServer from "core/llm/llms/PearAIServer";
 import {
   FromCoreProtocol,
   FromWebviewProtocol,
@@ -18,22 +19,30 @@ import { getConfigJsonPath } from "core/util/paths";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
+import {
+  attemptInstallExtension,
+  attemptUninstallExtension,
+  isVSCodeExtensionInstalled,
+} from "../activation/activate";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
 import { VsCodeIde } from "../ideProtocol";
+import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
+import {
+  getMem0Memories,
+  updateMem0Memories,
+} from "../integrations/mem0/mem0Service";
+import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
 import {
   getControlPlaneSessionInfo,
   WorkOsAuthProvider,
 } from "../stubs/WorkOsAuthProvider";
+import {
+  extractCodeFromMarkdown,
+  TOOL_COMMANDS,
+  ToolType,
+} from "../util/integrationUtils";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
-import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
-import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
-import { getMem0Memories, updateMem0Memories } from "../integrations/mem0/mem0Service";
-import { TOOL_COMMANDS, ToolType, extractCodeFromMarkdown } from "../util/integrationUtils";
-import PearAIServer from "core/llm/llms/PearAIServer";
-import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
-import { RelaceDiffManager } from "../integrations/relace/relaceDiffManager";
-import { getMarkdownLanguageTagForFile } from "core/util";
 
 /**
  * A shared messenger class between Core and Webview
@@ -94,7 +103,9 @@ export class VsCodeMessenger {
     });
     // welcome stuff
     this.onWebview("markNewOnboardingComplete", (msg) => {
-      vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
+      vscode.commands.executeCommand(
+        "pearai.welcome.markNewOnboardingComplete",
+      );
     });
     this.onWebview("closeOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.hideOverlay");
@@ -107,7 +118,9 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("pearai.unlockOverlay");
     });
     this.onWebview("importUserSettingsFromVSCode", (msg) => {
-      vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
+      vscode.commands.executeCommand(
+        "pearai.welcome.importUserSettingsFromVSCode",
+      );
     });
     this.onWebview("installVscodeExtension", (msg) => {
       attemptInstallExtension(msg.data.extensionId);
@@ -128,16 +141,20 @@ export class VsCodeMessenger {
       return isAiderInstalled;
     });
     this.onWebview("mem0/getMemories", async (msg) => {
-
       const memories = await getMem0Memories(PearAIServer._getRepoId());
       return memories;
-    }); 
+    });
     this.onWebview("mem0/updateMemories", async (msg) => {
-      const response = await updateMem0Memories(PearAIServer._getRepoId(), msg.data.changes);
+      const response = await updateMem0Memories(
+        PearAIServer._getRepoId(),
+        msg.data.changes,
+      );
       return response;
     });
     this.onWebview("is_vscode_extension_installed", async (msg) => {
-      const isInstalled = await isVSCodeExtensionInstalled(msg.data.extensionId);
+      const isInstalled = await isVSCodeExtensionInstalled(
+        msg.data.extensionId,
+      );
       console.log("VSCode extension installation status:", isInstalled);
       return isInstalled;
     });
@@ -170,12 +187,13 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("pearai.openAiderChanges");
     });
     this.onWebview("getNumberOfChanges", (msg) => {
-      const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+      const gitExtension =
+        vscode.extensions.getExtension("vscode.git")?.exports;
       const repository = gitExtension?.getAPI(1).repositories[0];
 
       if (repository) {
-          const unstagedChanges = repository.state.workingTreeChanges;
-          return unstagedChanges.length;
+        const unstagedChanges = repository.state.workingTreeChanges;
+        return unstagedChanges.length;
       }
       return 0;
     });
@@ -183,16 +201,16 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("pearai.toggleInventoryHome");
     });
     this.onWebview("pearAIinstallation", (msg) => {
-      const { tools, installExtensions } = msg.data;
-      if (installExtensions) {
-        vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
-      }
+      const { tools } = msg.data;
       if (tools) {
         tools.forEach((tool: ToolType) => {
           const toolCommand = TOOL_COMMANDS[tool];
           if (toolCommand) {
             if (toolCommand.args) {
-              vscode.commands.executeCommand(toolCommand.command, toolCommand.args);
+              vscode.commands.executeCommand(
+                toolCommand.command,
+                toolCommand.args,
+              );
             } else {
               vscode.commands.executeCommand(toolCommand.command);
             }
@@ -238,10 +256,10 @@ export class VsCodeMessenger {
     this.onWebview("sendAiderProcessStateToGUI", (msg) => {
       vscode.commands.executeCommand("pearai.sendAiderProcessStateToGUI");
     }),
-    this.onWebview("toggleDevTools", (msg) => {
-      vscode.commands.executeCommand("workbench.action.toggleDevTools");
-      vscode.commands.executeCommand("pearai.viewLogs");
-    });
+      this.onWebview("toggleDevTools", (msg) => {
+        vscode.commands.executeCommand("workbench.action.toggleDevTools");
+        vscode.commands.executeCommand("pearai.viewLogs");
+      });
     this.onWebview("reloadWindow", (msg) => {
       vscode.commands.executeCommand("workbench.action.reloadWindow");
     });
@@ -343,7 +361,9 @@ export class VsCodeMessenger {
         vscode.window.showErrorMessage(
           "No active editor to apply edits to. Please open a file you'd like to apply the edits to first.",
         );
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: false,
+        });
         return;
       }
 
@@ -351,9 +371,11 @@ export class VsCodeMessenger {
         const originalContent = editor.document.getText();
         const changesToApply = msg.data.contentToApply;
 
-        if (originalContent?.trim() === '') {
+        if (originalContent?.trim() === "") {
           await ide.writeFile(editor.document.uri.fsPath, changesToApply);
-          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+          this.webviewProtocol.request("setRelaceDiffState", {
+            diffVisible: false,
+          });
           return;
         }
 
@@ -365,25 +387,38 @@ export class VsCodeMessenger {
         modifiedContent = extractCodeFromMarkdown(modifiedContent);
 
         if (modifiedContent.length === 0) {
-          vscode.window.showInformationMessage("Received empty response from Relace");
-          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+          vscode.window.showInformationMessage(
+            "Received empty response from Relace",
+          );
+          this.webviewProtocol.request("setRelaceDiffState", {
+            diffVisible: false,
+          });
           return;
         }
 
         if (modifiedContent === originalContent) {
           vscode.window.showInformationMessage("No changes to apply");
-          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+          this.webviewProtocol.request("setRelaceDiffState", {
+            diffVisible: false,
+          });
           return;
         }
 
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: true});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: true,
+        });
         // Show inline diff using the original apply method
         const stepIndex = Date.now(); // Unique identifier for this diff
-        await ide.showDiff(editor.document.uri.fsPath, modifiedContent, stepIndex);
-
+        await ide.showDiff(
+          editor.document.uri.fsPath,
+          modifiedContent,
+          stepIndex,
+        );
       } catch (error) {
         vscode.window.showErrorMessage(`Fast Apply Inline failed: ${error}`);
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: false,
+        });
       }
     });
 
@@ -391,7 +426,9 @@ export class VsCodeMessenger {
     this.onWebview("acceptRelaceDiff", async (msg) => {
       try {
         vscode.commands.executeCommand("pearai.acceptDiff");
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: false,
+        });
       } catch (error) {
         vscode.window.showErrorMessage(`Failed to apply changes: ${error}`);
       }
@@ -401,7 +438,9 @@ export class VsCodeMessenger {
     this.onWebview("rejectRelaceDiff", async (msg) => {
       try {
         vscode.commands.executeCommand("pearai.rejectDiff");
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: false,
+        });
       } catch (error) {
         vscode.window.showErrorMessage(`Failed to reject changes: ${error}`);
       }
