@@ -157,7 +157,8 @@ export async function importUserSettingsFromVSCode() {
       new Promise((resolve) => setTimeout(resolve, 3000)), // Take at least three seconds
       copyVSCodeSettingsToPearAIDir(),
     ]);
-    return true;
+    throw new Error("Test error message");
+    // return true;
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
     return false;
