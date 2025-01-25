@@ -11,7 +11,6 @@ export const getLogoPath = (assetName: string) => {
 
 export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   const [isImporting, setIsImporting] = useState(false);
-  const [doneImporting, setDoneImporting] = useState(false);
   const [importError, setImportError] = useState("");
   const ideMessenger = useContext(IdeMessengerContext);
 
@@ -23,7 +22,6 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
       undefined,
     );
     if (settingsLoaded) {
-      setDoneImporting(true);
       localStorage.setItem("importUserSettingsFromVSCodeCompleted", "true");
       onNext();
     } else {
@@ -43,9 +41,6 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
     setIsImporting(
       localStorage.getItem("importUserSettingsFromVSCode") === "true",
     );
-    setDoneImporting(
-      localStorage.getItem("importUserSettingsFromVSCodeCompleted") === "true",
-    );
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === "Enter" && !isImporting) {
         handleImport();
@@ -61,7 +56,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
 
     window.addEventListener("keydown", handleKeyPress);
     return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isImporting, doneImporting]); // Include isImporting in dependencies to prevent import when already in progress
+  }, [isImporting]); // Include isImporting in dependencies to prevent import when already in progress
 
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">
@@ -84,7 +79,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
             />
           </div>
 
-          {!doneImporting ? (
+          {!isImporting ? (
             <div>
               {importError ? <p>{importError}</p> : null}
               <div className="absolute bottom-8 right-8 flex items-center gap-4">
@@ -95,7 +90,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
                   <span className="text-center w-full">Skip</span>
                 </div>
                 <Button
-                  disabled={isImporting || doneImporting}
+                  disabled={isImporting}
                   className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer transition-all duration-300"
                   onClick={handleImport}
                 >
