@@ -153,17 +153,10 @@ async function copyDirectoryRecursiveSync(
 
 export async function importUserSettingsFromVSCode() {
   try {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    vscode.window.showInformationMessage(
-      "Copying your current VSCode settings and extensions over to PearAI!",
-    );
-    await copyVSCodeSettingsToPearAIDir();
-
-    vscode.window.showInformationMessage(
-      "Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.",
-      "Ok",
-    );
+    await Promise.all([
+      new Promise((resolve) => setTimeout(resolve, 3000)), // Take at least three seconds
+      copyVSCodeSettingsToPearAIDir(),
+    ]);
     return true;
   } catch (error) {
     vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
