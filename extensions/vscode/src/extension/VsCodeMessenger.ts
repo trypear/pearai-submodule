@@ -121,12 +121,9 @@ export class VsCodeMessenger {
       return await vscode.commands
         .executeCommand("pearai.welcome.importUserSettingsFromVSCode")
         .then(
-          (val) => {
-            console.log("onFulfilled value", val);
-            return true;
-          },
+          (val) => (typeof val === "boolean" ? val : false),
           (reason) => {
-            console.log("rejectionReason", reason);
+            console.log("importUserSettingsFromVSCode rejectionReason", reason);
             return false;
           },
         );
