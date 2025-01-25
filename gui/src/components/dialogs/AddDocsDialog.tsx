@@ -64,12 +64,12 @@ function AddDocsDialog() {
         <h1>Add a documentation site</h1>
 
         <p>
-          Continue pre-indexes many common documentation sites, but if there's
+          PearAI pre-indexes many common documentation sites, but if there's
           one you don't see in the dropdown, enter the URL here.
         </p>
 
         <p>
-          Continue's indexing engine will crawl the site and generate embeddings
+          PearAI's indexing engine will crawl the site and generate embeddings
           so that you can ask questions.
         </p>
       </div>

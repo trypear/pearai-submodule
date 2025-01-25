@@ -26,6 +26,8 @@ import { setLastControlServerBetaEnabledStatus } from "../redux/slices/miscSlice
 import { RootState } from "../redux/store";
 import { getFontSize } from "../util";
 import HeaderButtonWithText from "./HeaderButtonWithText";
+import { setDialogMessage, setShowDialog } from "@/redux/slices/uiStateSlice";
+import ConfirmationDialog from "./dialogs/ConfirmationDialog";
 
 const StyledListbox = styled(Listbox)`
   background-color: ${vscBackground};
@@ -245,6 +247,18 @@ function ProfileSwitcher(props: {}) {
               `http://app.continue.dev/workspaces/${selectedProfileId}/config`,
             );
           }
+          
+          console.dir("IM 5")
+          
+          dispatch(setShowDialog(true));
+          dispatch(
+            setDialogMessage(
+              <div className="flex flex-col gap-2 p-4">
+              <h2 className="text-lg font-semibold">Add Documentation Source</h2>
+              <p className="text-sm text-gray-600">Please enter details for your new documentation source.</p>
+            </div>,
+            ),
+          );
         }}
         text="Configure PearAI"
       >

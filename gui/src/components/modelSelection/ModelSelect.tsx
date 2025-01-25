@@ -26,6 +26,7 @@ import {
 import ConfirmationDialog from "../dialogs/ConfirmationDialog";
 import { isAiderMode, isPerplexityMode } from "@/util/bareChatMode";
 import { providers } from "../../pages/AddNewModel/configs/providers";
+import TestDialog from "../dialogs/TestDialog";
 
 const StyledListboxButton = styled(Listbox.Button)`
   border: solid 1px ${lightGray}30;
@@ -117,6 +118,7 @@ function ModelOption({
     dispatch(setShowDialog(true));
     dispatch(
       setDialogMessage(
+        // <TestDialog/>,
         <ConfirmationDialog
           title={`Delete ${option.title}`}
           text={`Are you sure you want to remove ${option.title} from your configuration?`}
@@ -125,7 +127,7 @@ function ModelOption({
               title: option.title,
             });
           }}
-        />,
+        />
       ),
     );
   }

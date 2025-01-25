@@ -40,6 +40,8 @@ export const uiStateSlice = createSlice({
       state,
       action: PayloadAction<UiState["dialogMessage"]>
     ) => {
+      console.dir("DIALOGUE MESSAGE")
+      console.dir(action.payload)
       state.dialogMessage = action.payload;
     },
     setDialogEntryOn: (
@@ -49,6 +51,8 @@ export const uiStateSlice = createSlice({
       state.dialogEntryOn = action.payload;
     },
     setShowDialog: (state, action: PayloadAction<UiState["showDialog"]>) => {
+      console.dir("IM IN SHOW DIALOG")
+      console.dir(action.payload)
       state.showDialog = action.payload;
     },
     setDisplayBottomMessageOnBottom: (

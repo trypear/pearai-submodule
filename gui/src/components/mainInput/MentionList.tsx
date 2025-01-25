@@ -47,6 +47,7 @@ import HeaderButtonWithText from "../HeaderButtonWithText";
 import SafeImg from "../SafeImg";
 import AddDocsDialog from "../dialogs/AddDocsDialog";
 import { ComboBoxItem } from "./types";
+import ConfirmationDialog from "../dialogs/ConfirmationDialog";
 
 const ICONS_FOR_DROPDOWN: { [key: string]: any } = {
   file: FolderIcon,
@@ -198,9 +199,20 @@ const MentionList = forwardRef((props: MentionListProps, ref) => {
         title: "Add Docs",
         type: "action",
         action: () => {
+          console.dir("IM HERE IM HERE")
+          
           dispatch(setShowDialog(true));
-          dispatch(setDialogMessage(<AddDocsDialog />));
+          dispatch(
+            setDialogMessage(
+              <div className="flex flex-col gap-2 p-4">
+              <h2 className="text-lg font-semibold">Add Documentation Source</h2>
+              <p className="text-sm text-gray-600">Please enter details for your new documentation source.</p>
+            </div>,
+            ),
+          );
+          // dispatch(setDialogMessage(<AddDocsDialog />));
 
+          console.dir("IM HERE 2")
           // Delete back to last '@'
           const { tr } = props.editor.view.state;
           const text = tr.doc.textBetween(0, tr.selection.from);
