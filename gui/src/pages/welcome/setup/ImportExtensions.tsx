@@ -9,20 +9,29 @@ export const getLogoPath = (assetName: string) => {
   return `${window.vscMediaUrl}/logos/${assetName}`;
 };
 
-// look here
 export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   const [isImporting, setIsImporting] = useState(false);
   const [doneImporting, setDoneImporting] = useState(false);
+  const [importError, setImportError] = useState("");
   const ideMessenger = useContext(IdeMessengerContext);
 
   const handleImport = async () => {
     localStorage.setItem("importUserSettingsFromVSCode", "true");
     setIsImporting(true);
-    console.log("LEN HUANG LOOK HERE before request");
-    const result = await ideMessenger.request("importUserSettingsFromVSCode", undefined);
-    console.log("LEN HUANG LOOK HERE after request", result);
-    setDoneImporting(true);
-    // onNext();
+    const settingsLoaded = await ideMessenger.request(
+      "importUserSettingsFromVSCode",
+      undefined,
+    );
+    if (settingsLoaded) {
+      setDoneImporting(true);
+      localStorage.setItem("importUserSettingsFromVSCodeCompleted", "true");
+      onNext();
+    } else {
+      setIsImporting(false);
+      setImportError(
+        "Something went wrong while importing your settings. Please skip or try again",
+      );
+    }
   };
 
   const handleSkip = () => {
@@ -34,6 +43,9 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
     setIsImporting(
       localStorage.getItem("importUserSettingsFromVSCode") === "true",
     );
+    setDoneImporting(
+      localStorage.getItem("importUserSettingsFromVSCodeCompleted") === "true",
+    );
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === "Enter" && !isImporting) {
         handleImport();
@@ -43,8 +55,6 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
         !isImporting
       ) {
         event.preventDefault();
-        onNext();
-      } else if (doneImporting) {
         onNext();
       }
     };
@@ -75,49 +85,52 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
           </div>
 
           {!doneImporting ? (
-            <div className="absolute bottom-8 right-8 flex items-center gap-4">
-              <div
-                onClick={handleSkip}
-                className="flex items-center gap-2 cursor-pointer"
-              >
-                <span className="text-center w-full">Skip</span>
-              </div>
-              <Button
-                disabled={isImporting}
-                className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer transition-all duration-300"
-                onClick={handleImport}
-              >
-                <div className="flex items-center justify-between w-full gap-2">
-                  {isImporting ? (
-                    <div className="flex items-center justify-center w-full gap-2">
-                      <svg
-                        className="animate-spin h-5 w-5 text-button-foreground"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        />
-                      </svg>
-                      <span>Importing...</span>
-                    </div>
-                  ) : (
-                    <>
-                      <span className="text-center w-full">Import</span>
-                    </>
-                  )}
+            <div>
+              {importError ? <p>{importError}</p> : null}
+              <div className="absolute bottom-8 right-8 flex items-center gap-4">
+                <div
+                  onClick={handleSkip}
+                  className="flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="text-center w-full">Skip</span>
                 </div>
-              </Button>
+                <Button
+                  disabled={isImporting || doneImporting}
+                  className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer transition-all duration-300"
+                  onClick={handleImport}
+                >
+                  <div className="flex items-center justify-between w-full gap-2">
+                    {isImporting ? (
+                      <div className="flex items-center justify-center w-full gap-2">
+                        <svg
+                          className="animate-spin h-5 w-5 text-button-foreground"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        <span>Importing...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <span className="text-center w-full">Import</span>
+                      </>
+                    )}
+                  </div>
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-4 mb-24">

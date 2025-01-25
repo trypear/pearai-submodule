@@ -65,7 +65,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   openInventoryHome: [undefined, void];
   getUrlTitle: [string, string];
   pearAIinstallation: [{ tools: ToolType[] }, void];
-  importUserSettingsFromVSCode: [undefined, void];
+  importUserSettingsFromVSCode: [undefined, boolean];
   "mem0/getMemories": [undefined, Memory[]];
   "mem0/updateMemories": [{ changes: MemoryChange[] }, boolean];
 };
