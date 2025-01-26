@@ -33,7 +33,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
       localStorage.setItem("importUserSettingsFromVSCode", "false");
       setIsDone(false); // being verbose on purpose
       setImportError(
-        "Something went wrong while importing your settings. Please skip or try again",
+        "Something went wrong while importing your settings. Please skip or try again.",
       );
     }
   };
