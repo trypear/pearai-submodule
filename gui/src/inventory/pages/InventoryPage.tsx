@@ -1,23 +1,21 @@
-import { ReactElement, useContext, useState, useEffect } from "react";
-import { Search, Star } from "lucide-react";
-import { XMarkIcon } from "@heroicons/react/24/solid";
-import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
-  TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Link, useNavigate } from "react-router-dom";
-import { Badge } from "@/components/ui/badge";
-import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { RootState } from "@/redux/store";
-import { useSelector } from "react-redux";
 import { DEVELOPER_WRAPPED_FEATURE_FLAG } from "@/util/featureflags";
+import { Search } from "lucide-react";
+import { ReactElement, useContext, useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 
 enum AIToolID {
   SEARCH = "search",
@@ -72,13 +70,16 @@ function AIToolCard({
   return (
     <TooltipProvider delayDuration={0}>
       <Card
-        className={`cursor-pointer h-35 overflow-hidden transition-all bg-input ${tool.comingSoon ? "opacity-50" : ""}`}
+        className={`cursor-pointer h-35 overflow-hidden transition-all bg-input ${
+          tool.comingSoon ? "opacity-50" : ""
+        }`}
         onClick={tool.comingSoon ? undefined : onClick}
       >
         <CardContent className="px-3">
-
           <h3
-            className={`flex items-center gap-2 text-base font-semibold ${tool.enabled ? "text-foreground" : ""} transition-colors`}
+            className={`flex items-center gap-2 text-base font-semibold ${
+              tool.enabled ? "text-foreground" : ""
+            } transition-colors`}
           >
             {!tool.icon.endsWith(".svg") ? (
               <div className="text-2xl">{tool.icon}</div>
@@ -88,7 +89,9 @@ function AIToolCard({
             {tool.name}
           </h3>
           <p
-            className={`text-xs ${tool.enabled ? "text-foreground" : "text-muted-foreground"}`}
+            className={`text-xs ${
+              tool.enabled ? "text-foreground" : "text-muted-foreground"
+            }`}
           >
             {tool.comingSoon ? "Coming soon" : tool.description}
           </p>
@@ -99,10 +102,13 @@ function AIToolCard({
                   checked={tool.enabled}
                   onClick={handleSwitchClick}
                   aria-label={`Toggle ${tool.name}`}
-                  className={`${tool.enabled ? "bg-button" : "bg-background"} text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out`}
+                  className={`${
+                    tool.enabled ? "bg-button" : "bg-background"
+                  } text-button-foreground border border-input rounded-full transition-colors duration-200 ease-in-out`}
                 />
               </TooltipTrigger>
-            </Tooltip>)}
+            </Tooltip>
+          )}
         </CardContent>
       </Card>
     </TooltipProvider>
@@ -150,7 +156,9 @@ function AIToolCard({
 export default function AIToolInventory() {
   const ideMessenger = useContext(IdeMessengerContext);
   const navigate = useNavigate();
-  const integrations = useSelector((state: RootState) => state.state.config.integrations || []);
+  const integrations = useSelector(
+    (state: RootState) => state.state.config.integrations || [],
+  );
   // const aiderProcessState = useSelector(
   //   (state: RootState) => state.state.aiderProcessState,
   // );
@@ -168,7 +176,7 @@ export default function AIToolInventory() {
           // Supermaven's ID
           return { ...tool, isInstalled: isSuperMavenInstalled };
         } else if (tool.id === AIToolID.MEMORY) {
-          const mem0Integration = integrations.find(i => i.name === 'mem0');
+          const mem0Integration = integrations.find((i) => i.name === "mem0");
           return { ...tool, enabled: mem0Integration?.enabled ?? false };
         } else {
           return tool;
@@ -188,6 +196,7 @@ export default function AIToolInventory() {
         setIsSuperMavenInstalled(isSuperMavenInstalled);
         console.dir("CHECKING SUPERMAVEN INSTALLED");
         console.dir(isSuperMavenInstalled);
+        // this also returns an object?
       } catch (error) {
         console.error("Error checking installation status:", error);
       }
@@ -201,6 +210,7 @@ export default function AIToolInventory() {
       const isInstalled = typeof response === "boolean" ? response : false;
       console.dir("INVENTORY AIDER INSTALLED ");
       console.dir(isInstalled);
+      // this returns true correctly
       setIsAiderInstalled(isInstalled);
     };
 
@@ -346,13 +356,14 @@ export default function AIToolInventory() {
       whenToUse: (
         <span>
           When you want the AI to remember insights from past prompts you've
-          given it. It can automatically remember details such as
-          the Python version you're using, or other specific details of your
-          codebase, like your coding styles, or your expertise level.
+          given it. It can automatically remember details such as the Python
+          version you're using, or other specific details of your codebase, like
+          your coding styles, or your expertise level.
           <br />
           <br />
-          Note that all memories created are by default global to all your projects. In order to have workspace-specific memories,
-          you must have a Git repository initialized in your workspace and at least 1 commit.
+          Note that all memories created are by default global to all your
+          projects. In order to have workspace-specific memories, you must have
+          a Git repository initialized in your workspace and at least 1 commit.
         </span>
       ),
       strengths: [
@@ -369,18 +380,21 @@ export default function AIToolInventory() {
       id: AIToolID.WRAPPED,
       name: "Developer Wrapped",
       featureFlag: DEVELOPER_WRAPPED_FEATURE_FLAG,
-      description: (
-        <span>View your year in code - only in PearAI! 🎉</span>
-      ),
+      description: <span>View your year in code - only in PearAI! 🎉</span>,
       icon: "🎁",
       whenToUse: (
         <span>
-          Ready to show off your coding achievements? Generate a fun summary of your year in code. Perfect for sharing on social media and celebrating your developer journey!
+          Ready to show off your coding achievements? Generate a fun summary of
+          your year in code. Perfect for sharing on social media and celebrating
+          your developer journey!
         </span>
       ),
       strengths: [
         <span>Fun stats about your coding style & achievements this year</span>,
-        <span>Visualize total lines of code written, top languages, top projects, and much more</span>,
+        <span>
+          Visualize total lines of code written, top languages, top projects,
+          and much more
+        </span>,
         <span>Shareable social cards for Twitter/X, LinkedIn & Instagram</span>,
       ],
       enabled: false,
@@ -419,9 +433,10 @@ export default function AIToolInventory() {
   //   null,
   // ]);
 
-  const filteredTools = tools.filter((tool) =>
-    tool.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (tool.featureFlag !== false)
+  const filteredTools = tools.filter(
+    (tool) =>
+      tool.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      tool.featureFlag !== false,
   );
 
   const handleToggle = (id: string) => {
@@ -431,9 +446,9 @@ export default function AIToolInventory() {
       ),
     );
 
-    switch(id) {
+    switch (id) {
       case AIToolID.MEMORY:
-        ideMessenger.post("config/toggleIntegration", {name: "mem0"});
+        ideMessenger.post("config/toggleIntegration", { name: "mem0" });
         break;
       default:
         break;
@@ -596,8 +611,11 @@ export default function AIToolInventory() {
                         onClick={() => focusedTool.installCommand()}
                         disabled={!focusedTool.installNeeded}
                       >
-                        {focusedTool.isInstalled ? "Uninstall" : "Click to install"}
-                      </Button>)}
+                        {focusedTool.isInstalled
+                          ? "Uninstall"
+                          : "Click to install"}
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <div className="text-[10px] text-muted-foreground mt-4">

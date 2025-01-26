@@ -21,7 +21,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
       "importUserSettingsFromVSCode",
       undefined,
     );
-    if (settingsLoaded) {
+    if (typeof settingsLoaded === "boolean" && settingsLoaded) {
       localStorage.setItem("importUserSettingsFromVSCodeCompleted", "true");
       onNext();
     } else {
