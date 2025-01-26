@@ -18,6 +18,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   const handleImport = async () => {
     localStorage.setItem("importUserSettingsFromVSCode", "true");
     setIsImporting(true);
+    setImportError("");
     const settingsLoaded = await ideMessenger.request(
       "importUserSettingsFromVSCode",
       undefined,
