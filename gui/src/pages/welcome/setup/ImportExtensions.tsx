@@ -22,9 +22,11 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
       undefined,
     );
     if (typeof settingsLoaded === "boolean" && settingsLoaded) {
+      console.dir("settings loaded");
       localStorage.setItem("importUserSettingsFromVSCodeCompleted", "true");
       onNext();
     } else {
+      console.dir("settings not loaded");
       setIsImporting(false);
       setImportError(
         "Something went wrong while importing your settings. Please skip or try again",
