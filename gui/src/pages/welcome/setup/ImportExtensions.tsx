@@ -24,12 +24,12 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
     );
     if (typeof settingsLoaded === "boolean" && settingsLoaded) {
       console.dir("settings loaded");
-      localStorage.setItem("importUserSettingsFromVSCodeCompleted", "true");
       setIsDone(true); // do i even need this?
       onNext();
     } else {
       console.dir("settings not loaded");
       setIsImporting(false);
+      localStorage.setItem("importUserSettingsFromVSCode", "false");
       setIsDone(false); // being verbose on purpose
       setImportError(
         "Something went wrong while importing your settings. Please skip or try again",
