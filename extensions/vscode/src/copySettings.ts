@@ -86,28 +86,28 @@ async function copyVSCodeSettingsToPearAIDir() {
     }
 
     const baseExclusions = new Set([
-        'pearai.pearai',
-        'ms-python.vscode-pylance',
-        'ms-python.python',
-        'codeium',
-        'github.copilot',
-        'continue'
+      "pearai.pearai",
+      "ms-python.vscode-pylance",
+      "ms-python.python",
+      "codeium",
+      "github.copilot",
+      "continue",
     ]);
 
     // Add platform specific exclusions
-    if (process.platform === 'darwin' && process.arch === 'arm64') {
-        baseExclusions.add('ms-python.vscode-pylance');
-        baseExclusions.add('ms-python.python');
-        baseExclusions.add('ms-vscode-remote.remote-ssh');
-        baseExclusions.add('ms-vscode-remote.remote-ssh-edit');
+    if (process.platform === "darwin" && process.arch === "arm64") {
+      baseExclusions.add("ms-python.vscode-pylance");
+      baseExclusions.add("ms-python.python");
+      baseExclusions.add("ms-vscode-remote.remote-ssh");
+      baseExclusions.add("ms-vscode-remote.remote-ssh-edit");
     }
 
     // Add platform specific exclusions
-    if (process.platform === 'darwin' && process.arch === 'x64') {
-        baseExclusions.add('ms-python.vscode-pylance');
-        baseExclusions.add('ms-python.python');
-        baseExclusions.add('ms-vscode-remote.remote-ssh');
-        baseExclusions.add('ms-vscode-remote.remote-ssh-edit');
+    if (process.platform === "darwin" && process.arch === "x64") {
+      baseExclusions.add("ms-python.vscode-pylance");
+      baseExclusions.add("ms-python.python");
+      baseExclusions.add("ms-vscode-remote.remote-ssh");
+      baseExclusions.add("ms-vscode-remote.remote-ssh-edit");
     }
     // // Add Windows specific exclusions
     // if (process.platform === 'win32') {
@@ -117,7 +117,12 @@ async function copyVSCodeSettingsToPearAIDir() {
     // if (process.platform === 'linux') {
     // }
 
-    await copyDirectoryRecursiveSync(vscodeExtensionsDir, pearAIDevExtensionsDir, Array.from(baseExclusions));
+    await copyDirectoryRecursiveSync(
+      vscodeExtensionsDir,
+      pearAIDevExtensionsDir,
+      Array.from(baseExclusions),
+    );
+  }
 }
 
 function getVSCodeSettingsDir() {
