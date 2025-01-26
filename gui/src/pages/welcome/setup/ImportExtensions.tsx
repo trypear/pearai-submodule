@@ -11,6 +11,7 @@ export const getLogoPath = (assetName: string) => {
 
 export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   const [isImporting, setIsImporting] = useState(false);
+  const [isDone, setIsDone] = useState(false);
   const [importError, setImportError] = useState("");
   const ideMessenger = useContext(IdeMessengerContext);
 
@@ -24,10 +25,12 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
     if (typeof settingsLoaded === "boolean" && settingsLoaded) {
       console.dir("settings loaded");
       localStorage.setItem("importUserSettingsFromVSCodeCompleted", "true");
+      setIsDone(true); // do i even need this?
       onNext();
     } else {
       console.dir("settings not loaded");
       setIsImporting(false);
+      setIsDone(false); // being verbose on purpose
       setImportError(
         "Something went wrong while importing your settings. Please skip or try again",
       );
@@ -81,7 +84,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
             />
           </div>
 
-          {!isImporting ? (
+          {!isDone ? (
             <div>
               {importError ? <p>{importError}</p> : null}
               <div className="absolute bottom-8 right-8 flex items-center gap-4">
