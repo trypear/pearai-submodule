@@ -72,14 +72,22 @@ const StyledListboxOptions = styled(Listbox.Options) <{ newSession: boolean }>`
   }
 `;
 
-const StyledListboxOption = styled(Listbox.Option)`
+interface ListboxOptionProps {
+  isCurrentModel?: boolean;
+}
+
+const StyledListboxOption = styled(Listbox.Option) <ListboxOptionProps>`
   cursor: pointer;
   border-radius: 6px;
   padding: 5px 4px;
 
   &:hover {
-    background: ${(props) => `${lightGray}33`};
+    background: ${(props) =>
+    props.isCurrentModel ? `${lightGray}66` : `${lightGray}33`};
   }
+
+  background: ${(props) =>
+    props.isCurrentModel ? `${lightGray}66` : "transparent"};
 `;
 
 const StyledTrashIcon = styled(TrashIcon)`
@@ -106,6 +114,7 @@ function ModelOption({
   idx: number;
   showDelete?: boolean;
 }) {
+  const defaultModel = useSelector(defaultModelSelector);
   const ideMessenger = useContext(IdeMessengerContext);
   const dispatch = useDispatch();
   const [hovered, setHovered] = useState(false);
@@ -136,6 +145,7 @@ function ModelOption({
       value={option.value}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      isCurrentModel={defaultModel?.title === option.title}
     >
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center">
