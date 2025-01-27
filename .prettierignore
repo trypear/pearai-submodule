@@ -1,3 +1,5 @@
 extensions/vscode/continue_rc_schema.json
 **/.pearaiignore
 CHANGELOG.md
+# *.tsx
+*.ts

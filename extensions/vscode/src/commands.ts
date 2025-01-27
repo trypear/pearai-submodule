@@ -22,20 +22,17 @@ import {
   quickPickStatusText,
   setupStatusBar,
 } from "./autocomplete/statusBar";
-import { ContinueGUIWebviewViewProvider, PEAR_OVERLAY_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
+import { ContinueGUIWebviewViewProvider, PEAR_CONTINUE_VIEW_ID, PEAR_OVERLAY_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
+import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
 import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
+import { aiderCtrlC, aiderResetSession, installAider, sendAiderProcessStateToGUI, uninstallAider } from './integrations/aider/aiderUtil';
+import { AiderState } from "./integrations/aider/types/aiderTypes";
 import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
-import type { VsCodeWebviewProtocol } from "./webviewProtocol";
-import { getExtensionUri } from "./util/vscode";
-import { aiderCtrlC, aiderResetSession, openAiderPanel, sendAiderProcessStateToGUI, installAider, uninstallAider } from './integrations/aider/aiderUtil';
-import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
-import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
-import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
-import { attemptInstallExtension } from "./activation/activate";
-import { AiderState } from "./integrations/aider/types/aiderTypes";
+import { getExtensionUri } from "./util/vscode";
+import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -260,9 +257,9 @@ const commandsMap: (
       if (!isFirstLaunch(extensionContext)) {
         vscode.window.showInformationMessage("Welcome back! User settings import is skipped as this is not the first launch.");
         console.dir("Extension launch detected as a subsequent launch. Skipping user settings import.");
-        return;
+        return true;
       }
-      await importUserSettingsFromVSCode();
+      return await importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
