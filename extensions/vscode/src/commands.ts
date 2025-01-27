@@ -29,12 +29,13 @@ import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
-import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessState, installAider, uninstallAider } from './integrations/aider/aiderUtil';
+import { aiderCtrlC, aiderResetSession, openAiderPanel, sendAiderProcessStateToGUI, installAider, uninstallAider } from './integrations/aider/aiderUtil';
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
 import { attemptInstallExtension } from "./activation/activate";
+import { AiderState } from "./integrations/aider/types/aiderTypes";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -100,6 +101,19 @@ async function addHighlightedCodeToContext(
   if (editor) {
     const selection = editor.selection;
     if (selection.isEmpty) {
+      const rangeInFileWithContents = {
+        filepath: editor.document.uri.fsPath,
+        contents: "",
+        range: {
+          start: { line: 0, character: 0, },
+          end: { line: 0, character: 0, },
+        },
+      };
+
+      webviewProtocol?.request("highlightedCode", {
+        rangeInFileWithContents,
+      }, ["pearai.pearAIChatView"]);
+
       return;
     }
     // adjust starting position to include indentation
@@ -251,11 +265,12 @@ const commandsMap: (
       await importUserSettingsFromVSCode();
     },
     "pearai.welcome.markNewOnboardingComplete": async () => {
-      // vscode.window.showInformationMessage("Marking onboarding complete.");
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
+      await vscode.commands.executeCommand('pearai.unlockOverlay');
+      await vscode.commands.executeCommand('pearai.hideOverlay');
     },
-    "pearai.resetInteractiveContinueTutorial": async () => {
-      sidebar.webviewProtocol?.request("resetInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
+    "pearai.restFirstLaunchInGUI": async () => {
+      sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.showInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
@@ -361,16 +376,21 @@ const commandsMap: (
       core.invoke("context/indexDocs", { reIndex: true });
     },
     "pearai.toggleCreator": async () => {
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleSearch": async () => {
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
-    "pearai.toggleInventory": async () => {
-      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
+    "pearai.toggleMem0": async () => {
+      await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+    },
+    "pearai.toggleOverlay": async () => {
+      await handleIntegrationShortcutKey("toggleOverlay", "inventory", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+      vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     },
     "pearai.toggleInventoryHome": async () => {
-      await handleIntegrationShortcutKey("navigateToInventoryHome", "inventory", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToInventoryHome", "home", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
     },
     "pearai.startOnboarding": async () => {
       if (isFirstLaunch(extensionContext)) {
@@ -385,7 +405,7 @@ const commandsMap: (
       await vscode.commands.executeCommand("pearai.showInteractiveContinueTutorial");
     },
     "pearai.developer.restFirstLaunch": async () => {
-      vscode.commands.executeCommand("pearai.resetInteractiveContinueTutorial");
+      vscode.commands.executeCommand("pearai.restFirstLaunchInGUI");
       extensionContext.globalState.update(FIRST_LAUNCH_KEY, false);
       vscode.window.showInformationMessage("Successfully reset PearAI first launch flag, RELOAD WINDOW TO SEE WELCOME PAGE", 'Reload Window')
         .then(selection => {
@@ -555,7 +575,7 @@ const commandsMap: (
       ide.runCommand(text);
     },
     "pearai.newSession": async () => {
-      sidebar.webviewProtocol?.request("newSession", undefined);
+      sidebar.webviewProtocol?.request("newSession", undefined, [PEAR_CONTINUE_VIEW_ID]);
       const currentFile = await ide.getCurrentFile();
       sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
     },
@@ -627,7 +647,7 @@ const commandsMap: (
     },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.aiderCtrlC": async () => {
       await aiderCtrlC(core);
@@ -635,15 +655,15 @@ const commandsMap: (
     "pearai.aiderResetSession": async () => {
       await aiderResetSession(core);
     },
-    "pearai.refreshAiderProcessState": async () => {
-      await refreshAiderProcessState(core);
+    "pearai.sendAiderProcessStateToGUI": async () => {
+      await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
     },
-    "pearai.setAiderProcessState": async (state) => {
-      core.send("setAiderProcessStateInGUI", { state: state });
+    "pearai.setAiderProcessState": async (state: AiderState) => {
+      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, PEAR_OVERLAY_VIEW_ID);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.addPerplexityContext": (msg) => {
       const fullScreenTab = getFullScreenTab();
@@ -873,9 +893,6 @@ const commandsMap: (
       sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
       core.invoke("llm/startAiderProcess", undefined);
-      if (isFirstLaunch(extensionContext)) {
-        vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
-      }
     },
     "pearai.closeChat": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
@@ -894,6 +911,22 @@ const commandsMap: (
     },
     "pearai.macResizeAuxiliaryBarWidth": () => {
       vscode.commands.executeCommand("pearai.resizeAuxiliaryBarWidth");
+    },
+    "pearai.freeModelSwitch": (msg) => {
+      const warnMsg = msg.warningMsg;
+      const flagSet = extensionContext.globalState.get("freeModelSwitched");
+      if (!warnMsg && flagSet) {
+        // credit restored
+        vscode.window.showInformationMessage("Credit restored. Switched back to PearAI Pro model.");
+        extensionContext.globalState.update("freeModelSwitched", false);
+        return;
+      }
+      if (warnMsg && !flagSet) {
+        // limit reached, switching to free model
+        vscode.window.showInformationMessage(msg.warningMsg);
+        extensionContext.globalState.update("freeModelSwitched", true);
+        sidebar.webviewProtocol?.request("switchModel", "PearAI Model", ["pearai.pearAIChatView"]);
+      }
     },
     "pearai.patchWSL": async () => {
       if (process.platform !== 'win32') {

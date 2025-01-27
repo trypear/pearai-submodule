@@ -5,6 +5,8 @@ import {
   SlashCommandDescription,
   CustomCommand,
 } from "../index.js";
+import { SERVER_URL } from "../util/parameters";
+
 
 export const FREE_TRIAL_MODELS: ModelDescription[] = [
   {
@@ -44,13 +46,11 @@ export const defaultContextProvidersVsCode: ContextProviderWithParams[] = [
   { name: "folder", params: {} },
   // { name: "relativefilecontext", params: {} }, // This is unused currently
   { name: "relativegitfilecontext", params: {} },
-   // TODO: Known bug v.1.3.0. codebase works on its own, but doesnt send a message if there is text in the same message as the @Codebase
+  // TODO: Known bug v.1.3.0. codebase works on its own, but doesnt send a message if there is text in the same message as the @Codebase
   { name: "codebase", params: {} },
-
 ];
 
-export const defaultContextProvidersJetBrains: ContextProviderWithParams[] = [
-];
+export const defaultContextProvidersJetBrains: ContextProviderWithParams[] = [];
 
 export const defaultSlashCommandsVscode: SlashCommandDescription[] = [
   {
@@ -99,76 +99,7 @@ export const defaultSlashCommandsJetBrains = [
 ];
 
 export const defaultConfig: SerializedContinueConfig = {
-  models: [
-    {
-      model: "pearai_model",
-      contextLength: 300000,
-      title: "PearAI Model",
-      systemMessage:
-        "You are an expert software developer. You give helpful and concise responses.",
-      provider: "pearai_server",
-      isDefault: true,
-    },
-    {
-      model: "gpt-4o",
-      contextLength: 300000,
-      title: "GPT-4o (PearAI)",
-      systemMessage:
-        "You are an expert software developer. You give helpful and concise responses.",
-      provider: "pearai_server",
-      isDefault: true,
-    },
-    {
-      model: "claude-3-5-sonnet",
-      contextLength: 3000000,
-      title: "Claude 3.5 Sonnet - New (PearAI)",
-      systemMessage:
-        "You are an expert software developer. You give helpful and concise responses.",
-      provider: "pearai_server",
-      isDefault: true,
-    },
-    {
-      model: "perplexity",
-      title: "PearAI Search (Powered by Perplexity)",
-      systemMessage: "You are an expert documentation and information gatherer. You give succinct responses based on the latest software engineering practices and documentation. Always go to the web to get the latest information and data.",
-      provider: "pearai_server",
-      isDefault: true,
-    },
-    {
-      model: "claude-3-5-haiku",
-      title: "Claude 3.5 Haiku (PearAI)",
-      provider: "pearai_server",
-      isDefault: true,
-    },
-    {
-      model: "gemini-1.5-pro",
-      contextLength: 3000000,
-      title: "Gemini 1.5 Pro (PearAI)",
-      systemMessage:
-        "You are an expert software developer. You give helpful and concise responses.",
-      provider: "pearai_server",
-      isDefault: true,
-    },
-    {
-      model: "pearai_model",
-      contextLength: 300000,
-      title: "PearAI Creator (Powered by aider)",
-      provider: "aider",
-      isDefault: true,
-    },
-    {
-      model: "o1-mini",
-      title: "GPTo1 Mini (PearAI annual only)",
-      provider: "pearai_server",
-      isDefault: true
-    },
-    {
-      model: "o1-preview",
-      title: "GPTo1 Preview (PearAI annual only)",
-      provider: "pearai_server",
-      isDefault: true
-    }
-  ],
+  models: [],
   customCommands: [
     {
       name: "test",
@@ -177,14 +108,15 @@ export const defaultConfig: SerializedContinueConfig = {
       description: "Write unit tests for highlighted code",
     },
   ],
-  // WIP: Add autocomplete by default
-  // tabAutocompleteModel: {
-  //   title: "PearAI Autocomplete",
-  //   provider: "pearai_server",
-  //   model: "pearai_autocomplete",
-  // },
   contextProviders: defaultContextProvidersVsCode,
   slashCommands: defaultSlashCommandsVscode,
+  integrations: [
+    {
+      name: "mem0",
+      description: "PearAI Personalized Chat powered by Mem0",
+      enabled: false,
+    }
+  ],
 };
 
 export const defaultCustomCommands: CustomCommand[] = [

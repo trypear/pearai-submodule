@@ -28,6 +28,7 @@ import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
 import { isAiderMode, isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
+import { getModelImage } from "@/util/aibrandimages";
 
 interface StepContainerProps {
   item: ChatHistoryItem;
@@ -45,7 +46,8 @@ interface StepContainerProps {
 }
 
 const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
-  padding: 4px 0px 8px 0px;
+  padding-left: 10px;
+  padding-right: 10px;
   background-color: ${(props) =>
     props.isUserInput
       ? vscInputBackground
@@ -53,8 +55,8 @@ const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
         ? "transparent"
         : vscBackground};
   font-size: ${(props) => props.fontSize || getFontSize()}px;
-  // border-radius: ${defaultBorderRadius};
-  overflow: hidden;
+  border-radius: ${defaultBorderRadius};
+	overflow:hidden;
 `;
 
 function StepContainer({
@@ -111,13 +113,13 @@ function StepContainer({
       console.error("Failed to fetch number of changes:", error);
     }
   };
-  
+
   useEffect(() => {
     if (!active && isAider) {
       fetchNumberOfChanges();
     }
   }, [active, isAider]);
-  
+
 
   const [truncatedEarly, setTruncatedEarly] = useState(false);
 
@@ -162,9 +164,9 @@ function StepContainer({
   }, [isLast, active, isPerplexity, item.message.content, ideMessenger]);
 
   return (
-    <div>
-      <div className="relative">
+      <div className="relative pb-[13px]">
         <ContentDiv
+          className="max-w-4xl mx-auto"
           hidden={!open}
           isUserInput={isUserInput}
           fontSize={getFontSize()}
@@ -184,9 +186,85 @@ function StepContainer({
               isLast={isLast}
               messageIndex={index}
               integrationSource={source}
+              citations={isPerplexity ? item.citations : undefined}
             />
           )}
+
+					{!active && (
+          <div
+            className="px-2 flex gap-1 justify-between -mt-[6px]"
+            style={{
+              color: lightGray,
+              fontSize: getFontSize() - 3,
+            }}
+          >
+            {modelTitle && (
+              <div className="flex items-center font-[500]">
+                {getModelImage(modelTitle) !== 'not found' ? (
+                  <img
+                    src={`${window.vscMediaUrl}/logos/${getModelImage(modelTitle)}`}
+                    className="w-3.5 h-3.5 mr-2 object-contain rounded-sm"
+                    alt={modelTitle}  
+                  />
+                ) : (
+                  <CubeIcon className="w-[14px] h-[14px] mr-1 stroke-2" />
+                )}
+                {modelTitle}
+              </div>
+            )}
+
+						<div className="flex">
+            {truncatedEarly && !bareChatMode && (
+							<HeaderButtonWithText
+                text="Continue generation"
+                onClick={(e) => {
+                  onContinueGeneration();
+                }}
+              >
+                <BarsArrowDownIcon
+                  color={lightGray}
+                  width="0.875rem"
+                  height="0.875rem"
+									strokeWidth={2}
+                />
+              </HeaderButtonWithText>
+            )}
+
+            <CopyButton
+              text={stripImages(item.message.content)}
+              color={lightGray}
+            />
+            {!bareChatMode && (
+              <HeaderButtonWithText
+                text="Regenerate"
+                onClick={(e) => {
+                  onRetry();
+                }}
+								>
+                <ArrowUturnLeftIcon
+                  color={lightGray}
+                  width="0.875rem"
+                  height="0.875rem"
+									strokeWidth={2}
+                />
+              </HeaderButtonWithText>
+            )}
+            <HeaderButtonWithText text="Delete Message">
+              <TrashIcon
+                color={lightGray}
+                width="0.875rem"
+								height="0.875rem"
+								strokeWidth={2}
+                onClick={() => {
+									onDelete();
+                }}
+								/>
+            </HeaderButtonWithText>
+								</div>
+          </div>
+        )}
         </ContentDiv>
+
         {!active && isPerplexity && (
           <HeaderButtonWithText
             onClick={() => {
@@ -212,75 +290,7 @@ function StepContainer({
             </HeaderButtonWithText>
           )
         }
-        {!active && (
-          <div
-            className="flex gap-1 absolute -bottom-2 right-0"
-            style={{
-              zIndex: 200,
-              color: lightGray,
-              fontSize: getFontSize() - 3,
-            }}
-          >
-            {modelTitle && (
-              <div className="flex items-center">
-                <CubeIcon className="w-3 h-4 mr-1 flex-shrink-0" />
-                {modelTitle}
-                <div
-                  style={{
-                    backgroundColor: vscButtonBackground,
-                    borderColor: vscButtonBackground,
-                  }}
-                  className="w-px h-full ml-3 mr-1"
-                />
-              </div>
-            )}
-            {truncatedEarly && !bareChatMode && (
-              <HeaderButtonWithText
-                text="Continue generation"
-                onClick={(e) => {
-                  onContinueGeneration();
-                }}
-              >
-                <BarsArrowDownIcon
-                  color={lightGray}
-                  width="1.2em"
-                  height="1.2em"
-                />
-              </HeaderButtonWithText>
-            )}
-
-            <CopyButton
-              text={stripImages(item.message.content)}
-              color={lightGray}
-            />
-            {!bareChatMode && (
-              <HeaderButtonWithText
-                text="Regenerate"
-                onClick={(e) => {
-                  onRetry();
-                }}
-              >
-                <ArrowUturnLeftIcon
-                  color={lightGray}
-                  width="1.2em"
-                  height="1.2em"
-                />
-              </HeaderButtonWithText>
-            )}
-            <HeaderButtonWithText text="Delete Message">
-              <TrashIcon
-                color={lightGray}
-                width="1.2em"
-                height="1.2em"
-                onClick={() => {
-                  onDelete();
-                }}
-              />
-            </HeaderButtonWithText>
-          </div>
-        )}
       </div>
-    </div>
   );
 }
 

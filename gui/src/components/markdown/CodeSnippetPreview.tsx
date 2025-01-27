@@ -1,17 +1,15 @@
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  PaintBrushIcon,
-  XMarkIcon,
+  CodeBracketIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 import { ContextItemWithId } from "core";
 import { getMarkdownLanguageTagForFile } from "core/util";
 import React, { useContext } from "react";
 import styled from "styled-components";
-import { defaultBorderRadius, lightGray, vscEditorBackground } from "..";
+import { defaultBorderRadius, lightGray, vscBackground, vscEditorBackground } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
-import { getFontSize } from "../../util";
-import FileIcon from "../FileIcon";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import StyledMarkdownPreview from "./StyledMarkdownPreview";
 
@@ -20,23 +18,20 @@ const PreviewMarkdownDiv = styled.div<{
 }>`
   background-color: ${vscEditorBackground};
   border-radius: ${defaultBorderRadius};
-  border: 0.5px solid ${(props) => props.borderColor || lightGray};
-  margin-top: 4px;
-  margin-bottom: 4px;
+  border: 1.5px solid #2A3238;
   overflow: hidden;
   position: relative;
 
   & div {
     background-color: ${vscEditorBackground};
+		user-select: text;
   }
 `;
 
 const PreviewMarkdownHeader = styled.div`
-  margin: 0;
-  padding: 2px 6px;
-  border-bottom: 0.5px solid ${lightGray};
+  padding: 3px;
+  border-radius: ${defaultBorderRadius};
   word-break: break-all;
-  font-size: ${getFontSize() - 2}px;
   display: flex;
   align-items: center;
 `;
@@ -48,13 +43,6 @@ interface CodeSnippetPreviewProps {
   borderColor?: string;
   editing?: boolean;
 }
-
-const StyledHeaderButtonWithText = styled(HeaderButtonWithText)<{
-  color?: string;
-}>`
-  ${(props) => props.color && `background-color: ${props.color};`}
-`;
-
 const MAX_PREVIEW_HEIGHT = 300;
 
 // Pre-compile the regular expression outside of the function
@@ -111,17 +99,27 @@ function CodeSnippetPreview(props: CodeSnippetPreviewProps) {
           }
         }}
       >
-        <div className="flex items-center">
-          <FileIcon
+
+				<CodeBracketIcon className="h-4 w-4 stroke-2 pl-1" style={{ color: lightGray}}/>
+        <div className="flex p-1 pl-2 gap-1 rounded-[4px] items-center" style={{ backgroundColor: vscBackground}}>
+				{/* <FileIcon
             height="20px"
             width="20px"
             filename={props.item.name}
-          ></FileIcon>
-          {props.item.name}
-        </div>
-        <div className="flex items-center">
-          {props.onEdit && (
-            <StyledHeaderButtonWithText
+          ></FileIcon> */}
+          {props.item.id.providerTitle === "code" && props.item.name.includes("(") && (
+  					<span className="text-input-foreground">
+    					{props.item.name.split("(")[1]?.split(")")?.at(0) || ""}
+  					</span>
+					)}
+					<span className="font-[500]" style={{ color: lightGray}}>
+  					{props.item.id.providerTitle === "code"
+    					? (props.item.name.includes("(") ? props.item.name.split("(")[0] : props.item.name)
+    					: props.item.name
+  					}
+					</span>
+          {/* {props.onEdit && (
+            <HeaderButtonWithText
               text="Edit"
               onClick={(e) => {
                 e.stopPropagation();
@@ -131,8 +129,8 @@ function CodeSnippetPreview(props: CodeSnippetPreviewProps) {
               {...(props.editing && { color: "#f0f4" })}
             >
               <PaintBrushIcon width="1.1em" height="1.1em" />
-            </StyledHeaderButtonWithText>
-          )}
+            </HeaderButtonWithText>
+          )} */}
           <HeaderButtonWithText
             text="Delete"
             onClick={(e) => {
@@ -140,13 +138,14 @@ function CodeSnippetPreview(props: CodeSnippetPreviewProps) {
               props.onDelete();
             }}
           >
-            <XMarkIcon width="1.1em" height="1.1em" />
+            <TrashIcon className="h-3.5 w-3.5 stroke-2 stroke-[#D23782]" />
           </HeaderButtonWithText>
         </div>
       </PreviewMarkdownHeader>
+
       <div
         contentEditable={false}
-        className="m-0"
+        className="-mt-3"
         ref={codeBlockRef}
         style={{
           height: collapsed ? codeBlockHeight : undefined,
@@ -158,6 +157,7 @@ function CodeSnippetPreview(props: CodeSnippetPreviewProps) {
             props.item.description,
           )}\n${props.item.content.trimEnd()}\n${fence}`}
           showCodeBorder={false}
+					isCodeSnippet={true}
         />
       </div>
 
@@ -168,14 +168,12 @@ function CodeSnippetPreview(props: CodeSnippetPreviewProps) {
         >
           {collapsed ? (
             <ChevronDownIcon
-              width="1.2em"
-              height="1.2em"
+              className="h-4 w-4 stroke-2"
               onClick={() => setCollapsed(false)}
             />
           ) : (
             <ChevronUpIcon
-              width="1.2em"
-              height="1.2em"
+              className="h-4 w-4 stroke-2"
               onClick={() => setCollapsed(true)}
             />
           )}

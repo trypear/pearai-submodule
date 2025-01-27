@@ -4,6 +4,7 @@ import Image from "@tiptap/extension-image";
 import Paragraph from "@tiptap/extension-paragraph";
 import Placeholder from "@tiptap/extension-placeholder";
 import Text from "@tiptap/extension-text";
+import HardBreak from "@tiptap/extension-hard-break";
 import { Plugin } from "@tiptap/pm/state";
 import { Editor, EditorContent, JSONContent, useEditor } from "@tiptap/react";
 import {
@@ -25,6 +26,9 @@ import {
   vscForeground,
   vscInputBackground,
   vscInputBorder,
+  vscSidebarBorder,
+  vscBackground,
+  vscEditorBackground,
   vscInputBorderFocus,
 } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
@@ -49,6 +53,7 @@ import {
 import CodeBlockExtension from "./CodeBlockExtension";
 import { SlashCommand } from "./CommandsExtension";
 import InputToolbar from "./InputToolbar";
+import ContextToolbar from "./ContextToolbar";
 import { Mention } from "./MentionExtension";
 import "./TipTapEditor.css";
 import {
@@ -57,30 +62,23 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
-import ActiveFileIndicator from "./ActiveFileIndicator";
-import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
+import { TipTapContextMenu } from './TipTapContextMenu';
 
 
 const InputBoxDiv = styled.div`
+	position: relative;
   resize: none;
-
-  padding: 8px 12px;
-  padding-bottom: 4px;
+  gap: 12px;
+  padding: 12px;
   font-family: inherit;
-  border-radius: ${defaultBorderRadius};
+  border-radius: 12px;
   margin: 0;
-  height: auto;
-  width: calc(100% - 18px);
-  background-color: ${vscInputBackground};
+  width: 100%;
+  background-color: ${vscEditorBackground};
   color: ${vscForeground};
-  z-index: 1;
-  outline: none;
   font-size: ${getFontSize()}px;
-  &:focus {
-    outline: none;
-
-    border: 0.5px solid ${vscInputBorderFocus};
-  }
+  word-break: break-word;
 
   &::placeholder {
     color: ${lightGray}cc;
@@ -88,6 +86,12 @@ const InputBoxDiv = styled.div`
 
   display: flex;
   flex-direction: column;
+
+  .ProseMirror {
+    // max-height: 600px;
+    flex: 1;
+    overflow-y: auto;
+  }
 `;
 
 const HoverDiv = styled.div`
@@ -98,11 +102,13 @@ const HoverDiv = styled.div`
   left: 0;
   opacity: 0.5;
   background-color: ${vscBadgeBackground};
+	border-radius: ${defaultBorderRadius};
   color: ${vscForeground};
-  z-index: 100;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
+	pointer-events: none;
 `;
 
 const HoverTextDiv = styled.div`
@@ -112,10 +118,11 @@ const HoverTextDiv = styled.div`
   top: 0;
   left: 0;
   color: ${vscForeground};
-  z-index: 100;
+  z-index: 20;
   display: flex;
   align-items: center;
   justify-content: center;
+	pointer-events: none;
 `;
 
 
@@ -134,23 +141,16 @@ const getPlaceholder = (historyLength: number, location: any) => {
     : "Ask a follow-up";
 };
 
-function getDataUrlForFile(file: File, img): string {
-  const targetWidth = 512;
-  const targetHeight = 512;
-  const scaleFactor = Math.min(
-    targetWidth / img.width,
-    targetHeight / img.height,
-  );
-
+export function getDataUrlForFile(file: File, img: HTMLImageElement): string {
   const canvas = document.createElement("canvas");
-  canvas.width = img.width * scaleFactor;
-  canvas.height = img.height * scaleFactor;
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
 
   const ctx = canvas.getContext("2d");
   ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-  const downsizedDataUrl = canvas.toDataURL("image/jpeg", 0.7);
-  return downsizedDataUrl;
+  const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+  return dataUrl;
 }
 
 interface TipTapEditorProps {
@@ -162,6 +162,44 @@ interface TipTapEditorProps {
   source?: 'perplexity' | 'aider' | 'continue';
   onChange?: (newState: JSONContent) => void;
 }
+
+export const handleCopy = (editor: Editor) => {
+  const selection = editor.state.selection;
+  const text = editor.state.doc.textBetween(selection.from, selection.to, '\n');
+  navigator.clipboard.writeText(text);
+};
+
+export const handleCut = (editor: Editor) => {
+  const selection = editor.state.selection;
+  const text = editor.state.doc.textBetween(selection.from, selection.to, '\n');
+  navigator.clipboard.writeText(text);
+  editor.commands.deleteSelection();
+};
+
+export const handlePaste = async (editor: Editor) => {
+  const clipboardText = await navigator.clipboard.readText();
+  if (clipboardText) {
+    const lines = clipboardText.split(/\r?\n/);
+    const { tr } = editor.state;
+    const { schema } = editor.state;
+    let pos = editor.state.selection.from;
+
+    // Delete the selected text before inserting new text
+    tr.delete(editor.state.selection.from, editor.state.selection.to);
+
+    lines.forEach((line, index) => {
+      if (index > 0) {
+        tr.insert(pos++, schema.nodes.hardBreak.create());
+      }
+      tr.insertText(line, pos);
+      pos += line.length;
+    });
+
+    editor.view.dispatch(tr);
+    return true;
+  }
+  return false;
+};
 
 const TipTapEditor = memo(function TipTapEditor({
   availableContextProviders,
@@ -320,6 +358,34 @@ const TipTapEditor = memo(function TipTapEditor({
       Document,
       History,
       Image.extend({
+        renderHTML({ HTMLAttributes }) {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'image-wrapper';
+
+          const img = document.createElement('img');
+          Object.entries(HTMLAttributes).forEach(([key, value]) => {
+            img.setAttribute(key, value as string);
+          });
+
+          const deleteButton = document.createElement('button');
+          deleteButton.className = 'image-delete-button';
+          deleteButton.textContent = 'Image';
+          deleteButton.onclick = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            // Dispatch a custom event that we'll handle in the editor
+            const event = new CustomEvent('deleteImage', {
+              detail: { imgElement: (e.target as HTMLElement).parentElement?.querySelector('img') }
+            });
+            window.dispatchEvent(event);
+          };
+
+          wrapper.appendChild(img);
+          wrapper.appendChild(deleteButton);
+
+          return wrapper;
+        },
         addProseMirrorPlugins() {
           const plugin = new Plugin({
             props: {
@@ -445,7 +511,7 @@ const TipTapEditor = memo(function TipTapEditor({
         },
       }).configure({
         HTMLAttributes: {
-          class: "my-1",
+          class: "m-0",
         },
       }),
       Text,
@@ -481,10 +547,15 @@ const TipTapEditor = memo(function TipTapEditor({
         },
       }),
       CodeBlockExtension,
+      HardBreak.extend({
+        renderText() {
+          return '\n'
+        },
+      }),
     ],
     editorProps: {
       attributes: {
-        class: "outline-none -mt-1 mb-1 overflow-hidden",
+        class: "outline-none",
         style: `font-size: ${getFontSize()}px;`,
       },
     },
@@ -500,6 +571,9 @@ const TipTapEditor = memo(function TipTapEditor({
   }, []);  // Remove dependencies to prevent recreation
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
+
+  const isPerplexity = isPerplexityMode();
+  const isAider = isAiderMode();
 
   useEffect(() => {
     const handleShowFile = (event: CustomEvent) => {
@@ -750,7 +824,7 @@ const TipTapEditor = memo(function TipTapEditor({
   useWebviewListener(
     "highlightedCode",
     async (data) => {
-      if (!isMainInput || !editor) {
+      if (!data.rangeInFileWithContents.contents || !isMainInput || !editor) {
         return;
       }
       if (!ignoreHighlightedCode) {
@@ -911,6 +985,58 @@ const TipTapEditor = memo(function TipTapEditor({
     }
   }, [editor, source]);
 
+
+  const [contextMenu, setContextMenu] = useState<{
+    position: { x: number; y: number };
+  } | null>(null);
+
+  // Add context menu handler
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleContextMenu = (event: MouseEvent) => {
+      if (!editor.view.dom.contains(event.target as Node)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      setContextMenu({
+        position: { x: event.clientX, y: event.clientY },
+      });
+    };
+
+    const editorDom = editor.view.dom;
+    editorDom.addEventListener('contextmenu', handleContextMenu);
+
+    return () => {
+      editorDom.removeEventListener('contextmenu', handleContextMenu);
+    };
+  }, [editor]);
+
+  // Add this effect in your component
+  useEffect(() => {
+    if (!editor) return;
+
+    const handleDeleteImage = (event: CustomEvent) => {
+      const imgElement = event.detail.imgElement;
+      if (imgElement && editor) {
+        // Find all image nodes in the editor
+        editor.state.doc.descendants((node, pos) => {
+          if (node.type.name === 'image' && node.attrs.src === imgElement.src) {
+            // Delete the specific image node at this position
+            editor.commands.deleteRange({ from: pos, to: pos + 1 });
+            return false; // Stop searching
+          }
+        });
+      }
+    };
+
+    window.addEventListener('deleteImage', handleDeleteImage as EventListener);
+    return () => {
+      window.removeEventListener('deleteImage', handleDeleteImage as EventListener);
+    };
+  }, [editor]);
+
   return (
     <InputBoxDiv
       onKeyDown={(e) => {
@@ -965,7 +1091,28 @@ const TipTapEditor = memo(function TipTapEditor({
         event.preventDefault();
       }}
     >
-      {historyLength === 0 && <ActiveFileIndicator />}
+      <ContextToolbar
+hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
+        onImageFileSelected={(file) => {
+          handleImageFile(file).then(([img, dataUrl]) => {
+            const { schema } = editor.state;
+            const node = schema.nodes.image.create({ src: dataUrl });
+            editor.commands.command(({ tr }) => {
+              tr.insert(0, node);
+              return true;
+            });
+          });
+        }}
+        onAddContextItem={() => {
+          if (editor.getText().endsWith("@")) {
+          } else {
+            // Add space so that if there's text right before, it still activates the dropdown
+            editor.commands.insertContent(" @");
+          }
+        }}
+				editor={editor}
+      />
+
       <EditorContent
         spellCheck={false}
         editor={editor}
@@ -973,6 +1120,7 @@ const TipTapEditor = memo(function TipTapEditor({
           event.stopPropagation();
         }}
       />
+
       <InputToolbar
         showNoContext={optionKeyHeld}
         hidden={!(editorFocusedRef.current || isMainInput)}
@@ -995,6 +1143,7 @@ const TipTapEditor = memo(function TipTapEditor({
           });
         }}
       />
+
       {showDragOverMsg &&
         modelSupportsImages(
           defaultModel.provider,
@@ -1004,9 +1153,20 @@ const TipTapEditor = memo(function TipTapEditor({
         ) && (
           <>
             <HoverDiv></HoverDiv>
-            <HoverTextDiv>Hold ⇧ to drop image</HoverTextDiv>
+            <HoverTextDiv>Drop Here</HoverTextDiv>
           </>
-        )}
+        )
+			}
+      {contextMenu && editor && (
+        <TipTapContextMenu
+          editor={editor}
+          position={contextMenu.position}
+          onClose={() => setContextMenu(null)}
+          defaultModel={defaultModel}
+          ideMessenger={ideMessenger}
+          handleImageFile={handleImageFile}
+        />
+      )}
     </InputBoxDiv>
   );
 });

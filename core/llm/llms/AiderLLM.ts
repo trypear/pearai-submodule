@@ -4,20 +4,14 @@ import {
   LLMOptions,
   ModelProvider,
 } from "../../index.js";
-import { SERVER_URL } from "../../util/parameters.js";
 import { BaseLLM } from "../index.js";
-import { streamSse, streamJSON } from "../stream.js";
-import { checkTokens } from "../../db/token.js";
 import { stripImages } from "../images.js";
 import { countTokens } from "../countTokens.js";
-import * as cp from "child_process";
 import * as process from "process";
 import { PearAICredentials } from "../../pearaiServer/PearAICredentials.js";
-import { getHeaders } from "../../pearaiServer/stubs/headers.js";
-import { execSync } from "child_process";
-import * as os from "os";
-import * as vscode from "vscode";
 import type { AiderState } from "../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
+import { AiderProcessManager } from "../../../extensions/vscode/src/integrations/aider/aiderProcess"
+
 
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
@@ -40,36 +34,21 @@ export const AIDER_END_MARKER = "───────────────�
 const COMPLETION_DELAY = 1500; // 1.5 seconds wait time
 
 class Aider extends BaseLLM {
+
   getCurrentDirectory: (() => Promise<string>) | null = null;
   static providerName: ModelProvider = "aider";
+  private aiderOutput: string = '';
+
   static defaultOptions: Partial<LLMOptions> = {
     model: "pearai_model",
-    contextLength: 8192,
+    contextLength: 200_000,
     completionOptions: {
       model: "pearai_model",
-      maxTokens: 2048,
     },
   };
 
-  public aiderProcess: cp.ChildProcess | null = null;
-  private aiderOutput: string = "";
+  public static aiderProcess: AiderProcessManager | null = null;
   private credentials: PearAICredentials;
-  private command: string[];
-
-  public aiderState: AiderState["state"] = "starting";
-
-  public getAiderState(): AiderState["state"] {
-    return this.aiderState;
-  }
-
-  public setAiderState(state: AiderState["state"]): void {
-    console.dir(
-      `Setting PearAI Creator state from ${this.aiderState} to ${state}`,
-    );
-    this.aiderState = state;
-    // Send an update to the UI
-    vscode.commands.executeCommand("pearai.setAiderProcessState", state);
-  }
 
   constructor(options: LLMOptions) {
     super(options);
@@ -80,50 +59,11 @@ class Aider extends BaseLLM {
       options.getCredentials,
       options.setCredentials || (async () => {}),
     );
-    console.log("Aider constructor called");
+    console.dir("Aider constructor called");
     this.model = options.model;
     this.apiKey = options.apiKey;
-    this.command = [];
-  }
+    this.credentials.checkAndUpdateCredentials();
 
-  public async aiderResetSession(
-    model: string,
-    apiKey: string | undefined,
-  ): Promise<void> {
-    console.log("Resetting Aider process...");
-    // Kill the current process if it exists, with reset flag
-    this.killAiderProcess(true);
-    // Reset the output
-    this.aiderOutput = "";
-
-    // Restart the Aider chat with the provided model and API key
-    try {
-      await this.startAiderChat(model, apiKey);
-      console.log("Aider process reset successfully.");
-    } catch (error) {
-      console.error("Error resetting Aider process:", error);
-      throw error;
-    }
-  }
-
-  public killAiderProcess(reset: boolean = false): void {
-    if (this.aiderProcess && !this.aiderProcess.killed) {
-      console.log("Killing Aider process...");
-      this.aiderProcess.kill();
-      this.aiderProcess = null;
-      if (!reset) {
-        this.setAiderState("stopped");
-      }
-    }
-  }
-
-  public aiderCtrlC(): void {
-    if (this.aiderProcess && !this.aiderProcess.killed) {
-      console.log("Sending Ctrl+C signal to Aider process...");
-      this.sendToAiderChat("\x03"); // Send Ctrl+C to the Aider process
-    } else {
-      console.log("No active Aider process to send Ctrl+C to.");
-    }
   }
 
   public setPearAIAccessToken(value: string | undefined): void {
@@ -134,352 +74,35 @@ class Aider extends BaseLLM {
     this.credentials.setRefreshToken(value);
   }
 
-  private getUserShell(): string {
-    if (IS_WINDOWS) {
-      return process.env.COMSPEC || "cmd.exe";
+  private getAiderProcess(): AiderProcessManager {
+    if (!Aider.aiderProcess) {
+      Aider.aiderProcess = AiderProcessManager.getInstance(this.apiKey, this.model, this.credentials);
     }
-    // return process.env.SHELL || "/bin/sh";
-    return "/bin/sh";
+    return Aider.aiderProcess;
   }
 
-  private getUserPath(): string {
-    try {
-      let pathCommand: string;
-      const shell = this.getUserShell();
-
-      if (os.platform() === "win32") {
-        // For Windows, we'll use a PowerShell command
-        pathCommand =
-          "powershell -Command \"[Environment]::GetEnvironmentVariable('Path', 'User') + ';' + [Environment]::GetEnvironmentVariable('Path', 'Machine')\"";
-      } else {
-        // For Unix-like systems (macOS, Linux)
-        pathCommand = `${shell} -ilc 'echo $PATH'`;
-      }
-
-      return execSync(pathCommand, { encoding: "utf8" }).trim();
-    } catch (error) {
-      console.error("Error getting user PATH:", error);
-      return process.env.PATH || "";
-    }
+  public startAiderChat(model: string, apiKey: string | undefined) {
+    return this.getAiderProcess().startAiderChat(model, apiKey);
   }
 
-  private captureAiderOutput(data: Buffer): void {
-    const output = data.toString();
-    console.log("Raw Aider output: ", JSON.stringify(output));
-
-    // Remove ANSI escape codes
-    let cleanOutput = output.replace(/\x1B\[[0-9;]*[JKmsu]/g, "");
-
-    const specialLoadingChars = /⠋|⠙|⠹|⠸|⠼|⠴|⠦|⠧|⠇|⠏/g;
-    cleanOutput = cleanOutput.replace(specialLoadingChars, "");
-    cleanOutput = cleanOutput.replace(
-      /Updating repo map/g,
-      "Updating repo map...",
-    );
-
-    // Preserve line breaks
-    this.aiderOutput += cleanOutput;
+  public killAiderProcess() {
+    return this.getAiderProcess().killAiderProcess();
   }
 
-  public async startAiderChat(
-    model: string,
-    apiKey: string | undefined,
-  ): Promise<void> {
-    if (this.aiderProcess && !this.aiderProcess.killed) {
-      console.log("Aider process already running");
-      this.setAiderState("ready");
-      return;
-    }
-
-    return new Promise(async (resolve, reject) => {
-      let currentDir: string;
-      if (this.getCurrentDirectory) {
-        currentDir = await this.getCurrentDirectory();
-      } else {
-        currentDir = "";
-      }
-
-      let aiderFlags =
-        "--no-pretty --yes-always --no-auto-commits --no-suggest-shell-commands --no-check-update --no-auto-lint --map-tokens 2048 --subtree-only";
-      // if (UDIFF_FLAG) {
-      //   aiderFlags += " --edit-format udiff";
-      // }
-
-      const aiderCommands = [
-        `python -m aider ${aiderFlags}`,
-        `python3 -m aider ${aiderFlags}`,
-        `aider ${aiderFlags}`,
-      ];
-      let commandFound = false;
-
-      for (const aiderCommand of aiderCommands) {
-        try {
-          console.dir("Running aider command: ");
-          console.dir(aiderCommand);
-          await execSync(`${aiderCommand} --version`, { stdio: "ignore" });
-          commandFound = true;
-
-          if (model.includes("claude")) {
-            this.command = [`${aiderCommand} --model ${model}`];
-          } else if (model.includes("gpt")) {
-            this.command = [`${aiderCommand} --model ${model}`];
-          } else {
-            // handles pearai, aider, and default cases
-            await this.credentials.checkAndUpdateCredentials();
-            const accessToken = this.credentials.getAccessToken();
-            if (!accessToken) {
-              this.setAiderState("signedOut");
-              throw new Error("User not logged in to PearAI.");
-            }
-            this.command = [
-              aiderCommand,
-              "--openai-api-key",
-              accessToken,
-              "--openai-api-base",
-              `${SERVER_URL}/integrations/aider`,
-            ];
-            break;
-          }
-          break; // Exit the loop if a working command is found
-        } catch (error) {
-          console.log(
-            `Command ${aiderCommand} not found or errored. Trying next...`,
-          );
-          if (
-            error instanceof Error &&
-            error.message === "User not logged in to PearAI."
-          ) {
-            throw error; // Re-throw auth errors
-          }
-        }
-      }
-
-      if (!commandFound) {
-        throw new Error(
-          "Aider command not found. Please ensure it's installed correctly.",
-        );
-      }
-
-      const userPath = this.getUserPath();
-      const userShell = this.getUserShell();
-
-      const spawnAiderProcess = async () => {
-        try {
-          if (IS_WINDOWS) {
-            return spawnAiderProcessWindows();
-          } else {
-            return spawnAiderProcessUnix();
-          }
-        } catch (error) {
-          console.error("Error spawning Aider process:", error);
-          return null;
-        }
-      };
-
-      const spawnAiderProcessWindows = async () => {
-        const envSetCommands = [
-          "setx PYTHONIOENCODING utf-8",
-          "setx AIDER_SIMPLE_OUTPUT 1",
-          "chcp 65001",
-        ];
-
-        if (model === "claude-3-5-sonnet-20240620") {
-          envSetCommands.push(`setx ANTHROPIC_API_KEY ${apiKey}`);
-        } else if (model === "gpt-4o") {
-          envSetCommands.push(`setx OPENAI_API_KEY ${apiKey}`);
-        } else {
-          // For pearai_model, we're using the access token
-          const accessToken = this.credentials.getAccessToken();
-          envSetCommands.push(`setx OPENAI_API_KEY ${accessToken}`);
-        }
-
-        // Execute setx commands in the background
-        for (const cmd of envSetCommands) {
-          await new Promise((resolve, reject) => {
-            cp.exec(cmd, { windowsHide: true }, (error, stdout, stderr) => {
-              if (error) {
-                console.error(`Error executing ${cmd}: ${error}`);
-                reject(error);
-              } else {
-                console.log(`Executed: ${cmd}`);
-                resolve(stdout);
-              }
-            });
-          });
-        }
-
-        // Now spawn Aider in the background
-        return cp.spawn("cmd.exe", ["/c", ...this.command], {
-          stdio: ["pipe", "pipe", "pipe"],
-          cwd: currentDir,
-          env: {
-            ...process.env,
-            PATH: userPath,
-            PYTHONIOENCODING: "utf-8",
-            AIDER_SIMPLE_OUTPUT: "1",
-          },
-          windowsHide: true,
-        });
-      };
-
-      const spawnAiderProcessUnix = () => {
-        if (model.includes("claude")) {
-          this.command.unshift(`export ANTHROPIC_API_KEY=${apiKey};`);
-        } else if (model.includes("gpt")) {
-          this.command.unshift(`export OPENAI_API_KEY=${apiKey};`);
-        } else {
-          // For pearai_model, we're using the access token
-          const accessToken = this.credentials.getAccessToken();
-          this.command.unshift(`export OPENAI_API_KEY=${accessToken};`);
-        }
-        return cp.spawn(userShell, ["-c", this.command.join(" ")], {
-          stdio: ["pipe", "pipe", "pipe"],
-          cwd: currentDir,
-          env: {
-            ...process.env,
-            PATH: userPath,
-            PYTHONIOENCODING: "utf-8",
-            AIDER_SIMPLE_OUTPUT: "1",
-          },
-        });
-      };
-
-      const tryStartAider = async () => {
-        console.log("Starting Aider...");
-        this.aiderProcess = await spawnAiderProcess();
-
-        if (this.aiderProcess === null) {
-          this.setAiderState("crashed");
-          return;
-        }
-
-        if (this.aiderProcess.stdout && this.aiderProcess.stderr) {
-          const timeout = setTimeout(() => {
-            reject(new Error("Aider failed to start within timeout period"));
-          }, 30000); // 30 second timeout
-
-          this.aiderProcess.stdout.on("data", (data: Buffer) => {
-            this.captureAiderOutput(data);
-            // Look for the prompt that indicates aider is ready
-            const output = data.toString();
-            //if (output.endsWith(AIDER_READY_FLAG)) {
-            if (READY_PROMPT_REGEX.test(output)) {
-              // Aider's ready prompt
-              if (this.aiderState !== "ready") {
-                console.log("Aider is ready!");
-                this.setAiderState("ready");
-                clearTimeout(timeout);
-                resolve();
-              }
-            }
-          });
-
-          this.aiderProcess.stderr.on("data", (data: Buffer) => {
-            // Scanning repo text ends up here, we can maybe include this in the output in the future.
-            // ie "Scanning repo:  15%|█▍        | 151/1024 [00:00<00:03, 242.84it/s]""
-            console.error(`Aider error: ${data.toString()}`);
-          });
-
-          this.aiderProcess.on("close", (code: number | null) => {
-            console.log(`Aider process exited with code ${code}`);
-            clearTimeout(timeout);
-            if (code !== 0) {
-              reject(new Error(`Aider process exited with code ${code}`));
-            } else {
-              this.aiderProcess = null;
-              resolve();
-            }
-          });
-
-          this.aiderProcess.on("error", (error: Error) => {
-            console.error(`Error starting Aider: ${error.message}`);
-
-            // Check if this is an authentication error for pearai_model
-            if (
-              model === "pearai_model" &&
-              error.message.includes("authentication")
-            ) {
-              this.setAiderState("signedOut"); // Use new signedOut state
-            } else {
-              this.setAiderState("crashed");
-            }
-
-            clearTimeout(timeout);
-            reject(error);
-
-            // Customize error message based on authentication state
-            let message =
-              model === "pearai_model" &&
-              error.message.includes("authentication")
-                ? "Please sign in to use PearAI Creator with hosted servers. You can also opt to use your own API-Key."
-                : "PearAI Creator (Powered by aider) failed to start. Please contact PearAI support on Discord.";
-
-            vscode.window
-              .showErrorMessage(
-                message,
-                ...(model === "pearai_model" ? ["Sign In"] : []),
-                "PearAI Support (Discord)",
-                "Show Logs",
-              )
-              .then((selection: any) => {
-                if (selection === "Sign In") {
-                  vscode.commands.executeCommand("pearai.login");
-                } else if (selection === "PearAI Support (Discord)") {
-                  vscode.env.openExternal(
-                    vscode.Uri.parse("https://discord.com/invite/7QMraJUsQt"),
-                  );
-                } else if (selection === "Show Logs") {
-                  vscode.commands.executeCommand(
-                    "workbench.action.toggleDevTools",
-                  );
-                }
-              });
-          });
-        }
-      };
-
-      await tryStartAider();
-    });
+  public getAiderState(): AiderState {
+    return this.getAiderProcess().state;
   }
 
-  sendToAiderChat(message: string): void {
-    if (
-      this.aiderProcess &&
-      this.aiderProcess.stdin &&
-      !this.aiderProcess.killed
-    ) {
-      const formattedMessage = message.replace(/\n+/g, " ");
-      this.aiderProcess.stdin.write(`${formattedMessage}\n`);
-    } else {
-      console.error("PearAI Creator (Powered by Aider) process is not running");
-      this.setAiderState("stopped");
-      vscode.window
-        .showErrorMessage(
-          "PearAI Creator (Powered by Aider) process is not running. Please view PearAI Creator troubleshooting guide.",
-          "View Troubleshooting",
-        )
-        .then((selection) => {
-          if (selection === "View Troubleshooting") {
-            vscode.env.openExternal(
-              vscode.Uri.parse(
-                "https://trypear.ai/blog/how-to-setup-aider-in-pearai",
-              ),
-            );
-          }
-        });
-    }
+  public setAiderState(state: AiderState) {
+    return this.getAiderProcess().updateState(state);
   }
 
-  private _convertArgs(options: CompletionOptions): any {
-    return {
-      model: options.model,
-      frequency_penalty: options.frequencyPenalty,
-      presence_penalty: options.presencePenalty,
-      max_tokens: options.maxTokens,
-      stop: options.stop?.slice(0, 2),
-      temperature: options.temperature,
-      top_p: options.topP,
-    };
+  public aiderCtrlC() {
+    return this.getAiderProcess().aiderCtrlC();
+  }
+
+  public aiderResetSession(model: string, apiKey: string | undefined) {
+    return this.getAiderProcess().resetSession(model, apiKey);
   }
 
   protected async *_streamComplete(
@@ -524,17 +147,17 @@ class Aider extends BaseLLM {
     messages: ChatMessage[],
     options: CompletionOptions,
   ): AsyncGenerator<ChatMessage> {
-    console.log("Inside Aider _streamChat");
+    console.dir("Inside Aider _streamChat");
     const lastMessage = messages[messages.length - 1].content.toString();
     console.dir("Sending to PearAI Creator:");
     console.dir(lastMessage);
-    this.sendToAiderChat(lastMessage);
+    Aider.aiderProcess?.sendToAiderChat(lastMessage);
 
-    this.aiderOutput = "";
     let lastProcessedIndex = 0;
     let responseComplete = false;
     let potentialCompletion = false;
     let potentialCompletionTimeout: NodeJS.Timeout | null = null;
+    let startedListening = false;
 
     const escapeDollarSigns = (text: string | undefined) => {
       if (!text) {
@@ -543,9 +166,13 @@ class Aider extends BaseLLM {
       return text.replace(/([\\$])/g, "\\$1");
     };
 
+    if (Aider.aiderProcess) {
+      Aider.aiderProcess.aiderOutput = "";
+    }
+
     while (!responseComplete) {
       await new Promise((resolve) => setTimeout(resolve, 100));
-      const newOutput = this.aiderOutput.slice(lastProcessedIndex);
+      const newOutput = Aider.aiderProcess?.aiderOutput.slice(lastProcessedIndex);
 
       if (newOutput) {
         if (potentialCompletionTimeout) {
@@ -555,32 +182,7 @@ class Aider extends BaseLLM {
           potentialCompletion = false;
         }
 
-        // if (UDIFF_FLAG) {
-        //   if (READY_PROMPT_REGEX.test(newOutput)) {
-        //     // Instead of marking complete immediately, set up potential completion
-        //     if (!potentialCompletion) {
-        //       potentialCompletion = true;
-        //       potentialCompletionTimeout = setTimeout(() => {
-        //         responseComplete = true;
-        //       }, COMPLETION_DELAY);
-        //     }
 
-        //     // Remove the prompt pattern from the end using regex
-        //     const cleanOutput = newOutput.replace(READY_PROMPT_REGEX, "");
-        //     if (cleanOutput) {
-        //       yield {
-        //         role: "assistant",
-        //         content: escapeDollarSigns(cleanOutput),
-        //       };
-        //     }
-        //   } else {
-        //     lastProcessedIndex = this.aiderOutput.length;
-        //     yield {
-        //       role: "assistant",
-        //       content: escapeDollarSigns(newOutput),
-        //     };
-        //   }
-        // } else {
         if (READY_PROMPT_REGEX.test(newOutput)) {
           // Instead of marking complete immediately, set up potential completion
           if (!potentialCompletion) {
@@ -591,31 +193,37 @@ class Aider extends BaseLLM {
           }
         }
 
-        lastProcessedIndex = this.aiderOutput.length;
-        yield {
-          role: "assistant",
-          content: escapeDollarSigns(newOutput),
-        };
-        //}
+        lastProcessedIndex = Aider.aiderProcess?.aiderOutput.length || 0;
+        
+        // Start listening once we see a newline-prefixed message
+        if (!startedListening && newOutput.startsWith(IS_WINDOWS ? '\r\n' : '\n')) {
+          startedListening = true;
+        }
 
-        // Safety check
-        if (this.aiderProcess?.killed) {
+        if (startedListening) {
+          yield {
+            role: "assistant",
+            content: escapeDollarSigns(newOutput),
+          };
+        }
+
+        if (Aider.aiderProcess?.state.state === "stopped" || Aider.aiderProcess?.state.state === "crashed") {
           if (potentialCompletionTimeout) {
             clearTimeout(potentialCompletionTimeout);
           }
-          this.setAiderState("stopped");
+          this.setAiderState({ state: "stopped" });
           break;
         }
       }
     }
 
-    // Clean up any remaining timeout
     if (potentialCompletionTimeout) {
       clearTimeout(potentialCompletionTimeout);
     }
 
-    // Reset the output after capturing a complete response
-    this.aiderOutput = "";
+    if (Aider.aiderProcess) {
+      Aider.aiderProcess.aiderOutput = "";
+    }
   }
 
   async listModels(): Promise<string[]> {

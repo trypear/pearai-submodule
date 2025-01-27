@@ -15,9 +15,7 @@ export default function SignIn({
   const ideMessenger = useContext(IdeMessengerContext);
 
   useWebviewListener("pearAISignedIn", async () => {
-    ideMessenger.post("markNewOnboardingComplete", undefined);
     onNext();
-    return Promise.resolve();
   });
 
   const handleSignIn = () => {
@@ -40,7 +38,6 @@ export default function SignIn({
       } else if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowRight') {
         // Ctrl/Cmd + ArrowRight for Skip
         event.preventDefault();
-        ideMessenger.post("markNewOnboardingComplete", undefined);
         onNext();
       }
     };
@@ -65,7 +62,6 @@ export default function SignIn({
           <div className="absolute bottom-8 right-8 flex items-center gap-4">
           <div
             onClick={() => {
-              ideMessenger.post("markNewOnboardingComplete", undefined);
               onNext();
             }}
             className="flex items-center gap-2 cursor-pointer"

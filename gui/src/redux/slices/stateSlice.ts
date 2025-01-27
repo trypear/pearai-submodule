@@ -4,6 +4,7 @@ import {
   ChatHistory,
   ChatHistoryItem,
   ChatMessage,
+  Citation,
   ContextItemId,
   ContextItemWithId,
   PersistedSessionInfo,
@@ -15,6 +16,7 @@ import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
 import { getLocalStorage } from "@/util/localStorage";
+import { Memory } from "../../integrations/mem0/mem0gui"
 
 
 export const memoizedContextItemsSelector = createSelector(
@@ -116,6 +118,7 @@ type State = {
   history: ChatHistory;
   perplexityHistory: ChatHistory;
   aiderHistory: ChatHistory;
+  perplexityCitations: Citation[];
   contextItems: ContextItemWithId[];
   active: boolean;
   perplexityActive: boolean;
@@ -127,13 +130,19 @@ type State = {
   mainEditorContent?: JSONContent;
   selectedProfileId: string;
   directoryItems: string;
+  onboardingState: { 
+    visitedFeatures: number[]; 
+    visitedSteps: number[] 
+  };
   showInteractiveContinueTutorial: boolean;
+  memories: Memory[];  // mem0 memories
 };
 
 const initialState: State = {
   history: [],
   perplexityHistory: [],
   aiderHistory: [],
+  perplexityCitations: [],
   contextItems: [],
   active: false,
   perplexityActive: false,
@@ -166,7 +175,12 @@ const initialState: State = {
   defaultModelTitle: "GPT-4",
   selectedProfileId: "local",
   directoryItems: "",
+  onboardingState: {
+    visitedFeatures: [0],
+    visitedSteps: [0]
+  },
   showInteractiveContinueTutorial: getLocalStorage("showTutorialCard") ?? false,
+  memories: [],
 };
 
 export const stateSlice = createSlice({
@@ -209,6 +223,9 @@ export const stateSlice = createSlice({
     },
     setAiderActive: (state) => {
       state.aiderActive = true;
+    },
+    setPerplexityCitations: (state, action: PayloadAction<Citation[]>) => {
+      state.perplexityHistory[state.perplexityHistory.length - 1].citations = action.payload;
     },
     clearLastResponse: (state, action?: PayloadAction<'perplexity' | 'aider' | 'continue'>) => {
       if (action.payload === 'perplexity') {
@@ -374,6 +391,7 @@ export const stateSlice = createSlice({
         message: { role: "user", content: "" },
         contextItems: state.contextItems,
         editorState: payload.editorState,
+        citations: [],
       });
       state.perplexityHistory.push({
         message: {
@@ -645,9 +663,17 @@ export const stateSlice = createSlice({
         selectedProfileId: payload,
       };
     },
+    setOnboardingState: (state, { payload }: PayloadAction<any>) => {
+      state.onboardingState = payload;
+    },  
     setShowInteractiveContinueTutorial: (state, action: PayloadAction<boolean>) => {
       state.showInteractiveContinueTutorial = action.payload;
     },
+    setMem0Memories: (state, { payload}: PayloadAction<Memory[]>) => {
+      state.memories = payload.sort((a, b) => 
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+    }
   },
 });
 
@@ -673,6 +699,7 @@ export const {
   setActive,
   setPerplexityActive,
   setAiderActive,
+  setPerplexityCitations,
   setEditingContextItemAtIndex,
   initNewActiveMessage,
   initNewActivePerplexityMessage,
@@ -682,6 +709,8 @@ export const {
   consumeMainEditorContent,
   setSelectedProfileId,
   deleteMessage,
+  setOnboardingState,
   setShowInteractiveContinueTutorial,
+  setMem0Memories,
 } = stateSlice.actions;
 export default stateSlice.reducer;

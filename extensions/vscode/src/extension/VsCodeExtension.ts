@@ -293,7 +293,7 @@ export class VsCodeExtension {
       if (filepath.endsWith(".pearairc.json") || filepath.endsWith(".prompt")) {
         this.configHandler.reloadConfig();
       } else if (
-        filepath.endsWith(".continueignore") ||
+        filepath.endsWith(".pearaiignore") ||
         filepath.endsWith(".gitignore")
       ) {
         // Reindex the workspaces
@@ -366,6 +366,14 @@ export class VsCodeExtension {
         documentContentProvider,
       ),
     );
+
+    vscode.workspace.onDidCloseTextDocument(async () => {
+      const openFiles = vscode.workspace.textDocuments;
+      if (openFiles.length === 1) {
+        // the count is amount of last open files
+        this.sidebar.webviewProtocol.request("setActiveFilePath", "", [PEAR_CONTINUE_VIEW_ID]);
+      }
+    });
 
     this.ide.onDidChangeActiveTextEditor((filepath) => {
       this.core.invoke("didChangeActiveTextEditor", { filepath });

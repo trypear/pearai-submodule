@@ -6,10 +6,10 @@ export type ToWebviewFromIdeOrCoreProtocol = {
   getDefaultModelTitle: [undefined, string];
   loadMostRecentChat: [undefined, void];
   indexProgress: [IndexingProgressUpdate, void];
-  setAiderProcessStateInGUI: [AiderState, void];
   refreshSubmenuItems: [undefined, void];
   isContinueInputFocused: [undefined, boolean];
   pearAISignedIn: [undefined, void];
+  switchModel: [string, void];
   addContextItem: [
     {
       historyIndex: number;

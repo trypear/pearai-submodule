@@ -11,7 +11,7 @@ import { IIdeMessenger } from "../../context/IdeMessenger";
 import { setDirectoryItems } from "../../redux/slices/stateSlice";
 import { RootState, store } from "../../redux/store";
 
-const EXCLUDE_DIR_STRUCTURE = ["aider", "perplexity"];
+const EXCLUDE_DIR_STRUCTURE = ["aider", "perplexity", "search", "creator"];
 
 interface MentionAttrs {
   label: string;
@@ -118,28 +118,36 @@ async function resolveEditorContent(
     }
   }
 
-  const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
-  const excludeDirStructure = defaultModelTitle?.toLowerCase() &&
-    EXCLUDE_DIR_STRUCTURE.some(term => defaultModelTitle.toLowerCase().includes(term));
+  // Depreciated DirStructure on every request (-nang)
+  // const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
+  // const excludeDirStructure =
+  //   defaultModelTitle?.toLowerCase() &&
+  //   EXCLUDE_DIR_STRUCTURE.some((term) =>
+  //     defaultModelTitle.toLowerCase().includes(term),
+  //   );
 
-  if (!excludeDirStructure) {
-    const previousDirectoryItems = (store.getState() as any).state.directoryItems;
-    // use directory structure
-    const directoryItems = await ideMessenger.request("context/getContextItems", {
-      name: "directory",
-      query: "",
-      fullInput: stripImages(parts),
-      selectedCode,
-    });
+  // if (!excludeDirStructure) {
+  //   const previousDirectoryItems = (store.getState() as any).state
+  //     .directoryItems;
+  //   // use directory structure
+  //   const directoryItems = await ideMessenger.request(
+  //     "context/getContextItems",
+  //     {
+  //       name: "directory",
+  //       query: "",
+  //       fullInput: stripImages(parts),
+  //       selectedCode,
+  //     },
+  //   );
 
-    if (previousDirectoryItems !== directoryItems[0].content) {
-      store.dispatch(setDirectoryItems(directoryItems[0].content));
-      contextItems.push(...directoryItems);
-      for (const codebaseItem of directoryItems) {
-        contextItemsText += codebaseItem.content + "\n\n";
-      }
-    }
-  }
+  //   if (previousDirectoryItems !== directoryItems[0].content) {
+  //     store.dispatch(setDirectoryItems(directoryItems[0].content));
+  //     contextItems.push(...directoryItems);
+  //     for (const codebaseItem of directoryItems) {
+  //       contextItemsText += codebaseItem.content + "\n\n";
+  //     }
+  //   }
+  // }
 
   // cmd+enter to use codebase
   if (modifiers.useCodebase) {
@@ -172,7 +180,6 @@ async function resolveEditorContent(
     }
   }
 
-
   return [contextItems, selectedCode, parts];
 }
 
@@ -190,7 +197,7 @@ function findLastIndex<T>(
 
 function resolveParagraph(p: JSONContent): [string, MentionAttrs[], string] {
   const defaultModelTitle = (store.getState() as any).state.defaultModelTitle;
-  const isAiderMode = defaultModelTitle?.toLowerCase().includes("aider");
+  const isAiderMode = defaultModelTitle?.toLowerCase().includes("creator");
   let text = "";
   const contextItems = [];
   let slashCommand = undefined;

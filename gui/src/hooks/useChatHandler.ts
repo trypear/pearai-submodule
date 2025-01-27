@@ -33,7 +33,8 @@ import {
   setMessageAtIndex,
   streamUpdate,
   streamAiderUpdate,
-  streamPerplexityUpdate
+  streamPerplexityUpdate,
+  setPerplexityCitations,
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
 
@@ -71,6 +72,30 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
         messages,
       );
       let next = await gen.next();
+      if (source === 'perplexity') {
+        // Fetch all titles concurrently
+        const citations = ((next.value as ChatMessage).citations || []);
+        const citationsWithTitles = await Promise.all(
+          citations.map(async (url) => {
+            try {
+              const title = await ideMessenger.request("getUrlTitle", url);
+              return {
+                url,
+                title
+              };
+            } catch (error) {
+              console.error('Failed to fetch title for:', url);
+              return {
+                url,
+                title: new URL(url).hostname
+              };
+            }
+          })
+        );
+
+        dispatch(setPerplexityCitations(citationsWithTitles));
+      }
+
       while (!next.done) {
         if (!activeRef.current) {
           abortController.abort();
@@ -154,8 +179,8 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
         abortController.abort();
         break;
       }
-      if (typeof update === "string") {
-        dispatch(streamUpdate(update));
+      if (typeof update.content === "string") {
+        dispatch(streamUpdate(update.content));
       }
     }
     clearInterval(checkActiveInterval);
@@ -183,34 +208,34 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
         ideMessenger,
       );
 
-      // Automatically use currently open file
-      if (source === 'continue' && (!modifiers.noContext || useActiveFile) && (history.length === 0 || index === 0)) {
-        const usingFreeTrial = defaultModel.provider === "free-trial";
+      // Depreciated: Automatically use currently open file (-nang)
+      // if (source === 'continue' && (!modifiers.noContext || useActiveFile) && (history.length === 0 || index === 0)) {
+      //   const usingFreeTrial = defaultModel.provider === "free-trial";
 
-        const currentFilePath = await ideMessenger.ide.getCurrentFile();
-        if (typeof currentFilePath === "string") {
-          let currentFileContents =
-            await ideMessenger.ide.readFile(currentFilePath);
-          if (usingFreeTrial) {
-            currentFileContents = currentFileContents
-              .split("\n")
-              .slice(0, 1000)
-              .join("\n");
-          }
-          contextItems.unshift({
-            content: `The following file is currently open. Don't reference it if it's not relevant to the user's message.\n\n\`\`\`${getRelativePath(
-              currentFilePath,
-              await ideMessenger.ide.getWorkspaceDirs(),
-            )}\n${currentFileContents}\n\`\`\``,
-            name: `Active file: ${getBasename(currentFilePath)}`,
-            description: currentFilePath,
-            id: {
-              itemId: currentFilePath,
-              providerTitle: "file",
-            },
-          });
-        }
-      }
+      //   const currentFilePath = await ideMessenger.ide.getCurrentFile();
+      //   if (typeof currentFilePath === "string") {
+      //     let currentFileContents =
+      //       await ideMessenger.ide.readFile(currentFilePath);
+      //     if (usingFreeTrial) {
+      //       currentFileContents = currentFileContents
+      //         .split("\n")
+      //         .slice(0, 1000)
+      //         .join("\n");
+      //     }
+      //     contextItems.unshift({
+      //       content: `The following file is currently open. Don't reference it if it's not relevant to the user's message.\n\n\`\`\`${getRelativePath(
+      //         currentFilePath,
+      //         await ideMessenger.ide.getWorkspaceDirs(),
+      //       )}\n${currentFileContents}\n\`\`\``,
+      //       name: `Active file: ${getBasename(currentFilePath)}`,
+      //       description: currentFilePath,
+      //       id: {
+      //         itemId: currentFilePath,
+      //         providerTitle: "file",
+      //       },
+      //     });
+      //   }
+      // }
 
       const message: ChatMessage = {
         role: "user",

@@ -271,6 +271,7 @@ export type MessageContent = string | MessagePart[];
 export interface ChatMessage {
   role: ChatMessageRole;
   content: MessageContent;
+  citations?: string[];
 }
 
 export interface ContextItemId {
@@ -316,12 +317,18 @@ export interface PromptLog {
   completion: string;
 }
 
+export interface Citation {
+  url: string;
+  title: string;
+}
+
 export interface ChatHistoryItem {
   message: ChatMessage;
   editorState?: any;
   modifiers?: InputModifiers;
   contextItems: ContextItemWithId[];
   promptLogs?: PromptLog[];
+  citations?: Citation[];
 }
 
 export type ChatHistory = ChatHistoryItem[];
@@ -640,6 +647,7 @@ type ModelProvider =
   | "openai-aiohttp"
   | "msty"
   | "watsonx"
+  | "openrouter"
   | "pearai_server"
   | "aider"
   | "perplexity"
@@ -795,6 +803,12 @@ export interface ModelDescription {
   isDefault?: boolean;
 }
 
+export interface IntegrationDescription {
+  name: string;
+  description?: string;
+  enabled: boolean;
+}
+
 export type EmbeddingsProviderName =
   | "huggingface-tei"
   | "transformers.js"
@@ -937,6 +951,7 @@ export interface SerializedContinueConfig {
   env?: string[];
   allowAnonymousTelemetry?: boolean;
   models: ModelDescription[];
+  integrations?: IntegrationDescription[];
   systemMessage?: string;
   completionOptions?: BaseCompletionOptions;
   requestOptions?: RequestOptions;
@@ -1029,6 +1044,7 @@ export interface ContinueConfig {
   analytics?: AnalyticsConfig;
   docs?: SiteIndexingConfig[];
   isBetaAccess?: boolean;
+  integrations?: IntegrationDescription[];
 }
 
 export interface BrowserSerializedContinueConfig {
@@ -1048,6 +1064,7 @@ export interface BrowserSerializedContinueConfig {
   experimental?: ExperimentalConfig;
   analytics?: AnalyticsConfig;
   isBetaAccess?: boolean;
+  integrations?: IntegrationDescription[];
 }
 
 export interface PearAuth {

@@ -12,7 +12,9 @@ const perplexityContextProvidersSpecific = ["file", "terminal", "folder"];
 
 const SPECIFIC_CONTEXT_PROVIDERS_INTEGRATIONS = {
   aider: aiderContextProvidersSpecific,
+  creator: aiderContextProvidersSpecific,
   perplexity: perplexityContextProvidersSpecific,
+  search: perplexityContextProvidersSpecific,
 };
 
 const SPECIFIC_CONTEXT_PROVIDERS_PATHNAME = {
@@ -41,7 +43,10 @@ export function shouldSkipContextProviders(
   }
 
   // For all other models,  skip if "relativefilecontext" or "relativegitfilecontext" is in the title
-  return description.title === "relativefilecontext" || description.title ===  "relativegitfilecontext";
+  return (
+    description.title === "relativefilecontext" ||
+    description.title === "relativegitfilecontext"
+  );
 }
 
 // This is for the frontend UI, which context providers are provided
@@ -63,7 +68,9 @@ export function getContextProviders() {
 
     // Default filtering logic, just filter out "relativefilecontext" and "relativegitfilecontext"
     return availableContextProviders.filter(
-      (provider) => provider.title !== "relativefilecontext" && provider.title !== "relativegitfilecontext",
+      (provider) =>
+        provider.title !== "relativefilecontext" &&
+        provider.title !== "relativegitfilecontext",
     );
   }, [pathname, availableContextProviders]);
 }

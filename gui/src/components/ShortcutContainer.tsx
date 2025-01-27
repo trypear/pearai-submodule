@@ -1,184 +1,63 @@
-import { useContext, useRef, useState, useEffect } from "react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import styled from "styled-components";
+import { useContext, useRef, useState } from "react";
 import { IdeMessengerContext } from "../context/IdeMessenger";
+import { ShortcutButton } from "./ui/shortcutButton";
 
-// Check if the platform is macOS or Windows
 const platform = navigator.userAgent.toLowerCase();
 const isMac = platform.includes("mac");
-
-type ShortcutProps = {
-  modifiers: string[];
-  keyCode: string;
-  description: string;
-  onClick?: () => void;
-};
-
-const Shortcut = ({
-  modifiers,
-  keyCode,
-  description,
-  onClick,
-}: ShortcutProps) => {
-  const modifierString = modifiers.join(" + ");
-
-  return (
-    <div
-      className="flex gap-1 items-center text-sm text-slate-400 rounded-lg px-1 cursor-pointer select-none m-0 mx-[2px] border-solid shortcut-border border-[1px]"
-      onClick={onClick}
-    >
-      <span className={`text-[11px]`}>{description}</span>
-      <div
-        className="monaco-keybinding "
-        aria-label={`${modifierString}+${keyCode}`}
-      >
-        {modifiers.map((mod, index) => (
-          <span
-            className="monaco-keybinding-key"
-            style={{ fontSize: "10px" }}
-            key={index}
-          >
-            {mod}
-          </span>
-        ))}
-        <span className="monaco-keybinding-key" style={{ fontSize: "10px" }}>
-          {keyCode}
-        </span>
-      </div>
-    </div>
-  );
-};
-
-// Styled components for arrow buttons
-const ArrowButton = styled.button`
-  border: none;
-  background: none;
-  color: #949490;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 10;
-  transition: color 0.3s;
-
-  svg {
-    width: 0.7rem;
-    height: 0.7rem;
-  }
-
-  &:hover {
-    color: #000;
-  }
-`;
-
-const LeftArrowButton = styled(ArrowButton)`
-  left: 0;
-`;
-
-const RightArrowButton = styled(ArrowButton)`
-  right: 0;
-`;
 
 const ShortcutContainer = () => {
   const ideMessenger = useContext(IdeMessengerContext);
   const shortcutContainerRef = useRef<HTMLDivElement>(null);
-  const [modifier] = useState(isMac ? "Cmd" : "Ctrl");
-  const [showArrows, setShowArrows] = useState(false);
-
-  useEffect(() => {
-    const shortcutContainer = shortcutContainerRef.current;
-    if (shortcutContainer) {
-      const handleWheel = (event: WheelEvent) => {
-        if (event.deltaY !== 0) {
-          event.preventDefault();
-          shortcutContainer.scrollLeft += event.deltaY;
-        }
-      };
-      const checkOverflow = () => {
-        setShowArrows(shortcutContainer.scrollWidth > shortcutContainer.clientWidth);
-      };
-      shortcutContainer.addEventListener("wheel", handleWheel);
-      window.addEventListener('resize', checkOverflow);
-
-      return () => {
-        shortcutContainer.removeEventListener("wheel", handleWheel);
-        window.removeEventListener('resize', checkOverflow);
-      };
-    }
-  }, []);
-
-  const scrollLeft = () => {
-    if (shortcutContainerRef.current) {
-      shortcutContainerRef.current.scrollBy({ left: -200, behavior: "smooth" });
-    }
-  };
-
-  const scrollRight = () => {
-    if (shortcutContainerRef.current) {
-      shortcutContainerRef.current.scrollBy({ left: 200, behavior: "smooth" });
-    }
-  };
+  const [modifier] = useState(isMac ? "⌘" : "Ctrl");
 
   const shortcuts = [
     {
-      modifiers: [modifier],
-      keyCode: "\\",
+      keys: [modifier, "E"],
+      description: "Open Inventory",
+      onClick: () => ideMessenger.post("openInventoryHome", undefined),
+    },
+    {
+      keys: [modifier, "\\"],
       description: "Big",
       onClick: () => ideMessenger.post("bigChat", undefined),
     },
     {
-      modifiers: [modifier],
-      keyCode: "0",
+      keys: [modifier, "0"],
       description: "Prev",
       onClick: () => ideMessenger.post("lastChat", undefined),
     },
     {
-      modifiers: [modifier],
-      keyCode: "H",
+      keys: [modifier, "H"],
       description: "History",
       onClick: () => ideMessenger.post("openHistory", undefined),
     },
     {
-      modifiers: [modifier],
-      keyCode: ";",
+      keys: [modifier, ";"],
       description: "Close",
       onClick: () => ideMessenger.post("closeChat", undefined),
     },
     {
-      modifiers: [modifier, "Shift"],
-      keyCode: "L",
+      keys: [modifier, "⇧", "L"], // Using ⇧ symbol for Shift
       description: "Append Selected",
       onClick: () => ideMessenger.post("appendSelected", undefined),
     },
   ];
 
   return (
-    <div className="relative h-[1.55rem] overflow-hidden flex justify-center w-full">
-      {showArrows && <LeftArrowButton onClick={scrollLeft}>
-        <ChevronLeftIcon />
-      </LeftArrowButton>}
+    <div className="pb-3 flex justify-center w-full">
       <div
         ref={shortcutContainerRef}
-        className="flex overflow-x-auto whitespace-nowrap no-scrollbar h-full mx-3 max-w-screen-lg"
+        className="flex-col gap-2 w-full max-w-3xl inline-flex"
       >
         {shortcuts.map((shortcut, index) => (
-          <Shortcut
-            key={`${shortcut.keyCode}-${index}`}
-            modifiers={shortcut.modifiers}
-            keyCode={shortcut.keyCode}
-            description={shortcut.description}
+          <ShortcutButton
+            key={`${shortcut.keys.join("-")}-${index}`}
+            keys={shortcut.keys}
+            label={shortcut.description}
             onClick={shortcut.onClick}
           />
         ))}
       </div>
-
-      {showArrows && <RightArrowButton onClick={scrollRight}>
-        <ChevronRightIcon />
-      </RightArrowButton>}
     </div>
   );
 };

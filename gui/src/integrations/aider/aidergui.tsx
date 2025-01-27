@@ -12,7 +12,7 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChatScrollAnchor } from "../../components/ChatScrollAnchor";
 import StepContainer from "../../components/gui/StepContainer";
 import TimelineItem from "../../components/gui/TimelineItem";
@@ -37,15 +37,43 @@ import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
   StopButton,
-  StepsDiv,
   NewSessionButton,
   fallbackRender,
+  StopButtonContainer,
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import AiderManualInstallation from "./AiderManualInstallation";
 import { cn } from "@/lib/utils";
 import type { AiderState } from "../../../../extensions/vscode/src/integrations/aider/types/aiderTypes";
+import styled from "styled-components";
+import { lightGray } from "@/components";
+import InventoryDetails from "../../components/InventoryDetails";
 
+const inventoryDetails = <InventoryDetails
+  textColor="#FFFFFF"
+  backgroundColor="#FF65B7"
+  content="Creator"
+  blurb={<div><p>When you need a feature or a bug fix completed, Creator will find the relevant files, and make changes directly to your code. You can see specific diff changes in your source control tab afterwards.</p><p>Powered by Aider.</p></div>}
+  useful={<div><p>Full feature completions</p><p>Automated refactoring</p><p>Lower level of human intervention needed</p></div>}
+  alt={<p>Use Chat to ask questions, or Search for questions needing the web.</p>}
+/>;
+
+const StepsDiv = styled.div`
+  padding-bottom: 8px;
+  position: relative;
+  background-color: transparent;
+
+  & > * {
+    position: relative;
+  }
+
+  .thread-message {
+    margin: 16px 8px 0 8px;
+  }
+  .thread-message:not(:first-child) {
+    border-top: 1px solid ${lightGray}22;
+  }
+`;
 
 function AiderGUI() {
   const posthog = usePostHog();
@@ -53,6 +81,7 @@ function AiderGUI() {
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const [sessionKey, setSessionKey] = useState(0);
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
   const active = useSelector((state: RootState) => state.state.aiderActive);
@@ -63,7 +92,8 @@ function AiderGUI() {
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
   const [aiderProcessState, setAiderProcessState] = useState<AiderState>({
-    state: "starting"
+    state: "starting",
+    timeStamp: Date.now(),
   });
 
   // TODO: Remove this later. This is supposed to be set in Onboarding, but
@@ -78,6 +108,8 @@ function AiderGUI() {
     setLocalStorage("showAiderTutorialCard", false);
     setShowAiderTutorialCard(false);
   };
+
+  const [showReloadButton, setShowReloadButton] = useState(false);
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -133,6 +165,24 @@ function AiderGUI() {
     return () => window.removeEventListener("keydown", listener);
   }, [active]);
 
+  // useEffect(() => {
+  //   let timeoutId: NodeJS.Timeout;
+
+  //   if (aiderProcessState.state === "starting") {
+  //     timeoutId = setTimeout(() => {
+  //       if (aiderProcessState.state === "starting") {
+  //         setShowReloadButton(true);
+  //       }
+  //     }, 15000); // 15 seconds
+  //   } else {
+  //     setShowReloadButton(false);
+  //   }
+
+  //   return () => {
+  //     if (timeoutId) clearTimeout(timeoutId);
+  //   };
+  // }, [aiderProcessState.state, aiderProcessState.timeStamp]);
+
   const { streamResponse } = useChatHandler(dispatch, ideMessenger, "aider");
 
   const sendInput = useCallback(
@@ -175,24 +225,44 @@ function AiderGUI() {
     "newSession",
     async () => {
       saveSession();
-      mainTextInputRef.current?.focus?.();
+      setSessionKey(prev => prev + 1);
     },
     [saveSession],
   );
 
   useEffect(() => {
-    ideMessenger.request("refreshAiderProcessState", undefined);
+    ideMessenger.request("sendAiderProcessStateToGUI", undefined);
   }, []);
 
-  useWebviewListener(
-    "setAiderProcessStateInGUI",
-    async (data) => {
-      if (data) {
-        setAiderProcessState(data);
-      }
+  useWebviewListener("setAiderProcessStateInGUI", async (data) => {
+    if (data) {
+      setAiderProcessState({ state: data.state, timeStamp: Date.now() });
     }
-  );
+  });
 
+  // Add effect to re-fetch state periodically only if not ready
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+
+    const fetchState = () => {
+      ideMessenger.request("sendAiderProcessStateToGUI", undefined);
+    };
+
+    // Only set up polling if state is not "ready"
+    if (aiderProcessState.state !== "ready") {
+      // Initial fetch
+      fetchState();
+
+      // Set up periodic polling as a fallback
+      interval = setInterval(fetchState, 2000);
+    }
+
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
+  }, [aiderProcessState.state]); // Add aiderProcessState.state as dependency
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
@@ -228,54 +298,85 @@ function AiderGUI() {
         </>
       );
     }
-    if (aiderProcessState.state === "stopped") {
+    if (aiderProcessState.state === "uninstalled" || aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") {
+      return (
+        <div className="h-full overflow-auto">
+          {inventoryDetails}
+          <AiderManualInstallation />
+        </div>
+      );
+    }
+    if (aiderProcessState.state === "installing") {
       msg = (
         <>
-          PearAI Creator (Powered By aider) process is not running. Please view{" "}
-          <a
-            href="https://trypear.ai/creator-troubleshooting"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline text-foreground"
+          Installing PearAI Creator dependencies (aider), this may take a few minutes...
+        </>
+      );
+    }
+    if (aiderProcessState.state === "starting" || aiderProcessState.state === "restarting") {
+      msg = (
+        <>
+          Spinning up PearAI Creator (Powered By aider), please give it a second...
+          {showReloadButton && (
+            <>
+              <div className="text-sm mt-6 p-2">
+                Aider not starting? try to restart aider or reload window
+              </div>
+              <div className="flex justify-center mt-4 gap-x-4">
+                <button
+                  className="tracking-wide py-3 px-6 border-none rounded-lg bg-button text-button-foreground transition-colors cursor-pointer"
+                  onClick={() => {
+                    setAiderProcessState({ state: "starting", timeStamp: Date.now() });
+                    setShowReloadButton(false); // Reset the state
+                    ideMessenger.post("aiderResetSession", undefined);
+                  }}
+                >
+                  Restart Aider Session
+                </button>
+                <button
+                  className="tracking-wide py-3 px-6 border-none rounded-lg bg-button text-button-foreground transition-colors cursor-pointer"
+                  onClick={() => ideMessenger.post("reloadWindow", undefined)}
+                >
+                  Reload window
+                </button>
+              </div>
+            </>
+          )}
+        </>
+      );
+    }
+    if (aiderProcessState.state === "notgitrepo") {
+      msg = (<>To use PearAI Creator, please open a git repository or initialize current workspace directory as a git repository.
+        {/* <div className="flex justify-center mt-4">
+          <div
+            className="text-sm bg-button text-white py-3 px-6 rounded-lg cursor-pointer"
+            onClick={() => ideMessenger.post("aiderGitInit", undefined)}
           >
-            troubleshooting
-          </a>.
-        </>
-      );
-    }
-    if (aiderProcessState.state === "crashed") {
-      msg = (
-        <>
-          PearAI Creator (Powered By aider) process has failed. Please ensure a folder is open, and view troubleshooting{" "}
-          <a href="https://trypear.ai/creator-troubleshooting" target="_blank" rel="noopener noreferrer" className="underline text-foreground">
-            here
-          </a>.
-        </>
-      );
-    }
-    if (aiderProcessState.state === "uninstalled") {
-      return <AiderManualInstallation />;
-    }
-    if (aiderProcessState.state === "starting") {
-      msg = "Spinning up PearAI Creator (Powered By aider), please give it a second...";
+            Initialize Git
+          </div>
+        </div> */}
+      </>)
     }
 
     return (
-      <div className="top-[200px] left-0 w-full h-[calc(100%-200px)] bg-opacity-50 z-10 flex items-center justify-center">
-        <div className="text-2xl">
+      <div className="h-[calc(100%-200px)] p-40 bg-opacity-50 z-10 flex items-center justify-center">
+        <div className="text-2xl text-center">
           <div className="spinner" role="status">
             <span>{msg}</span>
           </div>
-          {(aiderProcessState.state === "stopped" || aiderProcessState.state === "crashed") && (
-            <div className="flex justify-center">
+          {/* {(aiderProcessState.state === "stopped" ||
+            aiderProcessState.state === "crashed") && (
+            <div className="flex justify-center mt-4">
               <button
-                className="mt-4 font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
-                onClick={() => ideMessenger.post("aiderResetSession", undefined)}
+                className="font-bold py-3 px-6 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg"
+                onClick={() =>
+                  ideMessenger.post("aiderResetSession", undefined)
+                }
               >
                 Restart
               </button>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     );
@@ -283,18 +384,25 @@ function AiderGUI() {
 
   return (
     <>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
-        <div className={cn(
-          "mx-2",
-          state.aiderHistory.length === 0 && "h-full flex flex-col justify-center"
-        )}>
+      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} className="h-full overflow-auto" isNewSession={state.history.length === 0}>
+        {inventoryDetails}
+        <div
+          className={cn(
+            "mx-2",
+            state.aiderHistory.length === 0 &&
+            "h-full flex flex-col justify-center",
+          )}
+        >
           {state.aiderHistory.length === 0 ? (
-            <div className="max-w-2xl mx-auto w-full text-center mb-4">
-              <div className="flex items-center justify-center gap-2 mb-2">
-                <h1 className="text-2xl font-bold">PearAI Creator</h1>
-                <Badge variant="outline" className="pl-0">
-                  Beta (Powered by aider)
-                </Badge>
+            <div className="max-w-2xl mx-auto w-full text-center">
+              <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
+                <div className="flex-1" />
+                <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Creator</h1>
+                <div className="flex-1 flex items-center justify-start">
+                  <Badge variant="outline" className="lg:relative lg:top-[2px]">
+                    Beta (Powered by Aider*)
+                  </Badge>
+                </div>
               </div>
               <p className="text-sm text-foreground">
                 Ask for a feature, describe a bug to fix, or ask for a change to
@@ -307,28 +415,29 @@ function AiderGUI() {
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-bold mb-2">PearAI Creator</h1>
                 <Badge variant="outline" className="pl-0">
-                  Beta (Powered by aider)
+                  Beta (Powered by aider*)
                 </Badge>
               </div>
               <div className="flex items-center mt-0 justify-between pr-1">
                 <p className="text-sm text-foreground m-0">
-                  Ask for a feature, describe a bug to fix, or ask for a change to
-                  your project. Creator will make and apply the changes to your
-                  files directly.
+                  Ask for a feature, describe a bug to fix, or ask for a change
+                  to your project. Creator will make and apply the changes to
+                  your files directly.
                 </p>
-                {state.aiderHistory.length > 0 &&
+                {state.aiderHistory.length > 0 && (
                   <div>
                     <NewSessionButton
                       onClick={() => {
                         saveSession();
                         ideMessenger.post("aiderResetSession", undefined);
+                        setSessionKey(prev => prev + 1);
                       }}
                       className="mr-auto"
                     >
                       Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
                     </NewSessionButton>
                   </div>
-                }
+                )}
               </div>
             </div>
           )}
@@ -377,7 +486,7 @@ function AiderGUI() {
                               ? true
                               : stepsOpen[index]!
                           }
-                          onToggle={() => {}}
+                          onToggle={() => { }}
                         >
                           <StepContainer
                             index={index}
@@ -391,14 +500,14 @@ function AiderGUI() {
                                 : stepsOpen[index]!
                             }
                             key={index}
-                            onUserInput={(input: string) => {}}
+                            onUserInput={(input: string) => { }}
                             item={item}
-                            onReverse={() => {}}
+                            onReverse={() => { }}
                             onRetry={() => {
                               streamResponse(
                                 state.aiderHistory[index - 1].editorState,
                                 state.aiderHistory[index - 1].modifiers ??
-                                  defaultInputModifiers,
+                                defaultInputModifiers,
                                 ideMessenger,
                                 index - 1,
                                 "aider",
@@ -437,13 +546,16 @@ function AiderGUI() {
               ))}
             </StepsDiv>
 
-            <div className={cn(
-              "transition-all duration-300",
-              state.aiderHistory.length === 0
-                ? "max-w-2xl mx-auto w-full"
-                : "w-full"
-            )}>
+            {!active && <div
+              className={cn(
+                "transition-all duration-300",
+                state.aiderHistory.length === 0
+                  ? "max-w-2xl mx-auto w-full"
+                  : "w-full",
+              )}
+            >
               <ContinueInputBox
+                key={sessionKey}
                 onEnter={(editorContent, modifiers) => {
                   sendInput(editorContent, modifiers);
                 }}
@@ -453,10 +565,10 @@ function AiderGUI() {
                 source="aider"
                 className={cn(
                   "transition-all duration-300",
-                  state.aiderHistory.length === 0 && "shadow-lg"
+                  state.aiderHistory.length === 0 && "shadow-lg",
                 )}
               />
-            </div>
+            </div>}
           </>
 
           {active ? (
@@ -470,6 +582,7 @@ function AiderGUI() {
                 onClick={() => {
                   saveSession();
                   ideMessenger.post("aiderResetSession", undefined);
+                  setSessionKey(prev => prev + 1);
                 }}
                 className="mr-auto"
               >
@@ -498,22 +611,35 @@ function AiderGUI() {
         />
       </TopGuiDiv>
       {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setAiderInactive());
-            if (
-              state.aiderHistory[state.aiderHistory.length - 1]?.message.content
-                .length === 0
-            ) {
-              dispatch(clearLastResponse("aider"));
-            }
-            ideMessenger.post("aiderCtrlC", undefined);
-          }}
-        >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
+        <StopButtonContainer>
+          <StopButton
+            className="mt-auto mb-4 sticky bottom-4"
+            onClick={() => {
+              dispatch(setAiderInactive());
+              if (
+                state.aiderHistory[state.aiderHistory.length - 1]?.message.content
+                  .length === 0
+              ) {
+                dispatch(clearLastResponse("aider"));
+              }
+              ideMessenger.post("aiderCtrlC", undefined);
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        </StopButtonContainer>
       )}
+      <div className="text-[10px] text-muted-foreground mt-4 flex justify-end pr-2 pb-6">
+        *View PearAI Disclaimer page{" "}
+        <Link
+          to="https://trypear.ai/disclaimer/"
+          target="_blank"
+          className="text-muted-foreground no-underline hover:no-underline ml-1"
+        >
+          here
+        </Link>
+        .
+      </div>
     </>
   );
 }
@@ -529,7 +655,6 @@ const tutorialContent = {
     copyText: "Make a new FAQ page for my website",
   },
   moreInfo: [
-    "- Ignore system ```<<< SEARCH REPLACE >>>``` messages. These are for the system to make edits for you automatically."
-  ]
-}
-
+    "- Ignore system ```<<< SEARCH REPLACE >>>``` messages. These are for the system to make edits for you automatically.",
+  ],
+};

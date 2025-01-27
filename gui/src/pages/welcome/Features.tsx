@@ -6,13 +6,22 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Sparkles, Bot, Search } from "lucide-react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/redux/store";
+import { setOnboardingState } from "@/redux/slices/stateSlice";
+import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
+import { Link } from "react-router-dom";
 
 const getAssetPath = (assetName: string) => {
   return `${window.vscMediaUrl}/assets/${assetName}`;
 };
 
 export default function Features({ onNext }: { onNext: () => void }) {
+  const dispatch = useDispatch();
+
   const [currentFeature, setCurrentFeature] = useState(0);
+  const onboardingState = useSelector((state: RootState) => state.state.onboardingState);
+  const visitedFeatures = onboardingState.visitedFeatures || [];
   const [progress, setProgress] = useState(0);
   const progressInterval = useRef<NodeJS.Timeout>();
   const [isLoading, setIsLoading] = useState(true);
@@ -23,22 +32,22 @@ export default function Features({ onNext }: { onNext: () => void }) {
 
   const features = [
     {
-      icon: <Sparkles className="h-6 w-6" />,
+      icon: "inventory-chat.svg",
       title: "PearAI Chat",
       description:
-        "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue.",
+        "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue*.",
       video: getAssetPath("pearai-chat-welcome.mp4"),
     },
     {
-      icon: <Bot className="h-6 w-6" />,
+      icon: "inventory-creator.svg",
       title: "PearAI Creator",
-      description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider.",
+      description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider*.",
       video: getAssetPath("pearai-creator-welcome.mp4"),
     },
     {
-      icon: <Search className="h-6 w-6" />,
+      icon: "inventory-search.svg",
       title: "PearAI Search",
-      description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity.",
+      description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity*.",
       video: getAssetPath("pearai-search-welcome.mp4"),
     },
   ];
@@ -88,15 +97,21 @@ export default function Features({ onNext }: { onNext: () => void }) {
   }, [currentFeature]);
 
   const handleFeatureChange = (index: number) => {
-    setCurrentFeature(index);
-    setProgress(0);
-    setTimestamp(Date.now());
+    if (visitedFeatures.includes(index)) {
+      setCurrentFeature(index);
+      setProgress(0);
+      setTimestamp(Date.now());
+    }
   };
 
   const handleNextClick = () => {
     if (currentFeature < features.length - 1) {
       // Increment the feature index if not the last one
-      setCurrentFeature(currentFeature + 1);
+      const nextFeature = currentFeature + 1;
+      setCurrentFeature(nextFeature);
+      if (!visitedFeatures.includes(nextFeature)) {
+        dispatch(setOnboardingState({...onboardingState, visitedFeatures: [...visitedFeatures, nextFeature]}));
+      }
       setProgress(0);
       setTimestamp(Date.now());
     } else {
@@ -134,24 +149,19 @@ export default function Features({ onNext }: { onNext: () => void }) {
               {features.map((feature, index) => (
                 <Card
                   key={index}
-                  className={`border-none p-3 transition-all duration-200 hover:scale-[1.02] ${
+                  className={`border-none p-3 transition-all duration-200 ${
                     currentFeature === index
                       ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]"
-                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60 hover:opacity-80"
-                  }`}
+                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
+                  } ${!visitedFeatures.includes(index) ? 'cursor-not-allowed' : 'hover:scale-[1.02] cursor-pointer hover:opacity-80'}`}
                   onClick={() => handleFeatureChange(index)}
-                  style={{ cursor: "pointer" }}
+                  style={{ cursor: visitedFeatures.includes(index) ? "pointer" : "not-allowed" }}
                 >
                   <div className="flex items-center gap-3">
-                    <div
-                      className={`p-1.5 rounded-lg ${
-                        currentFeature === index
-                          ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)]"
-                          : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
-                      }`}
-                    >
-                      {feature.icon}
-                    </div>
+                    <img
+                      src={getLogoPath(feature.icon)}
+                      className="w-10 h-10"
+                    />
                     <div className="min-w-0">
                       <h3 className="font-semibold text-foreground text-sm">
                         {feature.title}
@@ -175,6 +185,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
           </div>
         </div>
 
+
         <div className="p-6 border-t border-input shrink-0">
           <Button
             className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer relative"
@@ -185,7 +196,8 @@ export default function Features({ onNext }: { onNext: () => void }) {
         </div>
       </div>
 
-      <div className="w-[65%] flex flex-col h-full relative bg-background">
+      <div className="w-[65%] flex flex-col h-full relative bg-background justify-between">
+
         {features.map((feature, index) => (
           <div
             key={index}
@@ -207,6 +219,19 @@ export default function Features({ onNext }: { onNext: () => void }) {
             )}
           </div>
         ))}
+        <div></div>
+        <div className="text-[10px] z-[100] hover:cursor-pointer  text-muted-foreground mt-4 flex justify-end pr-4 pb-4">
+          *View PearAI Disclaimer page{" "}
+          <a
+            href="https://trypear.ai/disclaimer/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-muted-foreground hover:cursor-pointer hover:text-primary hover:underline ml-1"
+          >
+            here
+          </a>
+          .
+        </div>
       </div>
     </div>
   );

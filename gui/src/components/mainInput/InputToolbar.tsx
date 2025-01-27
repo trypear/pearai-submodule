@@ -2,7 +2,10 @@ import {
   PhotoIcon as OutlinePhotoIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
-import { PhotoIcon as SolidPhotoIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowTurnDownLeftIcon
+}from "@heroicons/react/16/solid";
+import { Button } from "@/components/ui/button";
 import { InputModifiers } from "core";
 import { modelSupportsImages } from "core/llm/autodetect";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -14,6 +17,9 @@ import {
   vscBadgeBackground,
   vscBadgeForeground,
   vscForeground,
+  vscButtonForeground,
+  vscButtonBackground,
+
   vscInputBackground,
 } from "..";
 import { selectUseActiveFile } from "../../redux/selectors";
@@ -25,57 +31,25 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ModelSelect from "../modelSelection/ModelSelect";
-import { isBareChatMode, isPerplexityMode, isAiderMode} from "../../util/bareChatMode";
+import {
+  isBareChatMode,
+  isPerplexityMode,
+  isAiderMode,
+} from "../../util/bareChatMode";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useLocation } from "react-router-dom";
+import { ShortcutButton } from "../ui/shortcutButton";
+
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
-  padding: 4px 0;
-  display: flex;
+  display: ${(props) => (props.isHidden ? "none" : "flex")};
   justify-content: space-between;
-  gap: 1px;
-  background-color: ${vscInputBackground};
-  align-items: center;
-  z-index: 50;
-  font-size: ${getFontSize() - 2}px;
+  gap: 4px;
+  align-items: flex-end;
+  z-index: 10;
   cursor: ${(props) => (props.isHidden ? "default" : "text")};
-  opacity: ${(props) => (props.isHidden ? 0 : 1)};
   pointer-events: ${(props) => (props.isHidden ? "none" : "auto")};
-
-  & > * {
-    flex: 0 0 auto;
-  }
-
-  /* Add a media query to hide the right-hand set of components */
-  @media (max-width: 400px) {
-    & > span:last-child {
-      display: none;
-    }
-  }
-`;
-
-const StyledSpan = styled.span`
-  font-size: ${() => `${getFontSize() - 2}px`};
-  color: ${lightGray};
-`;
-
-const EnterButton = styled.div<{ offFocus: boolean }>`
-  padding: 2px 4px;
-  display: flex;
-  align-items: center;
-
-  background-color: ${(props) =>
-    props.offFocus ? undefined : lightGray + "33"};
-  border-radius: ${defaultBorderRadius};
-  color: ${vscForeground};
-
-  &:hover {
-    background-color: ${vscBadgeBackground};
-    color: ${vscBadgeForeground};
-  }
-
-  cursor: pointer;
 `;
 
 interface InputToolbarProps {
@@ -110,7 +84,7 @@ function InputToolbar(props: InputToolbarProps) {
   useEffect(() => {
     if (location.pathname.split("/").pop() === "aiderMode") {
       const aider = allModels.find((model) =>
-        model?.title?.toLowerCase().includes("aider"),
+        model?.title?.toLowerCase().includes("creator"),
       );
       dispatch(setDefaultModel({ title: aider?.title }));
     } else if (location.pathname.split("/").pop() === "perplexityMode") {
@@ -122,25 +96,51 @@ function InputToolbar(props: InputToolbarProps) {
   }, [location, allModels]);
 
   return (
-    <>
       <StyledDiv
         isHidden={props.hidden}
         onClick={props.onClick}
         id="input-toolbar"
       >
-        <span className="flex gap-2 items-center whitespace-nowrap">
-            <>
-              {!aiderMode && !perplexityMode && <ModelSelect />}
-              <StyledSpan
-                onClick={(e) => {
-                  props.onAddContextItem();
+				<div className="flex-grow">
+          {!perplexityMode && (
+						<div className="flex gap-3 items-center">
+              <ShortcutButton
+                keys={["⎇", "⏎"]}
+                label="Use current file"
+                onClick={() => ({
+                  useCodebase: false,
+                  noContext: !useActiveFile,
+                })}
+              />
+              {/* TODO:  add onClick to add file*/}
+              <ShortcutButton
+                keys={[getMetaKeyLabel(), "⏎"]}
+                onClick={() => {
+                  props.onEnter({
+                    useCodebase: true,
+                    noContext: !useActiveFile,
+                  });
                 }}
-                className="hover:underline cursor-pointer"
-              >
-                Add Context{" "}
-                <PlusIcon className="h-2.5 w-2.5" aria-hidden="true" />
-              </StyledSpan>
-            </>
+                label="Use codebase"
+              />
+            </div>
+          )}
+					</div>
+
+
+        {/* <span className="flex gap-2 items-center whitespace-nowrap">
+          <>
+            {!perplexityMode && <ModelSelect />}
+            <StyledSpan
+              onClick={(e) => {
+                props.onAddContextItem();
+              }}
+              className="hover:underline cursor-pointer"
+            >
+              Add Context{" "}
+              <PlusIcon className="h-2.5 w-2.5" aria-hidden="true" />
+            </StyledSpan>
+          </>
           {defaultModel &&
             modelSupportsImages(
               defaultModel.provider,
@@ -185,10 +185,9 @@ function InputToolbar(props: InputToolbarProps) {
                 )}
               </span>
             )}
-        </span>
+        </span> */}
 
-        <span className="flex items-center gap-2 whitespace-nowrap">
-          {props.showNoContext ? (
+          {/* {props.showNoContext ? (
             <span
               style={{
                 color: props.usingCodebase ? vscBadgeBackground : lightGray,
@@ -222,8 +221,20 @@ function InputToolbar(props: InputToolbarProps) {
             >
               {getMetaKeyLabel()} ⏎ Use codebase
             </StyledSpan>
-          ) : null}
-          <EnterButton
+          ) : null} */}
+          <Button
+            className="gap-1 h-6 bg-[#AFF349] text-[#005A4E] text-xs px-2"
+            onClick={(e) => {
+              props.onEnter?.({
+                useCodebase: false,
+                noContext: !useActiveFile
+              });
+            }}
+					>
+            <ArrowTurnDownLeftIcon width="12px" height="12px" />
+            Send
+					</Button>
+          {/* <EnterButton
             offFocus={props.usingCodebase}
             onClick={(e) => {
               props.onEnter({
@@ -232,11 +243,9 @@ function InputToolbar(props: InputToolbarProps) {
               });
             }}
           >
-            ⏎ Enter
-          </EnterButton>
-        </span>
+            ⏎ Send
+          </EnterButton> */}
       </StyledDiv>
-    </>
   );
 }
 

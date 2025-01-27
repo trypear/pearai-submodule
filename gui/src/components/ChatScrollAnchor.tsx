@@ -28,5 +28,7 @@ export function ChatScrollAnchor({
     }
   }, [inView, entry, isAtBottom, trackVisibility]);
 
+	//This is a sigle divide line between chatbox and response
+
   return <div ref={ref} className="h-px w-full" />;
 }

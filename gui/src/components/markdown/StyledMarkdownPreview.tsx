@@ -19,10 +19,12 @@ import PreWithToolbar from "./PreWithToolbar";
 import { SyntaxHighlightedPre } from "./SyntaxHighlightedPre";
 import "./katex.css";
 import "./markdown.css";
+import { Citation } from "core";
 
 const StyledMarkdown = styled.div<{
   fontSize?: number;
   showBorder?: boolean;
+	isCodeSnippet?: boolean;
 }>`
   pre {
     background-color: ${window.isPearOverlay ?  vscBackground : vscEditorBackground};
@@ -32,6 +34,15 @@ const StyledMarkdown = styled.div<{
     overflow-x: scroll;
     overflow-y: hidden;
 
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+
     ${(props) => {
       if (props.showBorder) {
         return `
@@ -39,7 +50,7 @@ const StyledMarkdown = styled.div<{
         `;
       }
     }}
-    padding: 12px;
+    padding: ${props => props.isCodeSnippet ? '0px 4px 4px 4px' : '32px 12px 12px 12px'};
   }
 
   code {
@@ -47,7 +58,6 @@ const StyledMarkdown = styled.div<{
       display: none;
     }
     word-wrap: break-word;
-    border-radius: ${defaultBorderRadius};
     background-color: ${vscEditorBackground};
     font-size: ${getFontSize() - 2}px;
     font-family: var(--vscode-editor-font-family);
@@ -94,6 +104,8 @@ interface StyledMarkdownPreviewProps {
   isLast?: boolean;
   messageIndex?: number;
   integrationSource?: "perplexity" | "aider" | "continue";
+  citations?: Citation[];
+	isCodeSnippet?: boolean;
 }
 
 interface FadeInWordsProps extends StyledMarkdownPreviewProps {
@@ -107,7 +119,7 @@ const FadeInWords: React.FC<FadeInWordsProps> = (props: FadeInWordsProps) => {
     : props.integrationSource === "perplexity"
       ? useSelector((store: RootState) => store.state.perplexityActive)
       : useSelector((store: RootState) => store.state.aiderActive);
-  
+
   // Get the appropriate history based on the source
   const history = useSelector((store: RootState) => {
     switch (integrationSource) {
@@ -125,18 +137,18 @@ const FadeInWords: React.FC<FadeInWordsProps> = (props: FadeInWordsProps) => {
   const isStreamingMessage = active && messageIndex === history.length - 1;
 
   const words = children
-    .map((child) => {
+    .map((child, childIndex) => {
       if (typeof child === "string") {
         return child.split(/(\s+)/).map((word, index) => (
-          <span 
-            className={word.trim() && isStreamingMessage ? "fade-in-span" : undefined} 
-            key={index}
+          <span
+            className={word.trim() && isStreamingMessage ? "fade-in-span" : undefined}
+            key={`${childIndex}-${index}-${word}`}
           >
             {word}
           </span>
         ));
       } else {
-        return <span className={isStreamingMessage ? "fade-in-span" : undefined}>{child}</span>;
+        return <span key={`child-${childIndex}`} className={isStreamingMessage ? "fade-in-span" : undefined}>{child}</span>;
       }
     })
     .flat();
@@ -154,13 +166,13 @@ interface FadeInElementProps extends StyledMarkdownPreviewProps {
 const FadeInElement: React.FC<FadeInElementProps> = (props: FadeInElementProps) => {
   const { children, integrationSource, isStreaming, messageIndex, as = 'p', ...otherProps } = props;
   const ElementType = as;
-  
+
   const active = props.integrationSource === "continue"
     ? useSelector((store: RootState) => store.state.active)
     : props.integrationSource === "perplexity"
       ? useSelector((store: RootState) => store.state.perplexityActive)
       : useSelector((store: RootState) => store.state.aiderActive);
-  
+
   const history = useSelector((store: RootState) => {
     switch (integrationSource) {
       case "perplexity":
@@ -190,19 +202,22 @@ const FadeInElement: React.FC<FadeInElementProps> = (props: FadeInElementProps) 
   }
 
   const words = children
-    .map((child) => {
+    .map((child, childIndex) => {
       if (!child) return null;
       if (typeof child === "string") {
         return child.split(/(\s+)/).map((word, index) => (
-          <span 
-            className={word.trim() && isStreamingMessage ? "fade-in-span" : undefined} 
-            key={index}
+          <span
+            className={word.trim() && isStreamingMessage ? "fade-in-span" : undefined}
+            key={`${childIndex}-${index}-${word}`}
           >
             {word}
           </span>
         ));
       } else {
-        return <span className={isStreamingMessage ? "fade-in-span" : undefined}>{child}</span>;
+        return React.cloneElement(child, {
+          key: `element-${childIndex}`,
+          className: isStreamingMessage ? "fade-in-span" : undefined
+        });
       }
     })
     .filter(Boolean)
@@ -211,6 +226,15 @@ const FadeInElement: React.FC<FadeInElementProps> = (props: FadeInElementProps) 
   return <ElementType {...otherProps}>{words}</ElementType>;
 };
 
+const processCitations = (text: string, citations?: Citation[]) => {
+  if (!citations) return text;
+
+  return text.replace(/\[(\d+)\]/g, (match, num) => {
+    const citation = citations[parseInt(num) - 1];
+    if (!citation) return match;
+    return `[[${num}]](${citation.url})`;
+  });
+};
 
 
 const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
@@ -385,8 +409,13 @@ const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
     setMarkdownSource(props.source || "");
   }, [props.source]);
 
+  useEffect(() => {
+    const processedSource = processCitations(props.source || "", props.citations);
+    setMarkdownSource(processedSource);
+  }, [props.source, props.citations]);
+
   return (
-    <StyledMarkdown fontSize={getFontSize()} showBorder={false}>
+    <StyledMarkdown fontSize={getFontSize()} showBorder={false} isCodeSnippet={props.isCodeSnippet}>
       {reactContent}
     </StyledMarkdown>
   );
