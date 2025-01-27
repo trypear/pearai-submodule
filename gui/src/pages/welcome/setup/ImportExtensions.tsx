@@ -9,21 +9,26 @@ export const getLogoPath = (assetName: string) => {
   return `${window.vscMediaUrl}/logos/${assetName}`;
 };
 
+const didUserSettingsLoad = async () => {
+  const ideMessenger = useContext(IdeMessengerContext);
+  const settingsLoaded = await ideMessenger.request(
+    "importUserSettingsFromVSCode",
+    undefined,
+  );
+  return typeof settingsLoaded === "boolean" && settingsLoaded
+}
+
 export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   const [isImporting, setIsImporting] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [importError, setImportError] = useState("");
-  const ideMessenger = useContext(IdeMessengerContext);
+  const [showSkip, setShowSkip] = useState(false);
 
   const handleImport = async () => {
     localStorage.setItem("importUserSettingsFromVSCode", "true");
     setIsImporting(true);
     setImportError("");
-    const settingsLoaded = await ideMessenger.request(
-      "importUserSettingsFromVSCode",
-      undefined,
-    );
-    if (typeof settingsLoaded === "boolean" && settingsLoaded) {
+    if (await didUserSettingsLoad()) {
       setIsDone(true);
       onNext();
     } else {
@@ -54,7 +59,11 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
     };
 
     window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    const skipButtonTimer = setTimeout(() => setShowSkip(true), 3000);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      clearTimeout(skipButtonTimer);
+    }
   }, [isImporting]); // Include isImporting in dependencies to prevent import when already in progress
 
   return (
@@ -75,9 +84,11 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
               {importError ? <p>{importError}</p> : null}
               <div className="absolute bottom-8 right-8 flex items-center gap-4">
                 {/* TODO: hide skip button for the first five seconds or something and then show */}
-                <div onClick={handleSkip} className="flex items-center gap-2 cursor-pointer">
-                  <span className="text-center w-full">Skip</span>
-                </div>
+                {showSkip && (
+                  <div onClick={handleSkip} className="flex items-center gap-2 cursor-pointer">
+                    <span className="text-center w-full">Skip</span>
+                  </div>
+                )}
                 <Button
                   disabled={isImporting}
                   className="w-[250px] text-button-foreground bg-button hover:bg-button-hover p-4 lg:py-6 lg:px-2 text-sm md:text-base cursor-pointer transition-all duration-300"
