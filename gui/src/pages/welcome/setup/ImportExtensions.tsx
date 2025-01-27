@@ -43,17 +43,11 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   };
 
   useEffect(() => {
-    setIsImporting(
-      localStorage.getItem("importUserSettingsFromVSCode") === "true",
-    );
+    setIsImporting(localStorage.getItem("importUserSettingsFromVSCode") === "true");
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === "Enter" && !isImporting) {
         handleImport();
-      } else if (
-        (event.metaKey || event.ctrlKey) &&
-        event.key === "ArrowRight" &&
-        !isImporting
-      ) {
+      } else if ((event.metaKey || event.ctrlKey) && event.key === "ArrowRight" && !isImporting) {
         event.preventDefault();
         onNext();
       }
