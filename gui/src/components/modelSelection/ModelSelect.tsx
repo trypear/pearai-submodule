@@ -76,14 +76,14 @@ interface ListboxOptionProps {
   isCurrentModel?: boolean;
 }
 
-const StyledListboxOption = styled(Listbox.Option)<ListboxOptionProps>`
+const StyledListboxOption = styled(Listbox.Option) <ListboxOptionProps>`
   cursor: pointer;
   border-radius: 6px;
   padding: 5px 4px;
 
   &:hover {
     background: ${(props) =>
-      props.isCurrentModel ? `${lightGray}66` : `${lightGray}33`};
+    props.isCurrentModel ? `${lightGray}66` : `${lightGray}33`};
   }
 
   background: ${(props) =>
@@ -145,6 +145,7 @@ function ModelOption({
       value={option.value}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      isCurrentModel={defaultModel?.title === option.title}
     >
       <div className="flex items-center justify-between w-full">
         <div className="flex items-center">
