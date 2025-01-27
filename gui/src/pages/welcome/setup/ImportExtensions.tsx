@@ -59,8 +59,8 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
       }
     };
 
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isImporting]); // Include isImporting in dependencies to prevent import when already in progress
 
   return (
@@ -71,17 +71,9 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
             Import your extensions <br /> and user settings from VSCode
           </h2>
           <div className="flex items-center justify-center gap-8 mb-8">
-            <img
-              src={getLogoPath("vscode.svg")}
-              className="w-[100px] h-[100px]"
-              alt="VS Code"
-            />
-            <ArrowLongRightIcon className="w-8 h-8 text-muted-foreground" />
-            <img
-              src={getLogoPath("pearai-green.svg")}
-              className="w-36 h-36 ml-[-2.5rem]"
-              alt="PearAI"
-            />
+            <img src={getLogoPath("vscode.svg")} className="w-[100px] h-[100px]" alt="VS Code" />
+              <ArrowLongRightIcon className="w-8 h-8 text-muted-foreground" />
+            <img src={getLogoPath("pearai-green.svg")} className="w-36 h-36 ml-[-2.5rem]" alt="PearAI" />
           </div>
 
           {!isDone ? (
@@ -89,10 +81,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
               {importError ? <p>{importError}</p> : null}
               <div className="absolute bottom-8 right-8 flex items-center gap-4">
                 {/* TODO: hide skip button for the first five seconds or something and then show */}
-                <div
-                  onClick={handleSkip}
-                  className="flex items-center gap-2 cursor-pointer"
-                >
+                <div onClick={handleSkip} className="flex items-center gap-2 cursor-pointer">
                   <span className="text-center w-full">Skip</span>
                 </div>
                 <Button
@@ -136,9 +125,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
           ) : (
             <div className="flex flex-col items-center gap-4 mb-24">
               <div>Done importing! You can leave this page</div>
-              <div
-                onClick={onNext}
-                className="flex items-center gap-2 cursor-pointer"
+              <div onClick={onNext} className="flex items-center gap-2 cursor-pointer"
               >
                 <span className="text-center w-full">Continue</span>
               </div>

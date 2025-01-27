@@ -1,5 +1,7 @@
 extensions/vscode/continue_rc_schema.json
 **/.pearaiignore
 CHANGELOG.md
-# *.tsx # temporary for local dev, do not merge with this
-# *.ts # temporary for local dev, do not merge with this
+
+# temporary for local dev, do not merge with this
+*.tsx
+*.ts
