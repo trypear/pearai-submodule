@@ -86,7 +86,6 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
             <div>
               {importError ? <p>{importError}</p> : null}
               <div className="absolute bottom-8 right-8 flex items-center gap-4">
-                {/* TODO: hide skip button for the first five seconds or something and then show */}
                 {showSkip && (
                   <div onClick={handleSkip} className="flex items-center gap-2 cursor-pointer">
                     <span className="text-center w-full">Skip</span>
