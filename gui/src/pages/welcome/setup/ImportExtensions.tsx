@@ -9,30 +9,31 @@ export const getLogoPath = (assetName: string) => {
   return `${window.vscMediaUrl}/logos/${assetName}`;
 };
 
-const didUserSettingsLoad = async () => {
-  const ideMessenger = useContext(IdeMessengerContext);
-  const settingsLoaded = await ideMessenger.request(
-    "importUserSettingsFromVSCode",
-    undefined,
-  );
-  return typeof settingsLoaded === "boolean" && settingsLoaded
-}
-
 export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   const [isImporting, setIsImporting] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [importError, setImportError] = useState("");
   const [showSkip, setShowSkip] = useState(false);
 
+  const ideMessenger = useContext(IdeMessengerContext);
+
   const handleImport = async () => {
     localStorage.setItem("importUserSettingsFromVSCode", "true");
     setIsImporting(true);
     setImportError("");
-    if (await didUserSettingsLoad()) {
+    setShowSkip(false); // Reset on each import
+
+    // Delay showing the skip button after 3 seconds
+    setTimeout(() => setShowSkip(true), 3000);
+
+    const settingsLoaded = await ideMessenger.request(
+      "importUserSettingsFromVSCode",
+      undefined,
+    );
+    if (typeof settingsLoaded === "boolean" && settingsLoaded) {
       setIsDone(true);
       onNext();
     } else {
-      console.dir("settings not loaded");
       setIsImporting(false);
       localStorage.setItem("importUserSettingsFromVSCode", "false");
       setIsDone(false); // being verbose on purpose
@@ -59,11 +60,7 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
     };
 
     window.addEventListener('keydown', handleKeyPress);
-    const skipButtonTimer = setTimeout(() => setShowSkip(true), 3000);
-    return () => {
-      window.removeEventListener('keydown', handleKeyPress);
-      clearTimeout(skipButtonTimer);
-    }
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isImporting]); // Include isImporting in dependencies to prevent import when already in progress
 
   return (
