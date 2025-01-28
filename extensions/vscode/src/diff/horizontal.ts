@@ -105,7 +105,7 @@ export class DiffManager {
 
     const rightUri = uriFromFilePath(newFilepath);
     const leftUri = uriFromFilePath(originalFilepath);
-    const title = "Continue Diff";
+    const title = "PearAI Diff View";
     vscode.commands.executeCommand("vscode.diff", leftUri, rightUri, title);
 
     const editor = vscode.window.activeTextEditor;
@@ -125,7 +125,7 @@ export class DiffManager {
     ) {
       vscode.window
         .showInformationMessage(
-          `Accept (${getMetaKeyLabel()}⇧⏎) or reject (${getMetaKeyLabel()}⇧⌫) at the top of the file.`,
+          `Accept (${getMetaKeyLabel()}⇧⏎) or reject (${getMetaKeyLabel()}⇧⌫) all changes.`,
           "Got it",
           "Don't show again",
         )
@@ -245,6 +245,7 @@ export class DiffManager {
 
   async acceptDiff(newFilepath?: string) {
     this.webviewProtocol?.request("acceptedOrRejectedDiff", undefined, [PEAR_CONTINUE_VIEW_ID])
+    this.webviewProtocol?.request("setRelaceDiffState", {diffVisible: false});
     // When coming from a keyboard shortcut, we have to infer the newFilepath from visible text editors
     if (!newFilepath) {
       newFilepath = this.inferNewFilepath();
@@ -277,6 +278,7 @@ export class DiffManager {
 
   async rejectDiff(newFilepath?: string) {
     this.webviewProtocol?.request("acceptedOrRejectedDiff", undefined, [PEAR_CONTINUE_VIEW_ID])
+    this.webviewProtocol?.request("setRelaceDiffState", {diffVisible: false});
     // If no newFilepath is provided and there is only one in the dictionary, use that
     if (!newFilepath) {
       newFilepath = this.inferNewFilepath();

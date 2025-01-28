@@ -29,7 +29,7 @@ import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { getExtensionUri } from "./util/vscode";
-import { aiderCtrlC, aiderResetSession, openAiderPanel, refreshAiderProcessState, installAider, uninstallAider } from './integrations/aider/aiderUtil';
+import { aiderCtrlC, aiderResetSession, openAiderPanel, sendAiderProcessStateToGUI, installAider, uninstallAider } from './integrations/aider/aiderUtil';
 import { handlePerplexityMode } from "./integrations/perplexity/perplexity";
 import { PEAR_CONTINUE_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
@@ -376,13 +376,18 @@ const commandsMap: (
       core.invoke("context/indexDocs", { reIndex: true });
     },
     "pearai.toggleCreator": async () => {
+      await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
       await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleSearch": async () => {
       await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
-    "pearai.toggleInventory": async () => {
-      await handleIntegrationShortcutKey("navigateToInventory", "inventory", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+    "pearai.toggleMem0": async () => {
+      await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+    },
+    "pearai.toggleOverlay": async () => {
+      await handleIntegrationShortcutKey("toggleOverlay", "inventory", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+      vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     },
     "pearai.toggleInventoryHome": async () => {
       await handleIntegrationShortcutKey("navigateToInventoryHome", "home", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
@@ -650,11 +655,11 @@ const commandsMap: (
     "pearai.aiderResetSession": async () => {
       await aiderResetSession(core);
     },
-    "pearai.refreshAiderProcessState": async () => {
-      await refreshAiderProcessState(core, sidebar.webviewProtocol);
+    "pearai.sendAiderProcessStateToGUI": async () => {
+      await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
     },
-    "pearai.setAiderProcessState": async (state: AiderState["state"]) => {
-      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", { state: state }, [PEAR_OVERLAY_VIEW_ID]);
+    "pearai.setAiderProcessState": async (state: AiderState) => {
+      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.perplexityMode": async () => {
       // handlePerplexityMode(sidebar, extensionContext);
@@ -906,6 +911,22 @@ const commandsMap: (
     },
     "pearai.macResizeAuxiliaryBarWidth": () => {
       vscode.commands.executeCommand("pearai.resizeAuxiliaryBarWidth");
+    },
+    "pearai.freeModelSwitch": (msg) => {
+      const warnMsg = msg.warningMsg;
+      const flagSet = extensionContext.globalState.get("freeModelSwitched");
+      if (!warnMsg && flagSet) {
+        // credit restored
+        vscode.window.showInformationMessage("Credit restored. Switched back to PearAI Pro model.");
+        extensionContext.globalState.update("freeModelSwitched", false);
+        return;
+      }
+      if (warnMsg && !flagSet) {
+        // limit reached, switching to free model
+        vscode.window.showInformationMessage(msg.warningMsg);
+        extensionContext.globalState.update("freeModelSwitched", true);
+        sidebar.webviewProtocol?.request("switchModel", "PearAI Model", ["pearai.pearAIChatView"]);
+      }
     },
     "pearai.patchWSL": async () => {
       if (process.platform !== 'win32') {

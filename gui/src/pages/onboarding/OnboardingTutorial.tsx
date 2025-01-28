@@ -274,11 +274,6 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
             Lastly, press{" "}
             <b>
               <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
-              &nbsp;<kbd className="font-mono">1</kbd>
-            </b>{" "}
-            / {" "}
-            <b>
-              <kbd className="font-mono">{getMetaKeyAndShortcutLabel()}</kbd>
               &nbsp;<kbd className="font-mono">E</kbd>
             </b>{" "}
             to toggle <b>PearAI Inventory</b>, and try out{" "}
@@ -378,7 +373,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
   );
 
   useWebviewListener(
-    "navigateToInventory",
+    "toggleOverlay",
     async () => {
       if (currentPage === pages.length - 1) {
         onClose();
@@ -475,7 +470,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
                           key={example}
                           text={example}
                           side="top"
-                          variant="ghost"
+                          variant="secondary"
                           onTextClick={onExampleClick}
                         />
                       ))}

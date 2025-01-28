@@ -3,7 +3,7 @@ import { ChatBubbleOvalLeftIcon } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
 import { InputModifiers } from "core";
 import { usePostHog } from "posthog-js/react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, ClockIcon } from "@heroicons/react/24/outline";
 import {
   Fragment,
   useCallback,
@@ -39,15 +39,36 @@ import { Badge } from "../../components/ui/badge";
 import {
   TopGuiDiv,
   StopButton,
-  StepsDiv,
   NewSessionButton,
   fallbackRender,
+  StopButtonContainer,
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import { cn } from "@/lib/utils";
 import { Citations } from './Citations';
 import { Button } from "@/components/ui/button";
 import { HistorySidebar } from "@/components/HistorySidebar";
+import styled from "styled-components";
+import { lightGray } from "@/components";
+import InventoryDetails from "../../components/InventoryDetails";
+
+
+const StepsDiv = styled.div`
+  padding-bottom: 8px;
+  position: relative;
+  background-color: transparent;
+
+  & > * {
+    position: relative;
+  }
+
+  .thread-message {
+    margin: 16px 8px 0 8px;
+  }
+  .thread-message:not(:first-child) {
+    border-top: 1px solid ${lightGray}22;
+  }
+`;
 
 
 function PerplexityGUI() {
@@ -188,11 +209,14 @@ function PerplexityGUI() {
   const { saveSession, getLastSessionId, loadLastSession, loadMostRecentChat } =
     useHistory(dispatch, "perplexity");
 
+  const historyKeyRef = useRef(0);
+  const sessionKeyRef = useRef(0);
+
   useWebviewListener(
     "newSession",
     async () => {
       saveSession();
-      mainTextInputRef.current?.focus?.();
+      sessionKeyRef.current += 1;
     },
     [saveSession],
   );
@@ -201,7 +225,7 @@ function PerplexityGUI() {
     "loadMostRecentChat",
     async () => {
       await loadMostRecentChat();
-      mainTextInputRef.current?.focus?.();
+      sessionKeyRef.current += 1;
     },
     [loadMostRecentChat],
   );
@@ -220,287 +244,309 @@ function PerplexityGUI() {
     [state.perplexityHistory],
   );
 
+  // force re-render continueInputBox when history changes
+  useEffect(() => {
+    historyKeyRef.current += 1;
+    sessionKeyRef.current += 1;
+  }, [state.perplexityHistory]);
+
   return (
     <>
-    <div className="relative flex h-screen overflow-hidden">
-      <HistorySidebar 
-        isOpen={historySidebarOpen} 
-        onClose={() => {
-          setHistorySidebarOpen(false)}} 
-        from="perplexity"
-      />
-      
-      <div 
-        className={cn(
-          "flex-1 flex flex-col min-w-0",
-          "transition-all duration-300 ease-in-out",
-          historySidebarOpen ? "ml-72" : "ml-0"
-        )}
-      >
-        <div className="sticky top-0 z-10 p-0 bg-background">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setHistorySidebarOpen(prev => !prev)}
-            className="flex items-center gap-2"
-          >
-            {historySidebarOpen ? (
-                <>
-                  <ChevronLeftIcon className="h-3 w-3" />
-                  Close History
-                </>
-              ) : (
-                <>
-                  History
-                  <ChevronRightIcon className="h-3 w-3" />
-                </>
-              )}
-          </Button>
-        </div>
-      <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll}>
+      <div className="relative flex h-screen overflow-hidden ">
+        <InventoryDetails
+          textColor="#FFFFFF"
+          backgroundColor="#0fb5af"
+          content="Search"
+          blurb={<div><p>When you need to find information where recency is important. Regular LLMs' knowledge are outdated by several months, whereas PearAI Search is able to search the web for latest data.</p><p>Powered by Perplexity.</p></div>}
+          useful={<div><p>Most up-to-date information, real-time web search.</p><p>Also good for non-coding specific questions</p><p>Uses less credits than other tools</p></div>}
+          alt={<p>Use Chat or Creator to make changes to files.</p>}
+        />
+
+        <HistorySidebar
+          isOpen={historySidebarOpen}
+          onClose={() => {
+            setHistorySidebarOpen(false)
+          }}
+          from="perplexity"
+        />
+
         <div
           className={cn(
-            "mx-2",
-            state.perplexityHistory.length === 0 &&
-              "h-full flex flex-col justify-center",
+            "flex-1 flex flex-col min-w-0",
+            historySidebarOpen ? "mr-72" : "mr-0"
           )}
         >
-          {state.perplexityHistory.length === 0 ? (
-            <div className="max-w-2xl mx-auto w-full text-center">
-              <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
-                <div className="flex-1" />
-                  <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Search</h1>
-                  <div className="flex-1 flex items-center justify-start">
-                    <Badge variant="outline" className="lg:relative lg:top-[2px]">
+          <Button
+            variant="ghost"
+            onClick={() => setHistorySidebarOpen(prev => !prev)}
+            className={
+              cn(
+                "ml-auto mr-0",
+                'z-10'
+              )
+            }
+          >
+            {!historySidebarOpen && (
+              <>
+                <ClockIcon className="h-6 w-6" />
+              </>
+            )}
+          </Button>
+          <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={state.history.length === 0}>
+
+            <div
+              className={cn(
+                "mx-2",
+                state.perplexityHistory.length === 0 &&
+                "h-full flex flex-col justify-center",
+              )}
+            >
+              {state.perplexityHistory.length === 0 ? (
+                <div className="max-w-2xl mx-auto w-full text-center">
+                  <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
+                    <div className="flex-1" />
+                    <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Search</h1>
+                    <div className="flex-1 flex items-center justify-start">
+                      <Badge variant="outline" className="lg:relative lg:top-[2px]">
+                        Beta (Powered by Perplexity*)
+                      </Badge>
+                    </div>
+                  </div>
+                  <p className="text-sm text-foreground">
+                    Ask for anything. We'll retrieve up-to-date information in
+                    real-time on the web. Search uses less credits than PearAI Chat,
+                    and is perfect for documentation lookups.
+                  </p>
+                </div>
+              ) : (
+                <div className="pl-2">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>
+                    <Badge variant="outline" className="pl-0">
                       Beta (Powered by Perplexity*)
                     </Badge>
                   </div>
-               </div>
-              <p className="text-sm text-foreground">
-                Ask for anything. We'll retrieve up-to-date information in
-                real-time on the web. Search uses less credits than PearAI Chat,
-                and is perfect for documentation lookups.
-              </p>
-            </div>
-          ) : (
-            <div className="pl-2">
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>
-                <Badge variant="outline" className="pl-0">
-                  Beta (Powered by Perplexity*)
-                </Badge>
-              </div>
-              <div className="flex items-center mt-0 justify-between pr-1">
-                <p className="text-sm text-foreground m-0">
-                  Ask for anything. We'll retrieve up-to-date information in
-                  real-time on the web. Search uses less credits than PearAI
-                  Chat, and is perfect for documentation lookups.
-                </p>
-                <div>
-                  <div>
-                </div>
-                </div>
-                <div>
-                  <NewSessionButton
-                    onClick={() => {
-                      saveSession();
-                      ideMessenger.post("aiderResetSession", undefined);
-                    }}
-                    className="mr-auto"
-                  >
-                    Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
-                  </NewSessionButton>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <StepsDiv>
-            {state.perplexityHistory.map((item, index: number) => (
-              <Fragment key={index}>
-                <ErrorBoundary
-                  FallbackComponent={fallbackRender}
-                  onReset={() => {
-                    dispatch(
-                      newSession({ session: undefined, source: "perplexity" }),
-                    );
-                  }}
-                >
-                  {item.message.role === "user" ? (
-                    <ContinueInputBox
-                      onEnter={async (editorState, modifiers) => {
-                        streamResponse(
-                          editorState,
-                          modifiers,
-                          ideMessenger,
-                          index,
-                          "perplexity",
-                        );
-                      }}
-                      isLastUserInput={isLastUserInput(index)}
-                      isMainInput={false}
-                      editorState={item.editorState}
-                      contextItems={item.contextItems}
-                      source="perplexity"
-                    />
-                  ) : (
-                    <div className="thread-message">
-                      <TimelineItem
-                        item={item}
-                        iconElement={
-                          <ChatBubbleOvalLeftIcon width="16px" height="16px" />
-                        }
-                        open={
-                          typeof stepsOpen[index] === "undefined"
-                            ? true
-                            : stepsOpen[index]!
-                        }
-                        onToggle={() => {}}
-                      >
-                          {item.citations && 
-                          <Citations 
-                            citations={item.citations} 
-                            isLast={
-                              index === sessionState.perplexityHistory.length - 1
-                            }
-                            active={active}
-                          /> }
-                          <StepContainer
-                          index={index}
-                          isLast={
-                            index === sessionState.perplexityHistory.length - 1
-                          }
-                          isFirst={index === 0}
-                          open={
-                            typeof stepsOpen[index] === "undefined"
-                              ? true
-                              : stepsOpen[index]!
-                          }
-                          key={index}
-                          onUserInput={(input: string) => {}}
-                          item={item}
-                          onReverse={() => {}}
-                          onRetry={() => {
-                            streamResponse(
-                              state.perplexityHistory[index - 1].editorState,
-                              state.perplexityHistory[index - 1].modifiers ??
-                                defaultInputModifiers,
-                              ideMessenger,
-                              index - 1,
-                              "perplexity",
-                            );
-                          }}
-                          onContinueGeneration={() => {
-                            window.postMessage(
-                              {
-                                messageType: "userInput",
-                                data: {
-                                  input: "Keep going.",
-                                },
-                              },
-                              "*",
-                            );
-                          }}
-                          onDelete={() => {
-                            dispatch(
-                              deleteMessage({
-                                index: index,
-                                source: "perplexity",
-                              }),
-                            );
-                          }}
-                          modelTitle={
-                            item.promptLogs?.[0]?.completionOptions?.model ?? ""
-                          }
-                          source="perplexity"
-                        />
-                      </TimelineItem>
+                  <div className="flex items-center mt-0 justify-between pr-1">
+                    <p className="text-sm text-foreground m-0">
+                      Ask for anything. We'll retrieve up-to-date information in
+                      real-time on the web. Search uses less credits than PearAI
+                      Chat, and is perfect for documentation lookups.
+                    </p>
+                    <div>
+                      <div>
+                      </div>
                     </div>
-                  )}
-                </ErrorBoundary>
-              </Fragment>
-            ))}
-          </StepsDiv>
-
-          <div
-            className={cn(
-              state.perplexityHistory.length === 0
-                ? "max-w-2xl mx-auto w-full"
-                : "w-full",
-            )}
-          >
-            <ContinueInputBox
-              onEnter={(editorContent, modifiers) => {
-                sendInput(editorContent, modifiers);
-              }}
-              isLastUserInput={false}
-              isMainInput={true}
-              hidden={active}
-              source="perplexity"
-              className={cn(
-                state.perplexityHistory.length === 0 && "shadow-lg",
-              )}
-            />
-          </div>
-
-          {active ? (
-            <>
-              <br />
-              <br />
-            </>
-          ) : state.perplexityHistory.length > 0 ? (
-            <div className="mt-2">
-              <NewSessionButton
-                onClick={() => {
-                  saveSession();
-                }}
-                className="mr-auto"
-              >
-                Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
-              </NewSessionButton>
-            </div>
-          ) : (
-            <>
-              {" "}
-              {/** TODO: Prevent removing tutorial card for now. Set to showerPerplexityTutorialCard later */}
-              {true && (
-                <div className="flex justify-center w-full mt-10">
-                  <CustomTutorialCard
-                    content={tutorialContent}
-                    onClose={onCloseTutorialCard}
-                  />{" "}
+                    <div>
+                      <NewSessionButton
+                        onClick={() => {
+                          saveSession();
+                          sessionKeyRef.current += 1;
+                        }}
+                        className="mr-auto"
+                      >
+                        Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
+                      </NewSessionButton>
+                    </div>
+                  </div>
                 </div>
               )}
-            </>
-          )}
-        </div>
+              <div className="max-w-3xl mx-auto w-full px-4 mt-6">
+                <StepsDiv>
+                  {state.perplexityHistory.map((item, index: number) => (
+                    <Fragment key={index}>
+                      <ErrorBoundary
+                        FallbackComponent={fallbackRender}
+                        onReset={() => {
+                          dispatch(
+                            newSession({ session: undefined, source: "perplexity" }),
+                          );
+                        }}
+                      >
+                        {item.message.role === "user" ? (
+                          <div className="max-w-3xl mx-auto">
+                            <div className="max-w-96 ml-auto px-2">
+                              <ContinueInputBox
+                                key={historyKeyRef.current}
+                                onEnter={async (editorState, modifiers) => {
+                                  streamResponse(
+                                    editorState,
+                                    modifiers,
+                                    ideMessenger,
+                                    index,
+                                    "perplexity",
+                                  );
+                                }}
+                                isLastUserInput={isLastUserInput(index)}
+                                isMainInput={false}
+                                editorState={item.editorState}
+                                contextItems={item.contextItems}
+                                source="perplexity"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="thread-message">
+                            <TimelineItem
+                              item={item}
+                              iconElement={
+                                <ChatBubbleOvalLeftIcon width="16px" height="16px" />
+                              }
+                              open={
+                                typeof stepsOpen[index] === "undefined"
+                                  ? true
+                                  : stepsOpen[index]!
+                              }
+                              onToggle={() => { }}
+                            >
+                              {item.citations &&
+                                <Citations
+                                  citations={item.citations}
+                                  isLast={
+                                    index === sessionState.perplexityHistory.length - 1
+                                  }
+                                  active={active}
+                                />}
+                              <StepContainer
+                                index={index}
+                                isLast={
+                                  index === sessionState.perplexityHistory.length - 1
+                                }
+                                isFirst={index === 0}
+                                open={
+                                  typeof stepsOpen[index] === "undefined"
+                                    ? true
+                                    : stepsOpen[index]!
+                                }
+                                key={index}
+                                onUserInput={(input: string) => { }}
+                                item={item}
+                                onReverse={() => { }}
+                                onRetry={() => {
+                                  streamResponse(
+                                    state.perplexityHistory[index - 1].editorState,
+                                    state.perplexityHistory[index - 1].modifiers ??
+                                    defaultInputModifiers,
+                                    ideMessenger,
+                                    index - 1,
+                                    "perplexity",
+                                  );
+                                }}
+                                onContinueGeneration={() => {
+                                  window.postMessage(
+                                    {
+                                      messageType: "userInput",
+                                      data: {
+                                        input: "Keep going.",
+                                      },
+                                    },
+                                    "*",
+                                  );
+                                }}
+                                onDelete={() => {
+                                  dispatch(
+                                    deleteMessage({
+                                      index: index,
+                                      source: "perplexity",
+                                    }),
+                                  );
+                                }}
+                                modelTitle={
+                                  item.promptLogs?.[0]?.completionOptions?.model ?? ""
+                                }
+                                source="perplexity"
+                              />
+                            </TimelineItem>
+                          </div>
+                        )}
+                      </ErrorBoundary>
+                    </Fragment>
+                  ))}
+                </StepsDiv>
 
-        <ChatScrollAnchor
-          scrollAreaRef={topGuiDivRef}
-          isAtBottom={isAtBottom}
-          trackVisibility={active}
-        />
-      </TopGuiDiv>
+                {!active && <div
+                  className={cn(
+                    state.perplexityHistory.length === 0
+                      ? "max-w-2xl mx-auto w-full"
+                      : "w-full",
+                  )}
+                >
+                  <ContinueInputBox
+                    key={sessionKeyRef.current}
+                    onEnter={(editorContent, modifiers) => {
+                      sendInput(editorContent, modifiers);
+                    }}
+                    isLastUserInput={false}
+                    isMainInput={true}
+                    hidden={active}
+                    source="perplexity"
+                    className={cn(
+                      state.perplexityHistory.length === 0 && "shadow-lg",
+                    )}
+                  />
+                </div>}
+
+                {active ? (
+                  <>
+                    <br />
+                    <br />
+                  </>
+                ) : state.perplexityHistory.length > 0 ? (
+                  <div className="mt-2">
+                    <NewSessionButton
+                      onClick={() => {
+                        saveSession();
+                        sessionKeyRef.current += 1;
+                      }}
+                      className="mr-auto"
+                    >
+                      Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
+                    </NewSessionButton>
+                  </div>
+                ) : (
+                  <>
+                    {" "}
+                    {/** TODO: Prevent removing tutorial card for now. Set to showerPerplexityTutorialCard later */}
+                    {true && (
+                      <div className="flex justify-center w-full mt-10">
+                        <CustomTutorialCard
+                          content={tutorialContent}
+                          onClose={onCloseTutorialCard}
+                        />{" "}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <ChatScrollAnchor
+                scrollAreaRef={topGuiDivRef}
+                isAtBottom={isAtBottom}
+                trackVisibility={active}
+              />
+            </div>
+          </TopGuiDiv>
+        </div>
       </div>
-    </div>
       {active && (
-        <StopButton
-          className="mt-auto mb-4 sticky bottom-4"
-          onClick={() => {
-            dispatch(setPerplexityInactive());
-            if (
-              state.perplexityHistory[state.perplexityHistory.length - 1]
-                ?.message.content.length === 0
-            ) {
-              dispatch(clearLastResponse("perplexity"));
-            }
-          }}
-        >
-          {getMetaKeyLabel()} ⌫ Cancel
-        </StopButton>
+        <StopButtonContainer>
+          <StopButton
+            className="mt-auto mb-24 sticky bottom-4"
+            onClick={() => {
+              dispatch(setPerplexityInactive());
+              if (
+                state.perplexityHistory[state.perplexityHistory.length - 1]
+                  ?.message.content.length === 0
+              ) {
+                dispatch(clearLastResponse("perplexity"));
+              }
+            }}
+          >
+            {getMetaKeyLabel()} ⌫ Cancel
+          </StopButton>
+        </StopButtonContainer>
       )}
 
-      <div className="text-[10px] text-muted-foreground mt-4 flex justify-end pr-2 pb-2">
+      <div className="text-[10px] text-muted-foreground mb-4 flex justify-end pr-2 pb-2">
         *View PearAI Disclaimer page{" "}
         <Link
           to="https://trypear.ai/disclaimer/"

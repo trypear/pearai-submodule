@@ -33,9 +33,9 @@ export function CopyButton(props: CopyButtonProps) {
         className={props.inline ? "inline-flex" : ""}
       >
         {copied ? (
-          <CheckIcon className="w-4 h-4 text-green-500" />
+          <CheckIcon className="w-[14px] h-[14px] stroke-2 stroke-green-500" />
         ) : (
-          <ClipboardIcon className="w-4 h-4" color={props.color} />
+          <ClipboardIcon className="w-[14px] h-[14px] stroke-2" color={props.color} />
         )}
       </HeaderButtonWithText>
   );

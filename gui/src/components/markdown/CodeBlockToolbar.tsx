@@ -2,36 +2,27 @@ import {
   ArrowLeftEndOnRectangleIcon,
   CheckIcon,
   PlayIcon,
+  BoltIcon,
+  XMarkIcon,
+	CodeBracketIcon,
 } from "@heroicons/react/24/outline";
 import { useContext, useState } from "react";
 import styled from "styled-components";
-import { defaultBorderRadius, vscEditorBackground } from "..";
+import { vscBackground, vscEditorBackground } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { isJetBrains } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "./CopyButton";
 import { isPerplexityMode } from '../../util/bareChatMode';
-
-const TopDiv = styled.div`
-  position: sticky;
-  top: 0;
-  left: 100%;
-  height: 0;
-  width: 0;
-  overflow: visible;
-  z-index: 100;
-`;
+import { useWebviewListener } from "../../hooks/useWebviewListener";
+import { Loader, Terminal } from "lucide-react";
 
 const SecondDiv = styled.div<{ bottom: boolean }>`
-  position: absolute;
-  ${(props) => (props.bottom ? "bottom: 3px;" : "top: -11px;")}
-  right: 10px;
   display: flex;
-  padding: 1px 2px;
+  padding: 2px;
   gap: 4px;
-  border: 0.5px solid #8888;
-  border-radius: ${defaultBorderRadius};
-  background-color: ${vscEditorBackground};
+  border-radius: 4px;
+  background-color: ${vscBackground};
 `;
 
 interface CodeBlockToolBarProps {
@@ -76,9 +67,25 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
 
   const [copied, setCopied] = useState(false);
   const [applying, setApplying] = useState(false);
+  const [fastApplying, setFastApplying] = useState(false);
+  const [isDiffVisible, setIsDiffVisible] = useState(false);
+  const [isTerminalBlock, setIsTerminalBlock] = useState(isTerminalCodeBlock(props.language, props.text));
+
+  useWebviewListener("setRelaceDiffState", (state) => {
+    if (state.diffVisible) {
+      setIsDiffVisible(true);
+    } else {
+      setIsDiffVisible(false);
+      setFastApplying(false);
+    }
+    return Promise.resolve();
+  });
 
   return (
-    <TopDiv>
+    <div className="flex justify-between w-[calc(100%-8px)] items-center p-1 absolute">
+			<div className="ml-1">
+				<CodeBracketIcon className="w-4 h-4 stroke-2"></CodeBracketIcon>
+			</div>
       <SecondDiv bottom={props.bottom || false}>
         {isPerplexityMode() && <HeaderButtonWithText
           text="Add to PearAI chat context"
@@ -90,39 +97,89 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
           <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
         </HeaderButtonWithText>}
         {isJetBrains() || !isPerplexityMode() && (
-          <HeaderButtonWithText
-            text={
-              isTerminalCodeBlock(props.language, props.text)
-                ? "Run in terminal"
-                : applying
-                  ? "Applying..."
-                  : "Apply to current file"
-            }
-            disabled={applying}
-            onClick={() => {
-              if (isTerminalCodeBlock(props.language, props.text)) {
-                let text = props.text;
-                if (text.startsWith("$ ")) {
-                  text = text.slice(2);
-                }
-                ideMessenger.ide.runCommand(text);
-                return;
+          <>
+            {!fastApplying && <HeaderButtonWithText
+              text={
+                isTerminalBlock
+                  ? "Run in terminal"
+                  : applying
+                    ? "Applying..."
+                    : "Apply to current file"
               }
+              disabled={applying || fastApplying}
+              onClick={() => {
+                if (isTerminalBlock) {
+                  let text = props.text;
+                  if (text.startsWith("$ ")) {
+                    text = text.slice(2);
+                  }
+                  ideMessenger.ide.runCommand(text);
+                  return;
+                }
 
-              if (applying) return;
-              ideMessenger.post("applyToCurrentFile", {
-                text: props.text,
-              });
-              setApplying(true);
-              setTimeout(() => setApplying(false), 2000);
-            }}
-          >
-            {applying ? (
-              <CheckIcon className="w-4 h-4 text-green-500" />
-            ) : (
-              <PlayIcon className="w-4 h-4" />
-            )}
-          </HeaderButtonWithText>
+                if (applying) return;
+                ideMessenger.post("applyToCurrentFile", {
+                  text: props.text,
+                });
+                setApplying(true);
+                setTimeout(() => setApplying(false), 2000);
+              }}
+            >
+              {applying ? (
+                <CheckIcon className="w-4 h-4 text-green-500" />
+              ) : (
+                isTerminalBlock ? (
+                  <Terminal className="w-4 h-4" />
+                ) : (
+                  <PlayIcon className="w-4 h-4" />
+                )
+              )}
+            </HeaderButtonWithText>}
+
+            {!isTerminalBlock && <>
+              {!isDiffVisible ? (
+                <>
+                  <HeaderButtonWithText
+                    text={fastApplying ? "Fast Applying..." : "Fast Apply"}
+                    disabled={applying || fastApplying}
+                    onClick={() => {
+                      if (fastApplying) return;
+                      ideMessenger.post("applyWithRelaceHorizontal", {
+                        contentToApply: props.text,
+                      });
+                      setFastApplying(true);
+                    }}
+                  >
+                    {fastApplying ? (
+                      <Loader className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <BoltIcon className="w-4 h-4" />
+                    )}
+                  </HeaderButtonWithText>
+                </>
+              ) : (
+                <>
+                  <HeaderButtonWithText
+                    text="Accept Changes"
+                    onClick={() => {
+                      ideMessenger.post("acceptRelaceDiff", undefined);
+                    }}
+                  >
+                    <CheckIcon className="w-4 h-4 text-green-500" />
+                  </HeaderButtonWithText>
+                  <HeaderButtonWithText
+                    text="Reject Changes"
+                    onClick={() => {
+                      ideMessenger.post("rejectRelaceDiff", undefined);
+                      setIsDiffVisible(false);
+                    }}
+                  >
+                    <XMarkIcon className="w-4 h-4 text-red-600" />
+                  </HeaderButtonWithText>
+                </>
+              )}
+            </>}
+          </>
         )}
         {!isPerplexityMode() && <HeaderButtonWithText
           text="Insert at cursor"
@@ -134,7 +191,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
         </HeaderButtonWithText>}
         <CopyButton text={props.text} />
       </SecondDiv>
-    </TopDiv>
+    </div>
   );
 }
 

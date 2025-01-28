@@ -31,7 +31,7 @@ const CitationCard = ({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "flex-shrink-0 w-40 text-xs px-3 bg-sidebar-background rounded-md transition-all duration-200 group no-underline",
+        "flex-shrink-0 w-40 text-xs px-3 bg-background rounded-md transition-all duration-200 group no-underline",
         isLast && active && "opacity-0 animate-fadeIn pointer-events-none",
         totalDuration === 0 || !active && "hover:shadow-md hover:!opacity-70 hover:text-foreground"
       )}

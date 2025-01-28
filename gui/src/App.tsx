@@ -23,7 +23,7 @@ import Inventory from "./pages/inventory";
 import AiderGUI from "./integrations/aider/aidergui";
 import PerplexityGUI from "./integrations/perplexity/perplexitygui";
 import Welcome from "./pages/welcome/welcomeGui";
-
+import { ContextMenuProvider } from './components/ContextMenuProvider';
 
 declare global {
   interface Window {
@@ -138,13 +138,15 @@ function App() {
   const submenuContextProvidersMethods = useSubmenuContextProviders();
 
   return (
-    <VscThemeContext.Provider value={vscTheme}>
-      <SubmenuContextProvidersContext.Provider
-        value={submenuContextProvidersMethods}
-      >
-        <RouterProvider router={router} />
-      </SubmenuContextProvidersContext.Provider>
-    </VscThemeContext.Provider>
+    <ContextMenuProvider>
+      <VscThemeContext.Provider value={vscTheme}>
+        <SubmenuContextProvidersContext.Provider
+          value={submenuContextProvidersMethods}
+        >
+          <RouterProvider router={router} />
+        </SubmenuContextProvidersContext.Provider>
+      </VscThemeContext.Provider>
+    </ContextMenuProvider>
   );
 }
 
