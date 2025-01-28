@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import { ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useContext, useEffect, useState } from "react";
 
@@ -13,30 +14,30 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   const [isImporting, setIsImporting] = useState(false);
   const [isDone, setIsDone] = useState(false);
   const [importError, setImportError] = useState("");
-  const [showSkip, setShowSkip] = useState(false);
+  const [showSkip, setShowSkip] = useState(true);
 
   const ideMessenger = useContext(IdeMessengerContext);
 
   const handleImport = async () => {
-    localStorage.setItem("importUserSettingsFromVSCode", "true");
     setIsImporting(true);
     setImportError("");
-    setShowSkip(false); // Reset on each import
 
-    // Delay showing the skip button after 3 seconds
-    setTimeout(() => setShowSkip(true), 3000);
+    // Briefly hide the skip button
+    setShowSkip(false);
+    setTimeout(() => setShowSkip(true), 5000);
 
+    // Attempt to load settings
     const settingsLoaded = await ideMessenger.request(
       "importUserSettingsFromVSCode",
       undefined,
     );
     if (typeof settingsLoaded === "boolean" && settingsLoaded) {
       setIsDone(true);
+      setLocalStorage("isDoneImportingUserSettingsFromVSCode", true);
       onNext();
     } else {
       setIsImporting(false);
-      localStorage.setItem("importUserSettingsFromVSCode", "false");
-      setIsDone(false); // being verbose on purpose
+      setIsDone(false);
       setImportError(
         "Something went wrong while importing your settings. Please skip or try again.",
       );
@@ -44,24 +45,29 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
   };
 
   const handleSkip = () => {
-    localStorage.setItem("importUserSettingsFromVSCode", "false");
+    setIsImporting(false);
+    setIsDone(false);
     onNext();
   };
 
   useEffect(() => {
-    setIsImporting(localStorage.getItem("importUserSettingsFromVSCode") === "true");
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === "Enter" && !isImporting) {
         handleImport();
       } else if ((event.metaKey || event.ctrlKey) && event.key === "ArrowRight" && !isImporting) {
         event.preventDefault();
-        onNext();
+        handleSkip();
       }
     };
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [isImporting]); // Include isImporting in dependencies to prevent import when already in progress
+
+  useEffect(() => {
+    // If user presses back, we want the screen to still say "done"
+    setIsDone(getLocalStorage("isDoneImportingUserSettingsFromVSCode") === true);
+  }, [isDone])
 
   return (
     <div className="flex w-full overflow-hidden bg-background text-foreground">

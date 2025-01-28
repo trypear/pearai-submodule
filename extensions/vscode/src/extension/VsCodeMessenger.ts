@@ -106,16 +106,9 @@ export class VsCodeMessenger {
     });
     this.onWebview("importUserSettingsFromVSCode", async (msg) => {
       try {
-        const val = await vscode.commands.executeCommand(
+        return await vscode.commands.executeCommand(
           "pearai.welcome.importUserSettingsFromVSCode",
         );
-        console.log(
-          "importUserSettingsFromVSCode result:",
-          val,
-          "Type:",
-          typeof val,
-        );
-        return typeof val === "boolean" ? val : false;
       } catch (error) {
         console.log("importUserSettingsFromVSCode rejectionReason", error);
         return false;
