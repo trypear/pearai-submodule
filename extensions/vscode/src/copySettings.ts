@@ -1,7 +1,7 @@
-import * as vscode from "vscode";
 import * as fs from 'fs';
-import * as path from 'path';
 import * as os from 'os';
+import * as path from 'path';
+import * as vscode from "vscode";
 
 export const FIRST_LAUNCH_KEY = 'pearai.firstLaunch';
 const pearAISettingsDir = path.join(os.homedir(), '.pearai');
@@ -46,11 +46,11 @@ async function copyVSCodeSettingsToPearAIDir() {
     await fs.promises.mkdir(pearAIDevExtensionsDir, { recursive: true });
 
     const itemsToCopy = ['settings.json', 'keybindings.json', 'snippets', 'sync', 'globalStorage/state.vscdb', 'globalStorage/state.vscdb.backup'];
-    
+
     for (const item of itemsToCopy) {
         const source = path.join(vscodeSettingsDir, item);
         const destination = path.join(pearAIDevSettingsDir, item);
-        
+
         try {
             if (await fs.promises.access(source).then(() => true).catch(() => false)) {
                 const stats = await fs.promises.lstat(source);
@@ -67,7 +67,7 @@ async function copyVSCodeSettingsToPearAIDir() {
 
     const baseExclusions = new Set([
         'pearai.pearai',
-        'ms-python.vscode-pylance', 
+        'ms-python.vscode-pylance',
         'ms-python.python',
         'codeium',
         'github.copilot',
@@ -81,7 +81,7 @@ async function copyVSCodeSettingsToPearAIDir() {
         baseExclusions.add('ms-vscode-remote.remote-ssh');
         baseExclusions.add('ms-vscode-remote.remote-ssh-edit');
     }
-    
+
     // Add platform specific exclusions
     if (process.platform === 'darwin' && process.arch === 'x64') {
         baseExclusions.add('ms-python.vscode-pylance');
@@ -96,7 +96,7 @@ async function copyVSCodeSettingsToPearAIDir() {
     // Add Linux specific exclusions
     // if (process.platform === 'linux') {
     // }
-    
+
     await copyDirectoryRecursiveSync(vscodeExtensionsDir, pearAIDevExtensionsDir, Array.from(baseExclusions));
 }
 
@@ -113,7 +113,7 @@ function getVSCodeSettingsDir() {
 
 async function copyDirectoryRecursiveSync(source: string, destination: string, exclusions: string[] = []) {
     await fs.promises.mkdir(destination, { recursive: true });
-    
+
     const items = await fs.promises.readdir(source);
     for (const item of items) {
         const sourcePath = path.join(source, item);
@@ -121,7 +121,7 @@ async function copyDirectoryRecursiveSync(source: string, destination: string, e
 
         const shouldExclude = exclusions.some(exclusion =>
             sourcePath.toLowerCase().includes(exclusion.toLowerCase())
-            
+
         );
 
         if (!shouldExclude) {
@@ -138,27 +138,24 @@ async function copyDirectoryRecursiveSync(source: string, destination: string, e
 
 export async function importUserSettingsFromVSCode() {
     try {
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        vscode.window.showInformationMessage('Copying your current VSCode settings and extensions over to PearAI!');
-        await copyVSCodeSettingsToPearAIDir();
-        
-        vscode.window.showInformationMessage(
-            'Your VSCode settings and extensions have been transferred over to PearAI! You may need to restart your editor for the changes to take effect.',
-            'Ok'
-        );
-    } catch (error) {
+        await Promise.all([
+          new Promise((resolve) => setTimeout(resolve, 1000)), // Take at least one second
+          copyVSCodeSettingsToPearAIDir(),
+        ]);
+        return true;
+      } catch (error) {
         vscode.window.showErrorMessage(`Failed to copy settings: ${error}`);
+        return false;
+      }
     }
-}
 
 export async function markCreatorOnboardingCompleteFileBased() {
     try {
         await new Promise(resolve => setTimeout(resolve, 3000));
-        
+
         const flagFile = firstPearAICreatorLaunchFlag;
         const productName = 'PearAI Creator';
-        
+
         const exists = await fs.promises.access(flagFile).then(() => true).catch(() => false);
         if (!exists) {
             await fs.promises.writeFile(flagFile, `This is the first launch flag file for ${productName}`);

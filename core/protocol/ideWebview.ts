@@ -1,5 +1,9 @@
 import { AiderState } from "../../extensions/vscode/src/integrations/aider/types/aiderTypes.js";
-import { ToolType, Memory, MemoryChange } from "../../extensions/vscode/src/util/integrationUtils.js";
+import {
+  Memory,
+  MemoryChange,
+  ToolType,
+} from "../../extensions/vscode/src/util/integrationUtils.js";
 import type { RangeInFileWithContents } from "../commands/util.js";
 import type { ContextSubmenuItem } from "../index.js";
 import { ToIdeFromWebviewOrCoreProtocol } from "./ide.js";
@@ -19,17 +23,17 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   openUrl: [string, void];
   applyToCurrentFile: [{ text: string }, void];
   applyWithRelaceHorizontal: [{ contentToApply: string }, void];
-  acceptRelaceDiff: [{ originalFileUri: string, diffFileUri: string }, void];
-  rejectRelaceDiff: [{ originalFileUri: string, diffFileUri: string }, void];
-  createFile: [{ path: string}, void];
+  acceptRelaceDiff: [{ originalFileUri: string; diffFileUri: string }, void];
+  rejectRelaceDiff: [{ originalFileUri: string; diffFileUri: string }, void];
+  createFile: [{ path: string }, void];
   showTutorial: [undefined, void];
   showFile: [{ filepath: string }, void];
   openConfigJson: [undefined, void];
-  highlightElement: [{elementSelectors: string[]}, void];
-  unhighlightElement: [{elementSelectors: string[]}, void];
+  highlightElement: [{ elementSelectors: string[] }, void];
+  unhighlightElement: [{ elementSelectors: string[] }, void];
   perplexityMode: [undefined, void];
-  addPerplexityContext: [{text: string, language: string}, void]
-  addPerplexityContextinChat: [{ text: string, language: string }, void];
+  addPerplexityContext: [{ text: string; language: string }, void];
+  addPerplexityContextinChat: [{ text: string; language: string }, void];
   aiderMode: [undefined, void];
   aiderCtrlC: [undefined, void];
   sendAiderProcessStateToGUI: [undefined, void];
@@ -60,7 +64,8 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   completeWelcome: [undefined, void];
   openInventoryHome: [undefined, void];
   getUrlTitle: [string, string];
-  pearAIinstallation: [{tools: ToolType[], installExtensions: boolean}, void];
+  pearAIinstallation: [{ tools: ToolType[] }, void];
+  importUserSettingsFromVSCode: [undefined, boolean];
   "mem0/getMemories": [undefined, Memory[]];
   "mem0/updateMemories": [{ changes: MemoryChange[] }, boolean];
 };
@@ -93,7 +98,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   viewHistory: [undefined, void];
   newSession: [undefined, void];
   quickEdit: [undefined, void];
-  acceptedOrRejectedDiff: [undefined, void]
+  acceptedOrRejectedDiff: [undefined, void];
   setTheme: [{ theme: any }, void];
   setThemeType: [{ themeType: string }, void];
   setColors: [{ [key: string]: string }, void];
@@ -102,8 +107,8 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   setupLocalModel: [undefined, void];
   incrementFtc: [undefined, void];
   openOnboarding: [undefined, void];
-  addPerplexityContext: [{text: string, language: string}, void]
-  addPerplexityContextinChat: [{ text: string, language: string }, void];
+  addPerplexityContext: [{ text: string; language: string }, void];
+  addPerplexityContextinChat: [{ text: string; language: string }, void];
   navigateToCreator: [undefined, void];
   navigateToSearch: [undefined, void];
   navigateToMem0: [undefined, void];
@@ -112,5 +117,5 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
   setAiderProcessStateInGUI: [AiderState, void];
-  setRelaceDiffState: [{diffVisible: boolean}, void];
+  setRelaceDiffState: [{ diffVisible: boolean }, void];
 };
