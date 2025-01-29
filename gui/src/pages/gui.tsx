@@ -300,7 +300,6 @@ function GUI() {
   useWebviewListener("restFirstLaunchInGUI", async () => {
     setLocalStorage("showTutorialCard", true);
     localStorage.removeItem("onboardingSelectedTools");
-    localStorage.removeItem("importUserSettingsFromVSCode");
     dispatch(setShowInteractiveContinueTutorial(true));
   });
 

@@ -1,19 +1,16 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useContext, useEffect } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { FolderOpen } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useContext, useEffect } from "react";
 
 export default function FinalStep({ onNext }: { onNext: () => void }) {
 
-  const navigate = useNavigate();
   const selectedTools = JSON.parse(localStorage.getItem('onboardingSelectedTools'));
-  const installExtensions = localStorage.getItem('importUserSettingsFromVSCode') === 'true';
 
   const initiateInstallations = () => {
-    ideMessenger.post("pearAIinstallation", {tools: selectedTools, installExtensions: installExtensions})
+    ideMessenger.post("pearAIinstallation", {tools: selectedTools});
     ideMessenger.post("markNewOnboardingComplete", undefined);
   };
 

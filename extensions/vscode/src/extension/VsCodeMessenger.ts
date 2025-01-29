@@ -1,6 +1,7 @@
 // Note: This file has been modified significantly from its original contents. New commands have been added, and there has been renaming from Continue to PearAI. pearai-submodule is a fork of Continue (https://github.com/continuedev/continue).
 
 import { ConfigHandler } from "core/config/ConfigHandler";
+import PearAIServer from "core/llm/llms/PearAIServer";
 import {
   FromCoreProtocol,
   FromWebviewProtocol,
@@ -18,22 +19,19 @@ import { getConfigJsonPath } from "core/util/paths";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as vscode from "vscode";
+import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
 import { VsCodeIde } from "../ideProtocol";
+import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
+import { getMem0Memories, updateMem0Memories } from "../integrations/mem0/mem0Service";
+import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
 import {
   getControlPlaneSessionInfo,
   WorkOsAuthProvider,
 } from "../stubs/WorkOsAuthProvider";
+import { extractCodeFromMarkdown, TOOL_COMMANDS, ToolType } from "../util/integrationUtils";
 import { getExtensionUri } from "../util/vscode";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
-import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
-import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
-import { getMem0Memories, updateMem0Memories } from "../integrations/mem0/mem0Service";
-import { TOOL_COMMANDS, ToolType, extractCodeFromMarkdown } from "../util/integrationUtils";
-import PearAIServer from "core/llm/llms/PearAIServer";
-import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
-import { RelaceDiffManager } from "../integrations/relace/relaceDiffManager";
-import { getMarkdownLanguageTagForFile } from "core/util";
 
 /**
  * A shared messenger class between Core and Webview
@@ -106,8 +104,15 @@ export class VsCodeMessenger {
     this.onWebview("unlockOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.unlockOverlay");
     });
-    this.onWebview("importUserSettingsFromVSCode", (msg) => {
-      vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
+    this.onWebview("importUserSettingsFromVSCode", async (msg) => {
+      try {
+        return await vscode.commands.executeCommand(
+          "pearai.welcome.importUserSettingsFromVSCode",
+        );
+      } catch (error) {
+        console.log("importUserSettingsFromVSCode rejectionReason", error);
+        return false;
+      }
     });
     this.onWebview("installVscodeExtension", (msg) => {
       attemptInstallExtension(msg.data.extensionId);
@@ -131,7 +136,7 @@ export class VsCodeMessenger {
 
       const memories = await getMem0Memories(PearAIServer._getRepoId());
       return memories;
-    }); 
+    });
     this.onWebview("mem0/updateMemories", async (msg) => {
       const response = await updateMem0Memories(PearAIServer._getRepoId(), msg.data.changes);
       return response;
@@ -183,10 +188,7 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("pearai.toggleInventoryHome");
     });
     this.onWebview("pearAIinstallation", (msg) => {
-      const { tools, installExtensions } = msg.data;
-      if (installExtensions) {
-        vscode.commands.executeCommand("pearai.welcome.importUserSettingsFromVSCode");
-      }
+      const { tools } = msg.data;
       if (tools) {
         tools.forEach((tool: ToolType) => {
           const toolCommand = TOOL_COMMANDS[tool];
