@@ -19,6 +19,7 @@ type LocalStorageTypes = {
   showAiderTutorialCard: boolean;
   shownProfilesIntroduction: boolean;
   disableIndexing: boolean;
+  isDoneImportingUserSettingsFromVSCode: boolean;
 };
 
 export function getLocalStorage<T extends keyof LocalStorageTypes>(

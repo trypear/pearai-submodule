@@ -183,6 +183,12 @@
         "group": "PearAI"
       },
       {
+        "command": "pearai.startOnboarding",
+        "category": "PearAI Developer",
+        "title": "Start PearAI Onboarding",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.developer.restFirstLaunch",
         "category": "PearAI Developer",
         "title": "Reset PearAI Onboarding",
@@ -599,7 +605,7 @@
       ]
     },
     "viewsContainers": {
-      "activitybar": [
+      "auxiliarybar": [
         {
           "id": "PearAI",
           "title": "PearAI Chat",
