@@ -605,7 +605,7 @@
       ]
     },
     "viewsContainers": {
-      "activitybar": [
+      "auxiliarybar": [
         {
           "id": "PearAI",
           "title": "PearAI Chat",
