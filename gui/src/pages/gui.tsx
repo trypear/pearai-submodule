@@ -57,6 +57,8 @@ import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
 import WarningCard from "@/components/ui/warningcard";
 import ShortcutContainer from "@/components/ShortcutContainer";
 
+const LENGTHY_MESSAGE_WARNING_INDEX = 14; // number of messages after which we show the warning card
+
 export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   overflow-y: scroll;
   position: relative;
@@ -329,7 +331,6 @@ function GUI() {
   useWebviewListener("restFirstLaunchInGUI", async () => {
     setLocalStorage("showTutorialCard", true);
     localStorage.removeItem("onboardingSelectedTools");
-    localStorage.removeItem("importUserSettingsFromVSCode");
     dispatch(setShowInteractiveContinueTutorial(true));
   });
 
@@ -378,7 +379,7 @@ function GUI() {
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
           // Insert warning card after the 30th message
-          const showWarningHere = index === 29;
+          const showWarningHere = index === LENGTHY_MESSAGE_WARNING_INDEX;
 
           return (
             <Fragment key={index}>
