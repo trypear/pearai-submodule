@@ -60,7 +60,7 @@ const InventoryPreview = () => {
             <div className="flex gap-[6px] bg-clip-border bg-input p-[4px] cursor-pointer">
               {menuItems.map((item, index) => (
                 <div
-                  key={`${item.command}-${index}`}
+                  key={item.path}
                   className="relative group w-6 h-6 rounded-lg"
                   title={item.tooltip}
                 >
