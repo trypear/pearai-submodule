@@ -889,6 +889,7 @@ const commandsMap: (
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
       core.invoke("llm/setPearAICredentials", { accessToken: data.accessToken, refreshToken: data.refreshToken });
       sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
+      vscode.commands.executeCommand("pearai-roo-cline.pearaiLogin", data)
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
       core.invoke("llm/startAiderProcess", undefined);
     },
