@@ -3,7 +3,7 @@
   "name": "pearai",
   "publisher": "pearai",
   "icon": "media/icon.png",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/trypear/pearai-submodule"
@@ -180,6 +180,12 @@
         "command": "pearai.toggleOverlay",
         "category": "PearAI",
         "title": "Toggle PearAI Inventory",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.startOnboarding",
+        "category": "PearAI Developer",
+        "title": "Start PearAI Onboarding",
         "group": "PearAI"
       },
       {
@@ -599,7 +605,7 @@
       ]
     },
     "viewsContainers": {
-      "activitybar": [
+      "auxiliarybar": [
         {
           "id": "PearAI",
           "title": "PearAI Chat",

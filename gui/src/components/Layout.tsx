@@ -25,6 +25,7 @@ import { getLocalStorage, setLocalStorage } from "../util/localStorage";
 import PostHogPageView from "./PosthogPageView";
 import ShortcutContainer from "./ShortcutContainer";
 import InventoryPreview from "../components/InventoryPreview";
+import TextDialog from "./dialogs";
 
 
 // check mac or window
@@ -210,16 +211,17 @@ const Layout = () => {
 
   return (
     <div className="bg-sidebar-background flex flex-col gap-1 h-screen">
-      {/* <TextDialog
-          showDialog={showDialog}
-          onEnter={() => {
-            dispatch(setShowDialog(false));
-          }}
-          onClose={() => {
-            dispatch(setShowDialog(false));
-          }}
-          message={dialogMessage}
-        /> */}
+      {
+      <TextDialog
+        showDialog={showDialog}
+        onEnter={() => {
+          dispatch(setShowDialog(false));
+        }}
+        onClose={() => {
+          dispatch(setShowDialog(false));
+        }}
+        message={dialogMessage}
+      />}
 
       <PostHogPageView />
       <Outlet />

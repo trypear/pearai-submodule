@@ -7,11 +7,11 @@ import type {
   IdeSettings,
   IndexTag,
   Location,
+  PearAuth,
   Problem,
   Range,
   RangeInFile,
   Thread,
-  PearAuth,
 } from "../index.js";
 
 export type ToIdeFromWebviewOrCoreProtocol = {
@@ -91,7 +91,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
 
   // new welcome page
   markNewOnboardingComplete: [undefined, void];
-  importUserSettingsFromVSCode: [undefined, void];
+  importUserSettingsFromVSCode: [undefined, boolean];
   pearWelcomeOpenFolder: [undefined, void];
   pearInstallCommandLine: [undefined, void];
   installVscodeExtension: [{ extensionId: string }, void];
