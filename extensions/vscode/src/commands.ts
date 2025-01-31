@@ -870,6 +870,7 @@ const commandsMap: (
       await extensionContext.secrets.delete("pearai-token");
       await extensionContext.secrets.delete("pearai-refresh");
       core.invoke("llm/setPearAICredentials", { accessToken: undefined, refreshToken: undefined });
+      vscode.commands.executeCommand("pearai-roo-cline.pearaiLogout")
       vscode.window.showInformationMessage("PearAI: Successfully logged out!");
     },
     "pearai.updateUserAuth": async (data: {
