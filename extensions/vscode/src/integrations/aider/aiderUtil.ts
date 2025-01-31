@@ -9,7 +9,7 @@ import { isFirstPearAICreatorLaunch } from "../../copySettings";
 import { VsCodeWebviewProtocol } from "../../webviewProtocol";
 import * as os from "os";
 
-export const PEARAI_AIDER_VERSION = "0.65.0";
+export const PEARAI_AIDER_VERSION = "0.72.0";
 
 const PLATFORM = process.platform;
 const IS_WINDOWS = PLATFORM === "win32";
