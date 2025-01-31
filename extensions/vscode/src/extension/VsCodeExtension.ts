@@ -155,7 +155,6 @@ export class VsCodeExtension {
                 refreshToken: queryParams.get("refreshToken"),
               };
               vscode.commands.executeCommand("pearai.updateUserAuth", data);
-              vscode.commands.executeCommand("pearai-roo-cline.pearaiLogin", data)
             }
           }
         },
