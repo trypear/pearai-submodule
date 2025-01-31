@@ -113,7 +113,7 @@ interface FadeInWordsProps extends StyledMarkdownPreviewProps {
 }
 
 const FadeInWords: React.FC<FadeInWordsProps> = (props: FadeInWordsProps) => {
-  const { children, integrationSource, isStreaming, messageIndex, ...otherProps } = props;
+  const { children, integrationSource, isStreaming, messageIndex, showCodeBorder, isLast, ...otherProps } = props;
   const active = props.integrationSource === "continue"
     ? useSelector((store: RootState) => store.state.active)
     : props.integrationSource === "perplexity"
@@ -164,7 +164,7 @@ interface FadeInElementProps extends StyledMarkdownPreviewProps {
 
 
 const FadeInElement: React.FC<FadeInElementProps> = (props: FadeInElementProps) => {
-  const { children, integrationSource, isStreaming, messageIndex, as = 'p', ...otherProps } = props;
+  const { children, integrationSource, isStreaming, messageIndex, showCodeBorder, isLast, as = 'p', ...otherProps } = props;
   const ElementType = as;
 
   const active = props.integrationSource === "continue"

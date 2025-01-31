@@ -380,7 +380,7 @@ export class VsCodeExtension {
       this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
     });
 
-    this.updateNewWindowActiveFilePath()
+    this.updateNewWindowActiveFilePath();
     startAiderProcess(this.core);
   }
 

@@ -138,7 +138,7 @@ export default function Inventory() {
             <TabsList className={` flex flex-col bg-background justify-between h-full ${currentTab === 'home' ? 'hidden' : ''}`}>
               <div className="mt-2 p-3 flex flex-col gap-4">
                 {tabs.slice(2).filter(tab => tab.featureflag !== false).map((tab) => (
-                  <TabButton {...tab} />
+                  <TabButton key={tab.id} {...tab} />
                 ))}
               </div>
 
