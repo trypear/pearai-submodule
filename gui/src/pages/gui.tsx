@@ -4,8 +4,8 @@ import {
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
-import { IndexingProgressUpdate, InputModifiers } from "core";
-import { PostHog, usePostHog } from "posthog-js/react";
+import { InputModifiers } from "core";
+import { usePostHog } from "posthog-js/react";
 import {
   Fragment,
   useCallback,
@@ -24,15 +24,12 @@ import {
   vscBackground,
   vscBadgeBackground,
   vscBadgeForeground,
-  vscButtonForeground,
   vscForeground,
 } from "../components";
-import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
 import StepContainer from "../components/gui/StepContainer";
 import TimelineItem from "../components/gui/TimelineItem";
 import ContinueInputBox from "../components/mainInput/ContinueInputBox";
 import { defaultInputModifiers } from "../components/mainInput/inputModifiers";
-import { TutorialCard } from "../components/mainInput/TutorialCard";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import useChatHandler from "../hooks/useChatHandler";
 import useHistory from "../hooks/useHistory";
@@ -49,15 +46,11 @@ import {
 import { RootState } from "../redux/store";
 import {
   getFontSize,
-  getMetaKeyLabel,
-  isJetBrains,
   isMetaEquivalentKeyPressed,
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
-import { CircleAlert } from "lucide-react";
-import { FOOTER_HEIGHT } from "@/components/Layout";
 import StatusBar from "@/components/StatusBar";
 import InventoryPreview from "@/components/InventoryPreview";
 import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
@@ -71,7 +64,6 @@ export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   position: relative;
   margin-top: -40px;
   padding-top: 48px;
-  padding-bottom: ${props => props.isNewSession ? '0' : '120px'};
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -119,7 +111,22 @@ const TutorialCardDiv = styled.header`
   background-color: ${vscBackground}ee; // Added 'ee' for slight transparency
   display: flex;
   width: 100%;
-`
+`;
+
+export const InputContainer = styled.div<{ isNewSession: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
+  bottom: ${props => props.isNewSession ? 'auto' : '0'};
+  left: 0;
+  right: 0;
+  background-color: ${vscBackground};
+`;
 
 export function fallbackRender({ error, resetErrorBoundary }) {
   return (
@@ -165,8 +172,10 @@ function GUI() {
 
   const mainTextInputRef = useRef<HTMLInputElement>(null);
   const topGuiDivRef = useRef<HTMLDivElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
+  const isNewSession = state.history.length === 0;
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -213,6 +222,28 @@ function GUI() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [topGuiDivRef.current]);
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      if (inputContainerRef.current && topGuiDivRef.current) {
+        const scrollTop = topGuiDivRef.current.scrollTop;
+        const height = inputContainerRef.current.offsetHeight;
+        const newPadding = isNewSession ? '0px' : `${height + 20}px`;
+        
+        topGuiDivRef.current.style.paddingBottom = '0px';
+        topGuiDivRef.current.offsetHeight;
+        topGuiDivRef.current.style.paddingBottom = newPadding;
+        
+        topGuiDivRef.current.scrollTop = scrollTop;
+      }
+    });
+
+    if (inputContainerRef.current) {
+      resizeObserver.observe(inputContainerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, [isNewSession]);
 
   useEffect(() => {
     const listener = (e: any) => {
@@ -329,8 +360,6 @@ function GUI() {
     },
     [state.history],
   );
-
-  const isNewSession = state.history.length === 0;
 
   return (
     <>
@@ -471,9 +500,10 @@ function GUI() {
           );
         })}
       </TopGuiDiv>
-
       {!active && (
-        <div className="flex flex-col gap-0.5 px-2 rounded-t-lg">
+        <InputContainer 
+          ref={inputContainerRef} 
+          isNewSession={isNewSession}>
           <ContinueInputBox
             onEnter={(editorContent, modifiers) => {
               sendInput(editorContent, modifiers);
@@ -483,9 +513,8 @@ function GUI() {
             hidden={active}
           />
           <StatusBar />
-        </div>
+        </InputContainer>
       )}
-
       {isNewSession &&
         <>
           <div style={{ height: "100%" }}></div>
