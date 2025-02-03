@@ -163,12 +163,12 @@ function ModelOption({
                       return 'pearai-color.png';
                     case modelTitle.includes('claude'):
                       return 'anthropic.png';
-                    case modelTitle.includes('gpt'):
-                      return 'openai.png';
                     case modelTitle.includes('deepseek'):
                       return 'deepseek-svg.svg';
                     case modelTitle.includes('gemini'):
                       return 'gemini-icon.png';
+                    case modelTitle.includes('gpt') || modelTitle.startsWith('o'): // OpenAI naming :(
+                      return 'openai.png';
                     default:
                       return 'default.png';
                   }
