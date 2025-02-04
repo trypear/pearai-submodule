@@ -415,24 +415,24 @@ export function History({
                 <Fragment key={index}>
                   {from === 'continue' && index === 0 && date > yesterday && (
                     <SectionHeader style={{ top: `${headerHeight - 1}px` }}>
-                      Today
+                      <td>Today</td>
                     </SectionHeader>
                   )}
                   {from === 'continue' && date < yesterday &&
                     date > lastWeek &&
                     prevDate > yesterday && (
                       <SectionHeader style={{ top: `${headerHeight - 1}px` }}>
-                        This Week
+                        <td>This Week</td>
                       </SectionHeader>
                     )}
                   {from === 'continue' && date < lastWeek &&
                     date > lastMonth &&
                     prevDate > lastWeek && (
                       <SectionHeader style={{ top: `${headerHeight - 1}px` }}>
-                        This Month
+                        <td>This Month</td>
                       </SectionHeader>
                     )}
-                  <Tr key={index}>
+                  <Tr key={`row-${index}`}>
                     <TableRow
                       session={session}
                       date={date}
