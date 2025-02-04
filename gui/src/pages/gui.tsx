@@ -221,7 +221,7 @@ function GUI() {
       clearTimeout(timeoutId);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [topGuiDivRef.current]);
+  }, [topGuiDivRef]);
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver(() => {
@@ -243,7 +243,7 @@ function GUI() {
     }
 
     return () => resizeObserver.disconnect();
-  }, [isNewSession, inputContainerRef.current, topGuiDivRef.current]);
+  }, [isNewSession, inputContainerRef, topGuiDivRef]);
 
   useEffect(() => {
     const listener = (e: any) => {
