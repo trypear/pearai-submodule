@@ -4,10 +4,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
 import {
+  CustomScrollbarDiv,
   defaultBorderRadius,
-  vscBackground,
   vscForeground,
-  vscInputBackground
+  vscInputBackground,
+  vscBackground,
+  vscEditorBackground,
 } from ".";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { useWebviewListener } from "../hooks/useWebviewListener";
@@ -20,6 +22,9 @@ import {
 import { RootState } from "../redux/store";
 import { getFontSize, isMetaEquivalentKeyPressed } from "../util";
 import { getLocalStorage, setLocalStorage } from "../util/localStorage";
+import PostHogPageView from "./PosthogPageView";
+import ShortcutContainer from "./ShortcutContainer";
+import InventoryPreview from "../components/InventoryPreview";
 import TextDialog from "./dialogs";
 import PostHogPageView from "./PosthogPageView";
 
