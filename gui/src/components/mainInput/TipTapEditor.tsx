@@ -179,15 +179,12 @@ export const handleImageFile = async (
     filesize < 10
   ) {
     // check dimensions
-    const _URL = window.URL || window.webkitURL;
     const img = new window.Image();
-    const url = _URL.createObjectURL(file);
-    img.src = url;
-
+    img.src = URL.createObjectURL(file);
     return await new Promise((resolve) => {
       const safeRevokeURL = () => {
         try {
-          URL.revokeObjectURL(url);
+          URL.revokeObjectURL(img.src);
         } catch (error) {
           console.error('Error revoking URL:', error);
         }
