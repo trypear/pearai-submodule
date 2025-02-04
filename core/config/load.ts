@@ -627,7 +627,7 @@ const STATIC_MODELS: ModelDescription[] = [
   {
     model: "pearai_model",
     contextLength: 300000,
-    title: "PearAI Model",
+    title: "PearAI Model (Recommended)",
     systemMessage: "You are an expert software developer. You give helpful and concise responses.",
     provider: "pearai_server",
     isDefault: true,
