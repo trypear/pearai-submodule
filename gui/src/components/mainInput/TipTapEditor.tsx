@@ -257,23 +257,8 @@ export const handlePaste = async (editor: Editor) => {
   const clipboardText = await navigator.clipboard.readText();
 
   if (clipboardText) {
-    const lines = clipboardText.split(/\r?\n/);
-    const { tr } = editor.state;
-    const { schema } = editor.state;
-    let pos = editor.state.selection.from;
-
-    // Delete the selected text before inserting new text
-    tr.delete(editor.state.selection.from, editor.state.selection.to);
-
-    lines.forEach((line, index) => {
-      if (index > 0) {
-        tr.insert(pos++, schema.nodes.hardBreak.create());
-      }
-      tr.insertText(line, pos);
-      pos += line.length;
-    });
-
-    editor.view.dispatch(tr);
+    editor.commands.deleteSelection();
+    editor.commands.insertContent(clipboardText.trim());
     return true;
   }
   } catch (error) {
@@ -662,7 +647,7 @@ const TipTapEditor = memo(function TipTapEditor({
           // Paste
           event.preventDefault(); // Prevent default paste behavior
           const clipboardText = await navigator.clipboard.readText();
-          editor.commands.insertContent(clipboardText);
+          editor.commands.insertContent(clipboardText.trim());
         }
       };
 
