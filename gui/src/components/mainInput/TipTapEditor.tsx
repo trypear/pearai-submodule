@@ -178,9 +178,11 @@ export const handleImageFile = async (
     ].includes(file.type) &&
     filesize < 10
   ) {
-    // check dimensions
-    const img = new window.Image();
-    img.src = URL.createObjectURL(file);
+    const img = new (globalThis as any).Image() as HTMLImageElement;
+    const objectUrl = URL.createObjectURL(file);
+
+    img.src = objectUrl;
+
     return await new Promise((resolve) => {
       const safeRevokeURL = () => {
         try {
@@ -192,7 +194,7 @@ export const handleImageFile = async (
 
       img.onload = function () {
         const dataUrl = getDataUrlForFile(file, img);
-        const image = new window.Image();
+        const image = new (window as any).Image() as HTMLImageElement;
 
         image.src = dataUrl;
         image.onload = function () {
@@ -210,7 +212,7 @@ export const handleImageFile = async (
       };
     });
   } else if (onError) {
-    onError("Images need to be in jpg or png format and less than 10MB in size.");
+    onError("Images need to be in an accepted format and less than 10MB in size.");
   }
 };
 
