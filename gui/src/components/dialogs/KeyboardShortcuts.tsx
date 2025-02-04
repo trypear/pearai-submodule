@@ -4,8 +4,9 @@ import {
   StyledTooltip,
   defaultBorderRadius,
   lightGray,
+  vscBackground,
   vscEditorBackground,
-  vscForeground
+  vscForeground,
 } from "..";
 import { getPlatform, isJetBrains } from "../../util";
 
