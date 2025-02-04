@@ -26,7 +26,6 @@ import PostHogPageView from "./PosthogPageView";
 import ShortcutContainer from "./ShortcutContainer";
 import InventoryPreview from "../components/InventoryPreview";
 import TextDialog from "./dialogs";
-import PostHogPageView from "./PosthogPageView";
 
 
 // check mac or window

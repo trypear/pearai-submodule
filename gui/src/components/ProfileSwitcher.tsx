@@ -253,7 +253,7 @@ function ProfileSwitcher(props: {}) {
       {/* Only show login if beta explicitly enabled */}
       {controlServerBetaEnabled && (
         <HeaderButtonWithText
-          className="flex-nonee"
+          className="flex-none"
           tooltipPlacement="top-end"
           text={
             session?.account
