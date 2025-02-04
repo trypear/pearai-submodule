@@ -361,12 +361,7 @@ function GUI() {
 
   return (
     <>
-      {/* {!window.isPearOverlay && !!showTutorialCard &&
-        <TutorialCardDiv>
-          <OnboardingTutorial onClose={onCloseTutorialCard} />
-        </TutorialCardDiv>
-      } */}
-      {false &&
+      {!window.isPearOverlay && !!showTutorialCard &&
         <TutorialCardDiv>
           <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>

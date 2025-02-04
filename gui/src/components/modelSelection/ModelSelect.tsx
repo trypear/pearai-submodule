@@ -175,7 +175,7 @@ function ModelOption({
           ) : (
             option.provider ? <img
               src={`${window.vscMediaUrl}/logos/${providers[option.provider]?.icon}`}
-              className="w-3.5 h-3.5 mr-2 flex-flex-none object-contain rounded-sm"
+              className="w-3.5 h-3.5 mr-2 flex-none object-contain rounded-sm"
             /> : <CubeIcon className="w-3.5 h-3.5 stroke-2 mr-2 flex-shrink-0" />
           )}
           <span>{option.title}</span>
