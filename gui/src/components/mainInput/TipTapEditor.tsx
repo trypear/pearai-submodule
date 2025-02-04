@@ -65,7 +65,6 @@ import { useLocation } from "react-router-dom";
 import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 import { TipTapContextMenu } from './TipTapContextMenu';
 
-
 const InputBoxDiv = styled.div`
 	position: relative;
   resize: none;
@@ -125,7 +124,6 @@ const HoverTextDiv = styled.div`
 	pointer-events: none;
 `;
 
-
 const getPlaceholder = (historyLength: number, location: any) => {
   if (location?.pathname === "/aiderMode" || location?.pathname === "/inventory/aiderMode") {
     return historyLength === 0
@@ -163,6 +161,48 @@ interface TipTapEditorProps {
   onChange?: (newState: JSONContent) => void;
 }
 
+export const handleImageFile = async (
+  file: File,
+  onError?: (message: string) => void
+): Promise<[HTMLImageElement, string] | undefined> => {
+  const filesize = file.size / 1024 / 1024; // filesize in MB
+  
+  if (
+    [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/svg",
+      "image/webp",
+    ].includes(file.type) &&
+    filesize < 10
+  ) {
+    // check dimensions
+    const _URL = window.URL || window.webkitURL;
+    const img = new window.Image();
+    img.src = _URL.createObjectURL(file);
+
+    return await new Promise((resolve) => {
+      img.onload = function () {
+        const dataUrl = getDataUrlForFile(file, img);
+
+        const image = new window.Image();
+        image.src = dataUrl;
+        image.onload = function () {
+          resolve([image, dataUrl]);
+        };
+      };
+    });
+  } else {
+    if (onError) {
+      onError("Images need to be in jpg or png format and less than 10MB in size.");
+    }
+  }
+
+  return undefined;
+};
+
 export const handleCopy = (editor: Editor) => {
   const selection = editor.state.selection;
   const text = editor.state.doc.textBetween(selection.from, selection.to, '\n');
@@ -177,7 +217,28 @@ export const handleCut = (editor: Editor) => {
 };
 
 export const handlePaste = async (editor: Editor) => {
+  try {
+    const items = await navigator.clipboard.read();
+
+    for (const item of items) {
+      // Handle images
+      if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
+        const imageBlob = await item.getType(item.types.find(type => type.startsWith('image/')) || 'image/png');
+        const file = new File([imageBlob], 'pasted-image.png', { type: 'image/png' });
+        const result = await handleImageFile(file);
+
+        if (result) {
+          const [, dataUrl] = result;
+
+          editor.commands.setImage({ src: dataUrl });
+          return true;
+        }
+      }
+    }
+    
+    // Fall back to text handling if no image
   const clipboardText = await navigator.clipboard.readText();
+
   if (clipboardText) {
     const lines = clipboardText.split(/\r?\n/);
     const { tr } = editor.state;
@@ -198,6 +259,10 @@ export const handlePaste = async (editor: Editor) => {
     editor.view.dispatch(tr);
     return true;
   }
+  } catch (error) {
+    console.error('Error handling paste:', error);
+  }
+
   return false;
 };
 
@@ -295,47 +360,6 @@ const TipTapEditor = memo(function TipTapEditor({
   });
 
   const activeRef = useUpdatingRef(active);
-
-  async function handleImageFile(
-    file: File,
-  ): Promise<[HTMLImageElement, string] | undefined> {
-    const filesize = file.size / 1024 / 1024; // filesize in MB
-    // check image type and size
-    if (
-      [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-        "image/svg",
-        "image/webp",
-      ].includes(file.type) &&
-      filesize < 10
-    ) {
-      // check dimensions
-      const _URL = window.URL || window.webkitURL;
-      const img = new window.Image();
-      img.src = _URL.createObjectURL(file);
-
-      return await new Promise((resolve) => {
-        img.onload = function () {
-          const dataUrl = getDataUrlForFile(file, img);
-
-          const image = new window.Image();
-          image.src = dataUrl;
-          image.onload = function () {
-            resolve([image, dataUrl]);
-          };
-        };
-      });
-    } else {
-      ideMessenger.post("errorPopup", {
-        message:
-          "Images need to be in jpg or png format and less than 10MB in size.",
-      });
-    }
-    return undefined;
-  }
 
   const mainEditorContent = useSelector(
     (store: RootState) => store.state.mainEditorContent,
