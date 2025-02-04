@@ -185,24 +185,36 @@ export const handleImageFile = async (
     img.src = url;
 
     return await new Promise((resolve) => {
+      const safeRevokeURL = () => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error('Error revoking URL:', error);
+        }
+      };
+
       img.onload = function () {
         const dataUrl = getDataUrlForFile(file, img);
-
         const image = new window.Image();
+
         image.src = dataUrl;
         image.onload = function () {
           resolve([image, dataUrl]);
-          URL.revokeObjectURL(url);
+          safeRevokeURL();
+        };
+        image.onerror = function() {
+          safeRevokeURL();
+          resolve(undefined);
         };
       };
+      img.onerror = function() {
+        safeRevokeURL();
+        resolve(undefined);
+      };
     });
-  } else {
-    if (onError) {
-      onError("Images need to be in jpg or png format and less than 10MB in size.");
-    }
+  } else if (onError) {
+    onError("Images need to be in jpg or png format and less than 10MB in size.");
   }
-
-  return undefined;
 };
 
 export const handleCopy = (editor: Editor) => {
@@ -225,15 +237,19 @@ export const handlePaste = async (editor: Editor) => {
     for (const item of items) {
       // Handle images
       if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
-        const imageBlob = await item.getType(item.types.find(type => type.startsWith('image/')) || 'image/png');
-        const file = new File([imageBlob], 'pasted-image.png', { type: 'image/png' });
-        const result = await handleImageFile(file);
+        try {
+          const imageBlob = await item.getType(item.types.find(type => type.startsWith('image/')) || 'image/png');
+          const file = new File([imageBlob], 'pasted-image.png', { type: 'image/png' });
+          const result = await handleImageFile(file);
 
-        if (result) {
-          const [, dataUrl] = result;
+          if (result) {
+            const [, dataUrl] = result;
 
-          editor.commands.setImage({ src: dataUrl });
-          return true;
+            editor.commands.setImage({ src: dataUrl });
+            return true;
+          }
+        } catch (err) {
+          console.error('Failed to paste image:', err);
         }
       }
     }
@@ -342,6 +358,7 @@ const TipTapEditor = memo(function TipTapEditor({
     (store: RootState) => store.state.contextItems,
   );
   const defaultModel = useSelector(defaultModelSelector);
+  const defaultModelRef = useUpdatingRef(defaultModel);
   const getSubmenuContextItemsRef = useUpdatingRef(getSubmenuContextItems);
   const availableContextProvidersRef = useUpdatingRef(availableContextProviders)
 
@@ -417,16 +434,17 @@ const TipTapEditor = memo(function TipTapEditor({
             props: {
               handleDOMEvents: {
                 paste(view, event) {
-                  console.log("Pasting image");
                   const items = event.clipboardData.items;
                   for (const item of items) {
                     const file = item.getAsFile();
+                    const model = defaultModelRef.current;
+
                     file &&
                       modelSupportsImages(
-                        defaultModel.provider,
-                        defaultModel.model,
-                        defaultModel.title,
-                        defaultModel.capabilities,
+                        model.provider,
+                        model.model,
+                        model.title,
+                        model.capabilities,
                       ) &&
                       handleImageFile(file).then((resp) => {
                         if (!resp) {
