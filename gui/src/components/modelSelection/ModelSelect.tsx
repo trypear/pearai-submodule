@@ -155,11 +155,11 @@ function ModelOption({
                 src={`${window.vscMediaUrl}/logos/pearai-color.png`}
                 className="w-4 h-4 object-contain"
               />
-              {option.title !== 'PearAI Model' && <img
+              {option.title !== 'PearAI Model (Recommended)' && <img
                 src={`${window.vscMediaUrl}/logos/${(() => {
                   const modelTitle = option.title.toLowerCase();
                   switch (true) {
-                    case modelTitle === 'pearai model':
+                    case modelTitle === 'PearAI Model (Recommended)':
                       return 'pearai-color.png';
                     case modelTitle.includes('claude'):
                       return 'anthropic.png';
@@ -323,7 +323,7 @@ function ModelSelect() {
                     src={`${window.vscMediaUrl}/logos/pearai-color.png`}
                     className="w-[15px] h-[15px] object-contain"
                   />
-                  {defaultModel.title !== 'PearAI Model' && <img
+                  {defaultModel.title !== 'PearAI Model (Recommended)' && <img
                     src={`${window.vscMediaUrl}/logos/${(() => {
                       const modelTitle = defaultModel.title.toLowerCase();
                       switch (true) {
