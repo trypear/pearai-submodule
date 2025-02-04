@@ -243,7 +243,7 @@ function GUI() {
     }
 
     return () => resizeObserver.disconnect();
-  }, [isNewSession]);
+  }, [isNewSession, inputContainerRef.current, topGuiDivRef.current]);
 
   useEffect(() => {
     const listener = (e: any) => {
