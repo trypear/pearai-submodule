@@ -181,7 +181,8 @@ export const handleImageFile = async (
     // check dimensions
     const _URL = window.URL || window.webkitURL;
     const img = new window.Image();
-    img.src = _URL.createObjectURL(file);
+    const url = _URL.createObjectURL(file);
+    img.src = url;
 
     return await new Promise((resolve) => {
       img.onload = function () {
@@ -191,6 +192,7 @@ export const handleImageFile = async (
         image.src = dataUrl;
         image.onload = function () {
           resolve([image, dataUrl]);
+          URL.revokeObjectURL(url);
         };
       };
     });
