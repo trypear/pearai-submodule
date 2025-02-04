@@ -155,12 +155,10 @@ function ModelOption({
                 src={`${window.vscMediaUrl}/logos/pearai-color.png`}
                 className="w-4 h-4 object-contain"
               />
-              {option.title !== 'PearAI Model (Recommended)' && <img
+              {!option.title.toLowerCase().includes('pearai model') && <img
                 src={`${window.vscMediaUrl}/logos/${(() => {
                   const modelTitle = option.title.toLowerCase();
                   switch (true) {
-                    case modelTitle === 'PearAI Model (Recommended)':
-                      return 'pearai-color.png';
                     case modelTitle.includes('claude'):
                       return 'anthropic.png';
                     case modelTitle.includes('deepseek'):
