@@ -870,6 +870,7 @@ const commandsMap: (
       await extensionContext.secrets.delete("pearai-token");
       await extensionContext.secrets.delete("pearai-refresh");
       core.invoke("llm/setPearAICredentials", { accessToken: undefined, refreshToken: undefined });
+      vscode.commands.executeCommand("pearai-roo-cline.pearaiLogout")
       vscode.window.showInformationMessage("PearAI: Successfully logged out!");
     },
     "pearai.updateUserAuth": async (data: {
@@ -888,6 +889,7 @@ const commandsMap: (
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
       core.invoke("llm/setPearAICredentials", { accessToken: data.accessToken, refreshToken: data.refreshToken });
       sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
+      vscode.commands.executeCommand("pearai-roo-cline.pearaiLogin", data)
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
       core.invoke("llm/startAiderProcess", undefined);
     },
@@ -922,7 +924,7 @@ const commandsMap: (
         // limit reached, switching to free model
         vscode.window.showInformationMessage(msg.warningMsg);
         extensionContext.globalState.update("freeModelSwitched", true);
-        sidebar.webviewProtocol?.request("switchModel", "PearAI Model", ["pearai.pearAIChatView"]);
+        sidebar.webviewProtocol?.request("switchModel", "PearAI Model (Recommended)", ["pearai.pearAIChatView"]);
       }
     },
     "pearai.patchWSL": async () => {

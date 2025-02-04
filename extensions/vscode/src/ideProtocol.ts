@@ -66,7 +66,7 @@ class VsCodeIde implements IDE {
 
   onDidChangeActiveTextEditor(callback: (filepath: string) => void): void {
     vscode.window.onDidChangeActiveTextEditor((editor) => {
-      if (editor) {
+      if (editor?.document.uri.scheme === 'file') {
         callback(editor.document.uri.fsPath);
       }
     });
