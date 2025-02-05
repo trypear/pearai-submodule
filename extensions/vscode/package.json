@@ -608,20 +608,31 @@
       "auxiliarybar": [
         {
           "id": "PearAI",
-          "title": "PearAI Chat",
+          "title": "PearAI",
           "icon": "media/sidebar-icon.png",
           "description": "Powered by Continue"
         }
       ]
     },
     "views": {
-      "PearAI": [
+     "PearAI": [
         {
           "type": "webview",
-          "id": "pearai.pearAIChatView",
-          "name": "",
-          "visibility": "visible",
-          "title": "PearAISidebar"
+          "id": "pearai.chatView",
+          "name": "PearAI Chat",
+          "visibility": "visible"
+        },
+        {
+          "type": "webview",
+          "id": "pearai.searchView",
+          "name": "PearAI Search",
+          "visibility": "visible"
+        },
+        {
+          "type": "webview",
+          "id": "pearai.mem0View",
+          "name": "PearAI Memory",
+          "visibility": "visible"
         }
       ]
     },

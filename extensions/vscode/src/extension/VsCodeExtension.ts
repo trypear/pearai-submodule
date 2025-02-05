@@ -95,6 +95,18 @@ export class VsCodeExtension {
         },
       ),
     );
+    
+    
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        "pearai.searchView",
+        this.sidebar,
+        {
+          webviewOptions: { retainContextWhenHidden: true },
+        },
+      ),
+    );
+    
     resolveWebviewProtocol(this.sidebar.webviewProtocol);
 
     // Config Handler with output channel
