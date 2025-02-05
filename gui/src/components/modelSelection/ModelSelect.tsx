@@ -1,16 +1,17 @@
+import { isAiderMode } from "@/util/bareChatMode";
 import { Listbox } from "@headlessui/react";
 import {
-  ChevronDownIcon,
   CubeIcon,
   PlusIcon,
-  TrashIcon,
+  TrashIcon
 } from "@heroicons/react/24/outline";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { defaultBorderRadius, lightGray, vscEditorBackground } from "..";
+import { lightGray, vscEditorBackground } from "..";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
+import { providers } from "../../pages/AddNewModel/configs/providers";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
 import {
@@ -24,16 +25,13 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../../util";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog";
-import { isAiderMode, isPerplexityMode } from "@/util/bareChatMode";
-import { providers } from "../../pages/AddNewModel/configs/providers";
 
 const StyledListboxButton = styled(Listbox.Button)`
   border: solid 1px ${lightGray}30;
-  // background-color: ${lightGray}30;
   background-color: transparent;
-  border-radius: 4px;  
+  border-radius: 4px;
   padding: 2px 4px;
-  display: flex;
+  margin: 0 2px;
   align-items: center;
   gap: 2px;
 	user-select: none;
@@ -51,7 +49,7 @@ const StyledListboxOptions = styled(Listbox.Options) <{ newSession: boolean }>`
   white-space: nowrap;
   cursor: default;
   z-index: 50;
-  border: 1px solid ${lightGray}30; 
+  border: 1px solid ${lightGray}30;
   border-radius: 10px;
   background-color: ${vscEditorBackground};
   max-height: 300px;
@@ -177,7 +175,7 @@ function ModelOption({
           ) : (
             option.provider ? <img
               src={`${window.vscMediaUrl}/logos/${providers[option.provider]?.icon}`}
-              className="w-3.5 h-3.5 mr-2 flex-shrink-0 object-contain rounded-sm"
+              className="w-3.5 h-3.5 mr-2 flex-none object-contain rounded-sm"
             /> : <CubeIcon className="w-3.5 h-3.5 stroke-2 mr-2 flex-shrink-0" />
           )}
           <span>{option.title}</span>
@@ -302,7 +300,7 @@ function ModelSelect() {
         dispatch(setDefaultModel({ title: val }));
       }}
       as="div"
-      className="relative inline-block"
+      className="flex max-w-[75%]"
     >
       {({ open }) => {
         useEffect(() => {
@@ -313,10 +311,10 @@ function ModelSelect() {
           <>
             <StyledListboxButton
               ref={buttonRef}
-              className="h-[18px] overflow-hidden"
+              className="h-[18px] flex overflow-hidden"
             >
               {defaultModel?.provider === 'pearai_server' ? (
-                <div className="flex items-center">
+                <div className="flex flex-initial items-center">
                   <img
                     src={`${window.vscMediaUrl}/logos/pearai-color.png`}
                     className="w-[15px] h-[15px] object-contain"
@@ -337,7 +335,7 @@ function ModelSelect() {
                           return 'default.png';
                       }
                     })()}`}
-                    className="w-[15px] h-[12px] object-contain rounded-sm  "
+                    className="w-[15px] h-[12px] object-contain rounded-sm"
                   />}
                 </div>
               ) : (
@@ -350,7 +348,9 @@ function ModelSelect() {
                   }}
                 />
               )}
-              {modelSelectTitle(defaultModel) || "Select model"}{" "}
+              <span className="truncate inline-block min-w-0">
+                {modelSelectTitle(defaultModel) || "Select model"}{" "}
+              </span>
             </StyledListboxButton>
 
             {open && (

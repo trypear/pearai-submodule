@@ -1,3 +1,9 @@
+import InventoryPreview from "@/components/InventoryPreview";
+import ShortcutContainer from "@/components/ShortcutContainer";
+import StatusBar from "@/components/StatusBar";
+import WarningCard from "@/components/ui/warningcard";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import {
   BackspaceIcon,
   ChatBubbleOvalLeftIcon,
@@ -49,21 +55,13 @@ import {
   isMetaEquivalentKeyPressed,
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
-import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
-import StatusBar from "@/components/StatusBar";
-import InventoryPreview from "@/components/InventoryPreview";
-import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
-import WarningCard from "@/components/ui/warningcard";
-import ShortcutContainer from "@/components/ShortcutContainer";
 
 const LENGTHY_MESSAGE_WARNING_INDEX = 14; // number of messages after which we show the warning card
 
 export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   overflow-y: scroll;
   position: relative;
-  margin-top: -40px;
-  padding-top: 48px;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -229,11 +227,11 @@ function GUI() {
         const scrollTop = topGuiDivRef.current.scrollTop;
         const height = inputContainerRef.current.offsetHeight;
         const newPadding = isNewSession ? '0px' : `${height + 20}px`;
-        
+
         topGuiDivRef.current.style.paddingBottom = '0px';
         topGuiDivRef.current.offsetHeight;
         topGuiDivRef.current.style.paddingBottom = newPadding;
-        
+
         topGuiDivRef.current.scrollTop = scrollTop;
       }
     });
@@ -368,12 +366,9 @@ function GUI() {
           <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>
       }
-      <div className="pb-1 flex px-2">
-        <div
-          className="flex-col gap-2 "
-        >
-          <InventoryPreview />
-        </div>
+
+      <div className="flex px-2">
+        <InventoryPreview />
       </div>
 
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
@@ -383,7 +378,6 @@ function GUI() {
 
           return (
             <Fragment key={index}>
-
               <ErrorBoundary
                 FallbackComponent={fallbackRender}
                 onReset={() => {
@@ -414,7 +408,6 @@ function GUI() {
                       </div>
                     </div>
                   ) : (
-                    // <div className="p-4 bg-orange-500 my-4">
                     <TimelineItem
                       item={item}
                       iconElement={
@@ -490,9 +483,6 @@ function GUI() {
                         </WarningCard>
                       )}
                     </TimelineItem>
-
-
-                    // </div>
                   )}
                 </div>
               </ErrorBoundary>
@@ -501,8 +491,8 @@ function GUI() {
         })}
       </TopGuiDiv>
       {!active && (
-        <InputContainer 
-          ref={inputContainerRef} 
+        <InputContainer
+          ref={inputContainerRef}
           isNewSession={isNewSession}>
           <ContinueInputBox
             onEnter={(editorContent, modifiers) => {
