@@ -63,15 +63,16 @@ interface InputToolbarProps {
 
   hidden?: boolean;
   showNoContext: boolean;
+  source?: 'perplexity' | 'aider' | 'continue';
 }
 
 function InputToolbar(props: InputToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileSelectHovered, setFileSelectHovered] = useState(false);
   const defaultModel = useSelector(defaultModelSelector);
-  const bareChatMode = isBareChatMode();
-  const perplexityMode = isPerplexityMode();
-  const aiderMode = isAiderMode();
+  const bareChatMode = props.source === 'continue';
+  const perplexityMode = props.source === 'perplexity';
+  const aiderMode = props.source === 'aider';
 
   const useActiveFile = useSelector(selectUseActiveFile);
   const allModels = useSelector(
@@ -82,12 +83,12 @@ function InputToolbar(props: InputToolbarProps) {
   const location = useLocation();
 
   useEffect(() => {
-    if (location.pathname.split("/").pop() === "aiderMode") {
+    if (aiderMode) {
       const aider = allModels.find((model) =>
         model?.title?.toLowerCase().includes("creator"),
       );
       dispatch(setDefaultModel({ title: aider?.title }));
-    } else if (location.pathname.split("/").pop() === "perplexityMode") {
+    } else if (perplexityMode) {
       const perplexity = allModels.find((model) =>
         model?.title?.toLowerCase().includes("perplexity"),
       );

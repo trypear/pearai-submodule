@@ -106,7 +106,7 @@ export class VsCodeExtension {
         },
       ),
     );
-        
+       
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         "pearai.mem0View",

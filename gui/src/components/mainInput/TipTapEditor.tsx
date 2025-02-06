@@ -62,7 +62,6 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
-import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 import { TipTapContextMenu } from './TipTapContextMenu';
 
 
@@ -214,7 +213,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const ideMessenger = useContext(IdeMessengerContext);
   const { getSubmenuContextItems } = useContext(SubmenuContextProvidersContext);
-
+  
   const historyLength = useSelector(
     (store: RootState) => {
       switch(source) {
@@ -572,9 +571,10 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
 
-  const isPerplexity = isPerplexityMode();
-  const isAider = isAiderMode();
-
+  
+  const isPerplexity = source === 'perplexity';
+  const isAider = source === 'aider';
+  
   useEffect(() => {
     const handleShowFile = (event: CustomEvent) => {
       const filepath = event.detail.filepath;
@@ -1142,6 +1142,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
             });
           });
         }}
+        source={source}
       />
 
       {showDragOverMsg &&

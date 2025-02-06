@@ -659,7 +659,6 @@ const commandsMap: (
       sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.perplexityMode": async () => {
-      // handlePerplexityMode(sidebar, extensionContext);
       await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
     },
     "pearai.addPerplexityContext": (msg) => {

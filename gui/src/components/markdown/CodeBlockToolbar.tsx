@@ -29,6 +29,7 @@ interface CodeBlockToolBarProps {
   text: string;
   bottom: boolean;
   language: string | undefined;
+  source?: 'perplexity' | 'aider' | 'continue';
 }
 
 const terminalLanguages = ["bash", "sh"];
