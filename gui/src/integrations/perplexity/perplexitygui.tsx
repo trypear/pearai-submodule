@@ -75,8 +75,6 @@ const InputContainer = styled.div<{ isNewSession: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   position: ${props => props.isNewSession ? 'relative' : 'fixed'};
@@ -110,6 +108,7 @@ function PerplexityGUI() {
   setLocalStorage("showPerplexityTutorialCard", true);
   const [showPerplexityTutorialCard, setShowPerplexityTutorialCard] =
     useState<boolean>(getLocalStorage("showPerplexityTutorialCard"));
+  const inputContainerRef = useRef<HTMLDivElement>(null);
 
   const onCloseTutorialCard = () => {
     posthog.capture("closedPerplexityTutorialCard");
@@ -266,6 +265,29 @@ function PerplexityGUI() {
     sessionKeyRef.current += 1;
   }, [state.perplexityHistory]);
 
+  // Add resize observer effect
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      if (inputContainerRef.current && topGuiDivRef.current) {
+        const scrollTop = topGuiDivRef.current.scrollTop;
+        const height = inputContainerRef.current.offsetHeight;
+        const newPadding = state.perplexityHistory.length === 0 ? '0px' : `${height + 20}px`;
+
+        topGuiDivRef.current.style.paddingBottom = '0px';
+        topGuiDivRef.current.offsetHeight; // Force reflow
+        topGuiDivRef.current.style.paddingBottom = newPadding;
+
+        topGuiDivRef.current.scrollTop = scrollTop;
+      }
+    });
+
+    if (inputContainerRef.current) {
+      resizeObserver.observe(inputContainerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, [state.perplexityHistory.length]);
+
   return (
     <>
       <div className="relative flex h-screen overflow-hidden ">
@@ -318,7 +340,7 @@ function PerplexityGUI() {
               )}
             >
               {state.perplexityHistory.length === 0 ? (
-                <div className="max-w-2xl w-full h-screen text-center flex flex-col justify-center border-solid border-2 border-red-500">
+                <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
                   <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
                     <img
                       src={getLogoPath("pearai-search-splash.svg")}
@@ -490,9 +512,12 @@ function PerplexityGUI() {
         </div>
       </div>
       {!active && (
-        <div className="w-full flex justify-center">
+        <div className="flex justify-center p-3">
           <div className="max-w-3xl w-full">
-            <InputContainer isNewSession={state.history.length === 0}>
+            <InputContainer 
+              ref={inputContainerRef}
+              isNewSession={state.perplexityHistory.length === 0}
+            >
               <ContinueInputBox
                 key={sessionKeyRef.current}
                 onEnter={(editorContent, modifiers) => {
