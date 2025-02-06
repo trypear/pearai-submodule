@@ -96,13 +96,6 @@ export class VsCodeExtension {
       ),
     );
     
-    resolveWebviewProtocol(this.sidebar.webviewProtocol);
-
-    let searchSideBar = new ContinueGUIWebviewViewProvider(
-      configHandlerPromise,
-      this.windowId,
-      this.extensionContext,
-    );
     
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
@@ -113,15 +106,7 @@ export class VsCodeExtension {
         },
       ),
     );
-    
-    resolveWebviewProtocol(searchSideBar.webviewProtocol);
-    
-    let memorySideBar = new ContinueGUIWebviewViewProvider(
-      configHandlerPromise,
-      this.windowId,
-      this.extensionContext,
-    );
-    
+        
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         "pearai.mem0View",
@@ -132,8 +117,9 @@ export class VsCodeExtension {
       ),
     );
     
-    resolveWebviewProtocol(memorySideBar.webviewProtocol);
+    resolveWebviewProtocol(this.sidebar.webviewProtocol);
 
+    
     // Config Handler with output channel
     const outputChannel = vscode.window.createOutputChannel("PearAI");
     const inProcessMessenger = new InProcessMessenger<

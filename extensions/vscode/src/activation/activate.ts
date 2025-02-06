@@ -78,7 +78,7 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   //   vscode.commands.executeCommand("pearai.startOnboarding");
   // }
 
-  setupPearAPPLayout(context);
+  setupPearAppLayout(context);
 
   if (isFirstLaunch(context)) {
     vscode.commands.executeCommand("pearai.startOnboarding");
@@ -114,7 +114,7 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 }
 
 // Custom Layout settings that we want default for PearAPP
-const setupPearAPPLayout = async (context: vscode.ExtensionContext) => {
+const setupPearAppLayout = async (context: vscode.ExtensionContext) => {
 
   if(!vscode.workspace.workspaceFolders){
     vscode.commands.executeCommand("workbench.action.closeSidebar");
