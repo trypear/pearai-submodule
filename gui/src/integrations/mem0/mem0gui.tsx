@@ -1,138 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector, useDispatch } from 'react-redux';
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Search, Plus, Brain, Sparkles, RotateCcw } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import HeaderButtonWithText from "@/components/HeaderButtonWithText";
-import { TrashIcon, Pencil2Icon, ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
-import { Badge } from "../../components/ui/badge";
+import { Plus, RotateCcw } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { useContext } from 'react';
 import { IdeMessengerContext } from '../../context/IdeMessenger';
 import { setMem0Memories } from "@/redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useNavigate } from "react-router-dom";
-import InventoryDetails from "../../components/InventoryDetails";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
+import { Memory, MemoryChange } from "./types";
+import { SearchBar, ActionButton, StatusCard } from "./components";
+import { MemoryCard } from "./MemoryCard";
+import { Button } from "@/components/ui/button";
+import HeaderButtonWithText from "@/components/HeaderButtonWithText";
+import { lightGray } from "./utils";
+import {
+  DisabledView,
+  UpdatingView,
+  LoadingView,
+  EmptyView,
+  NoResultsView,
+} from "./StatusViews";
+import { MemoryFooter } from "./MemoryFooter";
 
-
-export interface Memory {
-  id: string;
-  content: string;
-  timestamp: string;
-  isNew?: boolean;
-  isModified?: boolean;
-  isDeleted?: boolean;
-}
-
-interface MemoryChange {
-  type: 'edit' | 'delete' | 'new';
-  id: string;
-  content?: string; // For edits
-}
-
-export const lightGray = "#999998";
-
-interface StatusCardProps {
-  title: string;
-  description: string;
-  icon: 'brain' | 'search';
-  showSparkles?: boolean;
-  animate?: boolean;
-  secondaryDescription?: string;
-}
-
-function StatusCard({ title, description, icon, showSparkles = false, animate = false, secondaryDescription = "" }: StatusCardProps) {
-  return (
-    <Card className="p-16 bg-input hover:bg-input/90 transition-colors mx-auto">
-      <div className="flex flex-col items-center space-y-4">
-        <div className="relative">
-          {icon === 'brain' ? (
-            <Brain className={`w-16 h-16 ${animate ? 'animate-pulse' : ''}`} />
-          ) : (
-            <Search className="w-16 h-16" />
-          )}
-          {showSparkles && (
-            <Sparkles className="w-6 h-6 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
-          )}
-        </div>
-        <h3 className="text-xl font-semibold text-foreground">{title}</h3>
-        <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
-          {description}
-        </p>
-        {secondaryDescription && <p className="mt-2 text-sm text-muted-foreground max-w-xs text-center">
-          {secondaryDescription}
-        </p>}
-      </div>
-    </Card>
-  )
-}
-
-function formatTimestamp(timestamp: string): string {
-  const date = new Date(timestamp);
-  const now = new Date();
-  const yesterday = new Date(now);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const oneWeekAgo = new Date(now);
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-  // Check if same day
-  if (date.toDateString() === now.toDateString()) {
-    return 'Today';
-  }
-  // Check if yesterday
-  if (date.toDateString() === yesterday.toDateString()) {
-    return 'Yesterday';
-  }
-  // Check if within last week
-  if (date > oneWeekAgo) {
-    return 'This week';
-  }
-  // Otherwise return formatted date
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  });
-}
-
-const SearchBar = ({ searchQuery, setSearchQuery }) => (
-  <div className="relative flex items-center">
-    <Input
-      type="text"
-      placeholder="Search memories"
-      value={searchQuery}
-      onChange={(e) => setSearchQuery(e.target.value)}
-      className="pl-3 pr-8 text-sm bg-input rounded-md"
-    />
-    <Search
-      className="absolute right-2 text-muted-foreground"
-      size={16}
-    />
-  </div>
-);
-
-const ActionButton = ({ icon: Icon, tooltip, onClick, disabled }) => (
-  <TooltipProvider>
-    <Tooltip delayDuration={100}>
-      <TooltipTrigger asChild>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onClick}
-          disabled={disabled}
-          className="h-9 w-9 p-0 hover:bg-input/90"
-        >
-          <Icon className="h-4 w-4" />
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent side="top" sideOffset={5}>
-        <p className="text-xs px-2 py-1">{tooltip}</p>
-      </TooltipContent>
-    </Tooltip>
-  </TooltipProvider>
-);
+const MEMORIES_PER_PAGE = 4;
 
 export default function Mem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -157,28 +48,27 @@ export default function Mem0GUI() {
 
   const searchRef = useRef<HTMLDivElement>(null)
   const editCardRef = useRef<HTMLDivElement>(null);
-  const memoriesPerPage = 4;
 
   const fetchMemories = async () => {
-    // try {
-    //     setIsLoading(true);
-    //     // get all memories
-    //     const response = await ideMessenger.request('mem0/getMemories', undefined);
-    //     const memories = response.map((memory) => ({
-    //         id: memory.id,
-    //         content: memory.memory,
-    //         timestamp: memory.updated_at || memory.created_at,
-    //         isModified: false,
-    //         isDeleted: false,
-    //         isNew: false
-    //     }));
-    //     dispatch(setMem0Memories(memories));
-    //     setOriginalMemories(memories);
-    // } catch (error) {
-    //     console.error('Failed to fetch memories:', error);
-    // } finally {
-    //     setIsLoading(false);
-    // }
+    try {
+      setIsLoading(true);
+      // get all memories
+      const response = await ideMessenger.request('mem0/getMemories', undefined);
+      const memories = response.map((memory) => ({
+        id: memory.id,
+        content: memory.memory,
+        timestamp: memory.updated_at || memory.created_at,
+        isModified: false,
+        isDeleted: false,
+        isNew: false
+      }));
+      dispatch(setMem0Memories(memories));
+      setOriginalMemories(memories);
+    } catch (error) {
+      console.error('Failed to fetch memories:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAddNewMemory = () => {
@@ -339,7 +229,7 @@ export default function Mem0GUI() {
 
 
   // Get total pages based on filtered results
-  const totalPages = Math.ceil(filteredMemories.length / memoriesPerPage);
+  const totalPages = Math.ceil(filteredMemories.length / MEMORIES_PER_PAGE);
 
   // Reset to first page when search query changes
   useEffect(() => {
@@ -353,8 +243,8 @@ export default function Mem0GUI() {
   }, []);
 
   const getCurrentPageMemories = () => {
-    const startIndex = (currentPage - 1) * memoriesPerPage;
-    const endIndex = startIndex + memoriesPerPage;
+    const startIndex = (currentPage - 1) * MEMORIES_PER_PAGE;
+    const endIndex = startIndex + MEMORIES_PER_PAGE;
     return filteredMemories.slice(startIndex, endIndex);
   }
 
@@ -397,17 +287,42 @@ export default function Mem0GUI() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  return (
-    // <></>
-    <div className="flex flex-col h-full p-3">
-      {/* <InventoryDetails 
-        textColor="#FFFFFF" 
-        backgroundColor ="#8E6BF0" 
-        content="Memory"
+  const renderContent = () => {
+    if (unsavedChanges.length > 0 || !isEnabled) {
+      return <DisabledView hasUnsavedChanges={unsavedChanges.length > 0} />;
+    }
 
-        blurb={<div><p>When you want the AI to remember insights from past prompts you've given it. It can automatically remember details such as the Python version you're using, or other specific details of your codebase, like your coding styles, or your expertise level</p><p>Powered by Mem0.</p></div>}
-        useful={<div><p>Intelligent memory of your coding profile</p><p>Increase in accuracy of results due to personalization</p><p>Uses less credits than other tools</p></div>}
-      /> */}
+    if (isLoading) {
+      return isUpdating ? <UpdatingView /> : <LoadingView />;
+    }
+
+    if (memories.length === 0) {
+      return <EmptyView />;
+    }
+
+    if (filteredMemories.length === 0) {
+      return <NoResultsView />;
+    }
+
+    return getCurrentPageMemories().map((memory: Memory) => (
+      <MemoryCard
+        key={memory.id}
+        memory={memory}
+        editingId={editingId}
+        editedContent={editedContent}
+        editCardRef={editCardRef}
+        onEdit={onEdit}
+        setEditedContent={setEditedContent}
+        handleCancelEdit={handleCancelEdit}
+        handleUnsavedEdit={handleUnsavedEdit}
+        handleDelete={handleDelete}
+        handleKeyPress={handleKeyPress}
+      />
+    ));
+  };
+
+  return (
+    <div className="flex flex-col h-full p-3">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <SearchBar
@@ -433,279 +348,19 @@ export default function Mem0GUI() {
       </header>
 
       <div className="flex-1 space-y-3 overflow-hidden">
-        {(unsavedChanges.length > 0 || !isEnabled) ? (
-          <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
-            <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
-              <img
-                src={getLogoPath("pearai-memory-splash.svg")}
-                alt="PearAI Memory Splash"
-              />
-              <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
-
-                <div className="flex flex-col text-left">
-                  <div className="text-2xl font-['SF Pro']">PearAI Memory Disabled</div>
-
-                  <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-                    {unsavedChanges.length > 0 ? "You have unsaved changes to memories" :
-                      <>
-                        PearAI Memory is disabled. You can enable it in {" "}
-                        <span
-                          className="cursor-pointer underline"
-                          onClick={() => navigate("/inventory")}
-
-                        >
-                          Inventory Settings
-                        </span>
-                        .
-                      </>}
-                  </div>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        ) : (
-          isLoading ? (
-            isUpdating ? (
-              <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
-
-                <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
-                  <img
-                    src={getLogoPath("pearai-memory-splash.svg")}
-                    alt="PearAI Memory Splash"
-                  />
-                  <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
-
-                    <div className="flex flex-col text-left">
-                      <div className="text-2xl font-['SF Pro']">Updating Memories...</div>
-                      <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">please wait while we save your changes</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
-                <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
-                  <img
-                    src={getLogoPath("pearai-memory-splash.svg")}
-                    alt="PearAI Memory Splash"
-                  />
-                  <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
-
-                    <div className="flex flex-col text-left">
-                      <div className="text-2xl font-['SF Pro']">Loading Memories...</div>
-                      <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">Powered by Mem0</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
-          ) : memories.length === 0 ? (
-            // <StatusCard
-            //     title="No Memories Yet"
-            //     description="PearAI will automatically generate memories by learning about your coding style and preferences as we chat! "
-            //     icon="brain"
-            //     showSparkles
-            //     secondaryDescription="You can also add memories manually by clicking the + button above!"
-            // />
-            <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
-              <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
-                <img
-                  src={getLogoPath("pearai-memory-splash.svg")}
-                  alt="PearAI Memory Splash"
-                />
-                <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
-
-                  <div className="flex flex-col text-left">
-                    <div className="text-2xl font-['SF Pro']">PearAI Memory</div>
-                    <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">Powered by Mem0</div>
-                  </div>
-                </div>
-
-                <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-                  Thanks to Claude 3.5 Sonnet's agentic coding capabilities, Cline can handle complex software development tasks step-by-step. With tools that can create & edit files, explore complex projects, use the browser, and execute terminal commands (after you grant permission), Cline can assist you in ways that go beyond code completion or tech support. Cline can even use MCP to create new tools and extend it&apos;s own capabilities.
-                </div>
-              </div>
-            </div>
-          ) : filteredMemories.length === 0 ? (
-            <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
-              <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
-                <img
-                  src={getLogoPath("pearai-memory-splash.svg")}
-                  alt="PearAI Memory Splash"
-                />
-                <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
-
-                  <div className="flex flex-col text-left">
-                    <div className="text-2xl font-['SF Pro']">No Memories Found</div>
-
-                    <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">No memories match your search</div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          ) :
-            getCurrentPageMemories().map((memory: Memory) => (
-              <Card
-                key={memory.id}
-                className={`p-2 bg-input hover:bg-input/90 hover:cursor-pointer transition-colors mx-auto
-            ${memory.isDeleted ? 'opacity-50' : ''}
-            ${memory.isModified ? 'border-l-4 border-l-yellow-500' : ''}`}
-                onClick={() => editingId !== memory.id && onEdit(memory)}
-              >
-                <div className="flex justify-between items-start">
-                  {editingId === memory.id ? (
-                    <div ref={editCardRef} className="flex-1">
-                      <div className="mr-6">
-                        <Input
-                          value={editedContent}
-                          onChange={(e) => setEditedContent(e.target.value)}
-                          className="w-full bg-background text-foreground border border-input"
-                          placeholder="Write a memory..."
-                          autoFocus
-                          onKeyDown={handleKeyPress}
-                        />
-                      </div>
-                      <div className="flex justify-end gap-2 mt-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleCancelEdit(memory)}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={handleUnsavedEdit}
-                        >
-                          Save Draft
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col flex-1">
-                      <div className="flex items-center gap-2 ml-2">
-                        <p className="text-sm text-foreground">{memory.content}</p>
-                        {
-                          memory.isNew ? (
-                            <span className="text-xs text-green-500">(new)</span>
-                          ) : memory.isDeleted ? (
-                            <div className="flex-row items-center gap-2">
-                              <span className="text-xs text-red-500">(deleted)</span>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  // Remove the delete change
-                                  setUnsavedChanges(prev => prev.filter(change =>
-                                    !(change.type === 'delete' && change.id === memory.id)
-                                  ));
-
-                                  // Restore the memory
-                                  dispatch(setMem0Memories(memories.map(m =>
-                                    m.id === memory.id
-                                      ? { ...m, isDeleted: false }
-                                      : m
-                                  )));
-                                }}
-                                className="px-2 py-1 h-6 text-xs"
-                              >
-                                Undo
-                              </Button>
-                            </div>
-                          ) : memory.isModified && <span className="text-xs text-yellow-500">(modified)</span>
-                        }
-                      </div>
-                    </div>
-                  )}
-                  {!editingId && (
-                    <div className="flex gap-1 ml-4">
-                      <HeaderButtonWithText text="Edit Memory">
-                        <Pencil2Icon
-                          color={lightGray}
-                          width="1.2em"
-                          height="1.2em"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onEdit(memory)
-                          }}
-                        />
-                      </HeaderButtonWithText>
-                      <HeaderButtonWithText text="Delete Memory">
-                        <TrashIcon
-                          color={lightGray}
-                          width="1.2em"
-                          height="1.2em"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(memory.id);
-                          }}
-                        />
-                      </HeaderButtonWithText>
-                    </div>
-                  )}
-                </div>
-                {editingId !== memory.id && <p className="text-xs text-muted-foreground mt-1 ml-2">{formatTimestamp(memory.timestamp)}</p>}
-              </Card>
-            )))}
+        {renderContent()}
       </div>
 
-
-      <div className="mt-6 mb-4 flex items-center">
-        {/* Save/Cancel buttons */}
-        {unsavedChanges.length > 0 && (
-          <div className="absolute left-1/2 transform -translate-x-1/2 gap-2">
-            <Button
-              variant="outline"
-              onClick={handleCancelAllChanges}
-              className="text-sm"
-            >
-              Cancel Changes
-            </Button>
-            <Button
-              onClick={handleSaveAllChanges}
-              className="text-sm"
-            >
-              Save All Changes
-            </Button>
-          </div>
-        )}
-
-        {/* Pagination */}
-        <div className="flex flex-1 justify-end">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            {filteredMemories.length > 0 && (
-              <>
-                <HeaderButtonWithText
-                  disabled={currentPage === 1}
-                  className={`px-2 py-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
-                >
-                  <ChevronLeftIcon
-                    color={lightGray}
-                    width="1.2em"
-                    height="1.2em"
-                    onClick={handlePrevPage}
-                  />
-                </HeaderButtonWithText>
-                {`${currentPage} of ${totalPages}`}
-                <HeaderButtonWithText
-                  disabled={currentPage === totalPages}
-                  className={`px-2 py-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
-                >
-                  <ChevronRightIcon
-                    color={lightGray}
-                    width="1.2em"
-                    height="1.2em"
-                    onClick={handleNextPage}
-                  />
-                </HeaderButtonWithText>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
+      <MemoryFooter
+        unsavedChanges={unsavedChanges.length > 0}
+        handleCancelAllChanges={handleCancelAllChanges}
+        handleSaveAllChanges={handleSaveAllChanges}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        handlePrevPage={handlePrevPage}
+        handleNextPage={handleNextPage}
+        hasMemories={filteredMemories.length > 0}
+      />
     </div>
   );
 }
