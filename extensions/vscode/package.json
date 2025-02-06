@@ -51,8 +51,7 @@
     "llama"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onView:pearAIChatView"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "browser": "./out/extension.js",
@@ -577,24 +576,24 @@
         {
           "command": "pearai.newSession",
           "group": "navigation@1",
-          "when": "view == pearai.pearChatView || view == pearai.searchView"
+          "when": "view == pearai.chatView || view == pearai.searchView"
         },
         {
           "command": "pearai.toggleFullScreen",
           "group": "navigation@1",
-          "when": "view == pearai.pearAIChatView || view == pearai.searchView"
+          "when": "view == pearai.chatView || view == pearai.searchView"
         },
         {
           "command": "pearai.viewHistory",
           "group": "navigation@1",
-          "when": "view == pearai.pearAIChatView || view == pearai.searchView"
+          "when": "view == pearai.chatView || view == pearai.searchView"
         }
       ],
       "editor/title": [
         {
           "command": "pearai.toggleFullScreen",
           "group": "navigation@1",
-          "when": "activeWebviewPanelId == pearai.pearAIChatView"
+          "when": "activeWebviewPanelId == pearai.chatView || activeWebviewPanelId == pearai.searchView"
         }
       ],
       "terminal/context": [
@@ -605,9 +604,9 @@
       ]
     },
     "viewsContainers": {
-      "auxiliarybar": [
+      "secondarySideBar": [
         {
-          "id": "PearAI",
+          "id": "pearai",
           "title": "PearAI",
           "icon": "media/sidebar-icon.png",
           "description": "PearAI Submodule"
@@ -615,7 +614,7 @@
       ]
     },
     "views": {
-     "PearAI": [
+     "pearai": [
         {
           "type": "webview",
           "id": "pearai.chatView",
