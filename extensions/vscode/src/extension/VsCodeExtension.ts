@@ -88,7 +88,7 @@ export class VsCodeExtension {
     // Sidebar + Overlay
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
-        PEAR_CONTINUE_VIEW_ID,
+        "pearai.chatView",
         this.sidebar,
         {
           webviewOptions: { retainContextWhenHidden: true },
@@ -96,6 +96,13 @@ export class VsCodeExtension {
       ),
     );
     
+    resolveWebviewProtocol(this.sidebar.webviewProtocol);
+
+    let searchSideBar = new ContinueGUIWebviewViewProvider(
+      configHandlerPromise,
+      this.windowId,
+      this.extensionContext,
+    );
     
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
@@ -107,7 +114,25 @@ export class VsCodeExtension {
       ),
     );
     
-    resolveWebviewProtocol(this.sidebar.webviewProtocol);
+    resolveWebviewProtocol(searchSideBar.webviewProtocol);
+    
+    let memorySideBar = new ContinueGUIWebviewViewProvider(
+      configHandlerPromise,
+      this.windowId,
+      this.extensionContext,
+    );
+    
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        "pearai.mem0View",
+        this.sidebar,
+        {
+          webviewOptions: { retainContextWhenHidden: true },
+        },
+      ),
+    );
+    
+    resolveWebviewProtocol(memorySideBar.webviewProtocol);
 
     // Config Handler with output channel
     const outputChannel = vscode.window.createOutputChannel("PearAI");

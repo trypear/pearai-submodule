@@ -127,6 +127,7 @@ export class ContinueGUIWebviewViewProvider
     isFullScreen = false,
     initialRoute: string = "/"
   ): string {
+    const panelViewType = panel?.viewType; // eg. pearai.chatView
     const isOverlay = panel?.title === PEAR_OVERLAY_VIEW_ID; // defined in pearai-app PearOverlayPart.ts
     const extensionUri = getExtensionUri();
     let scriptUri: string;
@@ -176,7 +177,7 @@ export class ContinueGUIWebviewViewProvider
         });
       }
     });
-
+    
     this.webviewProtocol.addWebview(panel?.title === PEAR_OVERLAY_VIEW_ID? panel.title : panel.viewType, panel.webview);
 
     return `<!DOCTYPE html>
@@ -239,6 +240,7 @@ export class ContinueGUIWebviewViewProvider
         )}</script>
         <script>window.isFirstLaunch = ${isFirstLaunch(this.extensionContext)}</script>
         <script>window.isFullScreen = ${isFullScreen}</script>
+        <script>window.viewType = "${panelViewType}"</script>
         <script>window.isPearOverlay = ${isOverlay}</script>
         <script>window.initialRoute = "${initialRoute}"</script>
 

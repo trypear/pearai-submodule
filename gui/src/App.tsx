@@ -24,11 +24,14 @@ import AiderGUI from "./integrations/aider/aidergui";
 import PerplexityGUI from "./integrations/perplexity/perplexitygui";
 import Welcome from "./pages/welcome/welcomeGui";
 import { ContextMenuProvider } from './components/ContextMenuProvider';
+import Mem0GUI from "./integrations/mem0/mem0gui";
 
 declare global {
   interface Window {
     initialRoute?: string;
     isFirstLaunch?: boolean;
+    isPearOverlay?: boolean;
+    viewType?: 'pearai.chatView' | 'pearai.mem0View' | 'pearai.searchView';
   }
 }
 
@@ -45,7 +48,10 @@ const router = createMemoryRouter(
         },
         {
           path: "/",
-          element: <GUI />,
+          element: window.viewType === 'pearai.chatView' ? <GUI /> : 
+                   window.viewType === 'pearai.searchView' ? <PerplexityGUI /> : 
+                   window.viewType === 'pearai.mem0View' ? <Mem0GUI /> : 
+                  <GUI />, // default to GUI if viewType is undefined or different
         },
         {
           path: "/aiderMode",
@@ -128,7 +134,11 @@ const router = createMemoryRouter(
     // FOR DEV'ing welcome:
     // initialEntries: [window.isPearOverlay ? "/welcome" : window.initialRoute],
   },
+  
 );
+
+
+
 
 function App() {
   const dispatch = useDispatch();
@@ -136,7 +146,6 @@ function App() {
 
   const vscTheme = useVscTheme();
   const submenuContextProvidersMethods = useSubmenuContextProviders();
-
   return (
     <ContextMenuProvider>
       <VscThemeContext.Provider value={vscTheme}>
