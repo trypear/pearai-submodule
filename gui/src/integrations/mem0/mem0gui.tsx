@@ -97,6 +97,43 @@ function formatTimestamp(timestamp: string): string {
   });
 }
 
+const SearchBar = ({ searchQuery, setSearchQuery }) => (
+  <div className="relative flex items-center">
+    <Input
+      type="text"
+      placeholder="Search memories"
+      value={searchQuery}
+      onChange={(e) => setSearchQuery(e.target.value)}
+      className="pl-3 pr-8 text-sm bg-input rounded-md"
+    />
+    <Search
+      className="absolute right-2 text-muted-foreground"
+      size={16}
+    />
+  </div>
+);
+
+const ActionButton = ({ icon: Icon, tooltip, onClick, disabled }) => (
+  <TooltipProvider>
+    <Tooltip delayDuration={100}>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onClick}
+          disabled={disabled}
+          className="h-9 w-9 p-0 hover:bg-input/90"
+        >
+          <Icon className="h-4 w-4" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent side="top" sideOffset={5}>
+        <p className="text-xs px-2 py-1">{tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+);
+
 export default function Mem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("");
@@ -371,68 +408,29 @@ export default function Mem0GUI() {
         blurb={<div><p>When you want the AI to remember insights from past prompts you've given it. It can automatically remember details such as the Python version you're using, or other specific details of your codebase, like your coding styles, or your expertise level</p><p>Powered by Mem0.</p></div>}
         useful={<div><p>Intelligent memory of your coding profile</p><p>Increase in accuracy of results due to personalization</p><p>Uses less credits than other tools</p></div>}
       /> */}
-      <div className="flex items-center justify-between gap-4 mb-4">
-        <div className="flex flex-col items-start space-y-0">
-        </div>
+      <header className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <SearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
 
-        <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip
-              delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleAddNewMemory}
-                  className="hover:bg-input/90"
-                  disabled={!!searchQuery || isExpanded}
-                >
-                  <Plus className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent sideOffset={-8} side="top">
-                <p className="bg-input p-2 border rounded-lg shadow-lg">Add a new memory</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <TooltipProvider>
-            <Tooltip
-              delayDuration={100}
-            >
-              <TooltipTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={fetchMemories}
-                  className="hover:bg-input/90"
-                  disabled={isLoading}
-                >
-                  <RotateCcw className="h-5 w-5" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent sideOffset={-8} side="top">
-                <p className="bg-input p-2 border rounded-lg shadow-lg">Refresh memories</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-
-          <div
-            ref={searchRef}
-            className={`relative transition-all duration-200 ease-in-out mr-14 ${isExpanded ? "w-[250px]" : "w-[120px]"
-              }`}
-          >
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2" size={18} />
-            <Input
-              type="text"
-              placeholder="Search memories"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-10 text-foreground bg-input rounded-xl"
-              onFocus={() => setIsExpanded(true)}
+          <div className="flex items-center gap-2">
+            <ActionButton
+              icon={Plus}
+              tooltip="Add a new memory"
+              onClick={handleAddNewMemory}
+              disabled={!!searchQuery || isExpanded}
+            />
+            <ActionButton
+              icon={RotateCcw}
+              tooltip="Refresh memories"
+              onClick={fetchMemories}
+              disabled={isLoading}
             />
           </div>
         </div>
-      </div>
+      </header>
 
       <div className="flex-1 space-y-3 overflow-hidden">
         {(unsavedChanges.length > 0 || !isEnabled) ? (
@@ -466,7 +464,6 @@ export default function Mem0GUI() {
 
             </div>
           </div>
-
         ) : (
           isLoading ? (
             isUpdating ? (
@@ -657,7 +654,7 @@ export default function Mem0GUI() {
 
 
       <div className="mt-6 mb-4 flex items-center">
-        {/* Centered Save/Cancel buttons */}
+        {/* Save/Cancel buttons */}
         {unsavedChanges.length > 0 && (
           <div className="absolute left-1/2 transform -translate-x-1/2 gap-2">
             <Button
@@ -676,7 +673,8 @@ export default function Mem0GUI() {
           </div>
         )}
 
-        <div className="flex flex-1 justify-end mb-4">
+        {/* Pagination */}
+        <div className="flex flex-1 justify-end">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             {filteredMemories.length > 0 && (
               <>
