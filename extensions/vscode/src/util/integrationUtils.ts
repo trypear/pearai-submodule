@@ -55,21 +55,8 @@ export function getIntegrationTab(webviewName: string) {
 export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProtocol, integrationName: string, sidebar: ContinueGUIWebviewViewProvider, webviews: string[]) {
   console.dir("IM IN HANDLE INTEGRATION SHORTCUT KEY")
   const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
-  console.dir("IM IN HANDLE INTEGRATION SHORTCUT 1")
 
-  let currentTab;
-  // try {
-  //   currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, webviews);
-  // } catch (error) {
-  //   console.dir("Error getting current tab:", error);
-  // }
-  
-  console.dir("IM IN HANDLE INTEGRATION SHORTCUT 2")
-  console.dir(isOverlayVisible)
-  console.dir(currentTab)
-  console.dir(protocol)
-  console.dir(integrationName)
-  console.dir(sidebar)
+  let currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, webviews);
 
   if (isOverlayVisible && currentTab === integrationName) {
     // close overlay
@@ -78,15 +65,12 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
     return;
   }
   
-  console.dir("CALLING 1")
-  // await sidebar.webviewProtocol?.request(protocol, undefined, webviews);
-  console.dir("CALLING 2")
+  await sidebar.webviewProtocol?.request(protocol, undefined, webviews);
 
   if (!isOverlayVisible) {
     // If overlay isn't open, open it first
     // Navigate to creator tab via webview protocol
     await vscode.commands.executeCommand("pearai.showOverlay");
-    console.dir("CALLING 3")
   }
 }
 

@@ -482,7 +482,7 @@ export default function AIToolInventory() {
         break;
       case AIToolID.SIDEBARCHAT:
         ideMessenger.post("invokeVSCodeCommandById", {
-          commandId: "pearai.pearAIChatView.focus", // pearai focus chat
+          commandId: "pearai.chatView.focus", // pearai focus chat
         });
         ideMessenger.post("closeOverlay", undefined);
         break;
