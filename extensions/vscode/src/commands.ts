@@ -571,10 +571,16 @@ const commandsMap: (
       captureCommandTelemetry("sendToTerminal");
       ide.runCommand(text);
     },
+    // Note: Unfortunately I don't see a way to get the view ID passed in as an argument here from package.json, so this is what I have for now -@nang-149
     "pearai.newSession": async () => {
       sidebar.webviewProtocol?.request("newSession", undefined, [PEAR_CONTINUE_VIEW_ID]);
       const currentFile = await ide.getCurrentFile();
       sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
+    },
+    "pearai.newSessionSearch": async () => {
+      sidebar.webviewProtocol?.request("newSession", undefined, ["pearai.searchView"]);
+      const currentFile = await ide.getCurrentFile();
+      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, ["pearai.searchView"]);
     },
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, [

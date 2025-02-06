@@ -250,6 +250,13 @@
         "group": "PearAI"
       },
       {
+        "command": "pearai.newSessionSearch",
+        "category": "PearAI",
+        "title": "New Search Session",
+        "icon": "$(add)",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.viewHistory",
         "category": "PearAI",
         "title": "View History",
@@ -576,17 +583,22 @@
         {
           "command": "pearai.newSession",
           "group": "navigation@1",
-          "when": "view == pearai.chatView || view == pearai.searchView"
+          "when": "view == pearai.chatView"
+        },
+        {
+          "command": "pearai.newSessionSearch",
+          "group": "navigation@1",
+          "when": "view == pearai.searchView"
         },
         {
           "command": "pearai.toggleFullScreen",
           "group": "navigation@1",
-          "when": "view == pearai.chatView || view == pearai.searchView"
+          "when": "view == pearai.chatView"
         },
         {
           "command": "pearai.viewHistory",
           "group": "navigation@1",
-          "when": "view == pearai.chatView || view == pearai.searchView"
+          "when": "view == pearai.chatView"
         }
       ],
       "editor/title": [
