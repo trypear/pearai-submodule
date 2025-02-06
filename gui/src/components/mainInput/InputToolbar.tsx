@@ -4,7 +4,7 @@ import {
 } from "@heroicons/react/24/outline";
 import {
   ArrowTurnDownLeftIcon
-}from "@heroicons/react/16/solid";
+} from "@heroicons/react/16/solid";
 import { Button } from "@/components/ui/button";
 import { InputModifiers } from "core";
 import { modelSupportsImages } from "core/llm/autodetect";
@@ -40,6 +40,7 @@ import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useLocation } from "react-router-dom";
 import { ShortcutButton } from "../ui/shortcutButton";
+import { cn } from "@/lib/utils";
 
 
 const StyledDiv = styled.div<{ isHidden: boolean }>`
@@ -97,39 +98,39 @@ function InputToolbar(props: InputToolbarProps) {
   }, [location, allModels]);
 
   return (
-      <StyledDiv
-        isHidden={props.hidden}
-        onClick={props.onClick}
-        id="input-toolbar"
-      >
-				<div className="flex-grow">
-          {!perplexityMode && (
-						<div className="flex gap-3 items-center">
-              <ShortcutButton
-                keys={["⎇", "⏎"]}
-                label="Use current file"
-                onClick={() => ({
-                  useCodebase: false,
+    <StyledDiv
+      isHidden={props.hidden}
+      onClick={props.onClick}
+      id="input-toolbar"
+    >
+      <div className="flex-grow">
+        {!perplexityMode && (
+          <div className="flex gap-3 items-center">
+            <ShortcutButton
+              keys={["⎇", "⏎"]}
+              label="Use current file"
+              onClick={() => ({
+                useCodebase: false,
+                noContext: !useActiveFile,
+              })}
+            />
+            {/* TODO:  add onClick to add file*/}
+            <ShortcutButton
+              keys={[getMetaKeyLabel(), "⏎"]}
+              onClick={() => {
+                props.onEnter({
+                  useCodebase: true,
                   noContext: !useActiveFile,
-                })}
-              />
-              {/* TODO:  add onClick to add file*/}
-              <ShortcutButton
-                keys={[getMetaKeyLabel(), "⏎"]}
-                onClick={() => {
-                  props.onEnter({
-                    useCodebase: true,
-                    noContext: !useActiveFile,
-                  });
-                }}
-                label="Use codebase"
-              />
-            </div>
-          )}
-					</div>
+                });
+              }}
+              label="Use codebase"
+            />
+          </div>
+        )}
+      </div>
 
 
-        {/* <span className="flex gap-2 items-center whitespace-nowrap">
+      {/* <span className="flex gap-2 items-center whitespace-nowrap">
           <>
             {!perplexityMode && <ModelSelect />}
             <StyledSpan
@@ -188,7 +189,7 @@ function InputToolbar(props: InputToolbarProps) {
             )}
         </span> */}
 
-          {/* {props.showNoContext ? (
+      {/* {props.showNoContext ? (
             <span
               style={{
                 color: props.usingCodebase ? vscBadgeBackground : lightGray,
@@ -223,19 +224,22 @@ function InputToolbar(props: InputToolbarProps) {
               {getMetaKeyLabel()} ⏎ Use codebase
             </StyledSpan>
           ) : null} */}
-          <Button
-            className="gap-1 h-6 bg-[#AFF349] text-[#005A4E] text-xs px-2"
-            onClick={(e) => {
-              props.onEnter?.({
-                useCodebase: false,
-                noContext: !useActiveFile
-              });
-            }}
-					>
-            <ArrowTurnDownLeftIcon width="12px" height="12px" />
-            Send
-					</Button>
-          {/* <EnterButton
+      <Button
+        className={cn("gap-1 h-6 text-xs px-2", perplexityMode ?
+          "bg-[#08a6a1] text-white"
+          : "bg-[#AFF349] text-[#005A4E]")}
+
+        onClick={(e) => {
+          props.onEnter?.({
+            useCodebase: false,
+            noContext: !useActiveFile
+          });
+        }}
+      >
+        <ArrowTurnDownLeftIcon width="12px" height="12px" />
+        Send
+      </Button>
+      {/* <EnterButton
             offFocus={props.usingCodebase}
             onClick={(e) => {
               props.onEnter({
@@ -246,7 +250,7 @@ function InputToolbar(props: InputToolbarProps) {
           >
             ⏎ Send
           </EnterButton> */}
-      </StyledDiv>
+    </StyledDiv>
   );
 }
 
