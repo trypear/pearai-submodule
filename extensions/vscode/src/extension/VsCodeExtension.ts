@@ -118,7 +118,6 @@ export class VsCodeExtension {
     );
     
     resolveWebviewProtocol(this.sidebar.webviewProtocol);
-
     
     // Config Handler with output channel
     const outputChannel = vscode.window.createOutputChannel("PearAI");
