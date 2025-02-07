@@ -365,7 +365,8 @@ function GUI() {
 
   return (
     <>
-      {!window.isPearOverlay && !!showTutorialCard &&
+      {/* Disabling Tutorial Card until we improve it */}
+      {false &&
         <TutorialCardDiv>
           <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>
@@ -377,7 +378,7 @@ function GUI() {
 
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
-          // Insert warning card after the 30th message
+          // Insert warning card if conversation is too long
           const showWarningHere = index === LENGTHY_MESSAGE_WARNING_INDEX;
 
           return (
