@@ -381,7 +381,7 @@
     ],
     "keybindings": [
       {
-        "command": "pearai.toggleInventoryHome",
+        "command": "pearai.openInventorySettings",
         "mac": "cmd+e",
         "key": "ctrl+e"
       },
