@@ -373,7 +373,7 @@ const OnboardingTutorial: React.FC<OnboardingTutorialProps> = ({
   );
 
   useWebviewListener(
-    "toggleOverlay",
+    "openInventorySettings",
     async () => {
       if (currentPage === pages.length - 1) {
         onClose();

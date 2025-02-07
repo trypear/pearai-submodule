@@ -383,8 +383,8 @@ const commandsMap: (
     "pearai.toggleMem0": async () => {
       await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
-    "pearai.toggleOverlay": async () => {
-      await handleIntegrationShortcutKey("toggleOverlay", "inventory", sidebar, [PEARAI_OVERLAY_VIEW_ID, PEARAI_CHAT_VIEW_ID]);
+    "pearai.openInventorySettings": async () => {
+      await handleIntegrationShortcutKey("openInventorySettings", "inventory", sidebar, [PEARAI_OVERLAY_VIEW_ID, PEARAI_CHAT_VIEW_ID]);
       vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     },
     "pearai.toggleInventoryHome": async () => {

@@ -93,7 +93,7 @@ export default function Inventory() {
   useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
   useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
   useWebviewListener("navigateToWrapped", () => handleTabChange("wrappedMode"), []);
-  useWebviewListener("toggleOverlay", () => handleTabChange("inventory"), []);
+  useWebviewListener("openInventorySettings", () => handleTabChange("inventory"), []);
   useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
 
   const handleTabChange = async (value: string) => {
