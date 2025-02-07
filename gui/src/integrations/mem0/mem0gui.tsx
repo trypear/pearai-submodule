@@ -40,7 +40,7 @@ export default function Mem0GUI() {
   const memories = useSelector(
     (store: RootState) => store.state.memories,
   );
-  const isEnabled = (useSelector((state: RootState) => state.state.config.integrations || [])).find(i => i.name === 'mem0').enabled;
+  const isEnabled = (useSelector((state: RootState) => state.state.config.integrations || [])).find(i => i.name === 'mem0')?.enabled;
 
   // for batch edits
   const [unsavedChanges, setUnsavedChanges] = useState<MemoryChange[]>([]);
