@@ -1,6 +1,8 @@
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { useNavigate } from "react-router-dom";
 import { Brain, Sparkles, Search } from "lucide-react";
+import { useContext } from "react";
+import { IdeMessengerContext } from "@/context/IdeMessenger";
 
 interface StatusViewProps {
   children: React.ReactNode;
@@ -53,6 +55,8 @@ const StatusDescription = ({ children }: { children: React.ReactNode }) => (
 
 export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean }) => {
   const navigate = useNavigate();
+  const ideMessenger = useContext(IdeMessengerContext);
+  
   
   return (
     <StatusViewLayout>
@@ -69,7 +73,7 @@ export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean
               Enable via{" "}
               <span
                 className="cursor-pointer text-[#754ae9] hover:text-[#754ae9]/80 underline decoration-[#754ae9]/30 transition-colors"
-                onClick={() => navigate("/inventory")}
+                onClick={() => ideMessenger.post("openInventoryHome", undefined)}
               >
                 PearAI Settings
               </span>
