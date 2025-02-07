@@ -176,7 +176,7 @@
         "group": "PearAI"
       },
       {
-        "command": "pearai.openInventorySettings",
+        "command": "pearai.toggleInventorySettings",
         "category": "PearAI",
         "title": "Toggle PearAI Inventory",
         "group": "PearAI"
@@ -381,12 +381,12 @@
     ],
     "keybindings": [
       {
-        "command": "pearai.openInventorySettings",
+        "command": "pearai.toggleInventorySettings",
         "mac": "cmd+e",
         "key": "ctrl+e"
       },
       {
-        "command": "pearai.openInventorySettings",
+        "command": "pearai.toggleInventorySettings",
         "mac": "cmd+shift+1",
         "key": "ctrl+shift+1"
       },
@@ -514,7 +514,7 @@
           "command": "pearai.toggleSearch"
         },
         {
-          "command": "pearai.openInventorySettings"
+          "command": "pearai.toggleInventorySettings"
         },
         {
           "command": "pearai.focusContinueInput"

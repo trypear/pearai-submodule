@@ -73,7 +73,7 @@ export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean
               Enable via{" "}
               <span
                 className="cursor-pointer text-[#754ae9] hover:text-[#754ae9]/80 underline decoration-[#754ae9]/30 transition-colors"
-                onClick={() => ideMessenger.post("openInventoryHome", undefined)}
+                onClick={() => ideMessenger.post("openInventorySettings", undefined)}
               >
                 PearAI Settings
               </span>

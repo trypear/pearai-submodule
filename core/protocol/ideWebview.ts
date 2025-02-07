@@ -63,6 +63,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   uninstallVscodeExtension: [{ extensionId: string }, void];
   completeWelcome: [undefined, void];
   openInventoryHome: [undefined, void];
+  openInventorySettings: [undefined, void];
   getUrlTitle: [string, string];
   pearAIinstallation: [{ tools: ToolType[] }, void];
   importUserSettingsFromVSCode: [undefined, boolean];
@@ -113,7 +114,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   navigateToSearch: [undefined, void];
   navigateToMem0: [undefined, void];
   navigateToWrapped: [undefined, void];
-  openInventorySettings: [undefined, void];
+  toggleInventorySettings: [undefined, void];
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
   setAiderProcessStateInGUI: [AiderState, void];
