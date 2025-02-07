@@ -371,11 +371,7 @@ function GUI() {
           <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>
       }
-
-      <div className="flex px-2">
-        <InventoryPreview />
-      </div>
-
+      
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
           // Insert warning card if conversation is too long

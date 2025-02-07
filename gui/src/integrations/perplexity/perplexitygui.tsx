@@ -308,7 +308,7 @@ function PerplexityGUI() {
                     <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Search</h1>
                     <div className="flex-1 flex items-center justify-start">
                       <Badge variant="outline" className="lg:relative lg:top-[2px]">
-                        Beta (Powered by Perplexity*)
+                        (Powered by Perplexity*)
                       </Badge>
                     </div>
                   </div>
@@ -323,7 +323,7 @@ function PerplexityGUI() {
                   <div className="flex items-center gap-2">
                     <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>
                     <Badge variant="outline" className="pl-0">
-                      Beta (Powered by Perplexity*)
+                      (Powered by Perplexity*)
                     </Badge>
                   </div>
                   <div className="flex items-center mt-0 justify-between pr-1">

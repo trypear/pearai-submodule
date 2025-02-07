@@ -27,6 +27,7 @@ enum AIToolID {
   PAINTER = "painter",
   MEMORY = "memory",
   WRAPPED = "wrapped",
+  AGENT = "agent",
 }
 
 interface AITool {
@@ -302,6 +303,29 @@ export default function AIToolInventory() {
       poweredBy: "Supermaven",
       enabled: true,
       note: "While we develop our own autocomplete service, we recommend Supermaven's autocomplete as an alternate standalone extension. They offer a great service and a free tier (requires separate login).",
+    },
+    {
+      id: AIToolID.AGENT,
+      name: "PearAI Agent",
+      description: (
+        <span>Autonomous coding agent with controlled IDE access.</span>
+      ),
+      icon: "🤖", // Or use an SVG icon if available
+      whenToUse: (
+        <span>
+          When you want an AI agent to autonomously implement features or fix bugs by directly interacting with your development environment. The agent can make changes, run tests, and iterate based on feedback while keeping you in control.
+        </span>
+      ),
+      strengths: [
+        <span>Autonomous feature implementation and bug fixing</span>,
+        <span>Controlled access to development environment</span>, 
+        <span>Iterative feedback loop for better results</span>,
+        <span>Maintains safety through permission-based access</span>
+      ],
+      poweredBy: "Roo Code / Cline",
+      enabled: true,
+      comingSoon: false,
+      installNeeded: false,
     },
     {
       id: AIToolID.CREATOR,
