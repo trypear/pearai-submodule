@@ -59,19 +59,19 @@ export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean
       <ContentWrapper>
         <StatusTitle>
           <Brain className="w-6 h-6 text-[#754ae9]" />
-          Memory System Offline
+          PearAI Memory Disabled.
         </StatusTitle>
         <StatusDescription>
           {hasUnsavedChanges ? (
             "Unsynchronized memory fragments detected"
           ) : (
             <>
-              Memory system requires activation. Initialize via{" "}
+              Enable via{" "}
               <span
                 className="cursor-pointer text-[#754ae9] hover:text-[#754ae9]/80 underline decoration-[#754ae9]/30 transition-colors"
                 onClick={() => navigate("/inventory")}
               >
-                System Configuration
+                PearAI Settings
               </span>
             </>
           )}
