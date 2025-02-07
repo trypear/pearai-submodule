@@ -152,7 +152,7 @@ const getPlaceholder = (historyLength: number, location: any, source: 'perplexit
 
 
   return historyLength === 0
-    ? "Ask questions about code or to make changes. Use / for commands, and @ to add context."
+    ? "Ask questions about code or make changes. Use / for commands, and @ to add context."
     : "Ask a follow-up";
 };
 
