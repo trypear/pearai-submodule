@@ -497,9 +497,6 @@ export default function AIToolInventory() {
         <header className="flex-none mb-6">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold mb-2 ml-4">PearAI Inventory</h1>
-            <Badge variant="outline" className="pl-0">
-              Beta
-            </Badge>
             <div className="relative mt-2 w-full max-w-md">
               <Search
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground opacity-60"
