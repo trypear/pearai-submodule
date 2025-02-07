@@ -587,6 +587,11 @@ const commandsMap: (
         "pearai.chatView",
       ]);
     },
+    "pearai.viewHistorySearch": () => {
+      sidebar.webviewProtocol?.request("viewHistory", undefined, [
+        "pearai.searchView",
+      ]);
+    },
     "pearai.toggleFullScreen": () => {
       // Check if full screen is already open by checking open tabs
       const fullScreenTab = getFullScreenTab();
@@ -1039,3 +1044,4 @@ export function registerAllCommands(
     );
   }
 }
+

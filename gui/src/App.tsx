@@ -63,7 +63,12 @@ const router = createMemoryRouter(
         },
         {
           path: "/history",
-          element: <History />,
+          element: <History from={
+            window.viewType === 'pearai.chatView' ? 'continue' :
+            window.viewType === 'pearai.searchView' ? 'perplexity' :
+            window.viewType === 'pearai.mem0View' ? 'aider' : 
+            'continue' // default fallback
+          }/>
         },
         {
           path: "/stats",

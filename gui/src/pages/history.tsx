@@ -136,11 +136,12 @@ function TableRow({
             // Save current session
             saveSession();
             await loadSession(session.sessionId);
-            if (from === 'continue') {
-              navigate("/");
-            } else {
-              onClose();
-            }
+            navigate("/");
+            // if (from === 'continue') {
+            //   navigate("/");
+            // } else {
+            //   onClose();
+            // }
           }}
         >
           <div className="text-md w-100">

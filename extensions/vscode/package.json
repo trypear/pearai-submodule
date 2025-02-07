@@ -264,6 +264,13 @@
         "group": "PearAI"
       },
       {
+        "command": "pearai.viewHistorySearch",
+        "category": "PearAI",
+        "title": "View Search History",
+        "icon": "$(history)",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.writeCommentsForCode",
         "category": "PearAI",
         "title": "Write Comments for this Code",
@@ -599,6 +606,11 @@
           "command": "pearai.viewHistory",
           "group": "navigation@1",
           "when": "view == pearai.chatView"
+        },
+        {
+          "command": "pearai.viewHistorySearch",
+          "group": "navigation@1",
+          "when": "view == pearai.searchView"
         }
       ],
       "editor/title": [
