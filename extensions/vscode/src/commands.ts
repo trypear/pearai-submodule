@@ -22,7 +22,7 @@ import {
   quickPickStatusText,
   setupStatusBar,
 } from "./autocomplete/statusBar";
-import { ContinueGUIWebviewViewProvider, PEAR_CONTINUE_VIEW_ID, PEAR_OVERLAY_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
+import { ContinueGUIWebviewViewProvider } from "./ContinueGUIWebviewViewProvider";
 import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
 import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
@@ -33,6 +33,7 @@ import { Battery } from "./util/battery";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 import { getExtensionUri } from "./util/vscode";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
+import { PEARAI_CHAT_VIEW_ID, PEARAI_OVERLAY_VIEW_ID, PEARAI_SEARCH_VIEW_ID } from "./util/pearai/pearaiViewTypes";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -267,10 +268,10 @@ const commandsMap: (
       await vscode.commands.executeCommand('pearai.hideOverlay');
     },
     "pearai.restFirstLaunchInGUI": async () => {
-      sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.showInteractiveContinueTutorial": async () => {
-      sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.openAiderChanges": async () => {
       // Close overlay
@@ -374,20 +375,20 @@ const commandsMap: (
     },
     "pearai.toggleCreator": async () => {
       await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleSearch": async () => {
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleMem0": async () => {
-      await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleOverlay": async () => {
-      await handleIntegrationShortcutKey("toggleOverlay", "inventory", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+      await handleIntegrationShortcutKey("toggleOverlay", "inventory", sidebar, [PEARAI_OVERLAY_VIEW_ID, PEARAI_CHAT_VIEW_ID]);
       vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     },
     "pearai.toggleInventoryHome": async () => {
-      await handleIntegrationShortcutKey("navigateToInventoryHome", "home", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToInventoryHome", "home", sidebar, [PEARAI_OVERLAY_VIEW_ID, PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.startOnboarding": async () => {
       if (isFirstLaunch(extensionContext)) {
@@ -460,7 +461,7 @@ const commandsMap: (
     "pearai.quickEdit": async (args: QuickEditShowParams) => {
       captureCommandTelemetry("quickEdit");
       quickEdit.show(args);
-      sidebar.webviewProtocol?.request("quickEdit", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("quickEdit", undefined, [PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.writeCommentsForCode": async () => {
       captureCommandTelemetry("writeCommentsForCode");
@@ -573,23 +574,23 @@ const commandsMap: (
     },
     // Note: Unfortunately I don't see a way to get the view ID passed in as an argument here from package.json, so this is what I have for now -@nang-149
     "pearai.newSession": async () => {
-      sidebar.webviewProtocol?.request("newSession", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("newSession", undefined, [PEARAI_CHAT_VIEW_ID]);
       const currentFile = await ide.getCurrentFile();
-      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.newSessionSearch": async () => {
-      sidebar.webviewProtocol?.request("newSession", undefined, ["pearai.searchView"]);
+      sidebar.webviewProtocol?.request("newSession", undefined, [PEARAI_SEARCH_VIEW_ID]);
       const currentFile = await ide.getCurrentFile();
-      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, ["pearai.searchView"]);
+      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEARAI_SEARCH_VIEW_ID]);
     },
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, [
-        "pearai.chatView",
+        PEARAI_CHAT_VIEW_ID,
       ]);
     },
     "pearai.viewHistorySearch": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, [
-        "pearai.searchView",
+        PEARAI_SEARCH_VIEW_ID,
       ]);
     },
     "pearai.toggleFullScreen": () => {
@@ -655,7 +656,7 @@ const commandsMap: (
     },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.aiderCtrlC": async () => {
       await aiderCtrlC(core);
@@ -667,10 +668,10 @@ const commandsMap: (
       await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
     },
     "pearai.setAiderProcessState": async (state: AiderState) => {
-      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEAR_OVERLAY_VIEW_ID]);
+      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.perplexityMode": async () => {
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.addPerplexityContext": (msg) => {
       const fullScreenTab = getFullScreenTab();
