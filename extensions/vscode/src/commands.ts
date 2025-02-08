@@ -413,6 +413,15 @@ const commandsMap: (
         });
       console.log("FIRST PEARAI LAUNCH FLAG RESET");
     },
+    "pearai.focusCreatorView": async () => {
+      vscode.commands.executeCommand("roo-cline.SidebarProvider.focus");
+    },
+    "pearai.focusPearAIMem0View": async () => {
+      vscode.commands.executeCommand("pearai.mem0View.focus");
+    },
+    "pearai.focusPearAISearchView": async () => {
+      vscode.commands.executeCommand("pearai.searchView.focus");
+    },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {

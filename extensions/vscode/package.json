@@ -194,6 +194,25 @@
         "group": "PearAI"
       },
       {
+        "command": "pearai.focusCreatorView",
+        "category": "PearAI",
+        "title": "Focus PearAI Creator View",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.focusPearAISearchView",
+        "category": "PearAI",
+        "title": "Focus PearAI Search View",
+        "group": "PearAI"
+      },
+
+      {
+        "command": "pearai.focusPearAIMem0View",
+        "category": "PearAI",
+        "title": "Focus PearAI Memory 0 View",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.focusContinueInput",
         "category": "PearAI",
         "title": "Add Highlighted Code to Context",
