@@ -25,8 +25,9 @@ import PerplexityGUI from "./integrations/perplexity/perplexitygui";
 import Welcome from "./pages/welcome/welcomeGui";
 import { ContextMenuProvider } from './components/ContextMenuProvider';
 import Mem0GUI from "./integrations/mem0/mem0gui";
-import PerplexitySidebarGUI from "./integrations/perplexity/PerplexitySidebarGui";
+// import PerplexitySidebarGUI from "./integrations/perplexity/PerplexitySidebarGUI";
 import Mem0SidebarGUI from "./integrations/mem0/Mem0SidebarGUI";
+
 
 declare global {
   interface Window {
@@ -51,9 +52,10 @@ const router = createMemoryRouter(
         {
           path: "/",
           element: window.viewType === 'pearai.chatView' ? <GUI /> : 
-                   window.viewType === 'pearai.searchView' ? <PerplexitySidebarGUI /> : 
+                   window.viewType === 'pearai.searchView' ? <PerplexityGUI /> : 
                    window.viewType === 'pearai.mem0View' ? <Mem0SidebarGUI /> : 
                   <GUI />, // default to GUI if viewType is undefined or different
+
         },
         {
           path: "/aiderMode",

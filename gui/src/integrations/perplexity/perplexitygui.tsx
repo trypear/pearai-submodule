@@ -49,8 +49,9 @@ import { Citations } from './Citations';
 import { Button } from "@/components/ui/button";
 import { HistorySidebar } from "@/components/HistorySidebar";
 import styled from "styled-components";
-import { lightGray } from "@/components";
+import { lightGray, vscBackground } from "@/components";
 import InventoryDetails from "../../components/InventoryDetails";
+import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 
 
 const StepsDiv = styled.div`
@@ -68,6 +69,20 @@ const StepsDiv = styled.div`
   .thread-message:not(:first-child) {
     border-top: 1px solid ${lightGray}22;
   }
+`;
+
+const InputContainer = styled.div<{ isNewSession: boolean }>`
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
+  bottom: ${props => props.isNewSession ? 'auto' : '0'};
+  left: 0;
+  right: 0;
+  background-color: ${vscBackground};
 `;
 
 
@@ -94,6 +109,7 @@ function PerplexityGUI() {
   setLocalStorage("showPerplexityTutorialCard", true);
   const [showPerplexityTutorialCard, setShowPerplexityTutorialCard] =
     useState<boolean>(getLocalStorage("showPerplexityTutorialCard"));
+  const inputContainerRef = useRef<HTMLDivElement>(null);
 
   const onCloseTutorialCard = () => {
     posthog.capture("closedPerplexityTutorialCard");
@@ -250,17 +266,40 @@ function PerplexityGUI() {
     sessionKeyRef.current += 1;
   }, [state.perplexityHistory]);
 
+  // Add resize observer effect
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      if (inputContainerRef.current && topGuiDivRef.current) {
+        const scrollTop = topGuiDivRef.current.scrollTop;
+        const height = inputContainerRef.current.offsetHeight;
+        const newPadding = state.perplexityHistory.length === 0 ? '0px' : `${height + 20}px`;
+
+        topGuiDivRef.current.style.paddingBottom = '0px';
+        topGuiDivRef.current.offsetHeight; // Force reflow
+        topGuiDivRef.current.style.paddingBottom = newPadding;
+
+        topGuiDivRef.current.scrollTop = scrollTop;
+      }
+    });
+
+    if (inputContainerRef.current) {
+      resizeObserver.observe(inputContainerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, [state.perplexityHistory.length]);
+
   return (
     <>
-      <div className="relative flex h-screen overflow-hidden ">
-        <InventoryDetails
+      <div className="p-3 relative flex h-screen overflow-hidden ">
+        {/* <InventoryDetails
           textColor="#FFFFFF"
           backgroundColor="#0fb5af"
           content="Search"
           blurb={<div><p>When you need to find information where recency is important. Regular LLMs' knowledge are outdated by several months, whereas PearAI Search is able to search the web for latest data.</p><p>Powered by Perplexity.</p></div>}
           useful={<div><p>Most up-to-date information, real-time web search.</p><p>Also good for non-coding specific questions</p><p>Uses less credits than other tools</p></div>}
           alt={<p>Use Chat or Creator to make changes to files.</p>}
-        />
+        /> */}
 
         <HistorySidebar
           isOpen={historySidebarOpen}
@@ -276,7 +315,7 @@ function PerplexityGUI() {
             historySidebarOpen ? "mr-72" : "mr-0"
           )}
         >
-          <Button
+          {/* <Button
             variant="ghost"
             onClick={() => setHistorySidebarOpen(prev => !prev)}
             className={
@@ -291,66 +330,36 @@ function PerplexityGUI() {
                 <ClockIcon className="h-6 w-6" />
               </>
             )}
-          </Button>
+          </Button> */}
           <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={state.history.length === 0}>
 
             <div
               className={cn(
                 "mx-2",
-                state.perplexityHistory.length === 0 &&
-                "h-full flex flex-col justify-center",
+                // state.perplexityHistory.length === 0 &&
+                // "border-solid border-2 border-red-500",
               )}
             >
-              {state.perplexityHistory.length === 0 ? (
-                <div className="max-w-2xl mx-auto w-full text-center">
-                  <div className="w-full text-center mb-4 flex flex-col md:flex-row lg:flex-row items-center justify-center relative">
-                    <div className="flex-1" />
-                    <h1 className="text-2xl font-bold mb-2 md:mb-0 lg:mb-0 md:mx-2 lg:mx-0">PearAI Search</h1>
-                    <div className="flex-1 flex items-center justify-start">
-                      <Badge variant="outline" className="lg:relative lg:top-[2px]">
-                        (Powered by Perplexity*)
-                      </Badge>
-                    </div>
-                  </div>
-                  <p className="text-sm text-foreground">
-                    Ask for anything. We'll retrieve up-to-date information in
-                    real-time on the web. Search uses less credits than PearAI Chat,
-                    and is perfect for documentation lookups.
-                  </p>
-                </div>
-              ) : (
-                <div className="pl-2">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>
-                    <Badge variant="outline" className="pl-0">
-                      (Powered by Perplexity*)
-                    </Badge>
-                  </div>
-                  <div className="flex items-center mt-0 justify-between pr-1">
-                    <p className="text-sm text-foreground m-0">
-                      Ask for anything. We'll retrieve up-to-date information in
-                      real-time on the web. Search uses less credits than PearAI
-                      Chat, and is perfect for documentation lookups.
-                    </p>
-                    <div>
-                      <div>
+              {state.perplexityHistory.length === 0 && (
+                <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
+                  <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
+                    <img
+                      src={getLogoPath("pearai-search-splash.svg")}
+                      alt="PearAI Search Splash"
+                    />
+                    <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
+                      <div className="flex flex-col text-left">
+                        <div className="text-2xl font-['SF Pro']">PearAI Search</div>
+                        <div className="h-[18px] opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">Powered by Perplexity</div>
                       </div>
                     </div>
-                    <div>
-                      <NewSessionButton
-                        onClick={() => {
-                          saveSession();
-                          sessionKeyRef.current += 1;
-                        }}
-                        className="mr-auto"
-                      >
-                        Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
-                      </NewSessionButton>
+                    <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+                      AI-powered search engine: up-to-date information for docs, libraries, etc. Also good for non-coding specific questions.
                     </div>
                   </div>
                 </div>
               )}
-              <div className="max-w-3xl mx-auto w-full px-4 mt-6">
+              <div className="max-w-3xl mx-auto w-full">
                 <StepsDiv>
                   {state.perplexityHistory.map((item, index: number) => (
                     <Fragment key={index}>
@@ -462,60 +471,6 @@ function PerplexityGUI() {
                     </Fragment>
                   ))}
                 </StepsDiv>
-
-                {!active && <div
-                  className={cn(
-                    state.perplexityHistory.length === 0
-                      ? "max-w-2xl mx-auto w-full"
-                      : "w-full",
-                  )}
-                >
-                  <ContinueInputBox
-                    key={sessionKeyRef.current}
-                    onEnter={(editorContent, modifiers) => {
-                      sendInput(editorContent, modifiers);
-                    }}
-                    isLastUserInput={false}
-                    isMainInput={true}
-                    hidden={active}
-                    source="perplexity"
-                    className={cn(
-                      state.perplexityHistory.length === 0 && "shadow-lg",
-                    )}
-                  />
-                </div>}
-
-                {active ? (
-                  <>
-                    <br />
-                    <br />
-                  </>
-                ) : state.perplexityHistory.length > 0 ? (
-                  <div className="mt-2">
-                    <NewSessionButton
-                      onClick={() => {
-                        saveSession();
-                        sessionKeyRef.current += 1;
-                      }}
-                      className="mr-auto"
-                    >
-                      Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
-                    </NewSessionButton>
-                  </div>
-                ) : (
-                  <>
-                    {" "}
-                    {/** TODO: Prevent removing tutorial card for now. Set to showerPerplexityTutorialCard later */}
-                    {true && (
-                      <div className="flex justify-center w-full mt-10">
-                        <CustomTutorialCard
-                          content={tutorialContent}
-                          onClose={onCloseTutorialCard}
-                        />{" "}
-                      </div>
-                    )}
-                  </>
-                )}
               </div>
 
               <ChatScrollAnchor
@@ -527,6 +482,63 @@ function PerplexityGUI() {
           </TopGuiDiv>
         </div>
       </div>
+      {!active && (
+        <div className="flex justify-center p-3">
+          <div className="max-w-3xl w-full">
+            <InputContainer
+              ref={inputContainerRef}
+              isNewSession={state.perplexityHistory.length === 0}
+            >
+              <ContinueInputBox
+                key={sessionKeyRef.current}
+                onEnter={(editorContent, modifiers) => {
+                  sendInput(editorContent, modifiers);
+                }}
+                isLastUserInput={false}
+                isMainInput={true}
+                hidden={active}
+                source="perplexity"
+                className={cn(
+                  state.perplexityHistory.length === 0 && "shadow-lg"
+                )}
+              />
+            </InputContainer>
+          </div>
+        </div>
+      )}
+
+      {active ? (
+        <>
+          <br />
+          <br />
+        </>
+      ) : state.perplexityHistory.length > 0 ? (
+        <div className="mt-2">
+          <NewSessionButton
+            onClick={() => {
+              saveSession();
+              sessionKeyRef.current += 1;
+            }}
+          // className="mr-auto"
+          >
+            Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
+          </NewSessionButton>
+        </div>
+      ) : (
+        <>
+          {" "}
+          {/** TODO: Prevent removing tutorial card for now. Set to showerPerplexityTutorialCard later */}
+          {/* {true && (
+            <div className="flex justify-center w-full mt-10">
+              <CustomTutorialCard
+                content={tutorialContent}
+                onClose={onCloseTutorialCard}
+              />{" "}
+            </div>
+          )} */}
+        </>
+      )}
+
       {active && (
         <StopButtonContainer>
           <StopButton
@@ -546,7 +558,7 @@ function PerplexityGUI() {
         </StopButtonContainer>
       )}
 
-      <div className="text-[10px] text-muted-foreground mb-4 flex justify-end pr-2 pb-2">
+      {/* <div className="text-[10px] text-muted-foreground mb-4 flex justify-end pr-2 pb-2">
         *View PearAI Disclaimer page{" "}
         <Link
           to="https://trypear.ai/disclaimer/"
@@ -556,7 +568,7 @@ function PerplexityGUI() {
           here
         </Link>
         .
-      </div>
+      </div> */}
     </>
   );
 }
