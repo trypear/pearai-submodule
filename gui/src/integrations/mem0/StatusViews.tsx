@@ -1,4 +1,6 @@
+import { Button } from "@/components/ui/button";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
+import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { Brain, Sparkles, Search } from "lucide-react";
 import { useContext } from "react";
@@ -10,46 +12,21 @@ interface StatusViewProps {
 
 const StatusViewLayout = ({ children }: StatusViewProps) => (
   <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
-    <div className="relative w-full text-center flex flex-col items-center justify-center gap-5">
-      {/* Decorative elements */}
-      <div className="absolute inset-0 bg-[#754ae9]/5 blur-3xl rounded-full" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-b from-transparent via-[#754ae9]/20 to-transparent" />
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-px h-32 bg-gradient-to-t from-transparent via-[#754ae9]/20 to-transparent" />
-      
-      {/* Content */}
-      <div className="relative">
-        <img
-          src={getLogoPath("pearai-memory-splash.svg")}
-          alt="PearAI Memory Splash"
-          className="relative z-10 opacity-80"
-        />
-        <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-[#754ae9] animate-pulse" />
-      </div>
-      <div className="relative z-10">
-        {children}
-      </div>
-    </div>
-  </div>
-);
-
-const ContentWrapper = ({ children }: StatusViewProps) => (
-  <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex backdrop-blur-sm">
-    <div className="relative flex flex-col text-left">
-      <div className="absolute -left-4 top-0 bottom-0 w-px bg-gradient-to-b from-transparent via-[#754ae9]/30 to-transparent" />
+    <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
+      <img
+        src={getLogoPath("pearai-memory-splash.svg")}
+        alt="PearAI Memory Splash"
+      />
       {children}
     </div>
   </div>
 );
 
-const StatusTitle = ({ children }: { children: React.ReactNode }) => (
-  <div className="text-2xl font-['SF Pro'] text-foreground/90 flex items-center gap-2">
-    {children}
-  </div>
-);
-
-const StatusDescription = ({ children }: { children: React.ReactNode }) => (
-  <div className="text-xs font-normal font-['SF Pro'] leading-[18px] text-[#754ae9]/70">
-    {children}
+const ContentWrapper = ({ children }: StatusViewProps) => (
+  <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
+    <div className="flex flex-col text-left">
+      {children}
+    </div>
   </div>
 );
 
@@ -61,25 +38,23 @@ export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean
   return (
     <StatusViewLayout>
       <ContentWrapper>
-        <StatusTitle>
-          <Brain className="w-6 h-6 text-[#754ae9]" />
-          PearAI Memory Disabled.
-        </StatusTitle>
-        <StatusDescription>
+        <div className="text-2xl font-['SF Pro']">PearAI Memory Disabled</div>
+        <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
           {hasUnsavedChanges ? (
-            "Unsynchronized memory fragments detected"
+            "You have unsaved changes to memories"
           ) : (
             <>
-              Enable via{" "}
+              PearAI Memory is disabled. You can enable it in{" "}
               <span
-                className="cursor-pointer text-[#754ae9] hover:text-[#754ae9]/80 underline decoration-[#754ae9]/30 transition-colors"
-                onClick={() => ideMessenger.post("openInventorySettings", undefined)}
+                className="cursor-pointer underline"
+                onClick={() => navigate("/inventory")}
               >
-                PearAI Settings
+                Inventory Settings
               </span>
+              .
             </>
           )}
-        </StatusDescription>
+        </div>
       </ContentWrapper>
     </StatusViewLayout>
   );
@@ -88,16 +63,10 @@ export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean
 export const UpdatingView = () => (
   <StatusViewLayout>
     <ContentWrapper>
-      <StatusTitle>
-        <div className="relative">
-          <Brain className="w-6 h-6 text-[#754ae9] animate-pulse" />
-          <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-[#754ae9] animate-pulse" />
-        </div>
-        Synchronizing Memories
-      </StatusTitle>
-      <StatusDescription>
-        Stabilizing memory fragments...
-      </StatusDescription>
+      <div className="text-2xl font-['SF Pro']">Updating Memories...</div>
+      <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+        please wait while we save your changes
+      </div>
     </ContentWrapper>
   </StatusViewLayout>
 );
@@ -105,13 +74,10 @@ export const UpdatingView = () => (
 export const LoadingView = () => (
   <StatusViewLayout>
     <ContentWrapper>
-      <StatusTitle>
-        <Search className="w-6 h-6 text-[#754ae9] animate-pulse" />
-        Accessing Memory Database
-      </StatusTitle>
-      <StatusDescription>
-        Retrieving memory fragments...
-      </StatusDescription>
+      <div className="text-2xl font-['SF Pro']">Loading Memories...</div>
+      <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+        Powered by Mem0
+      </div>
     </ContentWrapper>
   </StatusViewLayout>
 );
@@ -119,33 +85,33 @@ export const LoadingView = () => (
 export const EmptyView = () => (
   <StatusViewLayout>
     <ContentWrapper>
-      <StatusTitle>
-        <Brain className="w-6 h-6 text-[#754ae9]" />
-        Memory System Online
-      </StatusTitle>
-      <StatusDescription>
-        Ready to store new memory fragments
-      </StatusDescription>
-    </ContentWrapper>
-    <div className="relative w-[300px] mt-4 p-4 text-left text-xs font-mono text-[#754ae9]/60 border border-[#754ae9]/20 rounded bg-background/50 backdrop-blur-sm">
-      <div className="absolute inset-0 bg-gradient-to-r from-[#754ae9]/5 to-transparent opacity-50" />
-      <div className="relative">
-        Memory augmentation system v1.0 initialized. Enhanced by Claude 3.5 Sonnet's neural architecture. System capable of advanced pattern recognition, contextual analysis, and adaptive learning. Ready to process and store new memory fragments.
+      <div className="text-2xl font-['SF Pro']">PearAI Memory</div>
+      <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+        Powered by Mem0
       </div>
+    </ContentWrapper>
+    <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+      Thanks to Claude 3.5 Sonnet's agentic coding capabilities, Cline can handle complex software development tasks step-by-step. With tools that can create & edit files, explore complex projects, use the browser, and execute terminal commands (after you grant permission), Cline can assist you in ways that go beyond code completion or tech support. Cline can even use MCP to create new tools and extend it's own capabilities.
     </div>
+    <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+    No memories yet– PearAI Memory automatically remembers coding information as you use PearAI.
+    </div>
+    <Button variant="secondary" className="w-[300px] flex items-center gap-2">
+      <div className="flex items-center gap-2">
+        <PencilSquareIcon className="w-5 h-5" />
+        <span className="flex items-center">Add Memory</span>
+      </div>
+    </Button>
   </StatusViewLayout>
 );
 
 export const NoResultsView = () => (
   <StatusViewLayout>
     <ContentWrapper>
-      <StatusTitle>
-        <Search className="w-6 h-6 text-[#754ae9]" />
-        Fragment Not Found
-      </StatusTitle>
-      <StatusDescription>
-        No matching memory fragments in current sequence
-      </StatusDescription>
+      <div className="text-2xl font-['SF Pro']">No Memories Found</div>
+      <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+        No memories match your search
+      </div>
     </ContentWrapper>
   </StatusViewLayout>
 ); 

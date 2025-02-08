@@ -7,20 +7,18 @@ import { Brain, Sparkles } from "lucide-react";
 import { StatusCardProps } from "./types";
 
 export const SearchBar = ({ searchQuery, setSearchQuery }) => (
-  <div className="relative flex items-center group">
-    <Input
+  <div className="relative flex items-center">
+    <input
       type="text"
-      placeholder="Search memory fragments..."
+      placeholder="Search memories"
       value={searchQuery}
       onChange={(e) => setSearchQuery(e.target.value)}
-      className="pl-3 pr-8 text-sm bg-background border-[#754ae9]/20 focus:border-[#754ae9]/40 transition-colors
-        placeholder:text-[#754ae9]/40 placeholder:font-mono"
+      className="pl-3 pr-8 text-sm bg-input rounded-md p-1 border-none"
     />
     <Search
-      className="absolute right-2 text-[#754ae9]/40 group-hover:text-[#754ae9]/60 transition-colors"
+      className="absolute right-2 text-muted-foreground"
       size={16}
     />
-    <div className="absolute inset-0 bg-gradient-to-r from-[#754ae9]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
   </div>
 );
 
@@ -33,18 +31,13 @@ export const ActionButton = ({ icon: Icon, tooltip, onClick, disabled }) => (
           size="sm"
           onClick={onClick}
           disabled={disabled}
-          className="relative h-9 w-9 p-0 border border-[#754ae9]/20 hover:bg-[#754ae9]/5 hover:border-[#754ae9]/40 transition-all group"
+          className="h-9 w-9 p-0 hover:bg-input/90"
         >
-          <Icon className="h-4 w-4 text-[#754ae9]/70 group-hover:text-[#754ae9] transition-colors" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#754ae9]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <Icon className="h-4 w-4" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent 
-        side="top" 
-        sideOffset={5}
-        className="bg-background/95 border-[#754ae9]/20 backdrop-blur-sm"
-      >
-        <p className="text-xs px-2 py-1 font-mono text-[#754ae9]/70">{tooltip}</p>
+      <TooltipContent side="top" sideOffset={5}>
+        <p className="text-xs px-2 py-1">{tooltip}</p>
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>

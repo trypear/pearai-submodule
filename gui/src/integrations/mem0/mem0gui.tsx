@@ -14,6 +14,13 @@ import { setMem0Memories } from "@/redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useNavigate } from "react-router-dom";
 import InventoryDetails from "../../components/InventoryDetails";
+import { NoResultsView } from "./StatusViews";
+import { EmptyView } from "./StatusViews";
+import { UpdatingView } from "./StatusViews";
+import { LoadingView } from "./StatusViews";
+import { DisabledView } from "./StatusViews";
+import { MemoryCard } from "./MemoryCard";
+import { ActionButton, SearchBar } from "./components";
 
 
 export interface Memory {
@@ -359,110 +366,70 @@ export default function Mem0GUI() {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [])
 
-  return (
-    <div className="flex flex-col h-full ">
-            <InventoryDetails 
-        textColor="#FFFFFF" 
-        backgroundColor ="#8E6BF0" 
-        content="Memory"
-        blurb={<div><p>When you want the AI to remember insights from past prompts you've given it. It can automatically remember details such as the Python version you're using, or other specific details of your codebase, like your coding styles, or your expertise level</p><p>Powered by Mem0.</p></div>}
-        useful={<div><p>Intelligent memory of your coding profile</p><p>Increase in accuracy of results due to personalization</p><p>Uses less credits than other tools</p></div>}
-      />
-        <div className="flex items-center justify-between gap-4 mb-4">
-            <div className="flex flex-col items-start space-y-0">
-                {/* <div className="flex items-center gap-2">
-                    <h2 className="text-2xl font-bold leading-none text-primary mb-2">
-                        PearAI Memory
-                        <Badge variant="outline" className="ml-2 text-xs relative -top-2 right-3">
-                            Beta
-                        </Badge>
-                    </h2>
-                </div> */}
-            {/* <div className="flex items-center space-x-1">
-                <span className="text-xs text-muted-foreground">powered by mem0*</span>
-            </div> */}
-        </div>
-                {(unsavedChanges.length > 0 || !isEnabled) && (
-                    <div className="w-[300px] bg-yellow-100 dark:bg-yellow-900/30 rounded-xl items-center justify-center flex text-sm text-yellow-700 dark:text-yellow-200 px-2">
-                        <div className="flex justify-between">
-                        <div className="flex-1">
-                            <p className="text-sm text-yellow-700 dark:text-yellow-200 text-center">
-                            {unsavedChanges.length > 0 ? "You have unsaved changes to memories" : 
-                             <>
-                             PearAI Memory is disabled. You can enable it by toggling on Memory in{" "}
-                             <span 
-                                 className="cursor-pointer underline"
-                                 onClick={() => navigate("/inventory")}
-                             >
-                                 Inventory Settings
-                             </span>
-                             .
-                             </>}
-                            </p>
-                        </div>
-                        </div>
-                    </div>
-                )
-              }
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip
-                    delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleAddNewMemory}
-                      className="hover:bg-input/90"
-                      disabled={!!searchQuery || isExpanded}
-                    >
-                      <Plus className="h-5 w-5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent sideOffset={-8} side="top">
-                    <p className="bg-input p-2 border rounded-lg shadow-lg">Add a new memory</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <TooltipProvider>
-                <Tooltip
-                  delayDuration={100}
-                >
-                  <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={fetchMemories}
-                    className="hover:bg-input/90"
-                    disabled={isLoading}
-                  >
-                    <RotateCcw className="h-5 w-5" />
-                  </Button>
-                  </TooltipTrigger>
-                  <TooltipContent sideOffset={-8} side="top">
-                    <p className="bg-input p-2 border rounded-lg shadow-lg">Refresh memories</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+  const renderContent = () => {
+    // return <EmptyView />
+    // return <DisabledView hasUnsavedChanges={unsavedChanges.length > 0} />
+    if (unsavedChanges.length > 0 || !isEnabled) {
+      return <DisabledView hasUnsavedChanges={unsavedChanges.length > 0} />;
+    }
 
-          <div
-            ref={searchRef}
-            className={`relative transition-all duration-200 ease-in-out mr-14 ${
-              isExpanded ? "w-[250px]" : "w-[120px]"
-            }`}
-          >   
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2" size={18} />
-            <Input
-              type="text"
-              placeholder="Search memories"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 pl-10 text-foreground bg-input rounded-xl"
-              onFocus={() => setIsExpanded(true)}
+    if (isLoading) {
+      return isUpdating ? <UpdatingView /> : <LoadingView />;
+    }
+
+    if (memories.length === 0) {
+      return <EmptyView />;
+    }
+
+    if (filteredMemories.length === 0) {
+      return <NoResultsView />;
+    }
+
+    return getCurrentPageMemories().map((memory: Memory) => (
+      <MemoryCard
+        key={memory.id}
+        memory={memory}
+        editingId={editingId}
+        editedContent={editedContent}
+        editCardRef={editCardRef}
+        onEdit={onEdit}
+        setEditedContent={setEditedContent}
+        handleCancelEdit={handleCancelEdit}
+        handleUnsavedEdit={handleUnsavedEdit}
+        handleDelete={handleDelete}
+        handleKeyPress={handleKeyPress}
+      />
+    ));
+  };
+
+  return (
+    <div className="flex flex-col p-3 pb-3 h-screen">
+      {!(unsavedChanges.length > 0 || !isEnabled || isLoading || isUpdating || memories.length === 0) &&
+        (<div className="flex items-center justify-between">
+          <SearchBar
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+          />
+
+          <div className="flex items-center gap-2">
+            <ActionButton
+              icon={RotateCcw}
+              tooltip="Refresh memories"
+              onClick={fetchMemories}
+              disabled={isLoading}
             />
+            <ActionButton
+              icon={Plus}
+              tooltip="Add a new memory"
+              onClick={handleAddNewMemory}
+              disabled={!!searchQuery || isExpanded}
+            />
+
           </div>
         </div>
-        </div>
+        )
+      }
+
 
         <div className="flex-1 overflow-y-auto space-y-3">
         {isLoading ? (

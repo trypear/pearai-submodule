@@ -25,10 +25,11 @@ export function MemoryFooter({
     hasMemories
 }: MemoryFooterProps) {
     return (
-        <div className="mt-6 mb-4 flex items-center">
+        <div className="pb-2 flex items-center">
             {unsavedChanges && (
                 <div className="absolute left-1/2 transform -translate-x-1/2 gap-2">
                     <Button
+
                         variant="outline"
                         onClick={handleCancelAllChanges}
                         className="text-sm"
@@ -42,7 +43,7 @@ export function MemoryFooter({
             )}
 
             {hasMemories && (
-                <div className="flex flex-1 justify-end">
+                <div className="flex flex-1 items-center">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <HeaderButtonWithText
                             disabled={currentPage === 1}
