@@ -178,6 +178,7 @@ function GUI() {
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
   const isNewSession = state.history.length === 0;
+  const [shouldShowSplash, setShouldShowSplash] = useState(true);
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -345,9 +346,16 @@ function GUI() {
     [],
   );
 
+  useWebviewListener("highlightedCode", async (data) => {
+    console.log("highlightedCode", data);
+    setShouldShowSplash(false);
+  }, []);
+
+
   useWebviewListener("switchModel", async (model: string) => {
     dispatch(setDefaultModel({ title: model }));
   });
+
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
@@ -497,10 +505,10 @@ function GUI() {
           "mx-2",
         )}
       >
-      
-      {isNewSession &&
+      {shouldShowSplash &&
         <>
       <div className="max-w-2xl mx-auto w-full h-[calc(100vh-270px)] text-center flex flex-col justify-center">
+
         <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
           <img src={getLogoPath("pearai-chat-splash.svg")} alt="..." />
           <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
