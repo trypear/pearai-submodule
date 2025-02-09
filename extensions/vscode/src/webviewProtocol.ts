@@ -203,6 +203,29 @@ export class VsCodeWebviewProtocol
                 }
               });
           }
+           // PearAI login issues
+          else if (message.includes("pay-as-you-go")) {
+            vscode.window
+              .showInformationMessage(
+                message,
+                'Login To PearAI',
+                'Show Logs',
+              )
+              .then((selection) => {
+                if (selection === 'Login To PearAI') {
+                  // Redirect to auth login URL
+                  vscode.env.openExternal(
+                    vscode.Uri.parse(
+                      'https://trypear.ai/signin?callback=pearai://pearai.pearai/auth',
+                    ),
+                  );
+                } else if (selection === 'Show Logs') {
+                  vscode.commands.executeCommand(
+                    'workbench.action.toggleDevTools',
+                  );
+                }
+              });
+          }
           else if (message.includes("https://proxy-server")) {
             message = message.split("\n").filter((l: string) => l !== "")[1];
             try {
