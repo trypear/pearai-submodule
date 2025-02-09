@@ -649,27 +649,40 @@
     "viewsContainers": {
       "auxiliarybar": [
         {
-          "id": "pearai",
-          "title": "PearAI",
-          "icon": "media/sidebar-icon.png",
-          "description": "PearAI Submodule"
+          "id": "pearaiChat",
+          "title": "PearAI Chat",
+          "icon": "media/sidebar-icon.png"
+        },
+        {
+          "id": "pearaiSearch",
+          "title": "PearAI Search",
+          "icon": "media/sidebar-icon.png"
+        },
+        {
+          "id": "pearaiMemory",
+          "title": "PearAI Memory",
+          "icon": "media/sidebar-icon.png"
         }
       ]
     },
     "views": {
-     "pearai": [
+      "pearaiChat": [
         {
           "type": "webview",
           "id": "pearai.chatView",
           "name": "PearAI Chat",
           "visibility": "visible"
-        },
+        }
+      ],
+      "pearaiSearch": [
         {
           "type": "webview",
           "id": "pearai.searchView",
           "name": "PearAI Search",
           "visibility": "visible"
-        },
+        }
+      ],
+      "pearaiMemory": [
         {
           "type": "webview",
           "id": "pearai.mem0View",
