@@ -178,7 +178,8 @@ class PearAIServer extends BaseLLM {
 
     for await (const value of streamJSON(response)) {
       if (value.metadata && Object.keys(value.metadata).length > 0) {
-        console.log("Metadata received:", value.metadata);
+        console.dir("Metadata received:")
+        console.dir(value.metadata);
         if (value.metadata.ui_only) {
           warningMsg += value.content;
           continue;
@@ -194,7 +195,19 @@ class PearAIServer extends BaseLLM {
       }
     }
     
-    vscode.commands.executeCommand("pearai.freeModelSwitch", {warningMsg});
+    if (warningMsg.includes("pay-as-you-go")) {
+          vscode.window.showInformationMessage(
+            warningMsg,
+            'View Pay-As-You-Go'
+        ).then(selection => {
+            if (selection === 'View Pay-As-You-Go') {
+                vscode.env.openExternal(vscode.Uri.parse('https://trypear.ai/pay-as-you-go'));
+            }
+        });
+    }
+    
+    // vscode.window.showInformationMessage(warningMsg);
+    // vscode.commands.executeCommand("pearai.freeModelSwitch", {warningMsg});
     this._countTokens(completion, args.model, false);
   }
 
