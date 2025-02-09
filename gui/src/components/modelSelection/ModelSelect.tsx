@@ -306,7 +306,7 @@ function ModelSelect() {
         useEffect(() => {
           setIsOpen(open);
         }, [open]);
-
+        
         return (
           <>
             <StyledListboxButton
@@ -319,7 +319,7 @@ function ModelSelect() {
                     src={`${window.vscMediaUrl}/logos/pearai-color.png`}
                     className="w-[15px] h-[15px] object-contain"
                   />
-                  {defaultModel.title !== 'PearAI Model (Recommended)' && <img
+                  {!defaultModel.title.toLowerCase().includes('pearai') && <img
                     src={`${window.vscMediaUrl}/logos/${(() => {
                       const modelTitle = defaultModel.title.toLowerCase();
                       switch (true) {
