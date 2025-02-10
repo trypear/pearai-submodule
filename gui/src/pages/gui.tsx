@@ -123,7 +123,7 @@ export const InputContainer = styled.div<{ isNewSession: boolean }>`
   padding-right: 0.5rem;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
-  position: 'fixed';
+  position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
