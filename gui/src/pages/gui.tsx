@@ -505,7 +505,7 @@ function GUI() {
           "mx-2",
         )}
       >
-      {shouldShowSplash &&
+      {shouldShowSplash && isNewSession && 
         <>
       <div className="max-w-2xl mx-auto w-full h-[calc(100vh-270px)] text-center flex flex-col justify-center">
 
