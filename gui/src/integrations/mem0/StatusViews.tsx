@@ -47,7 +47,7 @@ export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean
               PearAI Memory is disabled. You can enable it in{" "}
               <span
                 className="cursor-pointer underline"
-                onClick={() => navigate("/inventory")}
+                onClick={() => ideMessenger.post("openInventorySettings", undefined)}
               >
                 Inventory Settings
               </span>
