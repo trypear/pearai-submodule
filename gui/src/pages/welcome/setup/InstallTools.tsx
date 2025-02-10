@@ -22,13 +22,13 @@ export default function InstallTools({
 }) {
 
     const tools: Tool[] = [
-        {
-            id: "aider",
-            name: "PearAI Creator",
-            description: "PearAI Creator is a no-code tool powered by aider* that let's you build complete features with just a prompt.",
-            icon: "inventory-creator.svg",
-            preInstalled: false
-        },
+        // {
+        //     id: "aider",
+        //     name: "PearAI Creator",
+        //     description: "PearAI Creator is a no-code tool powered by aider* that let's you build complete features with just a prompt.",
+        //     icon: "inventory-creator.svg",
+        //     preInstalled: false
+        // },
         {
             id: "supermaven",
             name: "PearAI Predict",
