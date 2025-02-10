@@ -27,6 +27,7 @@ enum AIToolID {
   PAINTER = "painter",
   MEMORY = "memory",
   WRAPPED = "wrapped",
+  AGENT = "agent",
 }
 
 interface AITool {
@@ -304,6 +305,29 @@ export default function AIToolInventory() {
       note: "While we develop our own autocomplete service, we recommend Supermaven's autocomplete as an alternate standalone extension. They offer a great service and a free tier (requires separate login).",
     },
     {
+      id: AIToolID.AGENT,
+      name: "PearAI Agent",
+      description: (
+        <span>Autonomous coding agent with controlled IDE access.</span>
+      ),
+      icon: "🤖", // Or use an SVG icon if available
+      whenToUse: (
+        <span>
+          When you want an AI agent to autonomously implement features or fix bugs by directly interacting with your development environment. The agent can make changes, run tests, and iterate based on feedback while keeping you in control.
+        </span>
+      ),
+      strengths: [
+        <span>Autonomous feature implementation and bug fixing</span>,
+        <span>Controlled access to development environment</span>, 
+        <span>Iterative feedback loop for better results</span>,
+        <span>Maintains safety through permission-based access</span>
+      ],
+      poweredBy: "Roo Code / Cline",
+      enabled: true,
+      comingSoon: false,
+      installNeeded: false,
+    },
+    {
       id: AIToolID.CREATOR,
       name: "Creator",
       description: (
@@ -482,7 +506,7 @@ export default function AIToolInventory() {
         break;
       case AIToolID.SIDEBARCHAT:
         ideMessenger.post("invokeVSCodeCommandById", {
-          commandId: "pearai.pearAIChatView.focus", // pearai focus chat
+          commandId: "pearai.chatView.focus", // pearai focus chat
         });
         ideMessenger.post("closeOverlay", undefined);
         break;
@@ -497,9 +521,6 @@ export default function AIToolInventory() {
         <header className="flex-none mb-6">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold mb-2 ml-4">PearAI Inventory</h1>
-            <Badge variant="outline" className="pl-0">
-              Beta
-            </Badge>
             <div className="relative mt-2 w-full max-w-md">
               <Search
                 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground opacity-60"

@@ -6,7 +6,7 @@ import * as vscode from "vscode";
 import { getMetaKeyLabel, getPlatform } from "../util/util";
 import { uriFromFilePath } from "../util/vscode";
 import type { VsCodeWebviewProtocol } from "../webviewProtocol";
-import { PEAR_CONTINUE_VIEW_ID } from "../ContinueGUIWebviewViewProvider";
+import { PEARAI_CHAT_VIEW_ID } from "../util/pearai/pearaiViewTypes";
 
 interface DiffInfo {
   originalFilepath: string;
@@ -244,7 +244,7 @@ export class DiffManager {
   }
 
   async acceptDiff(newFilepath?: string) {
-    this.webviewProtocol?.request("acceptedOrRejectedDiff", undefined, [PEAR_CONTINUE_VIEW_ID])
+    this.webviewProtocol?.request("acceptedOrRejectedDiff", undefined, [PEARAI_CHAT_VIEW_ID])
     this.webviewProtocol?.request("setRelaceDiffState", {diffVisible: false});
     // When coming from a keyboard shortcut, we have to infer the newFilepath from visible text editors
     if (!newFilepath) {
@@ -277,7 +277,7 @@ export class DiffManager {
   }
 
   async rejectDiff(newFilepath?: string) {
-    this.webviewProtocol?.request("acceptedOrRejectedDiff", undefined, [PEAR_CONTINUE_VIEW_ID])
+    this.webviewProtocol?.request("acceptedOrRejectedDiff", undefined, [PEARAI_CHAT_VIEW_ID])
     this.webviewProtocol?.request("setRelaceDiffState", {diffVisible: false});
     // If no newFilepath is provided and there is only one in the dictionary, use that
     if (!newFilepath) {

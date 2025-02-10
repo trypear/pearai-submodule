@@ -236,14 +236,7 @@ function ProfileSwitcher(props: {}) {
         tooltipPlacement="top-end"
         className="flex-none z-10"
         onClick={() => {
-          if (selectedProfileId === "local") {
-            ideMessenger.post("openConfigJson", undefined);
-          } else {
-            ideMessenger.post(
-              "openUrl",
-              `http://app.continue.dev/workspaces/${selectedProfileId}/config`,
-            );
-          }
+          ideMessenger.post("openConfigJson", undefined);
         }}
         text="Configure PearAI"
       >

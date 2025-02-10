@@ -27,7 +27,6 @@ import { getMetaKeyLabel, getFontSize } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "../markdown/CopyButton";
 import StyledMarkdownPreview from "../markdown/StyledMarkdownPreview";
-import { isAiderMode, isBareChatMode, isPerplexityMode } from "../../util/bareChatMode";
 import { getModelImage } from "@/util/aibrandimages";
 
 interface StepContainerProps {
@@ -81,9 +80,9 @@ function StepContainer({
         ? useSelector((store: RootState) => store.state.perplexityActive)
         : useSelector((store: RootState) => store.state.aiderActive);
   const ideMessenger = useContext(IdeMessengerContext);
-  const bareChatMode = isBareChatMode();
-  const isPerplexity = isPerplexityMode();
-  const isAider = isAiderMode();
+  const bareChatMode = source === "continue"
+  const isPerplexity = source === "perplexity"
+  const isAider = source === "aider"
 
   const [numChanges, setNumChanges] = useState<number | null>(null);
 

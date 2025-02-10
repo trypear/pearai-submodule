@@ -72,7 +72,6 @@ const StepsDiv = styled.div`
 `;
 
 const InputContainer = styled.div<{ isNewSession: boolean }>`
-  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
@@ -86,7 +85,7 @@ const InputContainer = styled.div<{ isNewSession: boolean }>`
 `;
 
 
-function PerplexityGUI() {
+function PerplexitySidebarGUI() {
   const posthog = usePostHog();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -291,7 +290,7 @@ function PerplexityGUI() {
 
   return (
     <>
-      <div className="p-3 relative flex h-screen overflow-hidden ">
+      <div className="relative flex h-screen overflow-hidden ">
         {/* <InventoryDetails
           textColor="#FFFFFF"
           backgroundColor="#0fb5af"
@@ -340,7 +339,7 @@ function PerplexityGUI() {
                 // "border-solid border-2 border-red-500",
               )}
             >
-              {state.perplexityHistory.length === 0 && (
+              {state.perplexityHistory.length === 0 ? (
                 <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
                   <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
                     <img
@@ -358,8 +357,37 @@ function PerplexityGUI() {
                     </div>
                   </div>
                 </div>
+              ) : (
+                <div className="pl-2">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold mb-2">PearAI Search</h1>
+                    <Badge variant="outline" className="pl-0">
+                      (Powered by Perplexity*)
+                    </Badge>
+                  </div>
+                  <div className="flex items-center mt-0 justify-between pr-1">
+                    <p className="text-sm text-foreground m-0">
+                      Ask Search about up-to-date information, like documentation changes.
+                    </p>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                    <div>
+                      <NewSessionButton
+                        onClick={() => {
+                          saveSession();
+                          sessionKeyRef.current += 1;
+                        }}
+                      // className="mr-auto"
+                      >
+                        Clear chat (<kbd>{getMetaKeyLabel()}</kbd> <kbd>.</kbd>)
+                      </NewSessionButton>
+                    </div>
+                  </div>
+                </div>
               )}
-              <div className="max-w-3xl mx-auto w-full">
+              <div className="max-w-3xl mx-auto w-full px-4 mt-6">
                 <StepsDiv>
                   {state.perplexityHistory.map((item, index: number) => (
                     <Fragment key={index}>
@@ -485,7 +513,7 @@ function PerplexityGUI() {
       {!active && (
         <div className="flex justify-center p-3">
           <div className="max-w-3xl w-full">
-            <InputContainer
+            <InputContainer 
               ref={inputContainerRef}
               isNewSession={state.perplexityHistory.length === 0}
             >
@@ -582,4 +610,4 @@ const tutorialContent = {
   },
 };
 
-export default PerplexityGUI;
+export default PerplexitySidebarGUI;

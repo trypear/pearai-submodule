@@ -52,10 +52,14 @@ import {
 import { RootState } from "../redux/store";
 import {
   getFontSize,
+  getMetaKeyLabel,
   isMetaEquivalentKeyPressed,
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
+import { getLogoPath } from "./welcome/setup/ImportExtensions";
+import { Badge } from "../components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const LENGTHY_MESSAGE_WARNING_INDEX = 14; // number of messages after which we show the warning card
 
@@ -119,8 +123,8 @@ export const InputContainer = styled.div<{ isNewSession: boolean }>`
   padding-right: 0.5rem;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
-  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
-  bottom: ${props => props.isNewSession ? 'auto' : '0'};
+  position: 'fixed';
+  bottom: 0;
   left: 0;
   right: 0;
   background-color: ${vscBackground};
@@ -174,6 +178,7 @@ function GUI() {
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
   const isNewSession = state.history.length === 0;
+  const [shouldShowSplash, setShouldShowSplash] = useState(true);
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -341,9 +346,16 @@ function GUI() {
     [],
   );
 
+  useWebviewListener("highlightedCode", async (data) => {
+    console.log("highlightedCode", data);
+    setShouldShowSplash(false);
+  }, []);
+
+
   useWebviewListener("switchModel", async (model: string) => {
     dispatch(setDefaultModel({ title: model }));
   });
+
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
@@ -361,19 +373,16 @@ function GUI() {
 
   return (
     <>
-      {!window.isPearOverlay && !!showTutorialCard &&
+      {/* Disabling Tutorial Card until we improve it */}
+      {false &&
         <TutorialCardDiv>
           <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>
       }
-
-      <div className="flex px-2">
-        <InventoryPreview />
-      </div>
-
+      
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
-          // Insert warning card after the 30th message
+          // Insert warning card if conversation is too long
           const showWarningHere = index === LENGTHY_MESSAGE_WARNING_INDEX;
 
           return (
@@ -490,6 +499,51 @@ function GUI() {
           );
         })}
       </TopGuiDiv>
+      
+      <div
+        className={cn(
+          "mx-2",
+        )}
+      >
+      {shouldShowSplash && isNewSession && 
+        <>
+      <div className="max-w-2xl mx-auto w-full h-[calc(100vh-270px)] text-center flex flex-col justify-center">
+
+        <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
+          <img src={getLogoPath("pearai-chat-splash.svg")} alt="..." />
+          <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
+            <div className="flex flex-col text-left">
+              <div className="text-2xl">PearAI Chat</div>
+              <div className="h-[18px] opacity-50 text-xs leading-[18px]">
+                Powered by Continue
+              </div>
+            </div>
+          </div>
+          <div className="w-[300px] text-left opacity-50 text-xs leading-[18px]">
+            Ask questions about the code or make changes.
+          </div>
+          <div className="w-[300px] text-left space-y-2  text-zinc-400 text-sm">
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1">
+                <span>⌘</span>
+                <span>+</span>
+                <span>I</span>
+              </span>
+              <span>Make inline edits</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1">
+                <span>⌘</span>
+                <span>+</span>
+                <span>L</span>
+              </span>
+              <span>Add selection to chat</span>
+            </div>
+          </div>
+        </div>
+      </div>      
+      </>
+      }
       {!active && (
         <InputContainer
           ref={inputContainerRef}
@@ -505,14 +559,13 @@ function GUI() {
           <StatusBar />
         </InputContainer>
       )}
-      {isNewSession &&
+      {/* {isNewSession &&
         <>
-          <div style={{ height: "100%" }}></div>
           <div className="px-3">
             <ShortcutContainer />
           </div>
         </>
-      }
+      } */}
 
       {active && (
         <StopButtonContainer>
@@ -535,7 +588,9 @@ function GUI() {
           </StopButton>
         </StopButtonContainer>
       )}
+      </div>
     </>
+    
   );
 }
 

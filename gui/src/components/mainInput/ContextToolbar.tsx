@@ -20,7 +20,6 @@ import {
 } from "..";
 import { modelSupportsImages } from "core/llm/autodetect";
 import { defaultModelSelector } from "../../redux/selectors/modelSelectors";
-import { isPerplexityMode } from "../../util/bareChatMode";
 import { CheckIcon } from "@heroicons/react/16/solid";
 
 
@@ -48,7 +47,6 @@ function ContextToolbar(props: ContextToolbarProps) {
     const ideMessenger = useContext(IdeMessengerContext);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const defaultModel = useSelector(defaultModelSelector);
-    const perplexityMode = isPerplexityMode();
     const dispatch = useDispatch();
     const activeFilePath = useSelector((state: RootState) => state.uiState.activeFilePath);
 	const timeoutRef = useRef<NodeJS.Timeout>();
@@ -156,7 +154,7 @@ function ContextToolbar(props: ContextToolbarProps) {
             </Button>
 
 			{/* Image Upload Button */}
-            {!perplexityMode && defaultModel &&
+            {defaultModel &&
                 modelSupportsImages(
                     defaultModel.provider,
                     defaultModel.model,

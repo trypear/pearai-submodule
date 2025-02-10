@@ -62,7 +62,6 @@ import {
 } from "./getSuggestion";
 import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
-import { isAiderMode, isPerplexityMode } from "../../util/bareChatMode";
 import { TipTapContextMenu } from './TipTapContextMenu';
 
 
@@ -84,11 +83,25 @@ const InputBoxDiv = styled.div`
     color: ${lightGray}cc;
   }
 
+  // styles for ProseMirror placeholder
+  .ProseMirror p.is-editor-empty:first-child::before {
+    color: ${lightGray}cc;
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    white-space: pre-wrap; // Allow wrapping
+    width: 100%; // Ensure it takes full width
+  }
+
   display: flex;
   flex-direction: column;
 
   .ProseMirror {
-    // max-height: 600px;
+    max-height: 300px;
+    min-height: ${getFontSize() * 6}px; // Approximately 2.5 lines of text
+    // Alternative fixed height approach:
+    // min-height: 60px;
     flex: 1;
     overflow-y: auto;
   }
@@ -126,18 +139,20 @@ const HoverTextDiv = styled.div`
 `;
 
 
-const getPlaceholder = (historyLength: number, location: any) => {
-  if (location?.pathname === "/aiderMode" || location?.pathname === "/inventory/aiderMode") {
+const getPlaceholder = (historyLength: number, location: any, source: 'perplexity' | 'aider' | 'continue') => {
+  if (source === 'aider') {
     return historyLength === 0
       ? "Ask me to create, change, or fix anything..."
       : "Send a follow-up";
   }
-  else if (location?.pathname === "/perplexityMode" || location?.pathname === "/inventory/perplexityMode") {
-    return historyLength === 0 ? "Ask for any information" : "Ask a follow-up";
+
+  if (source === 'perplexity') {
+    return historyLength === 0 ? "Ask Search about up-to-date information, like documentation changes." : "Ask a follow-up";
   }
 
+
   return historyLength === 0
-    ? "Ask anything, '/' for slash commands, '@' to add context"
+    ? "Ask questions about code or make changes. Use / for commands, and @ to add context."
     : "Ask a follow-up";
 };
 
@@ -214,7 +229,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const ideMessenger = useContext(IdeMessengerContext);
   const { getSubmenuContextItems } = useContext(SubmenuContextProvidersContext);
-
+  
   const historyLength = useSelector(
     (store: RootState) => {
       switch(source) {
@@ -423,7 +438,7 @@ const TipTapEditor = memo(function TipTapEditor({
         },
       }),
       Placeholder.configure({
-        placeholder: () => getPlaceholder(historyLengthRef.current, location),
+        placeholder: () => getPlaceholder(historyLengthRef.current, location, source),
       }),
       Paragraph.extend({
         addKeyboardShortcuts() {
@@ -572,9 +587,10 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
 
-  const isPerplexity = isPerplexityMode();
-  const isAider = isAiderMode();
-
+  
+  const isPerplexity = source === 'perplexity';
+  const isAider = source === 'aider';
+  
   useEffect(() => {
     const handleShowFile = (event: CustomEvent) => {
       const filepath = event.detail.filepath;
@@ -1142,6 +1158,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
             });
           });
         }}
+        source={source}
       />
 
       {showDragOverMsg &&

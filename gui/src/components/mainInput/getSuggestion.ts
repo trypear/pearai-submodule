@@ -159,9 +159,6 @@ export function getContextProviderDropdownOptions(
   inSubmenu: MutableRefObject<string | undefined>,
   ideMessenger: IIdeMessenger,
 ) {
-
-  const isPerplexity = isPerplexityMode();
-  const aiderMode = isAiderMode();
   
   const items = async ({ query }) => {
     if (inSubmenu.current) {
@@ -211,8 +208,6 @@ export function getContextProviderDropdownOptions(
         };
       });
     } else if (
-      !isPerplexity &&
-      !aiderMode &&
       mainResults.length === availableContextProvidersRef.current.length
     ) {
       mainResults.push({
