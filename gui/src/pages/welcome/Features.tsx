@@ -40,9 +40,9 @@ export default function Features({ onNext }: { onNext: () => void }) {
     },
     {
       icon: "inventory-creator.svg",
-      title: "PearAI Creator",
-      description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider*.",
-      video: getAssetPath("pearai-creator-welcome.mp4"),
+      title: "PearAI Coding Agent",
+      description: "Ask for a new feature, a refactor, or to fix a bug. PearAI Coding Agent will make and apply the changes to your files automatically. Powered by Roo Code / Cline*.",
+      video: getAssetPath("pearai-agent-welcome.mp4"),
     },
     {
       icon: "inventory-search.svg",
