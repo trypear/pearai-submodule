@@ -13,7 +13,12 @@ export const SearchBar = ({ searchQuery, setSearchQuery }) => (
       placeholder="Search memories"
       value={searchQuery}
       onChange={(e) => setSearchQuery(e.target.value)}
-      className="pl-3 pr-8 text-sm bg-input rounded-md p-1 border-none"
+      className="pl-3 pr-8 text-sm bg-input rounded-md p-1 border-none focus:outline-none"
+      style={{
+        backgroundColor: "var(--vscode-editor-background)",
+        color: "var(--vscode-editor-foreground)",
+        fontFamily: "inherit"
+      }}
     />
     <Search
       className="absolute right-2 text-muted-foreground"

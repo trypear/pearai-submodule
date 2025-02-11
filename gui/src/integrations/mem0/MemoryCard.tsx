@@ -40,18 +40,25 @@ export function MemoryCard({
         ${memory.isDeleted ? 'opacity-50' : ''}
         ${memory.isModified ? 'border-l-4 border-l-yellow-500' : ''}`}
       onClick={() => editingId !== memory.id && onEdit(memory)}
+      style={{
+        backgroundColor: "var(--vscode-editor-background)"
+      }}
     >
       <div className="flex justify-between items-start">
         {editingId === memory.id ? (
           <div ref={editCardRef} className="flex-1">
             <div className="mr-6">
-              <Input
+              <textarea
                 value={editedContent}
                 onChange={(e) => setEditedContent(e.target.value)}
-                className="w-full bg-background text-foreground border border-input"
+                className="w-full bg-background text-foreground border-none resize-y min-h-[100px] p-2 rounded-md outline-none focus:outline-none font-inherit"
                 placeholder="Write a memory..."
                 autoFocus
                 onKeyDown={handleKeyPress}
+                style={{
+                  backgroundColor: "var(--vscode-sideBar-background)",
+                  fontFamily: "inherit"
+                }}
               />
             </div>
             <div className="flex justify-end gap-2 mt-2">
