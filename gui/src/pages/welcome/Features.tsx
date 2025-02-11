@@ -50,6 +50,13 @@ export default function Features({ onNext }: { onNext: () => void }) {
       description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity*.",
       video: getAssetPath("pearai-search-welcome.mp4"),
     },
+    {
+      icon: "inventory-mem0.svg",
+      title: "PearAI Memory",
+      description:
+        "PearAI Memory is a self-improving memory layer when you use PearAI Chat for a personalized experience. Memories will be added automatically, and you can also add memories manually.",
+      video: getAssetPath("pearai-memory-welcome.mp4"),
+    },
   ];
 
   const ideMessenger = useContext(IdeMessengerContext);
