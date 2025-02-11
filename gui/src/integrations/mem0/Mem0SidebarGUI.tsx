@@ -101,7 +101,6 @@ export default function Mem0SidebarGUI() {
 
   const handleSaveAllChanges = async () => {
     try {
-      setUnsavedChanges([]);
       setIsUpdating(true);
       setIsLoading(true);
       const response = await ideMessenger.request('mem0/updateMemories', {
@@ -118,6 +117,8 @@ export default function Mem0SidebarGUI() {
       setIsUpdating(false);
     }
 
+    // Reset unsaved changes and editing state
+    setUnsavedChanges([]);
     setEditingId(null);
     setEditedContent("");
   };
@@ -288,12 +289,14 @@ export default function Mem0SidebarGUI() {
   }, [])
 
   const renderContent = () => {
-    if (unsavedChanges.length > 0 || !isEnabled) {
-      return <DisabledView hasUnsavedChanges={unsavedChanges.length > 0} />;
-    }
+    const isEditingNewMemory = editingId && unsavedChanges.some(change => change.type === 'new' && change.id === editingId);
 
     if (isLoading) {
       return isUpdating ? <UpdatingView /> : <LoadingView />;
+    }
+
+    if (!isEditingNewMemory && unsavedChanges.length > 0 && !isEnabled) {
+      return <DisabledView hasUnsavedChanges={unsavedChanges.length > 0} />;
     }
 
     if (memories.length === 0) {
@@ -304,21 +307,25 @@ export default function Mem0SidebarGUI() {
       return <NoResultsView />;
     }
 
-    return getCurrentPageMemories().map((memory: Memory) => (
-      <MemoryCard
-        key={memory.id}
-        memory={memory}
-        editingId={editingId}
-        editedContent={editedContent}
-        editCardRef={editCardRef}
-        onEdit={onEdit}
-        setEditedContent={setEditedContent}
-        handleCancelEdit={handleCancelEdit}
-        handleUnsavedEdit={handleUnsavedEdit}
-        handleDelete={handleDelete}
-        handleKeyPress={handleKeyPress}
-      />
-    ));
+    return (
+      <div className="h-full pr-2">
+        {getCurrentPageMemories().map((memory: Memory) => (
+          <MemoryCard
+            key={memory.id}
+            memory={memory}
+            editingId={editingId}
+            editedContent={editedContent}
+            editCardRef={editCardRef}
+            onEdit={onEdit}
+            setEditedContent={setEditedContent}
+            handleCancelEdit={handleCancelEdit}
+            handleUnsavedEdit={handleUnsavedEdit}
+            handleDelete={handleDelete}
+            handleKeyPress={handleKeyPress}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -360,6 +367,7 @@ export default function Mem0SidebarGUI() {
         handlePrevPage={handlePrevPage}
         handleNextPage={handleNextPage}
         hasMemories={filteredMemories.length > 0}
+        isUpdating={isUpdating}
       />
     </div>
   );

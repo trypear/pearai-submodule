@@ -12,6 +12,7 @@ interface MemoryFooterProps {
     handlePrevPage: () => void;
     handleNextPage: () => void;
     hasMemories: boolean;
+    isUpdating: boolean;
 }
 
 export function MemoryFooter({
@@ -22,12 +23,13 @@ export function MemoryFooter({
     totalPages,
     handlePrevPage,
     handleNextPage,
-    hasMemories
+    hasMemories,
+    isUpdating
 }: MemoryFooterProps) {
     return (
         <div className="pb-2 flex items-center">
-            {unsavedChanges && (
-                <div className="absolute left-1/2 transform -translate-x-1/2 gap-2">
+            {(unsavedChanges && !isUpdating) && (
+                <div className="flex absolute left-1/2 transform -translate-x-1/2 gap-2">
                     <Button
 
                         variant="outline"

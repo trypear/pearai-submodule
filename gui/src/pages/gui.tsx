@@ -115,7 +115,7 @@ const TutorialCardDiv = styled.header`
   width: 100%;
 `;
 
-export const InputContainer = styled.div<{ isNewSession: boolean }>`
+export const InputContainer = styled.div<{ isNewSession?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
@@ -123,8 +123,8 @@ export const InputContainer = styled.div<{ isNewSession: boolean }>`
   padding-right: 0.5rem;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
-  position: fixed;
-  bottom: 0;
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
+  bottom: ${props => props.isNewSession ? 'auto' : '0'};
   left: 0;
   right: 0;
   background-color: ${vscBackground};
@@ -347,7 +347,6 @@ function GUI() {
   );
 
   useWebviewListener("highlightedCode", async (data) => {
-    console.log("highlightedCode", data);
     setShouldShowSplash(false);
   }, []);
 
@@ -371,6 +370,12 @@ function GUI() {
     [state.history],
   );
 
+  const adjustPadding = useCallback((height: number) => {
+    if (topGuiDivRef.current) {
+      topGuiDivRef.current.style.paddingBottom = `${height + 20}px`;
+    }
+  }, []);
+
   return (
     <>
       {/* Disabling Tutorial Card until we improve it */}
@@ -379,7 +384,7 @@ function GUI() {
           <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>
       }
-      
+
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
           // Insert warning card if conversation is too long
@@ -499,67 +504,68 @@ function GUI() {
           );
         })}
       </TopGuiDiv>
-      
+
       <div
         className={cn(
           "mx-2",
         )}
       >
-      {shouldShowSplash && isNewSession && 
-        <>
-      <div className="max-w-2xl mx-auto w-full h-[calc(100vh-270px)] text-center flex flex-col justify-center">
+        {shouldShowSplash && isNewSession &&
+          <>
+            <div className="max-w-2xl mx-auto w-full h-[calc(100vh-270px)] text-center flex flex-col justify-center">
 
-        <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
-          <img src={getLogoPath("pearai-chat-splash.svg")} alt="..." />
-          <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
-            <div className="flex flex-col text-left">
-              <div className="text-2xl">PearAI Chat</div>
-              <div className="h-[18px] opacity-50 text-xs leading-[18px]">
-                Powered by Continue
+              <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
+                <img src={getLogoPath("pearai-chat-splash.svg")} alt="..." />
+                <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
+                  <div className="flex flex-col text-left">
+                    <div className="text-2xl">PearAI Chat</div>
+                    <div className="h-[18px] opacity-50 text-xs leading-[18px]">
+                      Powered by Continue
+                    </div>
+                  </div>
+                </div>
+                <div className="w-[300px] text-left opacity-50 text-xs leading-[18px]">
+                  Ask questions about the code or make changes.
+                </div>
+                <div className="w-[300px] text-left space-y-2  text-zinc-400 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1">
+                      <span>⌘</span>
+                      <span>+</span>
+                      <span>I</span>
+                    </span>
+                    <span>Make inline edits</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1">
+                      <span>⌘</span>
+                      <span>+</span>
+                      <span>L</span>
+                    </span>
+                    <span>Add selection to chat</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="w-[300px] text-left opacity-50 text-xs leading-[18px]">
-            Ask questions about the code or make changes.
-          </div>
-          <div className="w-[300px] text-left space-y-2  text-zinc-400 text-sm">
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1">
-                <span>⌘</span>
-                <span>+</span>
-                <span>I</span>
-              </span>
-              <span>Make inline edits</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="flex items-center gap-1">
-                <span>⌘</span>
-                <span>+</span>
-                <span>L</span>
-              </span>
-              <span>Add selection to chat</span>
-            </div>
-          </div>
-        </div>
-      </div>      
-      </>
-      }
-      {!active && (
-        <InputContainer
-          ref={inputContainerRef}
-          isNewSession={isNewSession}>
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          />
-          <StatusBar />
-        </InputContainer>
-      )}
-      {/* {isNewSession &&
+          </>
+        }
+        {!active && (
+          <InputContainer
+            ref={inputContainerRef}
+          >
+            <ContinueInputBox
+              onEnter={(editorContent, modifiers) => {
+                sendInput(editorContent, modifiers);
+              }}
+              isLastUserInput={false}
+              isMainInput={true}
+              hidden={active}
+              onHeightChange={adjustPadding}
+            />
+            <StatusBar />
+          </InputContainer>
+        )}
+        {/* {isNewSession &&
         <>
           <div className="px-3">
             <ShortcutContainer />
@@ -567,30 +573,30 @@ function GUI() {
         </>
       } */}
 
-      {active && (
-        <StopButtonContainer>
-          <StopButton
-            onClick={() => {
-              dispatch(setInactive());
-              if (
-                state.history[state.history.length - 1]?.message.content
-                  .length === 0
-              ) {
-                dispatch(clearLastResponse("continue"));
-              }
-            }}
-          >
-            <div className="flex items-center">
-              <ChevronUpIcon className="w-3 h-4 stroke-2 pr-1" />
-              <BackspaceIcon className="w-4 h-4 stroke-2" />
-            </div>
-            <span className="text-xs font-medium">Cancel</span>
-          </StopButton>
-        </StopButtonContainer>
-      )}
+        {active && (
+          <StopButtonContainer>
+            <StopButton
+              onClick={() => {
+                dispatch(setInactive());
+                if (
+                  state.history[state.history.length - 1]?.message.content
+                    .length === 0
+                ) {
+                  dispatch(clearLastResponse("continue"));
+                }
+              }}
+            >
+              <div className="flex items-center">
+                <ChevronUpIcon className="w-3 h-4 stroke-2 pr-1" />
+                <BackspaceIcon className="w-4 h-4 stroke-2" />
+              </div>
+              <span className="text-xs font-medium">Cancel</span>
+            </StopButton>
+          </StopButtonContainer>
+        )}
       </div>
     </>
-    
+
   );
 }
 
