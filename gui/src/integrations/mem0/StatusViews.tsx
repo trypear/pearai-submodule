@@ -91,7 +91,7 @@ export const EmptyView = () => (
       </div>
     </ContentWrapper>
     <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-      PearAI Memory is a self-improving memory layer when you use PearAI Chat. Memories will be added automatically, and you can also add memories manually.</div>
+      PearAI Memory is a self-improving memory layer when you use PearAI Chat for a personalized experience. Memories will be added automatically, and you can also add memories manually.</div>
     <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
     No memories yet– PearAI Memory automatically remembers coding information as you use PearAI Chat.
     </div>
