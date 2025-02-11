@@ -82,7 +82,7 @@ export const LoadingView = () => (
   </StatusViewLayout>
 );
 
-export const EmptyView = () => (
+export const EmptyView = ({ onAddMemory }: { onAddMemory: () => void }) => (
   <StatusViewLayout>
     <ContentWrapper>
       <div className="text-2xl font-['SF Pro']">PearAI Memory</div>
@@ -95,7 +95,11 @@ export const EmptyView = () => (
     <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
     No memories yet– PearAI Memory automatically remembers coding information as you use PearAI Chat.
     </div>
-    <Button variant="secondary" className="w-[300px] flex items-center gap-2">
+    <Button
+      variant="secondary"
+      className="w-[300px] flex items-center gap-2"
+      onClick={onAddMemory}
+    >
       <div className="flex items-center gap-2">
         <PencilSquareIcon className="w-5 h-5" />
         <span className="flex items-center">Add Memory</span>
