@@ -33,8 +33,8 @@ const ContentWrapper = ({ children }: StatusViewProps) => (
 export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean }) => {
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
-  
-  
+
+
   return (
     <StatusViewLayout>
       <ContentWrapper>
@@ -91,10 +91,9 @@ export const EmptyView = () => (
       </div>
     </ContentWrapper>
     <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-      Thanks to Claude 3.5 Sonnet's agentic coding capabilities, Cline can handle complex software development tasks step-by-step. With tools that can create & edit files, explore complex projects, use the browser, and execute terminal commands (after you grant permission), Cline can assist you in ways that go beyond code completion or tech support. Cline can even use MCP to create new tools and extend it's own capabilities.
-    </div>
+      PearAI Memory is a self-improving memory layer when you use PearAI Chat. Memories will be added automatically, and you can also add memories manually.</div>
     <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-    No memories yet– PearAI Memory automatically remembers coding information as you use PearAI.
+    No memories yet– PearAI Memory automatically remembers coding information as you use PearAI Chat.
     </div>
     <Button variant="secondary" className="w-[300px] flex items-center gap-2">
       <div className="flex items-center gap-2">
@@ -114,4 +113,4 @@ export const NoResultsView = () => (
       </div>
     </ContentWrapper>
   </StatusViewLayout>
-); 
+);
