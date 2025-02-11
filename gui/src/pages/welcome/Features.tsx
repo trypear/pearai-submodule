@@ -141,8 +141,8 @@ export default function Features({ onNext }: { onNext: () => void }) {
                 Welcome to PearAI
               </h2>
               <p className="text-sm text-muted-foreground">
-                Speed up your development process by seamlessly integrating AI
-                into your workflow.
+                Bring your ideas to life by seamlessly integrating AI
+                into your workflow. PearAI is made for your next project, all the way from idea to running at scale.
               </p>
             </div>
             <div className="space-y-3">
