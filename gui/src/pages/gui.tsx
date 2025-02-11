@@ -370,6 +370,12 @@ function GUI() {
     [state.history],
   );
 
+  const adjustPadding = useCallback((height: number) => {
+    if (topGuiDivRef.current) {
+      topGuiDivRef.current.style.paddingBottom = `${height + 20}px`;
+    }
+  }, []);
+
   return (
     <>
       {/* Disabling Tutorial Card until we improve it */}
@@ -546,7 +552,6 @@ function GUI() {
         {!active && (
           <InputContainer
             ref={inputContainerRef}
-          // isNewSession={isNewSession}
           >
             <ContinueInputBox
               onEnter={(editorContent, modifiers) => {
@@ -555,6 +560,7 @@ function GUI() {
               isLastUserInput={false}
               isMainInput={true}
               hidden={active}
+              onHeightChange={adjustPadding}
             />
             <StatusBar />
           </InputContainer>

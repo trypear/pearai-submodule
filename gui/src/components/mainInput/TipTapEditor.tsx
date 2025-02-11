@@ -177,6 +177,7 @@ interface TipTapEditorProps {
   editorState?: JSONContent;
   source?: 'perplexity' | 'aider' | 'continue';
   onChange?: (newState: JSONContent) => void;
+  onHeightChange?: (height: number) => void;
 }
 
 export const handleCopy = (editor: Editor) => {
@@ -225,6 +226,7 @@ const TipTapEditor = memo(function TipTapEditor({
   editorState,
   source = 'continue',
   onChange,
+  onHeightChange,
 }: TipTapEditorProps) {
   const dispatch = useDispatch();
 
@@ -1054,8 +1056,22 @@ const TipTapEditor = memo(function TipTapEditor({
     };
   }, [editor]);
 
+  const inputBoxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (inputBoxRef.current && onHeightChange) {
+      const observer = new ResizeObserver(() => {
+        onHeightChange(inputBoxRef.current!.offsetHeight);
+      });
+      observer.observe(inputBoxRef.current);
+
+      return () => observer.disconnect();
+    }
+  }, [onHeightChange]);
+
   return (
     <InputBoxDiv
+      ref={inputBoxRef}
       isNewSession={historyLength === 0}
       onKeyDown={(e) => {
         if (e.key === "Alt") {

@@ -113,6 +113,7 @@ interface ContinueInputBoxProps {
   hidden?: boolean;
   source?: "perplexity" | "aider" | "continue";
   className?: string;
+  onHeightChange?: (height: number) => void;
 }
 
 const ContinueInputBox = memo(function ContinueInputBox({
@@ -124,6 +125,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
   hidden,
   source = "continue",
   className,
+  onHeightChange,
 }: ContinueInputBoxProps) {
   const dispatch = useDispatch();
 
@@ -194,6 +196,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
           }
           source={source}
           onChange={handleEditorChange}
+          onHeightChange={onHeightChange}
         />
         {!isMainInput && !(active&& isLastUserInput ? 1 : 0) && <Tail/>}
       </GradientBorder>
