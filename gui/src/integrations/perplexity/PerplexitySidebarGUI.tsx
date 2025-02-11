@@ -232,6 +232,7 @@ function PerplexitySidebarGUI() {
     async () => {
       saveSession();
       sessionKeyRef.current += 1;
+      mainTextInputRef.current?.focus?.();
     },
     [saveSession],
   );
@@ -513,7 +514,7 @@ function PerplexitySidebarGUI() {
       {!active && (
         <div className="flex justify-center p-3">
           <div className="max-w-3xl w-full">
-            <InputContainer 
+            <InputContainer
               ref={inputContainerRef}
               isNewSession={state.perplexityHistory.length === 0}
             >

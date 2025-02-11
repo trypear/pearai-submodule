@@ -369,7 +369,6 @@ export class Core {
       msg: Message<ToCoreProtocol["llm/streamChat"][0]>,
     ) {
       const model = await configHandler.llmFromTitle(msg.data.title);
-      console.log("IM HERE99")
       console.log(model)
       const gen = model.streamChat(
         msg.data.messages,

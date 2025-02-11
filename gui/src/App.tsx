@@ -51,9 +51,9 @@ const router = createMemoryRouter(
         },
         {
           path: "/",
-          element: window.viewType === 'pearai.chatView' ? <GUI /> : 
-                   window.viewType === 'pearai.searchView' ? <PerplexityGUI /> : 
-                   window.viewType === 'pearai.mem0View' ? <Mem0SidebarGUI /> : 
+          element: window.viewType === 'pearai.chatView' ? <GUI /> :
+                   window.viewType === 'pearai.searchView' ? <PerplexityGUI /> :
+                   window.viewType === 'pearai.mem0View' ? <Mem0SidebarGUI /> :
                   <GUI />, // default to GUI if viewType is undefined or different
 
         },
@@ -70,7 +70,7 @@ const router = createMemoryRouter(
           element: <History from={
             window.viewType === 'pearai.chatView' ? 'continue' :
             window.viewType === 'pearai.searchView' ? 'perplexity' :
-            window.viewType === 'pearai.mem0View' ? 'aider' : 
+            window.viewType === 'pearai.mem0View' ? 'aider' :
             'continue' // default fallback
           }/>
         },
@@ -143,7 +143,7 @@ const router = createMemoryRouter(
     // FOR DEV'ing welcome:
     // initialEntries: [window.isPearOverlay ? "/welcome" : window.initialRoute],
   },
-  
+
 );
 
 

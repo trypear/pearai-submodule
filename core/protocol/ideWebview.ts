@@ -51,6 +51,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   lastChat: [undefined, void];
   closeChat: [undefined, void];
   openHistory: [undefined, void];
+  openHistorySearch: [undefined, void];
   appendSelected: [undefined, void];
   pearaiLogin: [undefined, void];
   closePearAIOverlay: [undefined, void];
@@ -98,6 +99,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   openSettings: [undefined, void];
   viewHistory: [undefined, void];
   newSession: [undefined, void];
+  newSessionSearch: [undefined, void];
   quickEdit: [undefined, void];
   acceptedOrRejectedDiff: [undefined, void];
   setTheme: [{ theme: any }, void];
