@@ -229,9 +229,9 @@ function PerplexityGUI() {
   const sessionKeyRef = useRef(0);
 
   useWebviewListener(
-    "newSession",
+    "newSessionSearch",
     async () => {
-      saveSession();
+      await saveSession();
       sessionKeyRef.current += 1;
     },
     [saveSession],

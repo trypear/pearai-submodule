@@ -300,7 +300,7 @@ export default function Mem0SidebarGUI() {
     }
 
     if (memories.length === 0) {
-      return <EmptyView />;
+      return <EmptyView onAddMemory={handleAddNewMemory} />;
     }
 
     if (filteredMemories.length === 0) {

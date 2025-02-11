@@ -82,7 +82,7 @@ function formatTimestamp(timestamp: string): string {
     yesterday.setDate(yesterday.getDate() - 1);
     const oneWeekAgo = new Date(now);
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  
+
     // Check if same day
     if (date.toDateString() === now.toDateString()) {
       return 'Today';
@@ -96,7 +96,7 @@ function formatTimestamp(timestamp: string): string {
       return 'This week';
     }
     // Otherwise return formatted date
-    return date.toLocaleDateString('en-US', { 
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -186,7 +186,7 @@ export default function Mem0GUI() {
         const response = await ideMessenger.request('mem0/updateMemories', {
           changes: unsavedChanges
         });
-        
+
         if (response) {
             await fetchMemories();
         }
@@ -250,15 +250,15 @@ export default function Mem0GUI() {
             }];
         }
     });
-    
+
     dispatch(setMem0Memories(
-      memories.map(memory => 
+      memories.map(memory =>
         memory.id === editingId
           ? { ...memory, content: editedContent, isModified: true }
           : memory
       )
     ));
-    
+
     setEditingId(null);
     setEditedContent("");
   };
@@ -301,11 +301,11 @@ export default function Mem0GUI() {
 
    // Update filteredMemories to use memories state
   const filteredMemories = useMemo(() => {
-    return memories.filter(memory => 
+    return memories.filter(memory =>
     memory.content.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [searchQuery, memories]);
-  
+
 
   // Get total pages based on filtered results
   const totalPages = Math.ceil(filteredMemories.length / memoriesPerPage);
@@ -348,7 +348,7 @@ export default function Mem0GUI() {
     });
 
     dispatch(setMem0Memories(memories.map(memory =>
-        memory.id === memoryId 
+        memory.id === memoryId
             ? { ...memory, isDeleted: true }
             : memory
         )));
@@ -378,7 +378,7 @@ export default function Mem0GUI() {
     }
 
     if (memories.length === 0) {
-      return <EmptyView />;
+      return <EmptyView onAddMemory={handleAddNewMemory} />;
     }
 
     if (filteredMemories.length === 0) {
@@ -465,8 +465,8 @@ export default function Mem0GUI() {
             />
             )  :
         getCurrentPageMemories().map((memory: Memory) => (
-          <Card 
-          key={memory.id} 
+          <Card
+          key={memory.id}
           className={`p-2 bg-input hover:bg-input/90 hover:cursor-pointer transition-colors mx-auto
             ${memory.isDeleted ? 'opacity-50' : ''}
             ${memory.isModified ? 'border-l-4 border-l-yellow-500' : ''}`}
@@ -511,19 +511,19 @@ export default function Mem0GUI() {
                         ) : memory.isDeleted ? (
                             <div className="flex-row items-center gap-2">
                                 <span className="text-xs text-red-500">(deleted)</span>
-                                <Button 
-                                variant="ghost" 
+                                <Button
+                                variant="ghost"
                                 size="sm"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     // Remove the delete change
-                                    setUnsavedChanges(prev => prev.filter(change => 
+                                    setUnsavedChanges(prev => prev.filter(change =>
                                     !(change.type === 'delete' && change.id === memory.id)
                                     ));
-                                    
+
                                     // Restore the memory
-                                    dispatch(setMem0Memories(memories.map(m => 
-                                    m.id === memory.id 
+                                    dispatch(setMem0Memories(memories.map(m =>
+                                    m.id === memory.id
                                         ? { ...m, isDeleted: false }
                                         : m
                                     )));
@@ -569,8 +569,8 @@ export default function Mem0GUI() {
             </Card>
         ))}
       </div>
-    
-      
+
+
         <div className="mt-6 mb-4 flex items-center">
             {/* Centered Save/Cancel buttons */}
             {unsavedChanges.length > 0 && (
@@ -590,7 +590,7 @@ export default function Mem0GUI() {
                 </Button>
                 </div>
             )}
-        
+
             <div className="flex flex-1 justify-end mb-4">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     {filteredMemories.length > 0 && (
@@ -600,7 +600,7 @@ export default function Mem0GUI() {
                                 className={`px-2 py-1 ${currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
                             >
                                 <ChevronLeftIcon
-                                    color={lightGray} 
+                                    color={lightGray}
                                     width="1.2em"
                                     height="1.2em"
                                     onClick={handlePrevPage}
@@ -612,7 +612,7 @@ export default function Mem0GUI() {
                                 className={`px-2 py-1 ${currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:text-foreground'}`}
                             >
                                 <ChevronRightIcon
-                                    color={lightGray} 
+                                    color={lightGray}
                                     width="1.2em"
                                     height="1.2em"
                                     onClick={handleNextPage}

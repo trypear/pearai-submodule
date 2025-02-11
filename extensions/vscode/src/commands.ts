@@ -588,7 +588,7 @@ const commandsMap: (
       sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.newSessionSearch": async () => {
-      sidebar.webviewProtocol?.request("newSession", undefined, [PEARAI_SEARCH_VIEW_ID]);
+      sidebar.webviewProtocol?.request("newSessionSearch", undefined, [PEARAI_SEARCH_VIEW_ID]);
       const currentFile = await ide.getCurrentFile();
       sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEARAI_SEARCH_VIEW_ID]);
     },
