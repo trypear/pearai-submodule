@@ -178,7 +178,7 @@ function GUI() {
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
   const isNewSession = state.history.length === 0;
-  const [shouldShowSplash, setShouldShowSplash] = useState(true);
+  const shouldShowSplash = isNewSession;
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -345,10 +345,6 @@ function GUI() {
     },
     [],
   );
-
-  useWebviewListener("highlightedCode", async (data) => {
-    setShouldShowSplash(false);
-  }, []);
 
 
   useWebviewListener("switchModel", async (model: string) => {
