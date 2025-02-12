@@ -22,9 +22,9 @@ export default function ImportExtensions({ onNext }: { onNext: () => void }) {
     setIsImporting(true);
     setImportError("");
 
-    // Briefly hide the skip button
+    // Wait for 30 seconds to show the skip button
     setShowSkip(false);
-    setTimeout(() => setShowSkip(true), 5000);
+    setTimeout(() => setShowSkip(true), 30000);
 
     // Attempt to load settings
     const settingsLoaded = await ideMessenger.request(

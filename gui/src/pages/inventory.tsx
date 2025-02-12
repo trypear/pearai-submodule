@@ -93,7 +93,7 @@ export default function Inventory() {
   useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
   useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
   useWebviewListener("navigateToWrapped", () => handleTabChange("wrappedMode"), []);
-  useWebviewListener("toggleOverlay", () => handleTabChange("inventory"), []);
+  useWebviewListener("toggleInventorySettings", () => handleTabChange("inventory"), []);
   useWebviewListener("getCurrentTab", async () => activeTab, [activeTab]);
 
   const handleTabChange = async (value: string) => {
@@ -138,7 +138,7 @@ export default function Inventory() {
             <TabsList className={` flex flex-col bg-background justify-between h-full ${currentTab === 'home' ? 'hidden' : ''}`}>
               <div className="mt-2 p-3 flex flex-col gap-4">
                 {tabs.slice(2).filter(tab => tab.featureflag !== false).map((tab) => (
-                  <TabButton {...tab} />
+                  <TabButton key={tab.id} {...tab} />
                 ))}
               </div>
 

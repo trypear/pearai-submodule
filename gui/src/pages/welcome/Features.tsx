@@ -40,15 +40,22 @@ export default function Features({ onNext }: { onNext: () => void }) {
     },
     {
       icon: "inventory-creator.svg",
-      title: "PearAI Creator",
-      description: "Ask for a new feature, a refactor, or to fix a bug. Creator will make and apply the changes to your files automatically. Powered by aider*.",
-      video: getAssetPath("pearai-creator-welcome.mp4"),
+      title: "PearAI Coding Agent",
+      description: "Ask for a new feature, a refactor, or to fix a bug. PearAI Coding Agent will make and apply the changes to your files automatically. Powered by Roo Code / Cline*.",
+      video: getAssetPath("pearai-agent-welcome.mp4"),
     },
     {
       icon: "inventory-search.svg",
       title: "PearAI Search",
       description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity*.",
       video: getAssetPath("pearai-search-welcome.mp4"),
+    },
+    {
+      icon: "inventory-mem0.svg",
+      title: "PearAI Memory",
+      description:
+        "PearAI Memory is a self-improving memory layer when you use PearAI Chat for a personalized experience. Memories will be added automatically, and you can also add memories manually.",
+      video: getAssetPath("pearai-memory-welcome.mp4"),
     },
   ];
 
@@ -141,8 +148,8 @@ export default function Features({ onNext }: { onNext: () => void }) {
                 Welcome to PearAI
               </h2>
               <p className="text-sm text-muted-foreground">
-                Speed up your development process by seamlessly integrating AI
-                into your workflow.
+                Bring your ideas to life by seamlessly integrating AI
+                into your workflow. PearAI is made for your next project, all the way from idea to running at scale.
               </p>
             </div>
             <div className="space-y-3">

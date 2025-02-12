@@ -78,13 +78,14 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   //   vscode.commands.executeCommand("pearai.startOnboarding");
   // }
 
-  setupPearAPPLayout(context);
+  setupPearAppLayout(context);
 
   if (isFirstLaunch(context)) {
     vscode.commands.executeCommand("pearai.startOnboarding");
   }
 
   // vscode.commands.executeCommand("pearai.focusContinueInput");
+
 
   // Load PearAI configuration
   if (!context.globalState.get("hasBeenInstalled")) {
@@ -96,6 +97,26 @@ export async function activateExtension(context: vscode.ExtensionContext) {
       },
       true,
     );
+  }
+
+  try {
+    await vscode.workspace.getConfiguration().update('workbench.sideBar.location', 'left', true);
+    // Get auxiliary bar visibility state
+    const pearAIVisible = vscode.workspace.getConfiguration().get('workbench.auxiliaryBar.visible');
+
+    // Show auxiliary bar if it's not already visible
+    if (!pearAIVisible) {
+        await vscode.commands.executeCommand('workbench.action.toggleAuxiliaryBar');
+    }
+  } catch (error) {
+    console.dir(error);
+  }
+
+  try {
+    vscode.commands.executeCommand("pearai.focusContinueInput");
+  } catch (error) {
+    // vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
+    console.error(error);
   }
 
   const api = new VsCodeContinueApi(vscodeExtension);
@@ -114,7 +135,9 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 }
 
 // Custom Layout settings that we want default for PearAPP
-const setupPearAPPLayout = async (context: vscode.ExtensionContext) => {
+const setupPearAppLayout = async (context: vscode.ExtensionContext) => {
+  // move pearai extension views to auxiliary bar (secondary side bar)
+  vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
 
   if(!vscode.workspace.workspaceFolders){
     vscode.commands.executeCommand("workbench.action.closeSidebar");
@@ -122,8 +145,6 @@ const setupPearAPPLayout = async (context: vscode.ExtensionContext) => {
   }
 
   if (isFirstLaunch(context)) {
-    // move pearai extension to auxiliary bar (secondary side bar) if there is a folder open
-    // vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
     // set activity bar position to top
     vscode.commands.executeCommand("workbench.action.activityBarLocation.top");
   }

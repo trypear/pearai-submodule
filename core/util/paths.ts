@@ -2,7 +2,7 @@ import * as JSONC from "comment-json";
 import dotenv from "dotenv";
 import * as fs from "fs";
 import * as os from "os";
-import * as path from "path";
+import path from "path";
 import { defaultConfig, defaultConfigJetBrains } from "../config/default.js";
 import Types from "../config/types.js";
 import { IdeType, SerializedContinueConfig } from "../index.js";
@@ -92,12 +92,16 @@ export function getConfigTsPath(): string {
         version: "1.0.0",
         description: "My Continue Configuration",
         main: "config.js",
+        type: "module"
       }),
     );
   }
 
   fs.writeFileSync(path.join(corePath, "index.d.ts"), Types);
-  return p;
+  // Convert Windows path to proper file URL format
+  return process.platform === "win32" 
+    ? "file:///" + p.replace(/\\/g, "/") 
+    : p;
 }
 
 export function getConfigJsPath(): string {

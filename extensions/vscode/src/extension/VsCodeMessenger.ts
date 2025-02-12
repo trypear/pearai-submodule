@@ -187,6 +187,9 @@ export class VsCodeMessenger {
     this.onWebview("openInventoryHome", (msg) => {
       vscode.commands.executeCommand("pearai.toggleInventoryHome");
     });
+    this.onWebview("openInventorySettings", (msg) => {
+      vscode.commands.executeCommand("pearai.toggleInventorySettings");
+    });
     this.onWebview("pearAIinstallation", (msg) => {
       const { tools } = msg.data;
       if (tools) {

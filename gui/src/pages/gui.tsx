@@ -1,11 +1,17 @@
+import InventoryPreview from "@/components/InventoryPreview";
+import ShortcutContainer from "@/components/ShortcutContainer";
+import StatusBar from "@/components/StatusBar";
+import WarningCard from "@/components/ui/warningcard";
+import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
+import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import {
   BackspaceIcon,
   ChatBubbleOvalLeftIcon,
   ChevronUpIcon,
 } from "@heroicons/react/24/outline";
 import { JSONContent } from "@tiptap/react";
-import { IndexingProgressUpdate, InputModifiers } from "core";
-import { PostHog, usePostHog } from "posthog-js/react";
+import { InputModifiers } from "core";
+import { usePostHog } from "posthog-js/react";
 import {
   Fragment,
   useCallback,
@@ -24,15 +30,12 @@ import {
   vscBackground,
   vscBadgeBackground,
   vscBadgeForeground,
-  vscButtonForeground,
   vscForeground,
 } from "../components";
-import { ChatScrollAnchor } from "../components/ChatScrollAnchor";
 import StepContainer from "../components/gui/StepContainer";
 import TimelineItem from "../components/gui/TimelineItem";
 import ContinueInputBox from "../components/mainInput/ContinueInputBox";
 import { defaultInputModifiers } from "../components/mainInput/inputModifiers";
-import { TutorialCard } from "../components/mainInput/TutorialCard";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import useChatHandler from "../hooks/useChatHandler";
 import useHistory from "../hooks/useHistory";
@@ -50,28 +53,19 @@ import { RootState } from "../redux/store";
 import {
   getFontSize,
   getMetaKeyLabel,
-  isJetBrains,
   isMetaEquivalentKeyPressed,
 } from "../util";
 import { FREE_TRIAL_LIMIT_REQUESTS } from "../util/freeTrial";
-import { getLocalStorage, setLocalStorage } from "@/util/localStorage";
 import OnboardingTutorial from "./onboarding/OnboardingTutorial";
-import { CircleAlert } from "lucide-react";
-import { FOOTER_HEIGHT } from "@/components/Layout";
-import StatusBar from "@/components/StatusBar";
-import InventoryPreview from "@/components/InventoryPreview";
-import { setActiveFilePath } from "@/redux/slices/uiStateSlice";
-import WarningCard from "@/components/ui/warningcard";
-import ShortcutContainer from "@/components/ShortcutContainer";
+import { getLogoPath } from "./welcome/setup/ImportExtensions";
+import { Badge } from "../components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const LENGTHY_MESSAGE_WARNING_INDEX = 14; // number of messages after which we show the warning card
 
 export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   overflow-y: scroll;
   position: relative;
-  margin-top: -40px;
-  padding-top: 48px;
-  padding-bottom: ${props => props.isNewSession ? '0' : '120px'};
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
@@ -119,7 +113,22 @@ const TutorialCardDiv = styled.header`
   background-color: ${vscBackground}ee; // Added 'ee' for slight transparency
   display: flex;
   width: 100%;
-`
+`;
+
+export const InputContainer = styled.div<{ isNewSession?: boolean }>`
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
+  bottom: ${props => props.isNewSession ? 'auto' : '0'};
+  left: 0;
+  right: 0;
+  background-color: ${vscBackground};
+`;
 
 export function fallbackRender({ error, resetErrorBoundary }) {
   return (
@@ -165,8 +174,11 @@ function GUI() {
 
   const mainTextInputRef = useRef<HTMLInputElement>(null);
   const topGuiDivRef = useRef<HTMLDivElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState<boolean>(false);
   const state = useSelector((state: RootState) => state.state);
+  const isNewSession = state.history.length === 0;
+  const [shouldShowSplash, setShouldShowSplash] = useState(true);
 
   const handleScroll = () => {
     const OFFSET_HERUISTIC = 300;
@@ -213,6 +225,28 @@ function GUI() {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [topGuiDivRef.current]);
+
+  useEffect(() => {
+    const resizeObserver = new ResizeObserver(() => {
+      if (inputContainerRef.current && topGuiDivRef.current) {
+        const scrollTop = topGuiDivRef.current.scrollTop;
+        const height = inputContainerRef.current.offsetHeight;
+        const newPadding = isNewSession ? '0px' : `${height + 20}px`;
+
+        topGuiDivRef.current.style.paddingBottom = '0px';
+        topGuiDivRef.current.offsetHeight;
+        topGuiDivRef.current.style.paddingBottom = newPadding;
+
+        topGuiDivRef.current.scrollTop = scrollTop;
+      }
+    });
+
+    if (inputContainerRef.current) {
+      resizeObserver.observe(inputContainerRef.current);
+    }
+
+    return () => resizeObserver.disconnect();
+  }, [isNewSession]);
 
   useEffect(() => {
     const listener = (e: any) => {
@@ -312,9 +346,15 @@ function GUI() {
     [],
   );
 
+  useWebviewListener("highlightedCode", async (data) => {
+    setShouldShowSplash(false);
+  }, []);
+
+
   useWebviewListener("switchModel", async (model: string) => {
     dispatch(setDefaultModel({ title: model }));
   });
+
 
   const isLastUserInput = useCallback(
     (index: number): boolean => {
@@ -330,31 +370,28 @@ function GUI() {
     [state.history],
   );
 
-  const isNewSession = state.history.length === 0;
+  const adjustPadding = useCallback((height: number) => {
+    if (topGuiDivRef.current) {
+      topGuiDivRef.current.style.paddingBottom = `${height + 20}px`;
+    }
+  }, []);
 
   return (
     <>
-      {!window.isPearOverlay && !!showTutorialCard &&
+      {/* Disabling Tutorial Card until we improve it */}
+      {false &&
         <TutorialCardDiv>
           <OnboardingTutorial onClose={onCloseTutorialCard} />
         </TutorialCardDiv>
       }
-      <div className="pb-1 flex px-2">
-        <div
-          className="flex-col gap-2 "
-        >
-          <InventoryPreview />
-        </div>
-      </div>
 
       <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={isNewSession}>
         {state.history.map((item, index: number) => {
-          // Insert warning card after the 30th message
+          // Insert warning card if conversation is too long
           const showWarningHere = index === LENGTHY_MESSAGE_WARNING_INDEX;
 
           return (
             <Fragment key={index}>
-
               <ErrorBoundary
                 FallbackComponent={fallbackRender}
                 onReset={() => {
@@ -385,7 +422,6 @@ function GUI() {
                       </div>
                     </div>
                   ) : (
-                    // <div className="p-4 bg-orange-500 my-4">
                     <TimelineItem
                       item={item}
                       iconElement={
@@ -461,9 +497,6 @@ function GUI() {
                         </WarningCard>
                       )}
                     </TimelineItem>
-
-
-                    // </div>
                   )}
                 </div>
               </ErrorBoundary>
@@ -472,51 +505,98 @@ function GUI() {
         })}
       </TopGuiDiv>
 
-      {!active && (
-        <div className="flex flex-col gap-0.5 px-2 rounded-t-lg">
-          <ContinueInputBox
-            onEnter={(editorContent, modifiers) => {
-              sendInput(editorContent, modifiers);
-            }}
-            isLastUserInput={false}
-            isMainInput={true}
-            hidden={active}
-          />
-          <StatusBar />
-        </div>
-      )}
+      <div
+        className={cn(
+          "mx-2",
+        )}
+      >
+        {shouldShowSplash && isNewSession &&
+          <>
+            <div className="max-w-2xl mx-auto w-full h-[calc(100vh-270px)] text-center flex flex-col justify-center">
 
-      {isNewSession &&
+              <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
+                <img src={getLogoPath("pearai-chat-splash.svg")} alt="..." />
+                <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
+                  <div className="flex flex-col text-left">
+                    <div className="text-2xl">PearAI Chat</div>
+                    <div className="h-[18px] opacity-50 text-xs leading-[18px]">
+                      Powered by Continue
+                    </div>
+                  </div>
+                </div>
+                <div className="w-[300px] text-left opacity-50 text-xs leading-[18px]">
+                  Ask questions about the code or make changes.
+                </div>
+                <div className="w-[300px] text-left space-y-2  text-zinc-400 text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1">
+                      <span>⌘</span>
+                      <span>+</span>
+                      <span>I</span>
+                    </span>
+                    <span>Make inline edits</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-1">
+                      <span>⌘</span>
+                      <span>+</span>
+                      <span>L</span>
+                    </span>
+                    <span>Add selection to chat</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        }
+        {!active && (
+          <InputContainer
+            ref={inputContainerRef}
+          >
+            <ContinueInputBox
+              onEnter={(editorContent, modifiers) => {
+                sendInput(editorContent, modifiers);
+              }}
+              isLastUserInput={false}
+              isMainInput={true}
+              hidden={active}
+              onHeightChange={adjustPadding}
+            />
+            <StatusBar />
+          </InputContainer>
+        )}
+        {/* {isNewSession &&
         <>
-          <div style={{ height: "100%" }}></div>
           <div className="px-3">
             <ShortcutContainer />
           </div>
         </>
-      }
+      } */}
 
-      {active && (
-        <StopButtonContainer>
-          <StopButton
-            onClick={() => {
-              dispatch(setInactive());
-              if (
-                state.history[state.history.length - 1]?.message.content
-                  .length === 0
-              ) {
-                dispatch(clearLastResponse("continue"));
-              }
-            }}
-          >
-            <div className="flex items-center">
-              <ChevronUpIcon className="w-3 h-4 stroke-2 pr-1" />
-              <BackspaceIcon className="w-4 h-4 stroke-2" />
-            </div>
-            <span className="text-xs font-medium">Cancel</span>
-          </StopButton>
-        </StopButtonContainer>
-      )}
+        {active && (
+          <StopButtonContainer>
+            <StopButton
+              onClick={() => {
+                dispatch(setInactive());
+                if (
+                  state.history[state.history.length - 1]?.message.content
+                    .length === 0
+                ) {
+                  dispatch(clearLastResponse("continue"));
+                }
+              }}
+            >
+              <div className="flex items-center">
+                <ChevronUpIcon className="w-3 h-4 stroke-2 pr-1" />
+                <BackspaceIcon className="w-4 h-4 stroke-2" />
+              </div>
+              <span className="text-xs font-medium">Cancel</span>
+            </StopButton>
+          </StopButtonContainer>
+        )}
+      </div>
     </>
+
   );
 }
 

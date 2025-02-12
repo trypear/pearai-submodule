@@ -16,7 +16,7 @@ import {
   StatusBarStatus,
 } from "../autocomplete/statusBar";
 import { registerAllCommands } from "../commands";
-import { ContinueGUIWebviewViewProvider, PEAR_CONTINUE_VIEW_ID } from "../ContinueGUIWebviewViewProvider";
+import { ContinueGUIWebviewViewProvider } from "../ContinueGUIWebviewViewProvider";
 import { registerDebugTracker } from "../debug/debug";
 import { DiffManager } from "../diff/horizontal";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
@@ -33,6 +33,7 @@ import { TabAutocompleteModel } from "../util/loadAutocompleteModel";
 import type { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { VsCodeMessenger } from "./VsCodeMessenger";
 import { startAiderProcess } from "../integrations/aider/aiderUtil";
+import { PEARAI_CHAT_VIEW_ID, PEARAI_MEM0_VIEW_ID, PEARAI_SEARCH_VIEW_ID } from "../util/pearai/pearaiViewTypes";
 
 export class VsCodeExtension {
   // Currently some of these are public so they can be used in testing (test/test-suites)
@@ -88,15 +89,36 @@ export class VsCodeExtension {
     // Sidebar + Overlay
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
-        PEAR_CONTINUE_VIEW_ID,
+        PEARAI_CHAT_VIEW_ID,
         this.sidebar,
         {
           webviewOptions: { retainContextWhenHidden: true },
         },
       ),
     );
+    
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        PEARAI_SEARCH_VIEW_ID,
+        this.sidebar,
+        {
+          webviewOptions: { retainContextWhenHidden: true },
+        },
+      ),
+    );
+       
+    context.subscriptions.push(
+      vscode.window.registerWebviewViewProvider(
+        PEARAI_MEM0_VIEW_ID,
+        this.sidebar,
+        {
+          webviewOptions: { retainContextWhenHidden: true },
+        },
+      ),
+    );
+    
     resolveWebviewProtocol(this.sidebar.webviewProtocol);
-
+    
     // Config Handler with output channel
     const outputChannel = vscode.window.createOutputChannel("PearAI");
     const inProcessMessenger = new InProcessMessenger<
@@ -371,16 +393,16 @@ export class VsCodeExtension {
       const openFiles = vscode.workspace.textDocuments;
       if (openFiles.length === 1) {
         // the count is amount of last open files
-        this.sidebar.webviewProtocol.request("setActiveFilePath", "", [PEAR_CONTINUE_VIEW_ID]);
+        this.sidebar.webviewProtocol.request("setActiveFilePath", "", [PEARAI_CHAT_VIEW_ID]);
       }
     });
 
     this.ide.onDidChangeActiveTextEditor((filepath) => {
       this.core.invoke("didChangeActiveTextEditor", { filepath });
-      this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEAR_CONTINUE_VIEW_ID]);
+      this.sidebar.webviewProtocol.request("setActiveFilePath", filepath, [PEARAI_CHAT_VIEW_ID]);
     });
 
-    this.updateNewWindowActiveFilePath()
+    this.updateNewWindowActiveFilePath();
     startAiderProcess(this.core);
   }
 
@@ -395,7 +417,7 @@ export class VsCodeExtension {
 
   private async updateNewWindowActiveFilePath() {
     const currentFile = await this.ide.getCurrentFile();
-    this.sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
+    this.sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEARAI_CHAT_VIEW_ID]);
   }
 
   registerCustomContextProvider(contextProvider: IContextProvider) {

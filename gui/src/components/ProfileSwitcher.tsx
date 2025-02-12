@@ -1,9 +1,8 @@
 import { Listbox, Transition } from "@headlessui/react";
 import {
   ChevronUpDownIcon,
-  Cog6ToothIcon,
   CogIcon,
-  UserCircleIcon,
+  UserCircleIcon
 } from "@heroicons/react/24/outline";
 import { ProfileDescription } from "core/config/ConfigHandler";
 import { Fragment, useContext, useEffect, useState } from "react";
@@ -235,16 +234,9 @@ function ProfileSwitcher(props: {}) {
       {/* Settings button (either opens config.json or /settings page in control plane) */}
       <HeaderButtonWithText
         tooltipPlacement="top-end"
-        className="z-10"
+        className="flex-none z-10"
         onClick={() => {
-          if (selectedProfileId === "local") {
-            ideMessenger.post("openConfigJson", undefined);
-          } else {
-            ideMessenger.post(
-              "openUrl",
-              `http://app.continue.dev/workspaces/${selectedProfileId}/config`,
-            );
-          }
+          ideMessenger.post("openConfigJson", undefined);
         }}
         text="Configure PearAI"
       >
@@ -254,6 +246,7 @@ function ProfileSwitcher(props: {}) {
       {/* Only show login if beta explicitly enabled */}
       {controlServerBetaEnabled && (
         <HeaderButtonWithText
+          className="flex-none"
           tooltipPlacement="top-end"
           text={
             session?.account

@@ -51,6 +51,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   lastChat: [undefined, void];
   closeChat: [undefined, void];
   openHistory: [undefined, void];
+  openHistorySearch: [undefined, void];
   appendSelected: [undefined, void];
   pearaiLogin: [undefined, void];
   closePearAIOverlay: [undefined, void];
@@ -63,6 +64,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   uninstallVscodeExtension: [{ extensionId: string }, void];
   completeWelcome: [undefined, void];
   openInventoryHome: [undefined, void];
+  openInventorySettings: [undefined, void];
   getUrlTitle: [string, string];
   pearAIinstallation: [{ tools: ToolType[] }, void];
   importUserSettingsFromVSCode: [undefined, boolean];
@@ -97,6 +99,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   openSettings: [undefined, void];
   viewHistory: [undefined, void];
   newSession: [undefined, void];
+  newSessionSearch: [undefined, void];
   quickEdit: [undefined, void];
   acceptedOrRejectedDiff: [undefined, void];
   setTheme: [{ theme: any }, void];
@@ -113,7 +116,7 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   navigateToSearch: [undefined, void];
   navigateToMem0: [undefined, void];
   navigateToWrapped: [undefined, void];
-  toggleOverlay: [undefined, void];
+  toggleInventorySettings: [undefined, void];
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
   setAiderProcessStateInGUI: [AiderState, void];

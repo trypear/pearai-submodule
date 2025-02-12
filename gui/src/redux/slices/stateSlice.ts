@@ -16,7 +16,7 @@ import { createSelector } from "reselect";
 import { v4 } from "uuid";
 import { RootState } from "../store";
 import { getLocalStorage } from "@/util/localStorage";
-import { Memory } from "../../integrations/mem0/mem0gui"
+import { Memory } from "../../integrations/mem0/types"
 
 
 export const memoizedContextItemsSelector = createSelector(

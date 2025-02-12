@@ -13,8 +13,8 @@ const ShortcutContainer = () => {
   const shortcuts = [
     {
       keys: [modifier, "E"],
-      description: "Open Inventory",
-      onClick: () => ideMessenger.post("openInventoryHome", undefined),
+      description: "Open Inventory Settings",
+      onClick: () => ideMessenger.post("openInventorySettings", undefined),
     },
     {
       keys: [modifier, "\\"],

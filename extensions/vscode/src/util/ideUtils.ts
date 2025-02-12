@@ -138,7 +138,7 @@ export class VsCodeIdeUtils {
   showMultiFileEdit(edits: FileEdit[]) {
     vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
     // const panel = vscode.window.createWebviewPanel(
-    //   "pearai.pearAIChatView",
+    //   "pearai.chatView",
     //   "PearAI",
     //   vscode.ViewColumn.One,
     // );
