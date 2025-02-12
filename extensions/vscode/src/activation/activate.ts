@@ -86,6 +86,7 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
   // vscode.commands.executeCommand("pearai.focusContinueInput");
 
+
   // Load PearAI configuration
   if (!context.globalState.get("hasBeenInstalled")) {
     context.globalState.update("hasBeenInstalled", true);
@@ -96,6 +97,26 @@ export async function activateExtension(context: vscode.ExtensionContext) {
       },
       true,
     );
+  }
+
+  try {
+    await vscode.workspace.getConfiguration().update('workbench.sideBar.location', 'left', true);
+    // Get auxiliary bar visibility state
+    const pearAIVisible = vscode.workspace.getConfiguration().get('workbench.auxiliaryBar.visible');
+
+    // Show auxiliary bar if it's not already visible
+    if (!pearAIVisible) {
+        await vscode.commands.executeCommand('workbench.action.toggleAuxiliaryBar');
+    }
+  } catch (error) {
+    console.dir(error);
+  }
+
+  try {
+    vscode.commands.executeCommand("pearai.focusContinueInput");
+  } catch (error) {
+    // vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
+    console.error(error);
   }
 
   const api = new VsCodeContinueApi(vscodeExtension);
