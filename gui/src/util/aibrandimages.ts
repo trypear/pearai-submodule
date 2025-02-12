@@ -16,7 +16,7 @@ export function getModelImage(modelTitle: string) {
     case modelTitleLower.includes("mistral"):
       return 'mistral.png';
     case modelTitleLower.includes('perplexity'):
-      return 'perplexity.png';
+      return 'perplexityai.png';
     default:
       return 'not found';
   }

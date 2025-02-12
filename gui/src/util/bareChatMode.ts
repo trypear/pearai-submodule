@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { defaultModelSelector } from '../redux/selectors/modelSelectors'; // Adjust this import path as needed
 import { useLocation } from 'react-router-dom';
 
+// DEPRECATED
 
 const BARE_CHAT_PATHS = ['aiderMode'];
 

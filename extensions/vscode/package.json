@@ -3,7 +3,7 @@
   "name": "pearai",
   "publisher": "pearai",
   "icon": "media/icon.png",
-  "version": "1.7.2",
+  "version": "1.8.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/trypear/pearai-submodule"
@@ -51,8 +51,7 @@
     "llama"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onView:pearAIChatView"
+    "onStartupFinished"
   ],
   "main": "./out/extension.js",
   "browser": "./out/extension.js",
@@ -177,7 +176,7 @@
         "group": "PearAI"
       },
       {
-        "command": "pearai.toggleOverlay",
+        "command": "pearai.toggleInventorySettings",
         "category": "PearAI",
         "title": "Toggle PearAI Inventory",
         "group": "PearAI"
@@ -192,6 +191,25 @@
         "command": "pearai.developer.restFirstLaunch",
         "category": "PearAI Developer",
         "title": "Reset PearAI Onboarding",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.focusCreatorView",
+        "category": "PearAI",
+        "title": "Focus PearAI Creator View",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.focusPearAISearchView",
+        "category": "PearAI",
+        "title": "Focus PearAI Search View",
+        "group": "PearAI"
+      },
+
+      {
+        "command": "pearai.focusPearAIMem0View",
+        "category": "PearAI",
+        "title": "Focus PearAI Memory 0 View",
         "group": "PearAI"
       },
       {
@@ -251,9 +269,23 @@
         "group": "PearAI"
       },
       {
+        "command": "pearai.newSessionSearch",
+        "category": "PearAI",
+        "title": "New Search Session",
+        "icon": "$(add)",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.viewHistory",
         "category": "PearAI",
         "title": "View History",
+        "icon": "$(history)",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.viewHistorySearch",
+        "category": "PearAI",
+        "title": "View Search History",
         "icon": "$(history)",
         "group": "PearAI"
       },
@@ -368,12 +400,12 @@
     ],
     "keybindings": [
       {
-        "command": "pearai.toggleInventoryHome",
+        "command": "pearai.toggleInventorySettings",
         "mac": "cmd+e",
         "key": "ctrl+e"
       },
       {
-        "command": "pearai.toggleOverlay",
+        "command": "pearai.toggleInventorySettings",
         "mac": "cmd+shift+1",
         "key": "ctrl+shift+1"
       },
@@ -501,7 +533,7 @@
           "command": "pearai.toggleSearch"
         },
         {
-          "command": "pearai.toggleOverlay"
+          "command": "pearai.toggleInventorySettings"
         },
         {
           "command": "pearai.focusContinueInput"
@@ -577,24 +609,34 @@
         {
           "command": "pearai.newSession",
           "group": "navigation@1",
-          "when": "view == pearai.pearAIChatView"
+          "when": "view == pearai.chatView"
+        },
+        {
+          "command": "pearai.newSessionSearch",
+          "group": "navigation@1",
+          "when": "view == pearai.searchView"
         },
         {
           "command": "pearai.toggleFullScreen",
           "group": "navigation@1",
-          "when": "view == pearai.pearAIChatView"
+          "when": "view == pearai.chatView"
         },
         {
           "command": "pearai.viewHistory",
           "group": "navigation@1",
-          "when": "view == pearai.pearAIChatView"
+          "when": "view == pearai.chatView"
+        },
+        {
+          "command": "pearai.viewHistorySearch",
+          "group": "navigation@1",
+          "when": "view == pearai.searchView"
         }
       ],
       "editor/title": [
         {
           "command": "pearai.toggleFullScreen",
           "group": "navigation@1",
-          "when": "activeWebviewPanelId == pearai.pearAIChatView"
+          "when": "activeWebviewPanelId == pearai.chatView || activeWebviewPanelId == pearai.searchView"
         }
       ],
       "terminal/context": [
@@ -607,21 +649,45 @@
     "viewsContainers": {
       "auxiliarybar": [
         {
-          "id": "PearAI",
+          "id": "pearaiChat",
           "title": "PearAI Chat",
-          "icon": "media/sidebar-icon.png",
-          "description": "Powered by Continue"
+          "icon": "media/sidebar-icon.png"
+        },
+        {
+          "id": "pearaiSearch",
+          "title": "PearAI Search",
+          "icon": "media/sidebar-icon.png"
+        },
+        {
+          "id": "pearaiMemory",
+          "title": "PearAI Memory",
+          "icon": "media/sidebar-icon.png"
         }
       ]
     },
     "views": {
-      "PearAI": [
+      "pearaiChat": [
         {
           "type": "webview",
-          "id": "pearai.pearAIChatView",
-          "name": "",
-          "visibility": "visible",
-          "title": "PearAISidebar"
+          "id": "pearai.chatView",
+          "name": "PearAI Chat",
+          "visibility": "visible"
+        }
+      ],
+      "pearaiSearch": [
+        {
+          "type": "webview",
+          "id": "pearai.searchView",
+          "name": "PearAI Search",
+          "visibility": "visible"
+        }
+      ],
+      "pearaiMemory": [
+        {
+          "type": "webview",
+          "id": "pearai.mem0View",
+          "name": "PearAI Memory",
+          "visibility": "visible"
         }
       ]
     },

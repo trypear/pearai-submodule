@@ -90,7 +90,7 @@ export class VsCodeWebviewProtocol
   }
 
   resetWebviewToDefault() {
-    const defaultViewKey = "pearai.pearAIChatView";
+    const defaultViewKey = "pearai.chatView";
 
     // Remove all entries except for the chat view
     this._webviews.forEach((value, key) => {

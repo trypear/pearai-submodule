@@ -71,7 +71,9 @@ async function copyVSCodeSettingsToPearAIDir() {
         'ms-python.python',
         'codeium',
         'github.copilot',
-        'continue'
+        'continue',
+        'roo-cline',
+        'cline',
     ]);
 
     // Add platform specific exclusions

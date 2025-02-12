@@ -6,16 +6,15 @@ import { getExtensionVersion } from "./util/util";
 import { getExtensionUri, getNonce, getUniqueId } from "./util/vscode";
 import { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { isFirstLaunch } from "./copySettings";
+import { PEARAI_CHAT_VIEW_ID, PEARAI_OVERLAY_VIEW_ID } from "./util/pearai/pearaiViewTypes";
 
 // The overlay's webview title/id is defined in pearai-app's PearOverlayParts.ts
 // A unique identifier is needed for the messaging protocol to distinguish the webviews.
-export const PEAR_OVERLAY_VIEW_ID = "pearai.pearOverlay"
-export const PEAR_CONTINUE_VIEW_ID = "pearai.pearAIChatView";
 
 export class ContinueGUIWebviewViewProvider
   implements vscode.WebviewViewProvider
 {
-  public static readonly viewType = PEAR_CONTINUE_VIEW_ID;
+  public static readonly viewType = PEARAI_CHAT_VIEW_ID;
   public webviewProtocol: VsCodeWebviewProtocol;
   private _webview?: vscode.Webview;
   private _webviewView?: vscode.WebviewView;
@@ -127,7 +126,8 @@ export class ContinueGUIWebviewViewProvider
     isFullScreen = false,
     initialRoute: string = "/"
   ): string {
-    const isOverlay = panel?.title === PEAR_OVERLAY_VIEW_ID; // defined in pearai-app PearOverlayPart.ts
+    const panelViewType = panel?.viewType; // eg. pearai.chatView
+    const isOverlay = panel?.title === PEARAI_OVERLAY_VIEW_ID; // defined in pearai-app PearOverlayPart.ts
     const extensionUri = getExtensionUri();
     let scriptUri: string;
     let styleMainUri: string;
@@ -176,8 +176,8 @@ export class ContinueGUIWebviewViewProvider
         });
       }
     });
-
-    this.webviewProtocol.addWebview(panel?.title === PEAR_OVERLAY_VIEW_ID? panel.title : panel.viewType, panel.webview);
+    
+    this.webviewProtocol.addWebview(panel?.title === PEARAI_OVERLAY_VIEW_ID? panel.title : panel.viewType, panel.webview);
 
     return `<!DOCTYPE html>
     <html lang="en">
@@ -239,6 +239,7 @@ export class ContinueGUIWebviewViewProvider
         )}</script>
         <script>window.isFirstLaunch = ${isFirstLaunch(this.extensionContext)}</script>
         <script>window.isFullScreen = ${isFullScreen}</script>
+        <script>window.viewType = "${panelViewType}"</script>
         <script>window.isPearOverlay = ${isOverlay}</script>
         <script>window.initialRoute = "${initialRoute}"</script>
 

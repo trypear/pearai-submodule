@@ -1,14 +1,14 @@
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useWebviewListener } from "@/hooks/useWebviewListener";
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { IndexingProgressUpdate } from "core";
 import { useState } from "react";
-import ProfileSwitcher from "./ProfileSwitcher";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { defaultModelSelector } from "../redux/selectors/modelSelectors";
 import HeaderButtonWithText from "./HeaderButtonWithText";
 import IndexingProgressBar from "./loaders/IndexingProgressBar";
-import { defaultModelSelector } from "../redux/selectors/modelSelectors";
-import { useWebviewListener } from "@/hooks/useWebviewListener";
 import ModelSelect from "./modelSelection/ModelSelect";
+import ProfileSwitcher from "./ProfileSwitcher";
 
 const StatusBar = () => {
   const navigate = useNavigate();
@@ -23,14 +23,14 @@ const StatusBar = () => {
   });
 
   return (
-    <div className="items-center flex justify-between pb-2">
+    <div className="items-center flex justify-between gap-2 w-full overflow-hidden">
       <div className="flex items-center gap-2">
         {/* Indexing Progress Bar */}
         <IndexingProgressBar indexingState={indexingState} />
       </div>
 
       {/* Header Controls */}
-      <div className="flex items-center gap-1">
+      <div className="flex w-full items-center gap-1 justify-end min-w-0">
 				<ModelSelect />
 
         <ProfileSwitcher />
@@ -38,7 +38,7 @@ const StatusBar = () => {
         <HeaderButtonWithText
           tooltipPlacement="top-end"
           text="Help"
-          className="z-10"
+          className="flex-none z-10"
           onClick={() => {
             navigate(location.pathname === "/help" ? "/" : "/help");
           }}

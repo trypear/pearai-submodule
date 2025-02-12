@@ -22,7 +22,7 @@ import {
   quickPickStatusText,
   setupStatusBar,
 } from "./autocomplete/statusBar";
-import { ContinueGUIWebviewViewProvider, PEAR_CONTINUE_VIEW_ID, PEAR_OVERLAY_VIEW_ID } from "./ContinueGUIWebviewViewProvider";
+import { ContinueGUIWebviewViewProvider } from "./ContinueGUIWebviewViewProvider";
 import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
 import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
@@ -33,6 +33,7 @@ import { Battery } from "./util/battery";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 import { getExtensionUri } from "./util/vscode";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
+import { PEARAI_CHAT_VIEW_ID, PEARAI_OVERLAY_VIEW_ID, PEARAI_SEARCH_VIEW_ID } from "./util/pearai/pearaiViewTypes";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -40,7 +41,7 @@ let fullScreenPanel: vscode.WebviewPanel | undefined;
 function getFullScreenTab() {
   const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs);
   return tabs.find((tab) =>
-    (tab.input as any)?.viewType?.endsWith("pearai.pearAIChatView"),
+    (tab.input as any)?.viewType?.endsWith("pearai.chatView"),
   );
 }
 
@@ -88,7 +89,7 @@ function addCodeToContextFromRange(
     prompt,
     // Assume `true` since range selection is currently only used for quick actions/fixes
     shouldRun: true,
-  }, ["pearai.pearAIChatView"]);
+  }, ["pearai.chatView"]);
 }
 
 async function addHighlightedCodeToContext(
@@ -109,7 +110,7 @@ async function addHighlightedCodeToContext(
 
       webviewProtocol?.request("highlightedCode", {
         rangeInFileWithContents,
-      }, ["pearai.pearAIChatView"]);
+      }, ["pearai.chatView"]);
 
       return;
     }
@@ -134,7 +135,7 @@ async function addHighlightedCodeToContext(
 
     webviewProtocol?.request("highlightedCode", {
       rangeInFileWithContents,
-    }, ["pearai.pearAIChatView"]);
+    }, ["pearai.chatView"]);
   }
 }
 
@@ -178,7 +179,7 @@ async function addEntireFileToContext(
 
   webviewProtocol?.request("highlightedCode", {
     rangeInFileWithContents,
-  }, ["pearai.pearAIChatView"]);
+  }, ["pearai.chatView"]);
 }
 
 // Copy everything over from extension.ts
@@ -267,10 +268,10 @@ const commandsMap: (
       await vscode.commands.executeCommand('pearai.hideOverlay');
     },
     "pearai.restFirstLaunchInGUI": async () => {
-      sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.showInteractiveContinueTutorial": async () => {
-      sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.openAiderChanges": async () => {
       // Close overlay
@@ -350,7 +351,7 @@ const commandsMap: (
 
       addCodeToContextFromRange(range, sidebar.webviewProtocol, prompt);
 
-      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
+      vscode.commands.executeCommand("pearai.chatView.focus");
     },
     "pearai.customQuickActionStreamInlineEdit": async (
       prompt: string,
@@ -374,20 +375,20 @@ const commandsMap: (
     },
     "pearai.toggleCreator": async () => {
       await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleSearch": async () => {
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.toggleMem0": async () => {
-      await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToMem0", "mem0Mode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
-    "pearai.toggleOverlay": async () => {
-      await handleIntegrationShortcutKey("toggleOverlay", "inventory", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+    "pearai.toggleInventorySettings": async () => {
+      await handleIntegrationShortcutKey("toggleInventorySettings", "inventory", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
       vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     },
     "pearai.toggleInventoryHome": async () => {
-      await handleIntegrationShortcutKey("navigateToInventoryHome", "home", sidebar, [PEAR_OVERLAY_VIEW_ID, PEAR_CONTINUE_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToInventoryHome", "home", sidebar, [PEARAI_OVERLAY_VIEW_ID, PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.startOnboarding": async () => {
       if (isFirstLaunch(extensionContext)) {
@@ -412,16 +413,25 @@ const commandsMap: (
         });
       console.log("FIRST PEARAI LAUNCH FLAG RESET");
     },
+    "pearai.focusCreatorView": async () => {
+      vscode.commands.executeCommand("roo-cline.SidebarProvider.focus");
+    },
+    "pearai.focusPearAIMem0View": async () => {
+      vscode.commands.executeCommand("pearai.mem0View.focus");
+    },
+    "pearai.focusPearAISearchView": async () => {
+      vscode.commands.executeCommand("pearai.searchView.focus");
+    },
     "pearai.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
         // focus sidebar
-        vscode.commands.executeCommand("pearai.pearAIChatView.focus");
+        vscode.commands.executeCommand("pearai.chatView.focus");
       } else {
         // focus fullscreen
         fullScreenPanel?.reveal();
       }
-      sidebar.webviewProtocol?.request("focusContinueInput", undefined, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("focusContinueInput", undefined, ["pearai.chatView"]);
       await addHighlightedCodeToContext(sidebar.webviewProtocol);
     },
     "pearai.focusContinueInputWithoutClear": async () => {
@@ -443,7 +453,7 @@ const commandsMap: (
         // Handle opening the GUI otherwise
         if (!fullScreenTab) {
           // focus sidebar
-          vscode.commands.executeCommand("pearai.pearAIChatView.focus");
+          vscode.commands.executeCommand("pearai.chatView.focus");
         } else {
           // focus fullscreen
           fullScreenPanel?.reveal();
@@ -460,7 +470,7 @@ const commandsMap: (
     "pearai.quickEdit": async (args: QuickEditShowParams) => {
       captureCommandTelemetry("quickEdit");
       quickEdit.show(args);
-      sidebar.webviewProtocol?.request("quickEdit", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("quickEdit", undefined, [PEARAI_CHAT_VIEW_ID]);
     },
     "pearai.writeCommentsForCode": async () => {
       captureCommandTelemetry("writeCommentsForCode");
@@ -517,11 +527,11 @@ const commandsMap: (
 
       const terminalContents = await ide.getTerminalContents();
 
-      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
+      vscode.commands.executeCommand("pearai.chatView.focus");
 
       sidebar.webviewProtocol?.request("userInput", {
         input: `I got the following error, can you please help explain how to fix it?\n\n${terminalContents.trim()}`,
-      }, ["pearai.pearAIChatView"]);
+      }, ["pearai.chatView"]);
     },
     "pearai.hideInlineTip": () => {
       vscode.workspace
@@ -533,12 +543,12 @@ const commandsMap: (
     "pearai.addModel": () => {
       captureCommandTelemetry("addModel");
 
-      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
-      sidebar.webviewProtocol?.request("addModel", undefined, ["pearai.pearAIChatView"]);
+      vscode.commands.executeCommand("pearai.chatView.focus");
+      sidebar.webviewProtocol?.request("addModel", undefined, ["pearai.chatView"]);
     },
     "pearai.openSettingsUI": () => {
-      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
-      sidebar.webviewProtocol?.request("openSettings", undefined, ["pearai.pearAIChatView"]);
+      vscode.commands.executeCommand("pearai.chatView.focus");
+      sidebar.webviewProtocol?.request("openSettings", undefined, ["pearai.chatView"]);
     },
     "pearai.sendMainUserInput": (text: string) => {
       sidebar.webviewProtocol?.request("userInput", {
@@ -571,14 +581,25 @@ const commandsMap: (
       captureCommandTelemetry("sendToTerminal");
       ide.runCommand(text);
     },
+    // Note: Unfortunately I don't see a way to get the view ID passed in as an argument here from package.json, so this is what I have for now -@nang-149
     "pearai.newSession": async () => {
-      sidebar.webviewProtocol?.request("newSession", undefined, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("newSession", undefined, [PEARAI_CHAT_VIEW_ID]);
       const currentFile = await ide.getCurrentFile();
-      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEAR_CONTINUE_VIEW_ID]);
+      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEARAI_CHAT_VIEW_ID]);
+    },
+    "pearai.newSessionSearch": async () => {
+      sidebar.webviewProtocol?.request("newSessionSearch", undefined, [PEARAI_SEARCH_VIEW_ID]);
+      const currentFile = await ide.getCurrentFile();
+      sidebar.webviewProtocol?.request("setActiveFilePath", currentFile, [PEARAI_SEARCH_VIEW_ID]);
     },
     "pearai.viewHistory": () => {
       sidebar.webviewProtocol?.request("viewHistory", undefined, [
-        "pearai.pearAIChatView",
+        PEARAI_CHAT_VIEW_ID,
+      ]);
+    },
+    "pearai.viewHistorySearch": () => {
+      sidebar.webviewProtocol?.request("viewHistory", undefined, [
+        PEARAI_SEARCH_VIEW_ID,
       ]);
     },
     "pearai.toggleFullScreen": () => {
@@ -608,7 +629,7 @@ const commandsMap: (
 
       //create the full screen panel
       let panel = vscode.window.createWebviewPanel(
-        "pearai.pearAIChatViewFullscreen",
+        "pearai.chatViewFullscreen",
         "PearAI",
         vscode.ViewColumn.One,
         {
@@ -644,7 +665,7 @@ const commandsMap: (
     },
     "pearai.aiderMode": async () => {
       //await openAiderPanel(core, sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.aiderCtrlC": async () => {
       await aiderCtrlC(core);
@@ -656,19 +677,18 @@ const commandsMap: (
       await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
     },
     "pearai.setAiderProcessState": async (state: AiderState) => {
-      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEAR_OVERLAY_VIEW_ID]);
+      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.perplexityMode": async () => {
-      // handlePerplexityMode(sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEAR_OVERLAY_VIEW_ID]);
+      await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.addPerplexityContext": (msg) => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
         // focus sidebar
-        vscode.commands.executeCommand("pearai.pearAIChatView.focus");
+        vscode.commands.executeCommand("pearai.chatView.focus");
       }
-      sidebar.webviewProtocol?.request("addPerplexityContextinChat", msg.data, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("addPerplexityContextinChat", msg.data, ["pearai.chatView"]);
     },
     "pearai.openConfigJson": () => {
       ide.openFile(getConfigJsonPath());
@@ -677,7 +697,7 @@ const commandsMap: (
       firstUri: vscode.Uri,
       uris: vscode.Uri[],
     ) => {
-      vscode.commands.executeCommand("pearai.pearAIChatView.focus");
+      vscode.commands.executeCommand("pearai.chatView.focus");
 
       for (const uri of uris) {
         addEntireFileToContext(uri, false, sidebar.webviewProtocol);
@@ -897,8 +917,8 @@ const commandsMap: (
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
     },
     "pearai.loadRecentChat": () => {
-      sidebar.webviewProtocol?.request("loadMostRecentChat", undefined, ["pearai.pearAIChatView"]);
-      sidebar.webviewProtocol?.request("focusContinueInput", undefined, ["pearai.pearAIChatView"]);
+      sidebar.webviewProtocol?.request("loadMostRecentChat", undefined, ["pearai.chatView"]);
+      sidebar.webviewProtocol?.request("focusContinueInput", undefined, ["pearai.chatView"]);
     },
     "pearai.resizeAuxiliaryBarWidth": () => {
       vscode.commands.executeCommand(
@@ -924,7 +944,7 @@ const commandsMap: (
         // limit reached, switching to free model
         vscode.window.showInformationMessage(msg.warningMsg);
         extensionContext.globalState.update("freeModelSwitched", true);
-        sidebar.webviewProtocol?.request("switchModel", "PearAI Model (Recommended)", ["pearai.pearAIChatView"]);
+        sidebar.webviewProtocol?.request("switchModel", "PearAI Model (Recommended)", ["pearai.chatView"]);
       }
     },
     "pearai.patchWSL": async () => {
@@ -1034,3 +1054,4 @@ export function registerAllCommands(
     );
   }
 }
+
