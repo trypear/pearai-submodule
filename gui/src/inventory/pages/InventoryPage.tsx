@@ -489,20 +489,34 @@ export default function AIToolInventory() {
 
   const handleOpen = (tool: AITool) => {
     switch (tool.id) {
+      case AIToolID.AGENT:
+        ideMessenger.post("invokeVSCodeCommandById", {
+          commandId: "roo-cline.SidebarProvider.focus",
+        });
+        ideMessenger.post("closeOverlay", undefined);
+        break;
       case AIToolID.CREATOR:
         navigate("/inventory/aiderMode");
         break;
       case AIToolID.SEARCH:
-        navigate("/inventory/perplexityMode");
-        break;
-      case AIToolID.MEMORY:
-        navigate("/inventory/mem0Mode");
-        break;
-      case AIToolID.AUTOCOMPLETE:
         ideMessenger.post("invokeVSCodeCommandById", {
-          commandId: "supermaven.onStatusBarClick", // supermaven status bar click
+          commandId: "pearai.searchView.focus",
         });
         ideMessenger.post("closeOverlay", undefined);
+        break;
+      case AIToolID.MEMORY:
+        ideMessenger.post("invokeVSCodeCommandById", {
+          commandId: "pearai.mem0View.focus",
+        });
+        ideMessenger.post("closeOverlay", undefined);
+        break;
+      case AIToolID.AUTOCOMPLETE:
+        ideMessenger.post("closeOverlay", undefined);
+        setTimeout(() => {
+          ideMessenger.post("invokeVSCodeCommandById", {
+            commandId: "supermaven.onStatusBarClick",
+          });
+        }, 100);
         break;
       case AIToolID.SIDEBARCHAT:
         ideMessenger.post("invokeVSCodeCommandById", {
