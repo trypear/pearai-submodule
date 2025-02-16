@@ -341,7 +341,7 @@ function PerplexityGUI() {
               )}
             >
               {state.perplexityHistory.length === 0 && (
-                <div className="max-w-2xl mx-auto w-full h-[calc(100vh-120px)] text-center flex flex-col justify-center">
+                <div className="max-w-2xl mx-auto w-full h-[calc(100vh-450px)] text-center flex flex-col justify-center">
                   <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
                     <img
                       src={getLogoPath("pearai-search-splash.svg")}
