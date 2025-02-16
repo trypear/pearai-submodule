@@ -191,7 +191,7 @@ function StepContainer({
 
 					{!active && (
           <div
-            className="px-2 flex gap-1 justify-between -mt-[6px]"
+            className="px-2 flex gap-1 justify-between mt-2"
             style={{
               color: lightGray,
               fontSize: getFontSize() - 3,
