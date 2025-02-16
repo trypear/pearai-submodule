@@ -118,9 +118,10 @@ const TutorialCardDiv = styled.header`
 export const InputContainer = styled.div<{ isNewSession?: boolean }>`
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: 0.5rem;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
+  padding-bottom: 0.9rem;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   position: ${props => props.isNewSession ? 'relative' : 'fixed'};
