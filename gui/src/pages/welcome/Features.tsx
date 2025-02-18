@@ -11,6 +11,8 @@ import { RootState } from "@/redux/store";
 import { setOnboardingState } from "@/redux/slices/stateSlice";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { Link } from "react-router-dom";
+import InventoryButtons from "./inventoryButtons";
+import { motion } from "framer-motion";
 
 const getAssetPath = (assetName: string) => {
   return `${window.vscMediaUrl}/assets/${assetName}`;
@@ -33,28 +35,29 @@ export default function Features({ onNext }: { onNext: () => void }) {
   const features = [
     {
       icon: "inventory-chat.svg",
-      title: "PearAI Chat",
+      title: "Make line-by line changes with PearAI Chat.",
       description:
-        "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue*.",
+        "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
       video: getAssetPath("pearai-chat-welcome.mp4"),
     },
     {
       icon: "inventory-creator.svg",
-      title: "PearAI Coding Agent",
-      description: "Ask for a new feature, a refactor, or to fix a bug. PearAI Coding Agent will make and apply the changes to your files automatically. Powered by Roo Code / Cline*.",
+      title: "Create code with PearAI Agent.",
+      description:
+        "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
       video: getAssetPath("pearai-agent-welcome.mp4"),
     },
     {
       icon: "inventory-search.svg",
-      title: "PearAI Search",
-      description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity*.",
+      title: "Copy for Search Here",
+      description: "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
       video: getAssetPath("pearai-search-welcome.mp4"),
     },
     {
       icon: "inventory-mem0.svg",
-      title: "PearAI Memory",
+      title: "Copy for Memory Here",
       description:
-        "PearAI Memory is a self-improving memory layer when you use PearAI Chat for a personalized experience. Memories will be added automatically, and you can also add memories manually.",
+        "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
       video: getAssetPath("pearai-memory-welcome.mp4"),
     },
   ];
@@ -127,6 +130,14 @@ export default function Features({ onNext }: { onNext: () => void }) {
     }
   };
 
+  const handleBackClick = () => {
+    if (currentFeature > 0) {
+      setCurrentFeature(currentFeature - 1);
+      setProgress(0);
+      setTimestamp(Date.now());
+    }
+  };
+
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
@@ -140,15 +151,8 @@ export default function Features({ onNext }: { onNext: () => void }) {
 
   return (
     <div className="flex w-full text-foreground h-full">
-      <div className="w-[35%] flex flex-col h-full">
+      {/* <div className="w-[35%] flex flex-col h-full">
         <div className="flex flex-col h-full p-5 pt-16 gap-5">
-          <div>
-            <div className="text-xl lg:text-2xl font-bold text-foreground">
-              Welcome to
-              <br />
-              PearAI
-            </div>
-          </div>
 
           <div className="space-y-3 flex-1 overflow-y-auto">
             {features.map((feature, index) => (
@@ -196,9 +200,62 @@ export default function Features({ onNext }: { onNext: () => void }) {
             </Button>
           </div>
         </div>
-      </div>
-
-      <div className="w-[65%] flex flex-col h-full relative bg-background justify-between">
+      </div> */}
+      {features.map((feature, index) => (
+        <>
+          {index === currentFeature && (
+            <div className="w-full flex-col justify-center items-center gap-10 inline-flex overflow-hidden">
+              <div className=" h-[80%] w-full flex-col justify-center items-center gap-7 flex">
+                <div className="flex-col justify-center items-center gap-7 flex">
+                  <InventoryButtons />
+                </div>
+                <div className=" flex-col justify-start items-center gap-2 inline-flex">
+                  <div className="text-4xl font-['SF Pro']">{feature.title}</div>
+                  <div className="opacity-50  text-xs font-normal font-['SF Pro'] leading-[18px]">{feature.description}</div>
+                </div>
+                <div className="h-[80%] rounded-xl justify-start items-start inline-flex overflow-hidden">
+                  {currentFeature === 0 ? (
+                    <video
+                      src={feature.video}
+                      className="rounded-lg w-full h-full object-cover"
+                      // loading="lazy"
+                      muted
+                      autoPlay
+                      playsInline
+                      loop
+                    />
+                  ) : (
+                    <motion.video
+                      key={feature.video}
+                      initial={{ x: "100%" }}
+                      animate={{ x: 0 }}
+                      exit={{ x: "-100%" }}
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                      src={feature.video}
+                      className="rounded-lg w-full h-full object-cover"
+                      muted
+                      autoPlay
+                      playsInline
+                      loop
+                    />
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  <Button className="text-xs font-['SF Pro']" onClick={handleNextClick}>
+                    Continue
+                  </Button>
+                  {process.env.NODE_ENV === "development" && (
+                    <Button className="text-xs font-['SF Pro']" onClick={handleBackClick}>
+                      Back (shown only in dev)
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      ))}
+      {/* <div className="w-full flex flex-col h-full relative bg-background justify-between">
 
         {features.map((feature, index) => (
           <div
@@ -233,7 +290,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
           </a>
           .
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
