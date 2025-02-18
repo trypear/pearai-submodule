@@ -117,7 +117,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
       const nextFeature = currentFeature + 1;
       setCurrentFeature(nextFeature);
       if (!visitedFeatures.includes(nextFeature)) {
-        dispatch(setOnboardingState({...onboardingState, visitedFeatures: [...visitedFeatures, nextFeature]}));
+        dispatch(setOnboardingState({ ...onboardingState, visitedFeatures: [...visitedFeatures, nextFeature] }));
       }
       setProgress(0);
       setTimestamp(Date.now());
@@ -139,67 +139,62 @@ export default function Features({ onNext }: { onNext: () => void }) {
   }, [currentFeature]);
 
   return (
-    <div className="flex w-full overflow-hidden text-foreground h-full">
-      <div className="w-[35%] flex flex-col">
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6 pt-8">
-            <div>
-              <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
-                Welcome to PearAI
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Bring your ideas to life by seamlessly integrating AI
-                into your workflow. PearAI is made for your next project, all the way from idea to running at scale.
-              </p>
-            </div>
-            <div className="space-y-3">
-              {features.map((feature, index) => (
-                <Card
-                  key={index}
-                  className={`border-none p-3 transition-all duration-200 ${
-                    currentFeature === index
-                      ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]"
-                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
-                  } ${!visitedFeatures.includes(index) ? 'cursor-not-allowed' : 'hover:scale-[1.02] cursor-pointer hover:opacity-80'}`}
-                  onClick={() => handleFeatureChange(index)}
-                  style={{ cursor: visitedFeatures.includes(index) ? "pointer" : "not-allowed" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={getLogoPath(feature.icon)}
-                      className="w-10 h-10"
-                    />
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-foreground text-sm">
-                        {feature.title}
-                      </h3>
-                      {currentFeature === index && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {feature.description}
-                        </p>
-                      )}
-                      {currentFeature === index && (
-                        <Progress
-                          value={progress}
-                          className="mt-2 h-0.5 bg-input [&>div]:bg-button"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
+    <div className="flex w-full text-foreground h-full">
+      <div className="w-[35%] flex flex-col h-full">
+        <div className="flex flex-col h-full p-5 pt-16 gap-5">
+          <div>
+            <div className="text-xl lg:text-2xl font-bold text-foreground">
+              Welcome to
+              <br />
+              PearAI
             </div>
           </div>
-        </div>
 
+          <div className="space-y-3 flex-1 overflow-y-auto">
+            {features.map((feature, index) => (
+              <Card
+                key={index}
+                className={`border-none p-3 transition-all duration-200 ${currentFeature === index
+                  ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]"
+                  : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
+                  } ${!visitedFeatures.includes(index) ? 'cursor-not-allowed' : 'hover:scale-[1.02] cursor-pointer hover:opacity-80'}`}
+                onClick={() => handleFeatureChange(index)}
+                style={{ cursor: visitedFeatures.includes(index) ? "pointer" : "not-allowed" }}
+              >
+                <div className="flex items-center gap-3">
+                  <img
+                    src={getLogoPath(feature.icon)}
+                    className="w-10 h-10"
+                  />
+                  <div className="min-w-0">
+                    <h3 className="font-semibold text-foreground text-sm">
+                      {feature.title}
+                    </h3>
+                    {currentFeature === index && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {feature.description}
+                      </p>
+                    )}
+                    {currentFeature === index && (
+                      <Progress
+                        value={progress}
+                        className="mt-2 h-0.5 bg-input [&>div]:bg-button"
+                      />
+                    )}
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
 
-        <div className="p-6 border-t border-input shrink-0">
-          <Button
-            className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer relative"
-            onClick={handleNextClick}
-          >
-            <span className="absolute left-1/2 -translate-x-1/2">Next</span>
-          </Button>
+          <div className="border-t border-input">
+            <Button
+              className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer relative"
+              onClick={handleNextClick}
+            >
+              <span className="absolute left-1/2 -translate-x-1/2">Next</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -208,9 +203,8 @@ export default function Features({ onNext }: { onNext: () => void }) {
         {features.map((feature, index) => (
           <div
             key={index}
-            className={`absolute inset-0 transition-all duration-700 ${
-              currentFeature === index ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
+            className={`absolute inset-0 transition-all duration-700 ${currentFeature === index ? "opacity-100 z-10" : "opacity-0 z-0"
+              }`}
           >
             {currentFeature === index && (
               <div className="flex items-center justify-center h-full w-full">
