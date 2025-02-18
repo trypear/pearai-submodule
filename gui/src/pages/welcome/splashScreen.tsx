@@ -1,20 +1,20 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
+import { getLogoPath } from './setup/ImportExtensions';
+import InventoryPreview from '@/components/InventoryPreview';
 
 const SplashScreen = ({ onNext }: { onNext: () => void }) => {
     return (
-        <div className="flex flex-col items-center justify-center h-full bg-background text-foreground p-6">
-            <img
-                src={`${window.vscMediaUrl}/logos/pearai-green.svg`}
-                alt="PearAI Logo"
-                className="w-32 h-32 mb-4"
-            />
-            <h1 className="text-3xl font-bold mb-2">Welcome to PearAI</h1>
-            <p className="text-center text-lg mb-6">
-                Your AI Code Editor
-            </p>
-            <Button onClick={onNext} className="max-w-xs">
-            Let's get started!
+        <div className="h-full flex-col justify-center items-center gap-10 inline-flex overflow-hidden select-none">
+            <div className="max-w-2xl mx-auto text-center flex flex-col gap-7 justify-center">
+                <InventoryPreview />
+                <div className="flex-col justify-start items-start gap-7 flex">
+                    <img src={getLogoPath("pearai-chat-splash.svg")} alt="..." />
+                </div>
+                <div className="text-4xl font-['SF Pro']">Welcome to PearAI</div>
+            </div>
+            <Button className="w-[300px] rounded-lg justify-center items-center gap-1 inline-flex overflow-hidden" onClick={onNext}>
+                <div className="text-xs font-['SF Pro']">Continue</div>
             </Button>
         </div>
     );

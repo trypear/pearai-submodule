@@ -29,7 +29,7 @@ const menuItems = [
 
 const InventoryPreview = () => {
   return (
-    <div className={`my-2 relative w-full z-10`}>
+    <div className={`my-2 relative w-full z-10 select-none`}>
       <div
         className="flex cursor-pointer"
       >
