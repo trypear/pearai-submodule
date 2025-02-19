@@ -15,7 +15,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { vscBackground, vscBadgeBackground, vscBadgeForeground, vscEditorBackground, vscInputBackground, vscSidebarBorder } from "@/components";
 import { getLocalStorage } from "@/util/localStorage";
 import { setLocalStorage } from "@/util/localStorage";
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 
 export interface Tool {
@@ -169,12 +168,41 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
 
   //#endregion Install Tools
 
+  //#region Sign In
+
+  const handleSignIn = () => {
+    ideMessenger.post("pearaiLogin", undefined);
+  };
+
+  const handleSignUp = () => {
+    ideMessenger.post("openUrl", "https://trypear.ai/signup");
+  };
+
+  //#endregion Sign In
+
+  //#region Add To Path
+
+  const [pathAdded, setPathAdded] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAddToPath = () => {
+    if (!isAdding) {
+      setIsAdding(true);
+      ideMessenger.post("pearInstallCommandLine", undefined);
+      setTimeout(() => {
+        setPathAdded(true);
+        onNext();
+      }, 2000);
+    }
+  };
+
+
   //#region Setup Steps
 
   const allSetupSteps = [
     {
       icon: <Move className="h-5 w-5" />,
-      title: "Import VSCode Extensions",
+      title: "Import Extensions",
       description:
         "Automatically import your extensions from VSCode to feel at home.",
       component: <ImportExtensions importError={extensionsImportError} isDone={isDoneImportingExtensions} />,
@@ -222,14 +250,45 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     },
     {
       icon: <Terminal className="h-6 w-6" />,
-      title: "Add PearAI To Your Path",
+      title: "Add PearAI To PATH",
       description: "Easily open PearAI from the command line with 'pearai'.",
-      component: <AddToPath onNext={handleNextClick} />,
+      component: <AddToPath onNext={handleNextClick} pathAdded={pathAdded} />,
       platformSpecific: "mac",
       button: <Button
-        // onClick={handleAddToPath}
         className="text-xs font-['SF Pro']"
-      >Add To Path</Button>,
+        onClick={handleAddToPath}
+      >
+        <div className="flex items-center justify-between w-full gap-2">
+          {isAdding ? (
+            <div className="flex items-center justify-center w-full gap-2">
+              <svg
+                className="animate-spin h-5 w-5 text-button-foreground"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span>Adding...</span>
+            </div>
+          ) : (
+            <>
+              <span className="text-center w-full">Add to PATH</span>
+            </>
+          )}
+        </div>
+      </Button>,
     },
     {
       icon: <Download className="h-6 w-6" />,
@@ -249,10 +308,21 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       title: "Sign in",
       description: "Have PearAI work for free out of the box by signing in.",
       component: <SignIn onNext={handleNextClick} />,
-      button: <Button
-        // onClick={handleSignIn}
-        className="text-xs font-['SF Pro']"
-      >Sign In</Button>,
+      button: <>
+        <Button
+          className="text-xs font-['SF Pro']"
+          onClick={handleSignIn}
+        >
+          Sign In
+        </Button>
+
+        <Button
+          className="text-xs font-['SF Pro']"
+          onClick={handleSignUp}
+        >
+          Sign Up
+        </Button>
+      </>
     },
   ];
 
@@ -334,7 +404,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
         <div className="text-4xl font-['SF Pro']">Setup</div>
         <div className="w-full justify-start items-start gap-5 inline-flex">
           {setupSteps.map((step, index) => (
-            <div key={index} className="grow shrink basis-0 h-11 p-3 rounded-lg border-2 border-white/10 justify-start items-center gap-3 flex overflow-hidden cursor-pointer"
+            <div key={index} className="grow shrink basis-0 p-3 rounded-lg  justify-start items-center gap-3 flex overflow-hidden cursor-pointer"
               style={{ background: currentFeature === index ? vscInputBackground : vscEditorBackground }}
               onClick={() => handleFeatureChange(index)}
             >
@@ -345,8 +415,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
             </div>
           ))}
         </div>
-        <div className="w-full h-[500px] rounded-xl flex-col justify-center items-center gap-5 flex overflow-hidden"
-          style={{ background: vscSidebarBorder }}
+        <div className="w-full h-[500px] rounded-xl flex-col justify-center items-center gap-5 flex overflow-hidden bg-background"
         >
           <div className="self-stretch grow shrink basis-0 flex-col justify-center items-center gap-5 flex">
             {/* <div className="self-stretch text-center text-2xl font-['SF Pro']">Import your VS Code extensions to PearAI.</div> */}

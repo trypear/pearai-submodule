@@ -6,8 +6,8 @@ export const getLogoPath = (assetName: string) => {
 
 export default function ImportExtensions({ importError, isDone }: { importError: string, isDone: boolean }) {
   return (
-    <div className="flex flex-col items-center justify-center h-full relative">
-      <div className="self-stretch text-center text-2xl font-['SF Pro'] mb-6">
+    <div className="flex flex-col items-center justify-center h-full relative gap-5">
+      <div className="self-stretch text-center text-2xl font-['SF Pro']">
         Import your VS Code extensions to PearAI
       </div>
       <div className="flex items-center justify-center gap-8">
