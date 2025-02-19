@@ -200,11 +200,11 @@ export default function Features({ onNext }: { onNext: () => void }) {
           </>
         ))}
         <div className="h-[80%] rounded-xl justify-start items-start inline-flex overflow-hidden">
-          <div className="w-[50%] ml-[25%] h-fit flex flex-row gap-2 relative">
+          <div className="w-[50%] ml-[25%] h-fit flex flex-row gap-2 ">
             <video
               ref={videoRefs[0]}
               src={features[0].video}
-              className={`rounded-lg w-full h-full object-cover ${currentFeature === 0 ? "opacity-100" : "opacity-0"}`}
+              className={`rounded-lg w-full h-full object-cover ${currentFeature === 0 ? "flex" : "hidden"}`}
               muted
               autoPlay
               playsInline
@@ -213,7 +213,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
             <video
               ref={videoRefs[1]}
               src={features[1].video}
-              className={`rounded-lg w-full h-full object-cover absolute inset-0 ${currentFeature === 1 ? "opacity-100" : "opacity-0"}`}
+              className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 1 ? "flex" : "hidden"}`}
               muted
               autoPlay
               playsInline
@@ -222,7 +222,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
             <video
               ref={videoRefs[2]}
               src={features[2].video}
-              className={`rounded-lg w-full h-full object-cover absolute inset-0 ${currentFeature === 2 ? "opacity-100" : "opacity-0"}`}
+              className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 2 ? "flex" : "hidden"}`}
               muted
               autoPlay
               playsInline
@@ -231,7 +231,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
             <video
               ref={videoRefs[3]}
               src={features[3].video}
-              className={`rounded-lg w-full h-full object-cover absolute inset-0 ${currentFeature === 3 ? "opacity-100" : "opacity-0"}`}
+              className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 3 ? "flex" : "hidden"}`}
               muted
               autoPlay
               playsInline

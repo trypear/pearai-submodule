@@ -53,27 +53,27 @@ export default function Welcome() {
     setStep((prevStep) => prevStep - 1);
   };
 
-  const renderStep = () => {
-    switch (step) {
-      case 0:
-        return <SplashScreen onNext={handleNextStep} />;
-      case 1:
-        return <Features onNext={handleNextStep} />;
-      case 2:
-        return <SetupPage onNext={handleNextStep} />;
-      case 3:
-        return <FinalStep onNext={handleNextStep} />;
-      case 4:
-        return <InventoryPage />;
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="flex flex-col h-full w-full">
-      <WelcomeHeader onBack={handleBackStep} showBack={step > 0}/>
-      {renderStep()}
+    <div className="flex flex-col h-full w-full border dborder-solid border-blue-500">
+      <WelcomeHeader onBack={handleBackStep} showBack={step > 0} />
+      <>
+        <div className={`flex flex-col h-full w-full ${step === 0 ? "flex" : "hidden"}`}>
+          <SplashScreen onNext={handleNextStep} />;
+        </div>
+        <div className={`flex flex-col h-full w-full ${step === 1 ? "flex" : "hidden"}`}>
+          <Features onNext={handleNextStep} />;
+        </div>
+        <div className={`flex flex-col h-full w-full ${step === 2 ? "flex" : "hidden"}`}>
+          <SetupPage onNext={handleNextStep} />;
+        </div>
+        <div className={`flex flex-col h-full w-full ${step === 3 ? "flex" : "hidden"}`}>
+          <FinalStep onNext={handleNextStep} />;
+        </div>
+        <div className={`flex flex-col h-full w-full ${step === 4 ? "flex" : "hidden"}`}>
+          <InventoryPage />;
+        </div>
+      </>
     </div>
-  );}
+  );
+}
 
