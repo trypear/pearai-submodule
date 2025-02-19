@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sparkles, Bot, Search, Download, LogIn, User, Command, Terminal, Import, Move } from "lucide-react";
@@ -14,6 +14,10 @@ import { RootState } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { setOnboardingState } from "@/redux/slices/stateSlice";
 import { Checkbox } from "@/components/ui/checkbox";
+import { vscBackground, vscBadgeBackground, vscBadgeForeground, vscEditorBackground, vscInputBackground, vscSidebarBorder } from "@/components";
+import { getLocalStorage } from "@/util/localStorage";
+import { setLocalStorage } from "@/util/localStorage";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export default function SetupPage({ onNext }: { onNext: () => void }) {
   const dispatch = useDispatch();
@@ -51,26 +55,108 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     }
   };
 
+
+  const [isImportingExtensions, setIsImportingExtensions] = useState(false);
+  const [isDoneImportingExtensions, setIsDoneImportingExtensions] = useState(false);
+  const [extensionsImportError, setExtensionsImportError] = useState("");
+  const ideMessenger = useContext(IdeMessengerContext);
+
+  const handleImportExtensions = async () => {
+    setIsImportingExtensions(true);
+    setExtensionsImportError("");
+
+    // Attempt to load settings
+    const settingsLoaded = await ideMessenger.request(
+      "importUserSettingsFromVSCode",
+      undefined,
+    );
+    if (typeof settingsLoaded === "boolean" && settingsLoaded) {
+      setIsDoneImportingExtensions(true);
+      setLocalStorage("isDoneImportingUserSettingsFromVSCode", true);
+      handleNextClick();
+    } else {
+      setIsImportingExtensions(false);
+      setIsDoneImportingExtensions(false);
+      setExtensionsImportError(
+        "Something went wrong while importing your settings. Please skip or try again.",
+      );
+    }
+  };
+
+  useEffect(() => {
+    // If user presses back, we want the screen to still say "done"
+    setIsDoneImportingExtensions(getLocalStorage("isDoneImportingUserSettingsFromVSCode") === true);
+  }, [isDoneImportingExtensions])
+
   const allSetupSteps = [
     {
       icon: <Move className="h-5 w-5" />,
       title: "Import VSCode Extensions",
       description:
         "Automatically import your extensions from VSCode to feel at home.",
-      component: <ImportExtensions onNext={handleNextClick} />,
+      component: <ImportExtensions importError={extensionsImportError} isDone={isDoneImportingExtensions} />,
+      button: !isDoneImportingExtensions ? <Button
+        disabled={isImportingExtensions}
+        className="text-xs font-['SF Pro']"
+        onClick={handleImportExtensions}
+      >
+        <div className="flex items-center justify-between w-full gap-2">
+          {isImportingExtensions ? (
+            <div className="flex items-center justify-center w-full gap-2">
+              <svg
+                className="animate-spin h-5 w-5 text-button-foreground"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span>Importing...</span>
+            </div>
+          ) : (
+            <>
+              <span className="text-center w-full">Import Extensions</span>
+            </>
+          )}
+        </div>
+      </Button>
+        :
+        <Button
+          onClick={handleNextClick}
+          className="text-xs font-['SF Pro']"
+        >Continue</Button>,
     },
     {
       icon: <Terminal className="h-6 w-6" />,
       title: "Add PearAI To Your Path",
       description: "Easily open PearAI from the command line with 'pearai'.",
       component: <AddToPath onNext={handleNextClick} />,
-      platformSpecific: "mac"
+      platformSpecific: "mac",
+      button: <Button
+        // onClick={handleAddToPath}
+        className="text-xs font-['SF Pro']"
+      >Add To Path</Button>,
     },
     {
       icon: <Download className="h-6 w-6" />,
       title: "Install Additional Tools",
       description: "Install recommended tools to enhance your PearAI experience.",
       component: <InstallTools onNext={handleNextClick} />,
+      button: <Button
+        // onClick={handleInstallTools}
+        className="text-xs font-['SF Pro']"
+      >Install Tools</Button>,
     },
 
     {
@@ -78,6 +164,10 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       title: "Sign in",
       description: "Have PearAI work for free out of the box by signing in.",
       component: <SignIn onNext={handleNextClick} />,
+      button: <Button
+        // onClick={handleSignIn}
+        className="text-xs font-['SF Pro']"
+      >Sign In</Button>,
     },
   ];
 
@@ -151,33 +241,43 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     //   </div>
     // </div>
 
-    <div className="h-full bg-[#202428] flex-col justify-center items-center inline-flex overflow-hidden">
+    <div className="h-full flex-col justify-center items-center inline-flex overflow-hidden select-none">
       <div className="h-[80%] w-[50%] flex-col justify-center items-center gap-7 flex">
-        <div className="text-white text-4xl font-['SF Pro']">Setup</div>
+        <div className="text-4xl font-['SF Pro']">Setup</div>
         <div className="w-full justify-start items-start gap-5 inline-flex">
           {setupSteps.map((step, index) => (
-            <div key={index} className="grow shrink basis-0 h-11 p-3 bg-[#2a3238] rounded-lg border-2 border-white/10 justify-start items-center gap-3 flex overflow-hidden">
+            <div key={index} className="grow shrink basis-0 h-11 p-3 rounded-lg border-2 border-white/10 justify-start items-center gap-3 flex overflow-hidden cursor-pointer"
+              style={{ background: currentFeature === index ? vscInputBackground : vscEditorBackground }}
+              onClick={() => handleFeatureChange(index)}
+            >
               <Checkbox className="w-4 h-4 rounded-[50%] shadow outline-none" style={{ background: "transparent" }} />
               <div className="w-48 flex-col justify-center items-center gap-1 inline-flex">
-                <div className="self-stretch text-white text-xs font-normal font-['SF Pro'] leading-[18px]">{step.title}</div>
+                <div className="self-stretch text-xs font-normal font-['SF Pro'] leading-[18px]">{step.title}</div>
               </div>
             </div>
           ))}
         </div>
-        <div className="w-full h-[500px] bg-[#161718] rounded-xl flex-col justify-center items-center gap-5 flex overflow-hidden">
+        <div className="w-full h-[500px] rounded-xl flex-col justify-center items-center gap-5 flex overflow-hidden"
+          style={{ background: vscSidebarBorder }}
+        >
           <div className="self-stretch grow shrink basis-0 flex-col justify-center items-center gap-5 flex">
-            {/* <div className="self-stretch text-center text-white text-2xl font-['SF Pro']">Import your VS Code extensions to PearAI.</div> */}
+            {/* <div className="self-stretch text-center text-2xl font-['SF Pro']">Import your VS Code extensions to PearAI.</div> */}
             {setupSteps[currentFeature].component}
           </div>
         </div>
         <div className="self-stretch justify-center items-center gap-4 inline-flex overflow-hidden">
-          <div className="opacity-50 text-white text-xs font-normal font-['SF Pro'] leading-[18px]" onClick={() => handleNextClick()}>Skip</div>
-          {process.env.NODE_ENV === "development" && <div className="px-6 py-3 bg-[#0078d4] rounded-lg justify-center items-center gap-1 flex overflow-hidden" onClick={() => handleBackClick()}>
-            <div className="text-white text-xs font-['SF Pro']">Back (show in dev)</div>
-          </div>}
-          <div className="px-6 py-3 bg-[#0078d4] rounded-lg justify-center items-center gap-1 flex overflow-hidden">
-            <div className="text-white text-xs font-['SF Pro']">Install selected</div>
-          </div>
+          <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px] cursor-pointer" onClick={() => handleNextClick()}>Skip</div>
+          {process.env.NODE_ENV === "development" &&
+            <Button
+              onClick={() => handleBackClick()}
+              className="text-xs font-['SF Pro']"
+              style={{ background: vscInputBackground }}
+            >Back (shown in dev)</Button>
+          }
+          {/* <div className="px-6 py-3 rounded-lg justify-center items-center gap-1 flex overflow-hidden">
+            <div className="text-xs font-['SF Pro']">Install selected</div>
+          </div> */}
+          {setupSteps[currentFeature].button}
         </div>
       </div>
     </div>

@@ -93,30 +93,16 @@ export default function InstallTools({
         }
         return areAllToolsSelected() ? "Install All Tools" : "Install Selected Tools";
     };
-
-    useEffect(() => {
-        const handleKeyPress = (event: KeyboardEvent) => {
-            if (event.key === 'Enter') {
-                handleInstallChecked();
-            } else if ((event.metaKey || event.ctrlKey) && event.key === 'ArrowRight') {
-                event.preventDefault();
-                onNext();
-            }
-        };
-
-        window.addEventListener('keydown', handleKeyPress);
-        return () => window.removeEventListener('keydown', handleKeyPress);
-    }, []);
-
+    
     return (
         <div className="flex flex-col min-h-screen bg-primary text-foreground">
-          <div className="flex-1 flex items-center justify-center p-4 pb-32">
+          <div className="flex-1 flex items-center justify-center">
             <div className="w-full max-w-[800px] flex flex-col">
-              <h5 className="text-xl md:text-2xl lg:text-2xl font-bold text-foreground mb-8 text-center">
+              <div className="text-xl md:text-2xl lg:text-2xl text-foreground mb-8 text-center max-w-[600px] mx-auto">
                 PearAI requires some extra installation for the following integrations
-              </h5>
+              </div>
     
-              <div className="flex-1 overflow-y-auto max-h-[calc(100vh-300px)] mb-8">
+              <div className="flex-1 overflow-y-auto mx-6">
                 <div className="w-full space-y-2">
                   {tools.map((tool) => (
                     <Card
@@ -126,9 +112,9 @@ export default function InstallTools({
                       }`}
                     >
                       <div className="flex items-center gap-4 flex-1">
-                        <div className="p-1 bg-muted rounded-lg">
+                        <div className="bg-muted rounded-lg">
                           {typeof tool.icon === 'string' ? (
-                            <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-[80px]" />
+                            <img src={getLogoPath(tool.icon)} alt={tool.name} className="h-[50px]" />
                           ) : (
                             tool.icon
                           )}
@@ -142,7 +128,7 @@ export default function InstallTools({
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-muted-foreground">{tool.description}</p>
+                          <p className="text-xs text-muted-foreground">{tool.description}</p>
                         </div>
                       </div>
                       <div className="flex items-center h-5 ml-4">
@@ -177,7 +163,7 @@ export default function InstallTools({
                   {getButtonText()}
                 </Button>
               </div>
-              <div className="text-[8px] text-muted-foreground">
+              {/* <div className="text-[8px] text-muted-foreground">
                 *View PearAI Disclaimer page
                 <a
                   href="https://trypear.ai/disclaimer/"
@@ -188,7 +174,7 @@ export default function InstallTools({
                   here
                 </a>
                 .
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
