@@ -49,7 +49,7 @@ export const features = [
   },
 ];
 
-export default function Features({ onNext }: { onNext: () => void }) {
+export default function Features({ onNext, pseudoRender }: { onNext: () => void, pseudoRender: boolean }) {
   const dispatch = useDispatch();
 
   const [currentFeature, setCurrentFeature] = useState(0);
@@ -124,6 +124,14 @@ export default function Features({ onNext }: { onNext: () => void }) {
       }
     });
   }
+
+  useEffect(() => {
+    if (pseudoRender) {
+      resetVideos();
+      resetVideos(); // yessir two times, not a typo. cause sometimes video resets but get stuck on first frame.
+      setCurrentFeature(0);
+    }
+  }, [pseudoRender]);
 
   const handleNextClick = () => {
     if (currentFeature < features.length - 1) {
@@ -245,14 +253,14 @@ export default function Features({ onNext }: { onNext: () => void }) {
           </Button>
           {process.env.NODE_ENV === "development" && (
             <>
-              <Button className="text-xs font-['SF Pro']" onClick={resetVideos}
-                style={{ background: vscInputBackground }}
-              >reset (shown in dev)</Button>
               <Button className="text-xs font-['SF Pro']" onClick={handleBackClick}
                 style={{ background: vscInputBackground }}
               >
                 Back (shown in dev)
               </Button>
+              <Button className="text-xs font-['SF Pro']" onClick={resetVideos}
+                style={{ background: vscInputBackground }}
+              >reset (shown in dev)</Button>
             </>
           )}
         </div>

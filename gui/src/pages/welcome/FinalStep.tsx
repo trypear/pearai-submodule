@@ -52,7 +52,7 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
               className="w-full h-full object-contain"
             />
           </div> */}
-      <div className="text-2xl md:text-3xl lg:text-4xl text-foreground mb-6">
+      <div className="text-2xl md:text-3xl lg:text-4xl text-foreground mb-7">
         You're all set!
       </div>
       <div className="flex flex-col items-center gap-4 ">
