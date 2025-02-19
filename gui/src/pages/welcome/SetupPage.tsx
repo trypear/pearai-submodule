@@ -1,5 +1,3 @@
-"use client";
-
 import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +16,16 @@ import { vscBackground, vscBadgeBackground, vscBadgeForeground, vscEditorBackgro
 import { getLocalStorage } from "@/util/localStorage";
 import { setLocalStorage } from "@/util/localStorage";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+
+
+export interface Tool {
+  id: string;
+  name: string;
+  description: string;
+  icon: JSX.Element | string;
+  preInstalled: boolean;
+}
+
 
 export default function SetupPage({ onNext }: { onNext: () => void }) {
   const dispatch = useDispatch();
@@ -55,6 +63,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     }
   };
 
+  //#region Import Extensions
 
   const [isImportingExtensions, setIsImportingExtensions] = useState(false);
   const [isDoneImportingExtensions, setIsDoneImportingExtensions] = useState(false);
@@ -87,6 +96,80 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     // If user presses back, we want the screen to still say "done"
     setIsDoneImportingExtensions(getLocalStorage("isDoneImportingUserSettingsFromVSCode") === true);
   }, [isDoneImportingExtensions])
+
+  //#endregion Import Extensions
+
+  //#region Install Tools
+
+  const tools: Tool[] = [
+    // {
+    //     id: "aider",
+    //     name: "PearAI Creator",
+    //     description: "PearAI Creator is a no-code tool powered by aider* that let's you build complete features with just a prompt.",
+    //     icon: "inventory-creator.svg",
+    //     preInstalled: false
+    // },
+    {
+      id: "supermaven",
+      name: "PearAI Predict",
+      description: "PearAI Predict is our upcoming code autocomplete tool. While it's under development, we recommend using Supermaven* as a standalone extension within PearAI for code autocompletion. Selecting this option will install Supermaven.",
+      icon: "inventory-autocomplete.svg",
+      preInstalled: false
+    }
+  ];
+
+
+  const [checkedTools, setCheckedTools] = useState<Record<string, boolean>>(() => {
+    const initialState: Record<string, boolean> = {};
+    tools.forEach(tool => {
+      initialState[tool.id] = true;
+    });
+    return initialState;
+  });
+
+
+  const [attemptedInstalls, setAttemptedInstalls] = useState<string[]>(() => {
+    const saved = localStorage.getItem('onboardingSelectedTools');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const areAllToolsSelected = () => {
+    return tools.every(tool => checkedTools[tool.id]);
+  };
+
+  const areAnyToolsSelected = () => {
+    return tools.some(tool => checkedTools[tool.id]);
+  };
+
+  const areAllToolsAttempted = () => {
+    return tools.every(tool => attemptedInstalls.includes(tool.id));
+  };
+
+  const getInstallToolsButtonText = () => {
+    if (areAllToolsAttempted() || !areAnyToolsSelected()) {
+      return "Skip Tools Installation"
+    }
+    if (areAllToolsSelected() && attemptedInstalls?.length > 0) {
+      return "Install Selected Tool";
+    }
+    if (attemptedInstalls?.length > 0) {
+      return "Continue";
+    }
+    return areAllToolsSelected() ? "Install All Tools" : "Install Selected Tools";
+  };
+
+  const handleInstallChecked = async () => {
+    const selectedTools = tools.filter(tool =>
+      checkedTools[tool.id]
+    );
+
+    localStorage.setItem('onboardingSelectedTools', JSON.stringify(selectedTools.map(t => t.id)));
+    onNext()
+  };
+
+  //#endregion Install Tools
+
+  //#region Setup Steps
 
   const allSetupSteps = [
     {
@@ -152,11 +235,13 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       icon: <Download className="h-6 w-6" />,
       title: "Install Additional Tools",
       description: "Install recommended tools to enhance your PearAI experience.",
-      component: <InstallTools onNext={handleNextClick} />,
+      component: <InstallTools onNext={handleNextClick} tools={tools} checkedTools={checkedTools} setCheckedTools={setCheckedTools} attemptedInstalls={attemptedInstalls} />,
       button: <Button
-        // onClick={handleInstallTools}
         className="text-xs font-['SF Pro']"
-      >Install Tools</Button>,
+        onClick={handleInstallChecked}
+      >
+        {getInstallToolsButtonText()}
+      </Button>
     },
 
     {
@@ -174,6 +259,9 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
   const setupSteps = allSetupSteps.filter(step =>
     !step.platformSpecific || step.platformSpecific === getPlatform()
   );
+
+
+  //#region RETURN
 
   return (
     // <div className="flex w-full overflow-hidden text-foreground h-full">
@@ -266,7 +354,13 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
           </div>
         </div>
         <div className="self-stretch justify-center items-center gap-4 inline-flex overflow-hidden">
-          <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px] cursor-pointer" onClick={() => handleNextClick()}>Skip</div>
+          <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px] cursor-pointer"
+            onClick={() => {
+              if (currentFeature === 2) {
+                localStorage.setItem('onboardingSelectedTools', JSON.stringify([]));
+              }
+              handleNextClick()
+            }}>Skip</div>
           {process.env.NODE_ENV === "development" &&
             <Button
               onClick={() => handleBackClick()}
