@@ -54,23 +54,23 @@ export default function Welcome() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full border dborder-solid border-blue-500">
+    <div className="flex flex-col h-full w-full">
       <WelcomeHeader onBack={handleBackStep} showBack={step > 0} />
       <>
         <div className={`flex flex-col h-full w-full ${step === 0 ? "flex" : "hidden"}`}>
-          <SplashScreen onNext={handleNextStep} />;
+          <SplashScreen onNext={handleNextStep} />
         </div>
         <div className={`flex flex-col h-full w-full ${step === 1 ? "flex" : "hidden"}`}>
-          <Features onNext={handleNextStep} />;
+          <Features onNext={handleNextStep} />
         </div>
         <div className={`flex flex-col h-full w-full ${step === 2 ? "flex" : "hidden"}`}>
-          <SetupPage onNext={handleNextStep} />;
+          <SetupPage onNext={handleNextStep} />
         </div>
         <div className={`flex flex-col h-full w-full ${step === 3 ? "flex" : "hidden"}`}>
-          <FinalStep onNext={handleNextStep} />;
+          <FinalStep onNext={handleNextStep} />
         </div>
         <div className={`flex flex-col h-full w-full ${step === 4 ? "flex" : "hidden"}`}>
-          <InventoryPage />;
+          <InventoryPage />
         </div>
       </>
     </div>
