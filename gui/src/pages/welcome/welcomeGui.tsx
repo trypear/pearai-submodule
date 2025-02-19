@@ -67,7 +67,7 @@ export default function Welcome() {
           <SetupPage onNext={handleNextStep} />
         </div>
         <div className={`flex flex-col h-full w-full ${step === 3 ? "flex" : "hidden"}`}>
-          <FinalStep onNext={handleNextStep} />
+          <FinalStep onNext={handleNextStep} startOnboardingAgain={() => setStep(0)} />
         </div>
         <div className={`flex flex-col h-full w-full ${step === 4 ? "flex" : "hidden"}`}>
           <InventoryPage />
