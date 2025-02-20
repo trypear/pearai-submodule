@@ -22,13 +22,6 @@ export default function InstallTools({
 }) {
 
     const tools: Tool[] = [
-        // {
-        //     id: "aider",
-        //     name: "PearAI Creator",
-        //     description: "PearAI Creator is a no-code tool powered by aider* that let's you build complete features with just a prompt.",
-        //     icon: "inventory-creator.svg",
-        //     preInstalled: false
-        // },
         {
             id: "supermaven",
             name: "PearAI Predict",
@@ -115,7 +108,7 @@ export default function InstallTools({
               <h5 className="text-xl md:text-2xl lg:text-2xl font-bold text-foreground mb-8 text-center">
                 PearAI requires some extra installation for the following integrations
               </h5>
-    
+
               <div className="flex-1 overflow-y-auto max-h-[calc(100vh-300px)] mb-8">
                 <div className="w-full space-y-2">
                   {tools.map((tool) => (
@@ -163,7 +156,7 @@ export default function InstallTools({
               </div>
             </div>
           </div>
-    
+
           <div className="absolute bottom-0 right-0 p-4 bg-primary">
             <div className="flex flex-col items-end">
               <div className="flex items-center justify-end gap-4 mb-2">

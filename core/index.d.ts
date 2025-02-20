@@ -647,7 +647,6 @@ type ModelProvider =
   | "watsonx"
   | "openrouter"
   | "pearai_server"
-  | "aider"
   | "perplexity"
   | "other";
 
@@ -723,7 +722,6 @@ export type ModelName =
   | "stable-code-3b"
   // PearAI
   | "pearai_model"
-  | "aider"
   | "perplexity";
 
 export interface RequestOptions {

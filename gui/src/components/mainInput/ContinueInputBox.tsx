@@ -10,7 +10,6 @@ import { RootState } from "../../redux/store";
 import ContextItemsPeek from "./ContextItemsPeek";
 import TipTapEditor from "./TipTapEditor";
 import { useMemo, memo, useState, useEffect, useCallback } from "react";
-import { isBareChatMode } from "../../util/bareChatMode";
 import { getContextProviders } from "../../integrations/util/integrationSpecificContextProviders";
 import { getFontSize } from "../../util";
 import { cn } from "@/lib/utils";

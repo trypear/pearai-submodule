@@ -212,7 +212,7 @@ function autodetectTemplateType(model: string): TemplateType | undefined {
     return "none";
   }
 
-  if (lower.includes("aider") || lower.includes("creator")) {
+  if (lower.includes("creator")) {
     return "none";
   }
   if (lower.includes("perplexity") || lower.includes("search")) {

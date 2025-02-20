@@ -85,7 +85,6 @@ export class QuickEdit {
   private _curModelTitle?: string;
 
   private BLOCKED_MODELS = [
-    'aider',
     'perplexity',
   ];
 
@@ -136,7 +135,7 @@ export class QuickEdit {
 
     // If there's a currently selected model and it's not blocked, use it
     if (this._curModelTitle) {
-      const isBlocked = this.BLOCKED_MODELS.some(blocked => 
+      const isBlocked = this.BLOCKED_MODELS.some(blocked =>
         this._curModelTitle?.toLowerCase().includes(blocked.toLowerCase())
       );
       if (!isBlocked) {
