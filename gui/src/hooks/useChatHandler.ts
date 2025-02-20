@@ -25,20 +25,17 @@ import {
   clearLastResponse,
   initNewActiveMessage,
   initNewActivePerplexityMessage,
-  initNewActiveAiderMessage,
   resubmitAtIndex,
   setInactive,
   setPerplexityInactive,
-  setAiderInactive,
   setMessageAtIndex,
   streamUpdate,
-  streamAiderUpdate,
   streamPerplexityUpdate,
   setPerplexityCitations,
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
 
-function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source: 'perplexity' | 'aider' | 'continue'='continue') {
+function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source: 'perplexity' | 'continue'='continue') {
   const posthog = usePostHog();
 
   const defaultModel = useSelector(defaultModelSelector);
@@ -53,15 +50,14 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
   );
 
   const state = useSelector((store: RootState) => store.state);
-  const history = source === 'perplexity' ? state.perplexityHistory : source === 'aider' ? state.aiderHistory : state.history;
-  // const history = useSelector((store: RootState) => store.state.history);
-  const active = source === 'perplexity' ? state.perplexityActive : source === 'aider' ? state.aiderActive : state.active;
+  const history = source === 'perplexity' ? state.perplexityHistory : state.history;
+  const active = source === 'perplexity' ? state.perplexityActive : state.active;
   const activeRef = useRef(active);
   useEffect(() => {
     activeRef.current = active;
   }, [active]);
 
-  async function _streamNormalInput(messages: ChatMessage[], source: 'perplexity' | 'aider' | 'continue'='continue') {
+  async function _streamNormalInput(messages: ChatMessage[], source: 'perplexity' | 'continue'='continue') {
     const abortController = new AbortController();
     const cancelToken = abortController.signal;
 
@@ -101,7 +97,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
           abortController.abort();
           break;
         }
-        const stream = source === 'perplexity' ? streamPerplexityUpdate : source === 'aider' ? streamAiderUpdate : streamUpdate;
+        const stream = source === 'perplexity' ? streamPerplexityUpdate : streamUpdate;
         dispatch(
           stream(stripImages((next.value as ChatMessage).content)),
         );
@@ -191,13 +187,13 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
     modifiers: InputModifiers,
     ideMessenger: IIdeMessenger,
     index?: number,  // only for when user enters a new prompt in earlier input box
-    source: 'perplexity' | 'aider' | 'continue'='continue'
+    source: 'perplexity' | 'continue'='continue'
   ) {
     try {
       if (typeof index === "number") {
         dispatch(resubmitAtIndex({ index, editorState, source }));
       } else {
-        const init = source === 'perplexity' ? initNewActivePerplexityMessage : source === 'aider' ? initNewActiveAiderMessage : initNewActiveMessage;
+const init = source === 'perplexity' ? initNewActivePerplexityMessage : initNewActiveMessage;
         dispatch(init({ editorState }));
       }
 
@@ -296,7 +292,7 @@ function useChatHandler(dispatch: Dispatch, ideMessenger: IIdeMessenger, source:
         message: `Error streaming response: ${e.message}`,
       });
     } finally {
-      const disableActive = source === 'perplexity' ? setPerplexityInactive : source === 'aider' ? setAiderInactive : setInactive;
+      const disableActive = source === 'perplexity' ? setPerplexityInactive : setInactive;
       dispatch(disableActive());
     }
   }

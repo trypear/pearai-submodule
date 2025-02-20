@@ -197,7 +197,6 @@ export interface IContextProvider {
 
 export interface IntegrationHistoryMap {
   perplexityHistory: 'perplexity';
-  aiderHistory: 'aider';
   history: 'continue';
 }
 
@@ -206,7 +205,6 @@ export type IntegrationType = IntegrationHistoryMap[keyof IntegrationHistoryMap]
 export interface PersistedSessionInfo {
   history: ChatHistory;
   perplexityHistory: ChatHistory;
-  aiderHistory: ChatHistory;
   title: string;
   workspaceDirectory: string;
   sessionId: string;
@@ -649,7 +647,6 @@ type ModelProvider =
   | "watsonx"
   | "openrouter"
   | "pearai_server"
-  | "aider"
   | "perplexity"
   | "other";
 
@@ -725,7 +722,6 @@ export type ModelName =
   | "stable-code-3b"
   // PearAI
   | "pearai_model"
-  | "aider"
   | "perplexity";
 
 export interface RequestOptions {

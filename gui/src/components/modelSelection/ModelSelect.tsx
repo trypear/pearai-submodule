@@ -1,4 +1,3 @@
-import { isAiderMode } from "@/util/bareChatMode";
 import { Listbox } from "@headlessui/react";
 import {
   CubeIcon,
@@ -214,7 +213,6 @@ function ModelSelect() {
   const state = useSelector((state: RootState) => state.state);
   const dispatch = useDispatch();
   const defaultModel = useSelector(defaultModelSelector);
-  const aiderMode = isAiderMode();
   const allModels = useSelector((state: RootState) => state.state.config.models);
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
@@ -231,9 +229,6 @@ function ModelSelect() {
     setOptions(
       allModels
         .filter((model) => {
-          if (aiderMode) {
-            return model?.title?.toLowerCase().includes("creator");
-          }
           return (
             !model?.title?.toLowerCase().includes("creator") &&
             !model?.title?.toLowerCase().includes("perplexity")
@@ -246,7 +241,7 @@ function ModelSelect() {
           isDefault: model?.isDefault,
         }))
     );
-  }, [allModels, aiderMode]);
+  }, [allModels]);
 
   useEffect(() => {
     const calculatePosition = () => {
@@ -306,7 +301,7 @@ function ModelSelect() {
         useEffect(() => {
           setIsOpen(open);
         }, [open]);
-        
+
         return (
           <>
             <StyledListboxButton
@@ -379,10 +374,6 @@ function ModelSelect() {
                 <StyledListboxOption
                   key={options.length}
                   onClick={(e) => {
-                    if (aiderMode) {
-                      ideMessenger.post("openConfigJson", undefined);
-                      return;
-                    }
                     e.stopPropagation();
                     e.preventDefault();
                     navigate("/addModel");

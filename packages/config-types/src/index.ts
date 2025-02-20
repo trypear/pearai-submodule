@@ -55,7 +55,6 @@ export const modelDescriptionSchema = z.object({
     "azure",
     "continue-proxy",
     "pearai_server",
-    "aider",
     "perplexity"
   ]),
   model: z.string(),

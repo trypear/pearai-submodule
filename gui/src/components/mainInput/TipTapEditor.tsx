@@ -138,17 +138,11 @@ const HoverTextDiv = styled.div`
 	pointer-events: none;
 `;
 
-const getPlaceholder = (historyLength: number, location: any, source: 'perplexity' | 'aider' | 'continue') => {
-  if (source === 'aider') {
-    return historyLength === 0
-      ? "Ask me to create, change, or fix anything..."
-      : "Send a follow-up";
-  }
+const getPlaceholder = (historyLength: number, location: any, source: 'perplexity' | 'continue') => {
 
   if (source === 'perplexity') {
     return historyLength === 0 ? "Ask Search about up-to-date information, like documentation changes." : "Ask a follow-up";
   }
-
 
   return historyLength === 0
     ? "Ask questions about code or make changes. Use / for commands, and @ to add context."
@@ -173,7 +167,7 @@ interface TipTapEditorProps {
   isMainInput: boolean;
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
-  source?: 'perplexity' | 'aider' | 'continue';
+  source?: 'perplexity' | 'continue';
   onChange?: (newState: JSONContent) => void;
   onHeightChange?: (height: number) => void;
 }
@@ -183,7 +177,7 @@ export const handleImageFile = async (
   onError?: (message: string) => void
 ): Promise<[HTMLImageElement, string] | undefined> => {
   const filesize = file.size / 1024 / 1024; // filesize in MB
-  
+
   if (
     [
       "image/jpeg",
@@ -269,7 +263,7 @@ export const handlePaste = async (editor: Editor) => {
         }
       }
     }
-    
+
     // Fall back to text handling if no image
   const clipboardText = await navigator.clipboard.readText();
 
@@ -299,14 +293,12 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const ideMessenger = useContext(IdeMessengerContext);
   const { getSubmenuContextItems } = useContext(SubmenuContextProvidersContext);
-  
+
   const historyLength = useSelector(
     (store: RootState) => {
       switch(source) {
         case 'perplexity':
           return store.state.perplexityHistory.length;
-        case 'aider':
-          return store.state.aiderHistory.length;
         default:
           return store.state.history.length;
       }
@@ -373,8 +365,6 @@ const TipTapEditor = memo(function TipTapEditor({
     switch(source) {
       case 'perplexity':
         return store.state.perplexityActive;
-      case 'aider':
-        return store.state.aiderActive;
       default:
         return store.state.active;
     }
@@ -618,10 +608,9 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
 
-  
+
   const isPerplexity = source === 'perplexity';
-  const isAider = source === 'aider';
-  
+
   useEffect(() => {
     const handleShowFile = (event: CustomEvent) => {
       const filepath = event.detail.filepath;
@@ -1154,7 +1143,7 @@ const TipTapEditor = memo(function TipTapEditor({
       }}
     >
       <ContextToolbar
-hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
+hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity}
         onImageFileSelected={(file) => {
           handleImageFile(file).then(([img, dataUrl]) => {
             const { schema } = editor.state;

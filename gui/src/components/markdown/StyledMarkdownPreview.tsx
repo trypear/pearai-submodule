@@ -103,7 +103,7 @@ interface StyledMarkdownPreviewProps {
   isStreaming?: boolean;
   isLast?: boolean;
   messageIndex?: number;
-  integrationSource?: "perplexity" | "aider" | "continue";
+  integrationSource?: "perplexity" | "continue";
   citations?: Citation[];
 	isCodeSnippet?: boolean;
 }
@@ -116,17 +116,13 @@ const FadeInWords: React.FC<FadeInWordsProps> = (props: FadeInWordsProps) => {
   const { children, integrationSource, isStreaming, messageIndex, showCodeBorder, isLast, ...otherProps } = props;
   const active = props.integrationSource === "continue"
     ? useSelector((store: RootState) => store.state.active)
-    : props.integrationSource === "perplexity"
-      ? useSelector((store: RootState) => store.state.perplexityActive)
-      : useSelector((store: RootState) => store.state.aiderActive);
+    : useSelector((store: RootState) => store.state.perplexityActive)
 
   // Get the appropriate history based on the source
   const history = useSelector((store: RootState) => {
     switch (integrationSource) {
       case "perplexity":
         return store.state.perplexityHistory;
-      case "aider":
-        return store.state.aiderHistory;
       default:
         return store.state.history;
     }
@@ -169,16 +165,12 @@ const FadeInElement: React.FC<FadeInElementProps> = (props: FadeInElementProps) 
 
   const active = props.integrationSource === "continue"
     ? useSelector((store: RootState) => store.state.active)
-    : props.integrationSource === "perplexity"
-      ? useSelector((store: RootState) => store.state.perplexityActive)
-      : useSelector((store: RootState) => store.state.aiderActive);
+    : useSelector((store: RootState) => store.state.perplexityActive)
 
   const history = useSelector((store: RootState) => {
     switch (integrationSource) {
       case "perplexity":
         return store.state.perplexityHistory;
-      case "aider":
-        return store.state.aiderHistory;
       default:
         return store.state.history;
     }

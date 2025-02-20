@@ -16,7 +16,6 @@ type LocalStorageTypes = {
   isOnboardingInProgress: boolean;
   showTutorialCard: boolean;
   showPerplexityTutorialCard: boolean;
-  showAiderTutorialCard: boolean;
   shownProfilesIntroduction: boolean;
   disableIndexing: boolean;
   isDoneImportingUserSettingsFromVSCode: boolean;
