@@ -56,7 +56,7 @@ export default function Welcome() {
 
   return (
     <div className="flex flex-col h-full w-full select-none">
-      <WelcomeHeader onBack={handleBackStep} showBack={step > 0} />
+      {/* <WelcomeHeader onBack={handleBackStep} showBack={step > 0} /> */}
       <motion.div
         className={`flex flex-col h-full w-full ${step === 0 ? "flex" : "hidden"}`}
         initial={{ opacity: 0 }}
