@@ -21,6 +21,7 @@ const getAssetPath = (assetName: string) => {
 
 export const features = [
   {
+    id: "chat",
     icon: "inventory-chat.svg",
     title: "Make line-by line changes with PearAI Chat.",
     description:
@@ -28,6 +29,7 @@ export const features = [
     video: getAssetPath("pearai-chat-welcome.mp4"),
   },
   {
+    id: "creator",
     icon: "inventory-creator.svg",
     title: "Create code with PearAI Agent.",
     description:
@@ -35,12 +37,14 @@ export const features = [
     video: getAssetPath("pearai-agent-welcome.mp4"),
   },
   {
+    id: "search",
     icon: "inventory-search.svg",
     title: "Copy for Search Here",
     description: "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
     video: getAssetPath("pearai-search-welcome.mp4"),
   },
   {
+    id: "memory",
     icon: "inventory-mem0.svg",
     title: "Copy for Memory Here",
     description:
@@ -159,27 +163,16 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
     }
   };
 
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        handleNextClick();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentFeature]);
-
   return (
     <div className="flex w-full flex-col justify-center items-center gap-7 text-foreground h-full">
       <div className="w-full flex-col justify-center items-center gap-7 inline-flex overflow-hidden">
+        <div className="flex-col justify-center items-center gap-7 flex">
+          <InventoryButtons activeItemID="chat" />
+        </div>
         {features.map((feature, index) => (
           <>
             {index === currentFeature && (
               <div className="w-full flex-col justify-center items-center gap-7 flex">
-                <div className="flex-col justify-center items-center gap-7 flex">
-                  <InventoryButtons />
-                </div>
                 <div className=" flex-col justify-start items-center gap-2 inline-flex">
                   <motion.div
                     key={`title-${index}`}
