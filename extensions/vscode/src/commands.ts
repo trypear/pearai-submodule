@@ -386,16 +386,20 @@ const commandsMap: (
         });
       console.log("FIRST PEARAI LAUNCH FLAG RESET");
     },
-    "pearai.focusCreatorView": async () => {
-      vscode.commands.executeCommand("roo-cline.SidebarProvider.focus");
+    "pearai.focusAgentView": async () => {
+      await vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'agent' });
+      vscode.commands.executeCommand("pearai-roo-cline.SidebarProvider.focus");
     },
     "pearai.focusPearAIMem0View": async () => {
+      await vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'memory' });
       vscode.commands.executeCommand("pearai.mem0View.focus");
     },
     "pearai.focusPearAISearchView": async () => {
+      await vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'search' });
       vscode.commands.executeCommand("pearai.searchView.focus");
     },
     "pearai.focusContinueInput": async () => {
+      await vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'chat' });
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
         // focus sidebar
@@ -408,6 +412,7 @@ const commandsMap: (
       await addHighlightedCodeToContext(sidebar.webviewProtocol);
     },
     "pearai.focusContinueInputWithoutClear": async () => {
+      await vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'chat' });
       const fullScreenTab = getFullScreenTab();
 
       const isContinueInputFocused = await sidebar.webviewProtocol.request(

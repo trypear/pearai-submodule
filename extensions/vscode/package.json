@@ -194,7 +194,7 @@
         "group": "PearAI"
       },
       {
-        "command": "pearai.focusCreatorView",
+        "command": "pearai.focusAgentView",
         "category": "PearAI",
         "title": "Focus PearAI Creator View",
         "group": "PearAI"
