@@ -13,7 +13,7 @@ import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { isJetBrains } from "../../util";
 import HeaderButtonWithText from "../HeaderButtonWithText";
 import { CopyButton } from "./CopyButton";
-import { isPerplexityMode } from '../../util/bareChatMode';
+import { isPerplexityMode } from '../../util/modes';
 import { useWebviewListener } from "../../hooks/useWebviewListener";
 import { Loader, Terminal } from "lucide-react";
 
