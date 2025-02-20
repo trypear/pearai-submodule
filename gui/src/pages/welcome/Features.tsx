@@ -167,7 +167,7 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
     <div className="flex w-full flex-col justify-center items-center gap-7 text-foreground h-full">
       <div className="w-full flex-col justify-center items-center gap-7 inline-flex overflow-hidden">
         <div className="flex-col justify-center items-center gap-7 flex">
-          <InventoryButtons activeItemID="chat" />
+          <InventoryButtons activeItemID={features[currentFeature].id} />
         </div>
         {features.map((feature, index) => (
           <>

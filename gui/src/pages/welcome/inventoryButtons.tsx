@@ -77,11 +77,12 @@ const InventoryButtons = ({ activeItemID = "chat" }: { activeItemID?: string }) 
                         {menuItems.map((item, index) => (
                             <div
                                 key={`${item.tooltip}-${index}`}
-                                className={`${item.backgroundColor || item.bgGradient} 
+                                className={` h-7
+                                    ${item.backgroundColor || item.bgGradient} 
                                     ${activeItemID === item.id ? item.glow : ""} 
                                     ${activeItemID !== item.id ? "z-10" : "z-5"} 
                                     rounded-[10px] flex items-center
-                                    transition-all duration-200 ease-in-out
+                                    transition-all duration-500 ease-in-out
                                     ${activeItemID === item.id ? item.expandedWidth : "w-7"}
                                     ${activeItemID === item.id ? item.boxShadow : ""}`}
                                 // onClick={() => handleItemClick(item.id)} // this is for devving.
