@@ -169,37 +169,18 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
         <div className="flex-col justify-center items-center gap-7 flex">
           <InventoryButtons activeItemID={features[currentFeature].id} />
         </div>
-        {features.map((feature, index) => (
-          <>
-            {index === currentFeature && (
-              <div className="w-full flex-col justify-center items-center gap-7 flex">
-                <div className=" flex-col justify-start items-center gap-2 inline-flex">
-                  <motion.div
-                    key={`title-${index}`}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.6 }}
-                    className="text-4xl font-['SF Pro']"
-                  >
-                    {feature.title}
-                  </motion.div>
-                  <motion.div
-                    key={`desc-${index}`}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 0.5, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.6 }}
-                    className="text-xs font-normal font-['SF Pro'] leading-[18px]"
-                  >
-                    {feature.description}
-                  </motion.div>
-                </div>
-
-              </div>
-            )}
-          </>
-        ))}
+        <div className="w-full flex-col justify-center items-center gap-7 flex">
+          <div className=" flex-col justify-start items-center gap-2 inline-flex">
+            <div key={`title-${currentFeature}`} className="text-4xl font-['SF Pro']"
+            >
+              {features[currentFeature].title}
+            </div>
+            <div className="text-xs font-normal font-['SF Pro'] leading-[18px]"
+            >
+              {features[currentFeature].description}
+            </div>
+          </div>
+        </div>
         <div className="h-[80%] rounded-xl justify-start items-start inline-flex overflow-hidden">
           <div className="w-[50%] ml-[25%] h-fit flex flex-row gap-2 ">
             <video
