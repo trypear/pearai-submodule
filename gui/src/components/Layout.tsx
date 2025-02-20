@@ -72,7 +72,8 @@ const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
     overflow: hidden; // Ensure content doesn't overflow
     display: flex;
     flex-direction: column; // Add this to ensure proper content flow
-    background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
+    // background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
+    background-color: transparent;
   `}
 `;
 
@@ -203,7 +204,9 @@ const Layout = () => {
   });
 
   if (window.isPearOverlay) {
-    return <OverlayContainer isPearOverlay={window.isPearOverlay} path={location.pathname}>
+    return <OverlayContainer isPearOverlay={window.isPearOverlay} path={location.pathname} onClick={() => {
+      ideMessenger.post("closeOverlay", undefined);
+    }}>
       <GlobalStyle />
       <Outlet />
     </OverlayContainer>;

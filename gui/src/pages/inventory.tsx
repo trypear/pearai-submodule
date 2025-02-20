@@ -126,7 +126,8 @@ export default function Inventory() {
 
 
   return (
-    <div className={`h-full w-full flex flex-col ${activeTab === "home" ? "bg-transparent" : "bg-sidebar-background"}`}>
+    <div className={`h-[80%] w-[80%] flex flex-col my-auto mx-auto rounded-lg ${activeTab === "home" ? "bg-transparent" : "bg-sidebar-background"}`}
+    >
       <Tabs
         value={currentTab}
         defaultValue="home"
@@ -135,7 +136,7 @@ export default function Inventory() {
       >
         <div className="flex flex-row h-full">
           <div className="z-10 h-full">
-            <TabsList className={` flex flex-col bg-background justify-between h-full ${currentTab === 'home' ? 'hidden' : ''}`}>
+            <TabsList className={` flex flex-col bg-background rounded-l-lg justify-between h-full ${currentTab === 'home' ? 'hidden' : ''}`}>
               <div className="mt-2 p-3 flex flex-col gap-4">
                 {tabs.slice(2).filter(tab => tab.featureflag !== false).map((tab) => (
                   <TabButton key={tab.id} {...tab} />
