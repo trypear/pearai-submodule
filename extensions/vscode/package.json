@@ -196,7 +196,7 @@
       {
         "command": "pearai.focusAgentView",
         "category": "PearAI",
-        "title": "Focus PearAI Creator View",
+        "title": "Focus PearAI Agent View",
         "group": "PearAI"
       },
       {
@@ -209,7 +209,7 @@
       {
         "command": "pearai.focusPearAIMem0View",
         "category": "PearAI",
-        "title": "Focus PearAI Memory 0 View",
+        "title": "Focus PearAI Memory View",
         "group": "PearAI"
       },
       {
