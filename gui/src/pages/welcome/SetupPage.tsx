@@ -163,7 +163,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     );
 
     localStorage.setItem('onboardingSelectedTools', JSON.stringify(selectedTools.map(t => t.id)));
-    onNext()
+    handleNextClick();
   };
 
   //#endregion Install Tools
@@ -191,7 +191,8 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       ideMessenger.post("pearInstallCommandLine", undefined);
       setTimeout(() => {
         setPathAdded(true);
-        onNext();
+        handleNextClick();
+        setIsAdding(false);
       }, 2000);
     }
   };
