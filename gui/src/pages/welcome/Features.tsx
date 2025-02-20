@@ -169,57 +169,84 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
         <div className="flex-col justify-center items-center gap-7 flex">
           <InventoryButtons activeItemID={features[currentFeature].id} />
         </div>
-        <div className="w-full flex-col justify-center items-center gap-7 flex">
-          <div className=" flex-col justify-start items-center gap-2 inline-flex">
-            <div key={`title-${currentFeature}`} className="text-4xl font-['SF Pro']"
-            >
-              {features[currentFeature].title}
-            </div>
-            <div className="text-xs font-normal font-['SF Pro'] leading-[18px]"
-            >
-              {features[currentFeature].description}
-            </div>
-          </div>
-        </div>
+
         <div className="h-[80%] rounded-xl justify-start items-start inline-flex overflow-hidden">
-          <div className="w-[50%] ml-[25%] h-fit flex flex-row gap-2 ">
-            <video
-              ref={videoRefs[0]}
-              src={features[0].video}
-              className={`rounded-lg w-full h-full object-cover ${currentFeature === 0 ? "flex" : "hidden"}`}
-              muted
-              autoPlay
-              playsInline
-              loop
-            />
-            <video
-              ref={videoRefs[1]}
-              src={features[1].video}
-              className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 1 ? "flex" : "hidden"}`}
-              muted
-              autoPlay
-              playsInline
-              loop
-            />
-            <video
-              ref={videoRefs[2]}
-              src={features[2].video}
-              className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 2 ? "flex" : "hidden"}`}
-              muted
-              autoPlay
-              playsInline
-              loop
-            />
-            <video
-              ref={videoRefs[3]}
-              src={features[3].video}
-              className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 3 ? "flex" : "hidden"}`}
-              muted
-              autoPlay
-              playsInline
-              loop
-            />
-          </div>
+          <motion.div
+            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 0 ? "flex" : "hidden"}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentFeature === 0 ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <FeatureDescription currentFeature={currentFeature} />
+            <div className="w-[50%] h-fit flex flex-row gap-2 ">
+              <video
+                ref={videoRefs[0]}
+                src={features[0].video}
+                className={`rounded-lg w-full h-full object-cover ${currentFeature === 0 ? "flex" : "hidden"}`}
+                muted
+                autoPlay
+                playsInline
+                loop
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 1 ? "flex" : "hidden"}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentFeature === 1 ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <FeatureDescription currentFeature={currentFeature} />
+            <div className="w-[50%] h-fit flex flex-row gap-2 ">
+              <video
+                ref={videoRefs[1]}
+                src={features[1].video}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 1 ? "flex" : "hidden"}`}
+                muted
+                autoPlay
+                playsInline
+                loop
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 2 ? "flex" : "hidden"}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentFeature === 2 ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <FeatureDescription currentFeature={currentFeature} />
+            <div className="w-[50%] h-fit flex flex-row gap-2 ">
+              <video
+                ref={videoRefs[2]}
+                src={features[2].video}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 2 ? "flex" : "hidden"}`}
+                muted
+                autoPlay
+                playsInline
+                loop
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 3 ? "flex" : "hidden"}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentFeature === 3 ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <FeatureDescription currentFeature={currentFeature} />
+            <div className="w-[50%] h-fit flex flex-row gap-2 ">
+              <video
+                ref={videoRefs[3]}
+                src={features[3].video}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 3 ? "flex" : "hidden"}`}
+                muted
+                autoPlay
+                playsInline
+                loop
+              />
+            </div>
+          </motion.div>
         </div>
         <div className="flex gap-2">
           <Button className="text-xs font-['SF Pro']" onClick={handleNextClick}>
@@ -243,3 +270,18 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
   );
 }
 
+
+const FeatureDescription = ({ currentFeature }: { currentFeature: number }) => {
+  return (
+    <div className=" flex-col justify-start items-center gap-2 inline-flex">
+      <div key={`title-${currentFeature}`} className="text-4xl font-['SF Pro']"
+      >
+        {features[currentFeature].title}
+      </div>
+      <div className="text-xs font-normal font-['SF Pro'] leading-[18px]"
+      >
+        {features[currentFeature].description}
+      </div>
+    </div>
+  );
+};
