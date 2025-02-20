@@ -6,21 +6,15 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 
-const aiderContextProvidersSpecific = ["relativegitfilecontext"];
-
 const perplexityContextProvidersSpecific = ["file", "terminal", "folder"];
 
 const SPECIFIC_CONTEXT_PROVIDERS_INTEGRATIONS = {
-  aider: aiderContextProvidersSpecific,
-  creator: aiderContextProvidersSpecific,
   perplexity: perplexityContextProvidersSpecific,
   search: perplexityContextProvidersSpecific,
 };
 
 const SPECIFIC_CONTEXT_PROVIDERS_PATHNAME = {
-  "/aiderMode": aiderContextProvidersSpecific,
   "/perplexityMode": perplexityContextProvidersSpecific,
-  "/inventory/aiderMode": aiderContextProvidersSpecific,
   "/inventory/perplexityMode": perplexityContextProvidersSpecific,
 };
 

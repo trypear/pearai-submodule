@@ -18,10 +18,10 @@ function truncateText(text: string, maxLength: number) {
   return text;
 }
 
-function useHistory(dispatch: Dispatch, source: 'perplexity' | 'aider' | 'continue'='continue') {
+function useHistory(dispatch: Dispatch, source: 'perplexity' | 'continue'='continue') {
   const state = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
-  const history = source === 'perplexity' ? state.perplexityHistory : source === 'aider' ? state.aiderHistory : state.history;
+  const history = source === 'perplexity' ? state.perplexityHistory : state.history;
   const disableSessionTitles = useSelector(
     (store: RootState) => store.state.config.disableSessionTitles,
   );
@@ -40,7 +40,7 @@ function useHistory(dispatch: Dispatch, source: 'perplexity' | 'aider' | 'contin
     const stateCopy = { ...state };
     dispatch(newSession({session: undefined, source}));
     await new Promise((resolve) => setTimeout(resolve, 10));
-    const copyHistory = source === 'perplexity' ? stateCopy.perplexityHistory : source === 'aider' ? stateCopy.aiderHistory : stateCopy.history;
+    const copyHistory = source === 'perplexity' ? stateCopy.perplexityHistory : stateCopy.history;
     let title =
       stateCopy.title === "New Session"
         ? truncateText(
@@ -79,7 +79,6 @@ function useHistory(dispatch: Dispatch, source: 'perplexity' | 'aider' | 'contin
     const sessionInfo: PersistedSessionInfo = {
       history: stateCopy.history,
       perplexityHistory: stateCopy.perplexityHistory,
-      aiderHistory: stateCopy.aiderHistory,
       title: title,
       sessionId: stateCopy.sessionId,
       workspaceDirectory: window.workspacePaths?.[0] || "",

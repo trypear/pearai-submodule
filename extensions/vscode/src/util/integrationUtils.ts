@@ -4,7 +4,6 @@ import { ContinueGUIWebviewViewProvider } from "../ContinueGUIWebviewViewProvide
 import { ToWebviewProtocol } from "core/protocol";
 
 export enum InstallableTool {
-  AIDER = "aider",
   SUPERMAVEN = "supermaven"
 }
 
@@ -34,9 +33,6 @@ export interface MemoryChange {
 export type ToolType = typeof InstallableTool[keyof typeof InstallableTool];
 
 export const TOOL_COMMANDS: Record<ToolType, ToolCommand> = {
-  [InstallableTool.AIDER]: {
-    command: "pearai.installAider"
-  },
   [InstallableTool.SUPERMAVEN]: {
     command: "workbench.extensions.installExtension",
     args: "supermaven.supermaven"
@@ -63,7 +59,7 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
     await vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
     return;
   }
-  
+
   await sidebar.webviewProtocol?.request(protocol, undefined, webviews);
 
   if (!isOverlayVisible) {

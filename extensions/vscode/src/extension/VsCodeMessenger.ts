@@ -22,7 +22,6 @@ import * as vscode from "vscode";
 import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
 import { VsCodeIde } from "../ideProtocol";
-import { checkAiderInstallation } from "../integrations/aider/aiderUtil";
 import { getMem0Memories, updateMem0Memories } from "../integrations/mem0/mem0Service";
 import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
 import {
@@ -120,18 +119,6 @@ export class VsCodeMessenger {
     this.onWebview("uninstallVscodeExtension", (msg) => {
       attemptUninstallExtension(msg.data.extensionId);
     });
-    this.onWebview("installAider", (msg) => {
-      vscode.commands.executeCommand("pearai.installAider");
-    });
-    this.onWebview("uninstallAider", (msg) => {
-      vscode.commands.executeCommand("pearai.uninstallAider");
-    });
-    this.onWebview("isAiderInstalled", async (msg) => {
-      console.log("Checking Aider installation...");
-      const isAiderInstalled = await checkAiderInstallation();
-      console.log("Aider installation status:", isAiderInstalled);
-      return isAiderInstalled;
-    });
     this.onWebview("mem0/getMemories", async (msg) => {
 
       const memories = await getMem0Memories(PearAIServer._getRepoId());
@@ -170,9 +157,6 @@ export class VsCodeMessenger {
           const contents = document.getText(range);
           return contents;
         });
-    });
-    this.onWebview("openAiderChanges", (msg) => {
-      vscode.commands.executeCommand("pearai.openAiderChanges");
     });
     this.onWebview("getNumberOfChanges", (msg) => {
       const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
@@ -231,18 +215,6 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("pearai.addPerplexityContext", msg);
       vscode.commands.executeCommand("pearai.hideOverlay");
     });
-    this.onWebview("aiderMode", (msg) => {
-      vscode.commands.executeCommand("pearai.aiderMode");
-    });
-    this.onWebview("aiderCtrlC", (msg) => {
-      vscode.commands.executeCommand("pearai.aiderCtrlC");
-    });
-    this.onWebview("aiderResetSession", (msg) => {
-      vscode.commands.executeCommand("pearai.aiderResetSession");
-    });
-    this.onWebview("sendAiderProcessStateToGUI", (msg) => {
-      vscode.commands.executeCommand("pearai.sendAiderProcessStateToGUI");
-    }),
     this.onWebview("toggleDevTools", (msg) => {
       vscode.commands.executeCommand("workbench.action.toggleDevTools");
       vscode.commands.executeCommand("pearai.viewLogs");

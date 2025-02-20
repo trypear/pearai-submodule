@@ -7,7 +7,6 @@ class HistoryManager {
   private readonly integrationHistoryTypes: IntegrationHistoryMap = {
     history: 'continue',
     perplexityHistory: 'perplexity',
-    aiderHistory: 'aider'
   };
 
   getHistoryType(session: PersistedSessionInfo): IntegrationType {
@@ -82,7 +81,6 @@ class HistoryManager {
       return {
         history: [],
         perplexityHistory: [],
-        aiderHistory: [],
         title: "Failed to load session",
         workspaceDirectory: "",
         sessionId: sessionId,

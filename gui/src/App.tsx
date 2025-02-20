@@ -20,7 +20,6 @@ import Onboarding from "./pages/onboarding/Onboarding";
 import SettingsPage from "./pages/settings";
 import Stats from "./pages/stats";
 import Inventory from "./pages/inventory";
-import AiderGUI from "./integrations/aider/aidergui";
 import PerplexityGUI from "./integrations/perplexity/perplexitygui";
 import Welcome from "./pages/welcome/welcomeGui";
 import { ContextMenuProvider } from './components/ContextMenuProvider';
@@ -58,10 +57,6 @@ const router = createMemoryRouter(
 
         },
         {
-          path: "/aiderMode",
-          element: <AiderGUI />,
-        },
-        {
           path: "/perplexityMode",
           element: <PerplexityGUI />,
         },
@@ -70,7 +65,6 @@ const router = createMemoryRouter(
           element: <History from={
             window.viewType === 'pearai.chatView' ? 'continue' :
             window.viewType === 'pearai.searchView' ? 'perplexity' :
-            window.viewType === 'pearai.mem0View' ? 'aider' :
             'continue' // default fallback
           }/>
         },

@@ -111,7 +111,7 @@ interface ContinueInputBoxProps {
   editorState?: JSONContent;
   contextItems?: ContextItemWithId[];
   hidden?: boolean;
-  source?: "perplexity" | "aider" | "continue";
+  source?: "perplexity" | "continue";
   className?: string;
   onHeightChange?: (height: number) => void;
 }
@@ -133,8 +133,6 @@ const ContinueInputBox = memo(function ContinueInputBox({
     switch (source) {
       case "perplexity":
         return store.state.perplexityActive;
-      case "aider":
-        return store.state.aiderActive;
       default:
         return store.state.active;
     }
@@ -200,7 +198,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
         />
         {!isMainInput && !(active&& isLastUserInput ? 1 : 0) && <Tail/>}
       </GradientBorder>
-      
+
       {active && isLastUserInput && (
         <LoadingContainer>
           <DotsContainer>

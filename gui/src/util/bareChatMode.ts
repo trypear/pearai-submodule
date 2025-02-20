@@ -18,9 +18,3 @@ export function isPerplexityMode() {
   return location?.pathname.includes('perplexity')
 }
 
-
-export function isAiderMode() {
-  const location = useLocation();
-  return location?.pathname.includes('aider')
-}
-

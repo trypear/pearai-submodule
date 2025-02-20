@@ -41,7 +41,7 @@ interface StepContainerProps {
   isLast: boolean;
   index: number;
   modelTitle?: string;
-  source?: "perplexity" | "aider" | "continue";
+  source?: "perplexity"| "continue";
 }
 
 const ContentDiv = styled.div<{ isUserInput: boolean; fontSize?: number }>`
@@ -73,16 +73,12 @@ function StepContainer({
   source = "continue",
 }: StepContainerProps) {
   const isUserInput = item.message.role === "user";
-  const active =
-    source === "continue"
-      ? useSelector((store: RootState) => store.state.active)
-      : source === "perplexity"
-        ? useSelector((store: RootState) => store.state.perplexityActive)
-        : useSelector((store: RootState) => store.state.aiderActive);
+  const active = source === "continue"
+    ? useSelector((store: RootState) => store.state.active)
+    : useSelector((store: RootState) => store.state.perplexityActive);
   const ideMessenger = useContext(IdeMessengerContext);
   const bareChatMode = source === "continue"
   const isPerplexity = source === "perplexity"
-  const isAider = source === "aider"
 
   const [numChanges, setNumChanges] = useState<number | null>(null);
 
@@ -112,13 +108,6 @@ function StepContainer({
       console.error("Failed to fetch number of changes:", error);
     }
   };
-
-  useEffect(() => {
-    if (!active && isAider) {
-      fetchNumberOfChanges();
-    }
-  }, [active, isAider]);
-
 
   const [truncatedEarly, setTruncatedEarly] = useState(false);
 
@@ -152,8 +141,6 @@ function StepContainer({
             text: stripImages(item.message.content),
             language: "",
           });
-        } else if (isAider) {
-          ideMessenger.post("openAiderChanges", undefined);
         }
       }
     };
@@ -203,7 +190,7 @@ function StepContainer({
                   <img
                     src={`${window.vscMediaUrl}/logos/${getModelImage(modelTitle)}`}
                     className="w-3.5 h-3.5 mr-2 object-contain rounded-sm"
-                    alt={modelTitle}  
+                    alt={modelTitle}
                   />
                 ) : (
                   <CubeIcon className="w-[14px] h-[14px] mr-1 stroke-2" />
@@ -277,18 +264,6 @@ function StepContainer({
             Add to PearAI chat context {isLast && <span className="ml-1 text-xs opacity-60"><kbd className="font-mono">{getMetaKeyLabel()}</kbd> <kbd className="font-mono bg-vscButtonBackground/10 px-1">G</kbd></span>}
           </HeaderButtonWithText>
         )}
-        {
-          !active && isAider && numChanges && (
-            <HeaderButtonWithText
-              onClick={() => {
-                ideMessenger.post("openAiderChanges", undefined);
-              }}
-            >
-              <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-              See {numChanges} changed file{numChanges === 1 ? '' : 's'} {isLast && <span className="ml-1 text-xs opacity-60"><kbd className="font-mono">{getMetaKeyLabel()}</kbd> <kbd className="font-mono bg-vscButtonBackground/10 px-1">G</kbd></span>}
-            </HeaderButtonWithText>
-          )
-        }
       </div>
   );
 }

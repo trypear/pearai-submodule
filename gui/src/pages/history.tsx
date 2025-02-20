@@ -208,7 +208,7 @@ function lastPartOfPath(path: string): string {
   return path.split(sep).pop() || path;
 }
 
-export type HistorySource = 'continue' | 'perplexity' | 'aider';
+export type HistorySource = 'continue' | 'perplexity';
 
 export function History({
   from = 'continue',

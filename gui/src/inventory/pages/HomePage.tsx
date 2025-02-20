@@ -44,13 +44,6 @@ export default function HomePage() {
       path: "/inventory",
     },
     {
-      icon: "creator-default.svg",
-      label: "Creator",
-      description: <>Create new features</>,
-      shortcut: <span className="flex gap-1"><Kbd>{getMetaKeyLabel()}</Kbd><Kbd>2</Kbd></span>,
-      path: "/inventory/aiderMode",
-    },
-    {
       icon: "search-default.svg",
       label: "Search",
       description: <>AI web search</>,
@@ -95,7 +88,7 @@ export default function HomePage() {
             <div
               key={item.label}
               className="text-white flex flex-col cursor-pointer items-center justify-center gap-2 p-0
-                rounded-lg transition-all duration-200 
+                rounded-lg transition-all duration-200
                 transform hover:scale-105"
               onClick={() => {
                 navigate(item.path);

@@ -197,7 +197,6 @@ export interface IContextProvider {
 
 export interface IntegrationHistoryMap {
   perplexityHistory: 'perplexity';
-  aiderHistory: 'aider';
   history: 'continue';
 }
 
@@ -206,7 +205,6 @@ export type IntegrationType = IntegrationHistoryMap[keyof IntegrationHistoryMap]
 export interface PersistedSessionInfo {
   history: ChatHistory;
   perplexityHistory: ChatHistory;
-  aiderHistory: ChatHistory;
   title: string;
   workspaceDirectory: string;
   sessionId: string;

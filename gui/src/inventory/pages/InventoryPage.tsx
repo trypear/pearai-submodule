@@ -23,7 +23,6 @@ enum AIToolID {
   SEARCH = "search",
   SIDEBARCHAT = "sidebarchat",
   AUTOCOMPLETE = "autocomplete",
-  CREATOR = "aider",
   PAINTER = "painter",
   MEMORY = "memory",
   WRAPPED = "wrapped",
@@ -52,7 +51,6 @@ interface AITool {
 const suggestedBuild = [
   AIToolID.SEARCH,
   AIToolID.SIDEBARCHAT,
-  AIToolID.CREATOR,
   AIToolID.MEMORY,
 ]; // IDs of suggested tools
 
@@ -152,20 +150,13 @@ export default function AIToolInventory() {
   const ideMessenger = useContext(IdeMessengerContext);
   const navigate = useNavigate();
   const integrations = useSelector((state: RootState) => state.state.config.integrations || []);
-  // const aiderProcessState = useSelector(
-  //   (state: RootState) => state.state.aiderProcessState,
-  // );
 
   const [isSuperMavenInstalled, setIsSuperMavenInstalled] = useState(false);
-  const [isAiderInstalled, setIsAiderInstalled] = useState(false);
 
   useEffect(() => {
     setTools((prevTools) =>
       prevTools.map((tool) => {
-        if (tool.id === AIToolID.CREATOR) {
-          // Aider's ID
-          return { ...tool, isInstalled: isAiderInstalled };
-        } else if (tool.id === AIToolID.AUTOCOMPLETE) {
+       if (tool.id === AIToolID.AUTOCOMPLETE) {
           // Supermaven's ID
           return { ...tool, isInstalled: isSuperMavenInstalled };
         } else if (tool.id === AIToolID.MEMORY) {
@@ -176,7 +167,7 @@ export default function AIToolInventory() {
         }
       }),
     );
-  }, [isSuperMavenInstalled, isAiderInstalled]);
+  }, [isSuperMavenInstalled]);
 
   // Fetch installation status once when component mounts
   useEffect(() => {
@@ -194,18 +185,6 @@ export default function AIToolInventory() {
       }
     };
 
-    const checkAiderInstallation = async () => {
-      const response = await ideMessenger.request(
-        "isAiderInstalled",
-        undefined,
-      );
-      const isInstalled = typeof response === "boolean" ? response : false;
-      console.dir("INVENTORY AIDER INSTALLED ");
-      console.dir(isInstalled);
-      setIsAiderInstalled(isInstalled);
-    };
-
-    checkAiderInstallation();
     checkInstallations();
   }, []);
 
@@ -318,7 +297,7 @@ export default function AIToolInventory() {
       ),
       strengths: [
         <span>Autonomous feature implementation and bug fixing</span>,
-        <span>Controlled access to development environment</span>, 
+        <span>Controlled access to development environment</span>,
         <span>Iterative feedback loop for better results</span>,
         <span>Maintains safety through permission-based access</span>
       ],
@@ -326,37 +305,6 @@ export default function AIToolInventory() {
       enabled: true,
       comingSoon: false,
       installNeeded: false,
-    },
-    {
-      id: AIToolID.CREATOR,
-      name: "Creator",
-      description: (
-        <span>"No-code" assistant; complete features directly.</span>
-      ),
-      icon: "inventory-creator.svg",
-      whenToUse: (
-        <span>
-          When you need a feature or a bug fix completed, Creator will find the
-          relevant files, and make changes directly to your code. You can see
-          diff changes in your source control tab afterwards
-        </span>
-      ),
-      strengths: [
-        <span>Full feature completions</span>,
-        <span>Automated refactoring</span>,
-        <span>Less human intervention needed</span>,
-      ],
-      installNeeded: true,
-      isInstalled: false, // Initially set to false
-      installCommand: async () => {
-        if (isAiderInstalled) {
-          ideMessenger.post("uninstallAider", undefined);
-          return;
-        }
-        ideMessenger.post("installAider", undefined);
-      },
-      poweredBy: "aider",
-      enabled: true,
     },
     {
       id: AIToolID.MEMORY,
@@ -489,9 +437,6 @@ export default function AIToolInventory() {
 
   const handleOpen = (tool: AITool) => {
     switch (tool.id) {
-      case AIToolID.CREATOR:
-        navigate("/inventory/aiderMode");
-        break;
       case AIToolID.SEARCH:
         navigate("/inventory/perplexityMode");
         break;

@@ -71,17 +71,6 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
     packages: [models.pearai_model],
     showInMenu: false,
   },
-  aider: {
-    title: "Aider",
-    provider: "aider",
-    refPage: "aider",
-    description:
-      "Enjoy effortless integration and lower your costs with our reliable hosted services.",
-    icon: "",
-    tags: [],
-    packages: [models.aider],
-    showInMenu: false,
-  },
   perplexity: {
     title: "Perplexity",
     provider: "perplexity",
