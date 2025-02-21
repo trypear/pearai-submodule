@@ -386,16 +386,37 @@ const commandsMap: (
         });
       console.log("FIRST PEARAI LAUNCH FLAG RESET");
     },
-    "pearai.focusCreatorView": async () => {
-      vscode.commands.executeCommand("roo-cline.SidebarProvider.focus");
+    "pearai.focusAgentView": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'agent' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
+      vscode.commands.executeCommand("pearai-roo-cline.SidebarProvider.focus");
+
     },
     "pearai.focusPearAIMem0View": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'memory' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
       vscode.commands.executeCommand("pearai.mem0View.focus");
     },
     "pearai.focusPearAISearchView": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'search' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
       vscode.commands.executeCommand("pearai.searchView.focus");
     },
     "pearai.focusContinueInput": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'chat' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
         // focus sidebar
@@ -408,6 +429,11 @@ const commandsMap: (
       await addHighlightedCodeToContext(sidebar.webviewProtocol);
     },
     "pearai.focusContinueInputWithoutClear": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'chat' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
       const fullScreenTab = getFullScreenTab();
 
       const isContinueInputFocused = await sidebar.webviewProtocol.request(
