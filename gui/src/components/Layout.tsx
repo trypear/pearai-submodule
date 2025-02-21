@@ -204,9 +204,15 @@ const Layout = () => {
   });
 
   if (window.isPearOverlay) {
-    return <OverlayContainer isPearOverlay={window.isPearOverlay} path={location.pathname} onClick={() => {
-      ideMessenger.post("closeOverlay", undefined);
-    }}>
+    return <OverlayContainer
+      isPearOverlay={window.isPearOverlay}
+      path={location.pathname}
+      onClick={(e) => { 
+        if (e.target === e.currentTarget) {
+          ideMessenger.post("closeOverlay", undefined);
+        }
+      }}
+    >
       <GlobalStyle />
       <Outlet />
     </OverlayContainer>;
@@ -215,16 +221,16 @@ const Layout = () => {
   return (
     <div className="bg-sidebar-background flex flex-col gap-1 h-screen">
       {
-      <TextDialog
-        showDialog={showDialog}
-        onEnter={() => {
-          dispatch(setShowDialog(false));
-        }}
-        onClose={() => {
-          dispatch(setShowDialog(false));
-        }}
-        message={dialogMessage}
-      />}
+        <TextDialog
+          showDialog={showDialog}
+          onEnter={() => {
+            dispatch(setShowDialog(false));
+          }}
+          onClose={() => {
+            dispatch(setShowDialog(false));
+          }}
+          message={dialogMessage}
+        />}
 
       <PostHogPageView />
       <Outlet />
