@@ -266,6 +266,7 @@ const commandsMap: (
       await extensionContext.globalState.update(FIRST_LAUNCH_KEY, true);
       await vscode.commands.executeCommand('pearai.unlockOverlay');
       await vscode.commands.executeCommand('pearai.hideOverlay');
+      await vscode.commands.executeCommand('workbench.action.markPearAIFirstLaunchComplete');
     },
     "pearai.restFirstLaunchInGUI": async () => {
       sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEARAI_CHAT_VIEW_ID]);
@@ -399,10 +400,11 @@ const commandsMap: (
           core.invoke("index/setPaused", false);
         }, 6000);
       }
-      await vscode.commands.executeCommand("pearai.showOverlay");
-      await vscode.commands.executeCommand("pearai.showInteractiveContinueTutorial");
+      // await vscode.commands.executeCommand("pearai.showOverlay");
+      // await vscode.commands.executeCommand("pearai.showInteractiveContinueTutorial");
     },
     "pearai.developer.restFirstLaunch": async () => {
+      vscode.commands.executeCommand("workbench.action.resetPearAIFirstLaunchKey");
       vscode.commands.executeCommand("pearai.restFirstLaunchInGUI");
       extensionContext.globalState.update(FIRST_LAUNCH_KEY, false);
       vscode.window.showInformationMessage("Successfully reset PearAI first launch flag, RELOAD WINDOW TO SEE WELCOME PAGE", 'Reload Window')

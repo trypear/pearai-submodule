@@ -14,7 +14,9 @@ export default function Welcome() {
 
   useEffect(() => {
     // Lock the overlay when welcome page mounts
-    ideMessenger.post("lockOverlay", undefined);
+    // this is too late, so overlay is locked at pearai-app level.
+    // ideMessenger.post("lockOverlay", undefined);
+    ideMessenger.post("hideOverlayLoadingMessage", undefined);
 
     // Cleanup - unlock when component unmounts
     return () => {
