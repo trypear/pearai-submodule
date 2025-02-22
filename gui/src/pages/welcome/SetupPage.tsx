@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Bot, Search, Download, LogIn, User, Command, Terminal, Import, Move } from "lucide-react";
+import { Sparkles, Bot, Search, Download, LogIn, User, Command, Terminal, Import, Move, Check } from "lucide-react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import ImportExtensions from "./setup/ImportExtensions";
 import AddToPath from "./setup/AddToPath";
@@ -409,7 +409,30 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
               style={{ background: currentFeature === index ? vscInputBackground : vscEditorBackground }}
               onClick={() => handleFeatureChange(index)}
             >
-              <Checkbox className="w-4 h-4 rounded-[50%] shadow outline-none" style={{ background: "transparent" }} />
+              <div className="relative">
+                <input 
+                  type="checkbox" 
+                  className="w-4 h-4 shadow outline-none" 
+                  style={{ 
+                      background: visitedSteps.includes(index + 1) ? "white" : "transparent", 
+                      borderRadius: "50%", 
+                      border: "1.5px solid gray", 
+                      appearance: "none", 
+                      width: "20px", 
+                      height: "20px", 
+                      cursor: "pointer", 
+                      marginTop: "6px",
+                      marginLeft: "4px"
+                  }} 
+                  onChange={(e) => {
+                      // Handle checkbox change if needed
+                  }} 
+                  checked={visitedSteps.includes(index)} 
+                />
+                {visitedSteps.includes(index + 1) && (
+                    <Check className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 stroke-[2.5px] text-black" />
+                )}
+              </div>
               <div className="w-48 flex-col justify-center items-center gap-1 inline-flex">
                 <div className="self-stretch text-xs font-normal font-['SF Pro'] leading-[18px]">{step.title}</div>
               </div>
