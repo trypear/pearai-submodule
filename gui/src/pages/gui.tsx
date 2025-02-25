@@ -513,39 +513,46 @@ function GUI() {
       >
         {shouldShowSplash && isNewSession &&
           <>
-            <div className="max-w-2xl mx-auto w-full h-[calc(100vh-270px)] text-center flex flex-col justify-center">
+            <div className="max-w-2xl mx-auto w-full h-[calc(100vh-210px)] text-center flex flex-col justify-center">
 
-              <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
-                <img src={getLogoPath("pearai-chat-splash.svg")} alt="..." />
-                <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
+              <div className="w-full h-[700px] text-center flex flex-col items-center justify-center relative gap-5">
+                <div className="flex-1 flex absolute bottom-[260px] items-center justify-center">
+                  <img src={getLogoPath("pearai-chat-splash.svg")} alt="..." />
+                </div>
+
+                <div className="w-[300px] h-[240px] absolute bottom-0 overflow-hidden flex-col justify-start items-start gap-5 inline-flex">
                   <div className="flex flex-col text-left">
                     <div className="text-2xl">PearAI Chat</div>
                     <div className="h-[18px] opacity-50 text-xs leading-[18px]">
                       Powered by Continue
                     </div>
                   </div>
-                </div>
-                <div className="w-[300px] text-left opacity-50 text-xs leading-[18px]">
-                  Ask questions about the code or make changes.
-                </div>
-                <div className="w-[300px] text-left space-y-2  text-zinc-400 text-sm">
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1">
-                      <span>⌘</span>
-                      <span>+</span>
-                      <span>I</span>
-                    </span>
-                    <span>Make inline edits</span>
+
+                  <div className="flex flex-col gap-5  h-[100px] overflow-hidden">
+                    <div className="w-[300px] text-left opacity-50 text-xs leading-[18px]">
+                      Ask questions about the code or make changes.
+                    </div>
+                    <div className="w-[300px] text-left space-y-2  text-zinc-400 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1">
+                          <span>⌘</span>
+                          <span>+</span>
+                          <span>I</span>
+                        </span>
+                        <span>Make inline edits</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="flex items-center gap-1">
+                          <span>⌘</span>
+                          <span>+</span>
+                          <span>L</span>
+                        </span>
+                        <span>Add selection to chat</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="flex items-center gap-1">
-                      <span>⌘</span>
-                      <span>+</span>
-                      <span>L</span>
-                    </span>
-                    <span>Add selection to chat</span>
-                  </div>
                 </div>
+
               </div>
             </div>
           </>

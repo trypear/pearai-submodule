@@ -36,6 +36,7 @@ color: ${vscBadgeForeground};
 
 interface ContextToolbarProps {
     hidden?: boolean;
+    source: 'continue' | 'perplexity' | 'aider';
     onClick?: () => void;
     onAddContextItem?: () => void;
     onImageFileSelected?: (file: File) => void;
@@ -50,6 +51,8 @@ function ContextToolbar(props: ContextToolbarProps) {
     const dispatch = useDispatch();
     const activeFilePath = useSelector((state: RootState) => state.uiState.activeFilePath);
 	const timeoutRef = useRef<NodeJS.Timeout>();
+
+    const isPerplexity = props.source === 'perplexity'
 
     const fileName = activeFilePath ? activeFilePath.split(/[/\\]/).pop() : "Current File";
 
@@ -93,7 +96,7 @@ function ContextToolbar(props: ContextToolbarProps) {
             </Button>
 
 			{/* Add Current File Button */}
-            <Button
+            {!isPerplexity && <Button
                 className={`gap-1 h-6 text-input-foreground text-xs px-2 bg-transparent hover:bg-sidebar-background border-solid border-input
                     ${!activeFilePath ? 'opacity-50 cursor-not-allowed' : ''}
                     ${isFileAlreadyAdded() ? 'opacity-50 cursor-not-allowed' : ''}`}
@@ -151,7 +154,7 @@ function ContextToolbar(props: ContextToolbarProps) {
                     />
                 )}
                 {fileName}
-            </Button>
+            </Button>}
 
 			{/* Image Upload Button */}
             {defaultModel &&

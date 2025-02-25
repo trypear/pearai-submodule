@@ -71,11 +71,13 @@ const StepsDiv = styled.div`
   }
 `;
 
-const InputContainer = styled.div<{ isNewSession: boolean }>`
-  padding: 16px;
+const InputContainer = styled.div<{ isNewSession?: boolean }>`
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-bottom: 0.3rem;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   position: ${props => props.isNewSession ? 'relative' : 'fixed'};
@@ -291,7 +293,7 @@ function PerplexityGUI() {
 
   return (
     <>
-      <div className="p-3 relative flex h-screen overflow-hidden ">
+      <div className="p-1 relative flex h-screen overflow-hidden ">
         {/* <InventoryDetails
           textColor="#FFFFFF"
           backgroundColor="#0fb5af"
@@ -335,27 +337,32 @@ function PerplexityGUI() {
 
             <div
               className={cn(
-                "mx-2",
+                "",
                 // state.perplexityHistory.length === 0 &&
                 // "border-solid border-2 border-red-500",
               )}
             >
               {state.perplexityHistory.length === 0 && (
-                <div className="max-w-2xl mx-auto w-full h-[calc(100vh-450px)] text-center flex flex-col justify-center">
-                  <div className="w-full text-center flex flex-col items-center justify-center relative gap-5">
-                    <img
-                      src={getLogoPath("pearai-search-splash.svg")}
-                      alt="PearAI Search Splash"
-                    />
-                    <div className="w-[300px] flex-col justify-start items-start gap-5 inline-flex">
+                <div className="max-w-2xl mx-auto w-full h-[calc(100vh-210px)] text-center flex flex-col justify-center">
+                  <div className="w-full h-[700px] text-center flex flex-col items-center justify-center relative gap-5">
+
+                    <div className="flex-1 flex absolute bottom-[260px] items-center justify-center">
+                      <img
+                        src={getLogoPath("pearai-search-splash.svg")}
+                        alt="PearAI Search Splash"
+                      />
+                    </div>
+
+                    <div className="w-[300px] h-[240px] absolute bottom-0 overflow-hidden flex-col justify-start items-start gap-5 inline-flex">
                       <div className="flex flex-col text-left">
                         <div className="text-2xl font-['SF Pro']">PearAI Search</div>
                         <div className="h-[18px] opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">Powered by Perplexity</div>
                       </div>
+                      <div className="w-[300px] h-[100px] overflow-hidden text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+                        AI-powered search engine: up-to-date information for docs, libraries, etc. Also good for non-coding specific questions.
+                      </div>
                     </div>
-                    <div className="w-[300px] text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-                      AI-powered search engine: up-to-date information for docs, libraries, etc. Also good for non-coding specific questions.
-                    </div>
+
                   </div>
                 </div>
               )}
@@ -483,28 +490,24 @@ function PerplexityGUI() {
         </div>
       </div>
       {!active && (
-        <div className="flex justify-center p-3">
-          <div className="max-w-3xl w-full">
-            <InputContainer
-              ref={inputContainerRef}
-              isNewSession={state.perplexityHistory.length === 0}
-            >
-              <ContinueInputBox
-                key={sessionKeyRef.current}
-                onEnter={(editorContent, modifiers) => {
-                  sendInput(editorContent, modifiers);
-                }}
-                isLastUserInput={false}
-                isMainInput={true}
-                hidden={active}
-                source="perplexity"
-                className={cn(
-                  state.perplexityHistory.length === 0 && "shadow-lg"
-                )}
-              />
-            </InputContainer>
-          </div>
-        </div>
+        <InputContainer
+          ref={inputContainerRef}
+          isNewSession={state.perplexityHistory.length === 0}
+        >
+          <ContinueInputBox
+            key={sessionKeyRef.current}
+            onEnter={(editorContent, modifiers) => {
+              sendInput(editorContent, modifiers);
+            }}
+            isLastUserInput={false}
+            isMainInput={true}
+            hidden={active}
+            source="perplexity"
+            className={cn(
+              state.perplexityHistory.length === 0 && "shadow-lg"
+            )}
+          />
+        </InputContainer>
       )}
 
       {active ? (
