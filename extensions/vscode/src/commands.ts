@@ -26,8 +26,6 @@ import { ContinueGUIWebviewViewProvider } from "./ContinueGUIWebviewViewProvider
 import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
 import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
-import { aiderCtrlC, aiderResetSession, installAider, sendAiderProcessStateToGUI, uninstallAider } from './integrations/aider/aiderUtil';
-import { AiderState } from "./integrations/aider/types/aiderTypes";
 import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
 import { Battery } from "./util/battery";
 import { handleIntegrationShortcutKey } from "./util/integrationUtils";
@@ -274,27 +272,6 @@ const commandsMap: (
     "pearai.showInteractiveContinueTutorial": async () => {
       sidebar.webviewProtocol?.request("showInteractiveContinueTutorial", undefined, [PEARAI_CHAT_VIEW_ID]);
     },
-    "pearai.openAiderChanges": async () => {
-      // Close overlay
-      await vscode.commands.executeCommand('pearai.hideOverlay');
-      // Open source control
-      await vscode.commands.executeCommand('workbench.view.scm');
-
-      // Get Git extension
-      const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
-      const repository = gitExtension?.getAPI(1).repositories[0];
-      if (repository) {
-          // Get unstaged changes
-          const unstagedChanges = repository.state.workingTreeChanges;
-          if (unstagedChanges.length > 0) {
-              // Open the diff view of the first staged change
-              await vscode.commands.executeCommand(
-                  'git.openChange',
-                  unstagedChanges[0].uri
-              );
-          }
-      }
-    },
     "pearai.highlightElement": async (msg) => {
       vscode.commands.executeCommand("pearai.highlightElements", msg.data.elementSelectors);
     },
@@ -374,10 +351,6 @@ const commandsMap: (
     "pearai.docsReIndex": async () => {
       core.invoke("context/indexDocs", { reIndex: true });
     },
-    "pearai.toggleCreator": async () => {
-      await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
-    },
     "pearai.toggleSearch": async () => {
       await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
@@ -415,16 +388,37 @@ const commandsMap: (
         });
       console.log("FIRST PEARAI LAUNCH FLAG RESET");
     },
-    "pearai.focusCreatorView": async () => {
-      vscode.commands.executeCommand("roo-cline.SidebarProvider.focus");
+    "pearai.focusAgentView": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'agent' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
+      vscode.commands.executeCommand("pearai-roo-cline.SidebarProvider.focus");
+
     },
     "pearai.focusPearAIMem0View": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'memory' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
       vscode.commands.executeCommand("pearai.mem0View.focus");
     },
     "pearai.focusPearAISearchView": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'search' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
       vscode.commands.executeCommand("pearai.searchView.focus");
     },
     "pearai.focusContinueInput": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'chat' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
         // focus sidebar
@@ -437,6 +431,11 @@ const commandsMap: (
       await addHighlightedCodeToContext(sidebar.webviewProtocol);
     },
     "pearai.focusContinueInputWithoutClear": async () => {
+      try {
+        vscode.commands.executeCommand('workbench.action.switchToPearAIIntegrationIconBar', { view: 'chat' });
+      } catch (e) {
+        console.error("Failed to focus pearai-roo-cline sidebar:", e);
+      }
       const fullScreenTab = getFullScreenTab();
 
       const isContinueInputFocused = await sidebar.webviewProtocol.request(
@@ -658,28 +657,6 @@ const commandsMap: (
         null,
         extensionContext.subscriptions,
       );
-    },
-    "pearai.installAider": async () => {
-      await installAider(core);
-    },
-    "pearai.uninstallAider": async () => {
-      await uninstallAider(core);
-    },
-    "pearai.aiderMode": async () => {
-      //await openAiderPanel(core, sidebar, extensionContext);
-      await handleIntegrationShortcutKey("navigateToCreator", "aiderMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
-    },
-    "pearai.aiderCtrlC": async () => {
-      await aiderCtrlC(core);
-    },
-    "pearai.aiderResetSession": async () => {
-      await aiderResetSession(core);
-    },
-    "pearai.sendAiderProcessStateToGUI": async () => {
-      await sendAiderProcessStateToGUI(core, sidebar.webviewProtocol);
-    },
-    "pearai.setAiderProcessState": async (state: AiderState) => {
-      sidebar.webviewProtocol?.request("setAiderProcessStateInGUI", state, [PEARAI_OVERLAY_VIEW_ID]);
     },
     "pearai.perplexityMode": async () => {
       await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
@@ -913,7 +890,6 @@ const commandsMap: (
       sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
       vscode.commands.executeCommand("pearai-roo-cline.pearaiLogin", data)
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
-      core.invoke("llm/startAiderProcess", undefined);
     },
     "pearai.closeChat": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");

@@ -2,7 +2,6 @@ import { CogIcon } from "@heroicons/react/24/outline";
 import InventoryPage from "../inventory/pages/InventoryPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
-import AiderGUI from "@/integrations/aider/aidergui";
 import Mem0GUI from "@/integrations/mem0/mem0gui";
 import PearAIWrappedGUI from "@/integrations/pearaiWrapped/pearaiWrappedGui";
 import PerplexityGUI from "@/integrations/perplexity/perplexitygui";
@@ -35,13 +34,6 @@ const tabs: Tab[] = [
     component: <HomePage />,
     shortcut: <kbd className="ml-[1.5px]">1</kbd>,
     icon: "inventory.svg",
-  },
-  {
-    id: "aiderMode",
-    name: "Creator",
-    component: <AiderGUI />,
-    shortcut: <kbd className="ml-[1.5px]">2</kbd>,
-    icon: "creator-default.svg",
   },
   {
     id: "perplexityMode",
@@ -89,7 +81,6 @@ export default function Inventory() {
   }, [location]);
 
   useWebviewListener("navigateToInventoryHome", () => handleTabChange("home"), []);
-  useWebviewListener("navigateToCreator", () => handleTabChange("aiderMode"), []);
   useWebviewListener("navigateToSearch", () => handleTabChange("perplexityMode"), []);
   useWebviewListener("navigateToMem0", () => handleTabChange("mem0Mode"), []);
   useWebviewListener("navigateToWrapped", () => handleTabChange("wrappedMode"), []);

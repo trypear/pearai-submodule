@@ -32,7 +32,6 @@ import { Battery } from "../util/battery";
 import { TabAutocompleteModel } from "../util/loadAutocompleteModel";
 import type { VsCodeWebviewProtocol } from "../webviewProtocol";
 import { VsCodeMessenger } from "./VsCodeMessenger";
-import { startAiderProcess } from "../integrations/aider/aiderUtil";
 import { PEARAI_CHAT_VIEW_ID, PEARAI_MEM0_VIEW_ID, PEARAI_SEARCH_VIEW_ID } from "../util/pearai/pearaiViewTypes";
 
 export class VsCodeExtension {
@@ -96,7 +95,7 @@ export class VsCodeExtension {
         },
       ),
     );
-    
+
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         PEARAI_SEARCH_VIEW_ID,
@@ -106,7 +105,7 @@ export class VsCodeExtension {
         },
       ),
     );
-       
+
     context.subscriptions.push(
       vscode.window.registerWebviewViewProvider(
         PEARAI_MEM0_VIEW_ID,
@@ -116,9 +115,9 @@ export class VsCodeExtension {
         },
       ),
     );
-    
+
     resolveWebviewProtocol(this.sidebar.webviewProtocol);
-    
+
     // Config Handler with output channel
     const outputChannel = vscode.window.createOutputChannel("PearAI");
     const inProcessMessenger = new InProcessMessenger<
@@ -403,7 +402,6 @@ export class VsCodeExtension {
     });
 
     this.updateNewWindowActiveFilePath();
-    startAiderProcess(this.core);
   }
 
   static continueVirtualDocumentScheme = "pearai";

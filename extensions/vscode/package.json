@@ -3,7 +3,7 @@
   "name": "pearai",
   "publisher": "pearai",
   "icon": "media/icon.png",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/trypear/pearai-submodule"
@@ -194,9 +194,9 @@
         "group": "PearAI"
       },
       {
-        "command": "pearai.focusCreatorView",
+        "command": "pearai.focusAgentView",
         "category": "PearAI",
-        "title": "Focus PearAI Creator View",
+        "title": "Focus PearAI Agent View",
         "group": "PearAI"
       },
       {
@@ -209,7 +209,7 @@
       {
         "command": "pearai.focusPearAIMem0View",
         "category": "PearAI",
-        "title": "Focus PearAI Memory 0 View",
+        "title": "Focus PearAI Memory View",
         "group": "PearAI"
       },
       {
@@ -378,12 +378,6 @@
         "category": "Shell",
         "title": "Patch WSL",
         "group": "Shell"
-      },
-      {
-        "command": "pearai.aiderMode",
-        "category": "PearAI",
-        "title": "Open PearAI Creator",
-        "group": "PearAI"
       },
       {
         "command": "pearai.perplexityMode",

@@ -64,7 +64,6 @@ import { ComboBoxItem } from "./types";
 import { useLocation } from "react-router-dom";
 import { TipTapContextMenu } from './TipTapContextMenu';
 
-
 const InputBoxDiv = styled.div<{ isNewSession?: boolean }>`
 	position: relative;
   resize: none;
@@ -139,18 +138,11 @@ const HoverTextDiv = styled.div`
 	pointer-events: none;
 `;
 
-
-const getPlaceholder = (historyLength: number, location: any, source: 'perplexity' | 'aider' | 'continue') => {
-  if (source === 'aider') {
-    return historyLength === 0
-      ? "Ask me to create, change, or fix anything..."
-      : "Send a follow-up";
-  }
+const getPlaceholder = (historyLength: number, location: any, source: 'perplexity' | 'continue') => {
 
   if (source === 'perplexity') {
     return historyLength === 0 ? "Ask Search about up-to-date information, like documentation changes." : "Ask a follow-up";
   }
-
 
   return historyLength === 0
     ? "Ask questions about code or make changes. Use / for commands, and @ to add context."
@@ -175,10 +167,65 @@ interface TipTapEditorProps {
   isMainInput: boolean;
   onEnter: (editorState: JSONContent, modifiers: InputModifiers) => void;
   editorState?: JSONContent;
-  source?: 'perplexity' | 'aider' | 'continue';
+  source?: 'perplexity' | 'continue';
   onChange?: (newState: JSONContent) => void;
   onHeightChange?: (height: number) => void;
 }
+
+export const handleImageFile = async (
+  file: File,
+  onError?: (message: string) => void
+): Promise<[HTMLImageElement, string] | undefined> => {
+  const filesize = file.size / 1024 / 1024; // filesize in MB
+
+  if (
+    [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/svg",
+      "image/webp",
+    ].includes(file.type) &&
+    filesize < 10
+  ) {
+    const img = new (globalThis as any).Image() as HTMLImageElement;
+    const objectUrl = URL.createObjectURL(file);
+
+    img.src = objectUrl;
+
+    return await new Promise((resolve) => {
+      const safeRevokeURL = () => {
+        try {
+          URL.revokeObjectURL(img.src);
+        } catch (error) {
+          console.error('Error revoking URL:', error);
+        }
+      };
+
+      img.onload = function () {
+        const dataUrl = getDataUrlForFile(file, img);
+        const image = new (window as any).Image() as HTMLImageElement;
+
+        image.src = dataUrl;
+        image.onload = function () {
+          resolve([image, dataUrl]);
+          safeRevokeURL();
+        };
+        image.onerror = function () {
+          safeRevokeURL();
+          resolve(undefined);
+        };
+      };
+      img.onerror = function () {
+        safeRevokeURL();
+        resolve(undefined);
+      };
+    });
+  } else if (onError) {
+    onError("Images need to be in an accepted format and less than 10MB in size.");
+  }
+};
 
 export const handleCopy = (editor: Editor) => {
   const selection = editor.state.selection;
@@ -194,27 +241,41 @@ export const handleCut = (editor: Editor) => {
 };
 
 export const handlePaste = async (editor: Editor) => {
-  const clipboardText = await navigator.clipboard.readText();
-  if (clipboardText) {
-    const lines = clipboardText.split(/\r?\n/);
-    const { tr } = editor.state;
-    const { schema } = editor.state;
-    let pos = editor.state.selection.from;
+  try {
+    const items = await navigator.clipboard.read();
 
-    // Delete the selected text before inserting new text
-    tr.delete(editor.state.selection.from, editor.state.selection.to);
+    for (const item of items) {
+      // Handle images
+      if (item.types.includes('image/png') || item.types.includes('image/jpeg')) {
+        try {
+          const imageBlob = await item.getType(item.types.find(type => type.startsWith('image/')) || 'image/png');
+          const file = new File([imageBlob], 'pasted-image.png', { type: 'image/png' });
+          const result = await handleImageFile(file);
 
-    lines.forEach((line, index) => {
-      if (index > 0) {
-        tr.insert(pos++, schema.nodes.hardBreak.create());
+          if (result) {
+            const [, dataUrl] = result;
+
+            editor.commands.setImage({ src: dataUrl });
+            return true;
+          }
+        } catch (err) {
+          console.error('Failed to paste image:', err);
+        }
       }
-      tr.insertText(line, pos);
-      pos += line.length;
-    });
+    }
 
-    editor.view.dispatch(tr);
-    return true;
+    // Fall back to text handling if no image
+    const clipboardText = await navigator.clipboard.readText();
+
+    if (clipboardText) {
+      editor.commands.deleteSelection();
+      editor.commands.insertContent(clipboardText.trim());
+      return true;
+    }
+  } catch (error) {
+    console.error('Error handling paste:', error);
   }
+
   return false;
 };
 
@@ -232,14 +293,12 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const ideMessenger = useContext(IdeMessengerContext);
   const { getSubmenuContextItems } = useContext(SubmenuContextProvidersContext);
-  
+
   const historyLength = useSelector(
     (store: RootState) => {
-      switch(source) {
+      switch (source) {
         case 'perplexity':
           return store.state.perplexityHistory.length;
-        case 'aider':
-          return store.state.aiderHistory.length;
         default:
           return store.state.history.length;
       }
@@ -293,6 +352,7 @@ const TipTapEditor = memo(function TipTapEditor({
     (store: RootState) => store.state.contextItems,
   );
   const defaultModel = useSelector(defaultModelSelector);
+  const defaultModelRef = useUpdatingRef(defaultModel);
   const getSubmenuContextItemsRef = useUpdatingRef(getSubmenuContextItems);
   const availableContextProvidersRef = useUpdatingRef(availableContextProviders)
 
@@ -302,58 +362,15 @@ const TipTapEditor = memo(function TipTapEditor({
   );
 
   const active = useSelector((store: RootState) => {
-    switch(source) {
+    switch (source) {
       case 'perplexity':
         return store.state.perplexityActive;
-      case 'aider':
-        return store.state.aiderActive;
       default:
         return store.state.active;
     }
   });
 
   const activeRef = useUpdatingRef(active);
-
-  async function handleImageFile(
-    file: File,
-  ): Promise<[HTMLImageElement, string] | undefined> {
-    const filesize = file.size / 1024 / 1024; // filesize in MB
-    // check image type and size
-    if (
-      [
-        "image/jpeg",
-        "image/jpg",
-        "image/png",
-        "image/gif",
-        "image/svg",
-        "image/webp",
-      ].includes(file.type) &&
-      filesize < 10
-    ) {
-      // check dimensions
-      const _URL = window.URL || window.webkitURL;
-      const img = new window.Image();
-      img.src = _URL.createObjectURL(file);
-
-      return await new Promise((resolve) => {
-        img.onload = function () {
-          const dataUrl = getDataUrlForFile(file, img);
-
-          const image = new window.Image();
-          image.src = dataUrl;
-          image.onload = function () {
-            resolve([image, dataUrl]);
-          };
-        };
-      });
-    } else {
-      ideMessenger.post("errorPopup", {
-        message:
-          "Images need to be in jpg or png format and less than 10MB in size.",
-      });
-    }
-    return undefined;
-  }
 
   const mainEditorContent = useSelector(
     (store: RootState) => store.state.mainEditorContent,
@@ -409,16 +426,17 @@ const TipTapEditor = memo(function TipTapEditor({
             props: {
               handleDOMEvents: {
                 paste(view, event) {
-                  console.log("Pasting image");
                   const items = event.clipboardData.items;
                   for (const item of items) {
                     const file = item.getAsFile();
+                    const model = defaultModelRef.current;
+
                     file &&
                       modelSupportsImages(
-                        defaultModel.provider,
-                        defaultModel.model,
-                        defaultModel.title,
-                        defaultModel.capabilities,
+                        model.provider,
+                        model.model,
+                        model.title,
+                        model.capabilities,
                       ) &&
                       handleImageFile(file).then((resp) => {
                         if (!resp) {
@@ -590,10 +608,9 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const editorFocusedRef = useUpdatingRef(editor?.isFocused, [editor]);
 
-  
+
   const isPerplexity = source === 'perplexity';
-  const isAider = source === 'aider';
-  
+
   useEffect(() => {
     const handleShowFile = (event: CustomEvent) => {
       const filepath = event.detail.filepath;
@@ -638,7 +655,7 @@ const TipTapEditor = memo(function TipTapEditor({
           // Paste
           event.preventDefault(); // Prevent default paste behavior
           const clipboardText = await navigator.clipboard.readText();
-          editor.commands.insertContent(clipboardText);
+          editor.commands.insertContent(clipboardText.trim());
         }
       };
 
@@ -785,8 +802,8 @@ const TipTapEditor = memo(function TipTapEditor({
         .run();
 
       setTimeout(() => {
-          editor.commands.blur();
-          editor.commands.focus("end");
+        editor.commands.blur();
+        editor.commands.focus("end");
       }, 20);
     },
     [editor, onEnterRef.current, isMainInput],
@@ -854,9 +871,8 @@ const TipTapEditor = memo(function TipTapEditor({
           rif.filepath,
           await ideMessenger.ide.getWorkspaceDirs(),
         );
-        const rangeStr = `(${rif.range.start.line + 1}-${
-          rif.range.end.line + 1
-        })`;
+        const rangeStr = `(${rif.range.start.line + 1}-${rif.range.end.line + 1
+          })`;
         const item: ContextItemWithId = {
           content: rif.contents,
           name: `${basename} ${rangeStr}`,
@@ -1126,7 +1142,8 @@ const TipTapEditor = memo(function TipTapEditor({
       }}
     >
       <ContextToolbar
-hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
+        hidden={!(editorFocusedRef.current || isMainInput)}
+        source={source}
         onImageFileSelected={(file) => {
           handleImageFile(file).then(([img, dataUrl]) => {
             const { schema } = editor.state;
@@ -1144,7 +1161,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
             editor.commands.insertContent(" @");
           }
         }}
-				editor={editor}
+        editor={editor}
       />
 
       <EditorContent
@@ -1191,7 +1208,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity || isAider}
             <HoverTextDiv>Drop Here</HoverTextDiv>
           </>
         )
-			}
+      }
       {contextMenu && editor && (
         <TipTapContextMenu
           editor={editor}

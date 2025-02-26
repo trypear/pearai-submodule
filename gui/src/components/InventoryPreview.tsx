@@ -3,15 +3,9 @@ import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 const menuItems = [
   {
     icon: "chat-default.svg",
-    path: "/inventory/aiderMode",
+    path: "/inventory",
     tooltip: "Inventory",
     command: "pearai.toggleInventoryHome",
-  },
-  {
-    icon: "creator-default.svg",
-    path: "/inventory/aiderMode",
-    tooltip: "Creator",
-    command: "pearai.toggleCreator",
   },
   {
     icon: "search-default.svg",

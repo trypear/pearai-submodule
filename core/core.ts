@@ -29,11 +29,6 @@ import { editConfigJson } from "./util/paths";
 import { Telemetry } from "./util/posthog";
 import { streamDiffLines } from "./util/verticalEdit";
 import PearAIServer from "./llm/llms/PearAIServer";
-import Aider from "./llm/llms/AiderLLM";
-import {
-  startAiderProcess,
-  killAiderProcess,
-} from "../extensions/vscode/src/integrations/aider/aiderUtil";
 
 
 export class Core {
@@ -456,7 +451,6 @@ export class Core {
       const { accessToken, refreshToken } = msg.data || {};
       const config = await this.configHandler.loadConfig();
       const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
-      const aiderModel = config.models.find(model => model instanceof Aider) as Aider;
 
       try {
         if (pearAIModels.length > 0) {
@@ -469,19 +463,7 @@ export class Core {
         console.warn(`Error resetting PearAI credentials: ${e}`);
         return undefined;
       }
-      try {
-        if (aiderModel) {
-          aiderModel.setPearAIAccessToken(accessToken);
-          aiderModel.setPearAIRefreshToken(refreshToken);
-        }
-      } catch (e) {
-        console.warn(`Error resetting PearAI credentials for aider: ${e}`);
-        return undefined;
-      }
     });
-    on("llm/startAiderProcess", () => startAiderProcess(this));
-
-    on("llm/killAiderProcess", () => killAiderProcess(this));
 
     on("llm/listModels", async (msg) => {
       const config = await this.configHandler.loadConfig();

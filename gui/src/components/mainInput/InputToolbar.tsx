@@ -30,12 +30,6 @@ import {
   getMetaKeyLabel,
   isMetaEquivalentKeyPressed,
 } from "../../util";
-import ModelSelect from "../modelSelection/ModelSelect";
-import {
-  isBareChatMode,
-  isPerplexityMode,
-  isAiderMode,
-} from "../../util/bareChatMode";
 import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { RootState } from "@/redux/store";
 import { useLocation } from "react-router-dom";
@@ -64,7 +58,7 @@ interface InputToolbarProps {
 
   hidden?: boolean;
   showNoContext: boolean;
-  source?: 'perplexity' | 'aider' | 'continue';
+  source?: 'perplexity' | 'continue';
 }
 
 function InputToolbar(props: InputToolbarProps) {
@@ -73,7 +67,6 @@ function InputToolbar(props: InputToolbarProps) {
   const defaultModel = useSelector(defaultModelSelector);
   const bareChatMode = props.source === 'continue';
   const perplexityMode = props.source === 'perplexity';
-  const aiderMode = props.source === 'aider';
 
   const useActiveFile = useSelector(selectUseActiveFile);
   const allModels = useSelector(
@@ -84,12 +77,7 @@ function InputToolbar(props: InputToolbarProps) {
   const location = useLocation();
 
   useEffect(() => {
-    if (aiderMode) {
-      const aider = allModels.find((model) =>
-        model?.title?.toLowerCase().includes("creator"),
-      );
-      dispatch(setDefaultModel({ title: aider?.title }));
-    } else if (perplexityMode) {
+    if (perplexityMode) {
       const perplexity = allModels.find((model) =>
         model?.title?.toLowerCase().includes("perplexity"),
       );

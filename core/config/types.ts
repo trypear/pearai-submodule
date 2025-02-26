@@ -587,7 +587,6 @@ declare global {
     | "custom"
     | "msty"
     | "pearai_server"
-    | "aider"
     | "perplexity";
 
   export type ModelName =

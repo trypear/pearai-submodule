@@ -1,5 +1,4 @@
 import type { ContextItemWithId, IndexingProgressUpdate } from "../index.js";
-import type  { AiderState } from "../../extensions/vscode/src/integrations/aider/types/aiderTypes";
 
 export type ToWebviewFromIdeOrCoreProtocol = {
   configUpdate: [undefined, void];

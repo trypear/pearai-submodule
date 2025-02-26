@@ -1,4 +1,3 @@
-import { AiderState } from "../../extensions/vscode/src/integrations/aider/types/aiderTypes.js";
 import {
   Memory,
   MemoryChange,
@@ -34,10 +33,6 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   perplexityMode: [undefined, void];
   addPerplexityContext: [{ text: string; language: string }, void];
   addPerplexityContextinChat: [{ text: string; language: string }, void];
-  aiderMode: [undefined, void];
-  aiderCtrlC: [undefined, void];
-  sendAiderProcessStateToGUI: [undefined, void];
-  aiderResetSession: [undefined, void];
   toggleDevTools: [undefined, void];
   reloadWindow: [undefined, void];
   focusEditor: [undefined, void];
@@ -55,11 +50,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   appendSelected: [undefined, void];
   pearaiLogin: [undefined, void];
   closePearAIOverlay: [undefined, void];
-  openAiderChanges: [undefined, void];
   getNumberOfChanges: [undefined, number];
-  isAiderInstalled: [undefined, boolean];
-  installAider: [undefined, void];
-  uninstallAider: [undefined, void];
   isSupermavenInstalled: [undefined, boolean];
   uninstallVscodeExtension: [{ extensionId: string }, void];
   completeWelcome: [undefined, void];
@@ -119,6 +110,5 @@ export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {
   toggleInventorySettings: [undefined, void];
   navigateToInventoryHome: [undefined, void];
   getCurrentTab: [undefined, string];
-  setAiderProcessStateInGUI: [AiderState, void];
   setRelaceDiffState: [{ diffVisible: boolean }, void];
 };

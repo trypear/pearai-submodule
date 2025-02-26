@@ -34,10 +34,6 @@ const integrationStatesMap = {
     history: 'perplexityHistory',
     active: 'perplexityActive'
   },
-  'aider': {
-    history: 'aiderHistory',
-    active: 'aiderActive'
-  },
   'continue': {
     history: 'history',
     active: 'active'
@@ -117,12 +113,10 @@ fn bubble_sort<T: Ord>(values: &mut[T]) {
 type State = {
   history: ChatHistory;
   perplexityHistory: ChatHistory;
-  aiderHistory: ChatHistory;
   perplexityCitations: Citation[];
   contextItems: ContextItemWithId[];
   active: boolean;
   perplexityActive: boolean;
-  aiderActive: boolean;
   config: BrowserSerializedContinueConfig;
   title: string;
   sessionId: string;
@@ -130,9 +124,9 @@ type State = {
   mainEditorContent?: JSONContent;
   selectedProfileId: string;
   directoryItems: string;
-  onboardingState: { 
-    visitedFeatures: number[]; 
-    visitedSteps: number[] 
+  onboardingState: {
+    visitedFeatures: number[];
+    visitedSteps: number[]
   };
   showInteractiveContinueTutorial: boolean;
   memories: Memory[];  // mem0 memories
@@ -141,12 +135,10 @@ type State = {
 const initialState: State = {
   history: [],
   perplexityHistory: [],
-  aiderHistory: [],
   perplexityCitations: [],
   contextItems: [],
   active: false,
   perplexityActive: false,
-  aiderActive: false,
   config: {
     slashCommands: [
       {
@@ -221,21 +213,14 @@ export const stateSlice = createSlice({
     setPerplexityActive: (state) => {
       state.perplexityActive = true;
     },
-    setAiderActive: (state) => {
-      state.aiderActive = true;
-    },
     setPerplexityCitations: (state, action: PayloadAction<Citation[]>) => {
       state.perplexityHistory[state.perplexityHistory.length - 1].citations = action.payload;
     },
-    clearLastResponse: (state, action?: PayloadAction<'perplexity' | 'aider' | 'continue'>) => {
+    clearLastResponse: (state, action?: PayloadAction<'perplexity' | 'continue'>) => {
       if (action.payload === 'perplexity') {
         if (state.perplexityHistory.length < 2) return;
         state.mainEditorContent = state.perplexityHistory[state.perplexityHistory.length - 2].editorState;
         state.perplexityHistory = state.perplexityHistory.slice(0, -2);
-      } else if (action.payload === 'aider') {
-        if (state.aiderHistory.length < 2) return;
-        state.mainEditorContent = state.aiderHistory[state.aiderHistory.length - 2].editorState;
-        state.aiderHistory = state.aiderHistory.slice(0, -2);
       } else {
         if (state.history.length < 2) {
           return;
@@ -402,28 +387,6 @@ export const stateSlice = createSlice({
       });
       state.perplexityActive = true;
     },
-    initNewActiveAiderMessage: (
-      state,
-      {
-        payload,
-      }: PayloadAction<{
-        editorState: JSONContent;
-      }>,
-    ) => {
-      state.aiderHistory.push({
-        message: { role: "user", content: "" },
-        contextItems: state.contextItems,
-        editorState: payload.editorState,
-      });
-      state.aiderHistory.push({
-        message: {
-          role: "assistant",
-          content: "",
-        },
-        contextItems: [],
-      });
-      state.aiderActive = true;
-    },
     setMessageAtIndex: (
       state,
       {
@@ -477,9 +440,6 @@ export const stateSlice = createSlice({
     setPerplexityInactive: (state) => {
       state.perplexityActive = false;
     },
-    setAiderInactive: (state) => {
-      state.aiderActive = false;
-    },
     streamUpdate: (state, action: PayloadAction<string>) => {
       if (state.history.length) {
         state.history[state.history.length - 1].message.content +=
@@ -489,12 +449,6 @@ export const stateSlice = createSlice({
     streamPerplexityUpdate: (state, action: PayloadAction<string>) => {
       if (state.perplexityHistory.length) {
         state.perplexityHistory[state.perplexityHistory.length - 1].message.content +=
-          action.payload;
-      }
-    },
-    streamAiderUpdate: (state, action: PayloadAction<string>) => {
-      if (state.aiderHistory.length) {
-        state.aiderHistory[state.aiderHistory.length - 1].message.content +=
           action.payload;
       }
     },
@@ -508,7 +462,6 @@ export const stateSlice = createSlice({
       if (session) {
         state.history = session.history;
         state.perplexityHistory = session.perplexityHistory;
-        state.aiderHistory = session.aiderHistory;
         state.title = session.title;
         state.sessionId = session.sessionId;
       } else {
@@ -665,12 +618,12 @@ export const stateSlice = createSlice({
     },
     setOnboardingState: (state, { payload }: PayloadAction<any>) => {
       state.onboardingState = payload;
-    },  
+    },
     setShowInteractiveContinueTutorial: (state, action: PayloadAction<boolean>) => {
       state.showInteractiveContinueTutorial = action.payload;
     },
     setMem0Memories: (state, { payload}: PayloadAction<Memory[]>) => {
-      state.memories = payload.sort((a, b) => 
+      state.memories = payload.sort((a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
     }
@@ -683,10 +636,8 @@ export const {
   addContextItemsAtIndex,
   setInactive,
   setPerplexityInactive,
-  setAiderInactive,
   streamUpdate,
   streamPerplexityUpdate,
-  streamAiderUpdate,
   newSession,
   deleteContextWithIds,
   resubmitAtIndex,
@@ -698,12 +649,10 @@ export const {
   addPromptCompletionPair,
   setActive,
   setPerplexityActive,
-  setAiderActive,
   setPerplexityCitations,
   setEditingContextItemAtIndex,
   initNewActiveMessage,
   initNewActivePerplexityMessage,
-  initNewActiveAiderMessage,
   setMessageAtIndex,
   clearLastResponse,
   consumeMainEditorContent,
