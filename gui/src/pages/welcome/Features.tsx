@@ -21,20 +21,20 @@ const getAssetPath = (assetName: string) => {
 
 export const features = [
   {
-    id: "chat",
-    icon: "inventory-chat.svg",
-    title: "Make line-by line changes with PearAI Chat.",
-    description:
-      "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
-    video: getAssetPath("pearai-chat-welcome.mp4"),
-  },
-  {
     id: "creator",
     icon: "inventory-creator.svg",
     title: "Create code with PearAI Agent.",
     description:
       "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
     video: getAssetPath("pearai-agent-welcome.mp4"),
+  },
+  {
+    id: "chat",
+    icon: "inventory-chat.svg",
+    title: "Make line-by line changes with PearAI Chat.",
+    description:
+      "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
+    video: getAssetPath("pearai-chat-welcome.mp4"),
   },
   {
     id: "search",

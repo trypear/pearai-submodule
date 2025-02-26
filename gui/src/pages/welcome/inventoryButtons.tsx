@@ -3,19 +3,8 @@
 import { vscSidebarBorder } from "@/components";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { useState } from "react";
+
 const menuItems = [
-    {
-        id: "chat",
-        name: "Chat",
-        icon: "chat-no-bg.svg",
-        tooltip: "Chat",
-        bgGradient: "bg-gradient-to-b from-[#aff349] to-[#1b9300]",
-        textColor: "#e8ffc7",
-        glow: "shadow-[0px_0px_57.60000228881836px_9.600000381469727px_rgba(175,243,73,1.00)]",
-        expandedWidth: "w-[65px]",
-        boxShadow: "shadow-[inset_0px_0px_0px_1.2px_#FFFFFF80]",
-        textMargin: "mb-[2.5px]"
-    },
     {
         id: "creator",
         name: "Creator",
@@ -27,6 +16,18 @@ const menuItems = [
         expandedWidth: "w-[83px]",
         boxShadow: "shadow-[inset_0px_0px_0px_1.2px_#FFFFFF80]",
         textMargin: "mb-[2.7px]"
+    },
+    {
+        id: "chat",
+        name: "Chat",
+        icon: "chat-no-bg.svg",
+        tooltip: "Chat",
+        bgGradient: "bg-gradient-to-b from-[#aff349] to-[#1b9300]",
+        textColor: "#e8ffc7",
+        glow: "shadow-[0px_0px_57.60000228881836px_9.600000381469727px_rgba(175,243,73,1.00)]",
+        expandedWidth: "w-[65px]",
+        boxShadow: "shadow-[inset_0px_0px_0px_1.2px_#FFFFFF80]",
+        textMargin: "mb-[2.5px]"
     },
     {
         id: "search",
@@ -54,7 +55,7 @@ const menuItems = [
     }
 ];
 
-const InventoryButtons = ({ activeItemID = "chat" }: { activeItemID?: string }) => {
+const InventoryButtons = ({ activeItemID = "creator" }: { activeItemID?: string }) => {
 
     // // this is for devving.
     // const [activeItem, setActiveItem] = useState(activeItemID); 
