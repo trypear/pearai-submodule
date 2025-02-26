@@ -330,7 +330,7 @@ export default function Mem0SidebarGUI() {
 
   return (
     <div className="flex flex-col h-full px-3 py-1">
-      <header className="flex items-center justify-between">
+      <header className="flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
           <SearchBar
             searchQuery={searchQuery}
