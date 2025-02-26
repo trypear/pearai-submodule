@@ -83,7 +83,7 @@ export const LoadingView = () => (
 );
 
 export const EmptyView = ({ onAddMemory }: { onAddMemory: () => void }) => (
-  <div className="max-w-2xl mx-auto w-full h-[calc(100vh-258px)] text-center flex flex-col justify-center">
+  <div className="max-w-2xl mx-auto w-full h-[calc(100vh-210px)] text-center flex flex-col justify-center" >
     <div className="w-full h-[700px] text-center flex flex-col items-center justify-center relative gap-5">
 
       <div className="flex-1 flex absolute bottom-[260px] items-center justify-center">

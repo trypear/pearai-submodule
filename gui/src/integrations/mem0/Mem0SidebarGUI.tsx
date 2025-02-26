@@ -329,7 +329,7 @@ export default function Mem0SidebarGUI() {
   };
 
   return (
-    <div className="flex flex-col h-full p-3">
+    <div className="flex flex-col h-full px-3 py-1">
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <SearchBar
@@ -354,7 +354,7 @@ export default function Mem0SidebarGUI() {
         </div>
       </header>
 
-      <div className="flex-1 space-y-3 overflow-hidden">
+      <div className={`flex-1 ${memories.length === 0 ?  'absolute inset-x-0 px-2': 'space-y-3 overflow-hidden'}`}>
         {renderContent()}
       </div>
 
