@@ -212,12 +212,12 @@ export const handleImageFile = async (
           resolve([image, dataUrl]);
           safeRevokeURL();
         };
-        image.onerror = function() {
+        image.onerror = function () {
           safeRevokeURL();
           resolve(undefined);
         };
       };
-      img.onerror = function() {
+      img.onerror = function () {
         safeRevokeURL();
         resolve(undefined);
       };
@@ -265,13 +265,13 @@ export const handlePaste = async (editor: Editor) => {
     }
 
     // Fall back to text handling if no image
-  const clipboardText = await navigator.clipboard.readText();
+    const clipboardText = await navigator.clipboard.readText();
 
-  if (clipboardText) {
-    editor.commands.deleteSelection();
-    editor.commands.insertContent(clipboardText.trim());
-    return true;
-  }
+    if (clipboardText) {
+      editor.commands.deleteSelection();
+      editor.commands.insertContent(clipboardText.trim());
+      return true;
+    }
   } catch (error) {
     console.error('Error handling paste:', error);
   }
@@ -296,7 +296,7 @@ const TipTapEditor = memo(function TipTapEditor({
 
   const historyLength = useSelector(
     (store: RootState) => {
-      switch(source) {
+      switch (source) {
         case 'perplexity':
           return store.state.perplexityHistory.length;
         default:
@@ -362,7 +362,7 @@ const TipTapEditor = memo(function TipTapEditor({
   );
 
   const active = useSelector((store: RootState) => {
-    switch(source) {
+    switch (source) {
       case 'perplexity':
         return store.state.perplexityActive;
       default:
@@ -802,8 +802,8 @@ const TipTapEditor = memo(function TipTapEditor({
         .run();
 
       setTimeout(() => {
-          editor.commands.blur();
-          editor.commands.focus("end");
+        editor.commands.blur();
+        editor.commands.focus("end");
       }, 20);
     },
     [editor, onEnterRef.current, isMainInput],
@@ -871,9 +871,8 @@ const TipTapEditor = memo(function TipTapEditor({
           rif.filepath,
           await ideMessenger.ide.getWorkspaceDirs(),
         );
-        const rangeStr = `(${rif.range.start.line + 1}-${
-          rif.range.end.line + 1
-        })`;
+        const rangeStr = `(${rif.range.start.line + 1}-${rif.range.end.line + 1
+          })`;
         const item: ContextItemWithId = {
           content: rif.contents,
           name: `${basename} ${rangeStr}`,
@@ -1143,7 +1142,8 @@ const TipTapEditor = memo(function TipTapEditor({
       }}
     >
       <ContextToolbar
-hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity}
+        hidden={!(editorFocusedRef.current || isMainInput)}
+        source={source}
         onImageFileSelected={(file) => {
           handleImageFile(file).then(([img, dataUrl]) => {
             const { schema } = editor.state;
@@ -1161,7 +1161,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity}
             editor.commands.insertContent(" @");
           }
         }}
-				editor={editor}
+        editor={editor}
       />
 
       <EditorContent
@@ -1208,7 +1208,7 @@ hidden={!(editorFocusedRef.current || isMainInput) || isPerplexity}
             <HoverTextDiv>Drop Here</HoverTextDiv>
           </>
         )
-			}
+      }
       {contextMenu && editor && (
         <TipTapContextMenu
           editor={editor}
