@@ -23,35 +23,33 @@ export const features = [
   {
     id: "creator",
     icon: "inventory-creator.svg",
-    title: "Create code with PearAI Agent.",
-    description:
-      "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
+    title: "Code automatically with PearAI Agent",
+    description: "Autonomous coding agent, powered by Roo Code / Cline",
     video: getAssetPath("pearai-agent-welcome.mp4"),
   },
   {
     id: "chat",
     icon: "inventory-chat.svg",
-    title: "Make line-by line changes with PearAI Chat.",
-    description:
-      "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
+    title: "Make specific in-line changes and ask questions with PearAI Chat",
+    description: "AI chat assistant, powered by Continue",
     video: getAssetPath("pearai-chat-welcome.mp4"),
   },
   {
     id: "search",
     icon: "inventory-search.svg",
-    title: "Copy for Search Here",
-    description: "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
+    title: "Search anything with PearAI Search",
+    description: "Powered by Perplexity",
     video: getAssetPath("pearai-search-welcome.mp4"),
   },
   {
     id: "memory",
     icon: "inventory-mem0.svg",
-    title: "Copy for Memory Here",
-    description:
-      "Copy needed. Ask Assistant to help you understand code and make changes, powered by Continue.",
+    title: "Personalize your experience with PearAI Memory",
+    description: "Powered by mem0",
     video: getAssetPath("pearai-memory-welcome.mp4"),
   },
 ];
+
 
 export default function Features({ onNext, pseudoRender }: { onNext: () => void, pseudoRender: boolean }) {
   const dispatch = useDispatch();
