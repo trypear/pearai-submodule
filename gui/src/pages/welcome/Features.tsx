@@ -21,7 +21,7 @@ const getAssetPath = (assetName: string) => {
 
 export const features = [
   {
-    id: "creator",
+    id: "agent",
     icon: "inventory-creator.svg",
     title: "Code automatically with PearAI Agent",
     description: "Autonomous coding agent, powered by Roo Code / Cline",
