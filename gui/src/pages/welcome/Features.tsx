@@ -248,7 +248,7 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
         </div>
         <div className="flex gap-2">
           <Button className="text-xs font-['SF Pro']" onClick={handleNextClick}>
-            Continue
+            Next
           </Button>
           {process.env.NODE_ENV === "development" && (
             <>

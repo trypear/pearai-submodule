@@ -13,7 +13,7 @@ const SplashScreen = ({ onNext }: { onNext: () => void }) => {
                 </div>
                 <div className="text-4xl font-['SF Pro']">Welcome to PearAI</div>
                 <Button className="mx-auto w-[300px] rounded-lg justify-center items-center gap-1 inline-flex overflow-hidden" onClick={onNext}>
-                    <div className="text-xs font-['SF Pro']">Continue</div>
+                    <div className="text-xs font-['SF Pro']">Next</div>
                 </Button>
             </div>
         </div>
