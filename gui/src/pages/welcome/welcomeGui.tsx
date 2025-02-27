@@ -6,6 +6,7 @@ import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { WelcomeHeader } from "./WelcomeHeader";
 import InventoryPage from "@/inventory/pages/InventoryPage";
 import SplashScreen from "./splashScreen";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function Welcome() {
   const ideMessenger = useContext(IdeMessengerContext);
@@ -13,7 +14,9 @@ export default function Welcome() {
 
   useEffect(() => {
     // Lock the overlay when welcome page mounts
-    ideMessenger.post("lockOverlay", undefined);
+    // this is too late, so overlay is locked at pearai-app level.
+    // ideMessenger.post("lockOverlay", undefined);
+    ideMessenger.post("hideOverlayLoadingMessage", undefined);
 
     // Cleanup - unlock when component unmounts
     return () => {
@@ -53,27 +56,50 @@ export default function Welcome() {
     setStep((prevStep) => prevStep - 1);
   };
 
-  const renderStep = () => {
-    switch (step) {
-      case 0:
-        return <SplashScreen onNext={handleNextStep} />;
-      case 1:
-        return <Features onNext={handleNextStep} />;
-      case 2:
-        return <SetupPage onNext={handleNextStep} />;
-      case 3:
-        return <FinalStep onNext={handleNextStep} />;
-      case 4:
-        return <InventoryPage />;
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="flex flex-col h-full w-full">
-      <WelcomeHeader onBack={handleBackStep} showBack={step > 0}/>
-      {renderStep()}
+    <div className="flex flex-col h-full w-full select-none">
+      {/* <WelcomeHeader onBack={handleBackStep} showBack={step > 0} /> */}
+      <motion.div
+        className={`flex flex-col h-full w-full ${step === 0 ? "flex" : "hidden"}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: step === 0 ? 1 : 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <SplashScreen onNext={handleNextStep} />
+      </motion.div>
+      <motion.div
+        className={`flex flex-col h-full w-full ${step === 1 ? "flex" : "hidden"}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: step === 1 ? 1 : 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Features onNext={handleNextStep} pseudoRender={step === 1} />
+      </motion.div>
+      <motion.div
+        className={`flex flex-col h-full w-full ${step === 2 ? "flex" : "hidden"}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: step === 2 ? 1 : 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <SetupPage onNext={handleNextStep} />
+      </motion.div>
+      <motion.div
+        className={`flex flex-col h-full w-full ${step === 3 ? "flex" : "hidden"}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: step === 3 ? 1 : 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <FinalStep onNext={handleNextStep} startOnboardingAgain={() => setStep(0)} />
+      </motion.div>
+      <motion.div
+        className={`flex flex-col h-full w-full ${step === 4 ? "flex" : "hidden"}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: step === 4 ? 1 : 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <InventoryPage />
+      </motion.div>
     </div>
-  );}
+  );
+}
 

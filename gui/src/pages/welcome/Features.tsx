@@ -11,12 +11,47 @@ import { RootState } from "@/redux/store";
 import { setOnboardingState } from "@/redux/slices/stateSlice";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { Link } from "react-router-dom";
+import InventoryButtons from "./inventoryButtons";
+import { motion } from "framer-motion";
+import { vscInputBackground } from "@/components";
 
 const getAssetPath = (assetName: string) => {
   return `${window.vscMediaUrl}/assets/${assetName}`;
 };
 
-export default function Features({ onNext }: { onNext: () => void }) {
+export const features = [
+  {
+    id: "agent",
+    icon: "inventory-creator.svg",
+    title: "Code automatically with PearAI Agent",
+    description: "Autonomous coding agent, powered by Roo Code / Cline",
+    video: getAssetPath("pearai-agent-welcome.mp4"),
+  },
+  {
+    id: "chat",
+    icon: "inventory-chat.svg",
+    title: "Make specific in-line changes and ask questions with PearAI Chat",
+    description: "AI chat assistant, powered by Continue",
+    video: getAssetPath("pearai-chat-welcome.mp4"),
+  },
+  {
+    id: "search",
+    icon: "inventory-search.svg",
+    title: "Search anything with PearAI Search",
+    description: "Powered by Perplexity",
+    video: getAssetPath("pearai-search-welcome.mp4"),
+  },
+  {
+    id: "memory",
+    icon: "inventory-mem0.svg",
+    title: "Personalize your experience with PearAI Memory",
+    description: "Powered by mem0",
+    video: getAssetPath("pearai-memory-welcome.mp4"),
+  },
+];
+
+
+export default function Features({ onNext, pseudoRender }: { onNext: () => void, pseudoRender: boolean }) {
   const dispatch = useDispatch();
 
   const [currentFeature, setCurrentFeature] = useState(0);
@@ -30,34 +65,7 @@ export default function Features({ onNext }: { onNext: () => void }) {
   const FEATURE_DURATION = 5000;
   const AUTO_PROGRESS = false;
 
-  const features = [
-    {
-      icon: "inventory-chat.svg",
-      title: "PearAI Chat",
-      description:
-        "Ask the Chat in sidebar to help you understand code and make changes. Powered by Continue*.",
-      video: getAssetPath("pearai-chat-welcome.mp4"),
-    },
-    {
-      icon: "inventory-creator.svg",
-      title: "PearAI Coding Agent",
-      description: "Ask for a new feature, a refactor, or to fix a bug. PearAI Coding Agent will make and apply the changes to your files automatically. Powered by Roo Code / Cline*.",
-      video: getAssetPath("pearai-agent-welcome.mp4"),
-    },
-    {
-      icon: "inventory-search.svg",
-      title: "PearAI Search",
-      description: "Search the web with AI. Never have out-of-date documentation for requests again. Powered by Perplexity*.",
-      video: getAssetPath("pearai-search-welcome.mp4"),
-    },
-    {
-      icon: "inventory-mem0.svg",
-      title: "PearAI Memory",
-      description:
-        "PearAI Memory is a self-improving memory layer when you use PearAI Chat for a personalized experience. Memories will be added automatically, and you can also add memories manually.",
-      video: getAssetPath("pearai-memory-welcome.mp4"),
-    },
-  ];
+  const videoRefs = [useRef(null), useRef(null), useRef(null), useRef(null)];
 
   const ideMessenger = useContext(IdeMessengerContext);
 
@@ -111,13 +119,30 @@ export default function Features({ onNext }: { onNext: () => void }) {
     }
   };
 
+  const resetVideos = () => {
+    videoRefs.forEach((ref) => {
+      if (ref.current) {
+        ref.current.currentTime = 0;
+      }
+    });
+  }
+
+  useEffect(() => {
+    if (pseudoRender) {
+      resetVideos();
+      resetVideos(); // yessir two times, not a typo. cause sometimes video resets but get stuck on first frame.
+      setCurrentFeature(0);
+    }
+  }, [pseudoRender]);
+
   const handleNextClick = () => {
     if (currentFeature < features.length - 1) {
+      resetVideos();
       // Increment the feature index if not the last one
       const nextFeature = currentFeature + 1;
       setCurrentFeature(nextFeature);
       if (!visitedFeatures.includes(nextFeature)) {
-        dispatch(setOnboardingState({...onboardingState, visitedFeatures: [...visitedFeatures, nextFeature]}));
+        dispatch(setOnboardingState({ ...onboardingState, visitedFeatures: [...visitedFeatures, nextFeature] }));
       }
       setProgress(0);
       setTimestamp(Date.now());
@@ -127,119 +152,134 @@ export default function Features({ onNext }: { onNext: () => void }) {
     }
   };
 
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
-        handleNextClick();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [currentFeature]);
+  const handleBackClick = () => {
+    if (currentFeature > 0) {
+      resetVideos();
+      setCurrentFeature(currentFeature - 1);
+      setProgress(0);
+      setTimestamp(Date.now());
+    }
+  };
 
   return (
-    <div className="flex w-full overflow-hidden text-foreground h-full">
-      <div className="w-[35%] flex flex-col">
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6 pt-8">
-            <div>
-              <h2 className="text-xl lg:text-2xl font-bold text-foreground mb-2">
-                Welcome to PearAI
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                Bring your ideas to life by seamlessly integrating AI
-                into your workflow. PearAI is made for your next project, all the way from idea to running at scale.
-              </p>
-            </div>
-            <div className="space-y-3">
-              {features.map((feature, index) => (
-                <Card
-                  key={index}
-                  className={`border-none p-3 transition-all duration-200 ${
-                    currentFeature === index
-                      ? "bg-[var(--vscode-input-background)] text-[var(--vscode-input-foreground)] shadow-sm ring-1 ring-[var(--vscode-input-border)]"
-                      : "bg-[var(--vscode-input-background)] text-[var(--vscode-foreground)] opacity-60"
-                  } ${!visitedFeatures.includes(index) ? 'cursor-not-allowed' : 'hover:scale-[1.02] cursor-pointer hover:opacity-80'}`}
-                  onClick={() => handleFeatureChange(index)}
-                  style={{ cursor: visitedFeatures.includes(index) ? "pointer" : "not-allowed" }}
-                >
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={getLogoPath(feature.icon)}
-                      className="w-10 h-10"
-                    />
-                    <div className="min-w-0">
-                      <h3 className="font-semibold text-foreground text-sm">
-                        {feature.title}
-                      </h3>
-                      {currentFeature === index && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {feature.description}
-                        </p>
-                      )}
-                      {currentFeature === index && (
-                        <Progress
-                          value={progress}
-                          className="mt-2 h-0.5 bg-input [&>div]:bg-button"
-                        />
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </div>
+    <div className="flex w-full flex-col justify-center items-center gap-7 text-foreground h-full">
+      <div className="w-full flex-col justify-center items-center gap-7 inline-flex overflow-hidden">
+        <div className="flex-col justify-center items-center gap-7 flex">
+          <InventoryButtons activeItemID={features[currentFeature].id} />
         </div>
 
-
-        <div className="p-6 border-t border-input shrink-0">
-          <Button
-            className="w-full text-button-foreground bg-button hover:bg-button-hover p-3 text-sm cursor-pointer relative"
-            onClick={handleNextClick}
+        <div className="h-[80%] rounded-xl justify-start items-start inline-flex overflow-hidden">
+          <motion.div
+            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 0 ? "flex" : "hidden"}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentFeature === 0 ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
           >
-            <span className="absolute left-1/2 -translate-x-1/2">Next</span>
+            <FeatureDescription currentFeature={currentFeature} />
+            <div className="w-[50%] h-fit flex flex-row gap-2 ">
+              <video
+                ref={videoRefs[0]}
+                src={features[0].video}
+                className={`rounded-lg w-full h-full object-cover ${currentFeature === 0 ? "flex" : "hidden"}`}
+                muted
+                autoPlay
+                playsInline
+                loop
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 1 ? "flex" : "hidden"}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentFeature === 1 ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <FeatureDescription currentFeature={currentFeature} />
+            <div className="w-[50%] h-fit flex flex-row gap-2 ">
+              <video
+                ref={videoRefs[1]}
+                src={features[1].video}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 1 ? "flex" : "hidden"}`}
+                muted
+                autoPlay
+                playsInline
+                loop
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 2 ? "flex" : "hidden"}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentFeature === 2 ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <FeatureDescription currentFeature={currentFeature} />
+            <div className="w-[50%] h-fit flex flex-row gap-2 ">
+              <video
+                ref={videoRefs[2]}
+                src={features[2].video}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 2 ? "flex" : "hidden"}`}
+                muted
+                autoPlay
+                playsInline
+                loop
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 3 ? "flex" : "hidden"}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: currentFeature === 3 ? 1 : 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          >
+            <FeatureDescription currentFeature={currentFeature} />
+            <div className="w-[50%] h-fit flex flex-row gap-2 ">
+              <video
+                ref={videoRefs[3]}
+                src={features[3].video}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 3 ? "flex" : "hidden"}`}
+                muted
+                autoPlay
+                playsInline
+                loop
+              />
+            </div>
+          </motion.div>
+        </div>
+        <div className="flex gap-2">
+          <Button className="text-xs font-['SF Pro']" onClick={handleNextClick}>
+            Continue
           </Button>
-        </div>
-      </div>
-
-      <div className="w-[65%] flex flex-col h-full relative bg-background justify-between">
-
-        {features.map((feature, index) => (
-          <div
-            key={index}
-            className={`absolute inset-0 transition-all duration-700 ${
-              currentFeature === index ? "opacity-100 z-10" : "opacity-0 z-0"
-            }`}
-          >
-            {currentFeature === index && (
-              <div className="flex items-center justify-center h-full w-full">
-                <video
-                  src={`${feature.video}`}
-                  className="rounded-lg max-h-[90%] max-w-[90%] object-contain"
-                  muted
-                  autoPlay
-                  playsInline
-                  loop
-                />
-              </div>
-            )}
-          </div>
-        ))}
-        <div></div>
-        <div className="text-[10px] z-[100] hover:cursor-pointer  text-muted-foreground mt-4 flex justify-end pr-4 pb-4">
-          *View PearAI Disclaimer page{" "}
-          <a
-            href="https://trypear.ai/disclaimer/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-muted-foreground hover:cursor-pointer hover:text-primary hover:underline ml-1"
-          >
-            here
-          </a>
-          .
+          {process.env.NODE_ENV === "development" && (
+            <>
+              <Button className="text-xs font-['SF Pro']" onClick={handleBackClick}
+                style={{ background: vscInputBackground }}
+              >
+                Back (shown in dev)
+              </Button>
+              <Button className="text-xs font-['SF Pro']" onClick={resetVideos}
+                style={{ background: vscInputBackground }}
+              >reset (shown in dev)</Button>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
 }
+
+
+const FeatureDescription = ({ currentFeature }: { currentFeature: number }) => {
+  return (
+    <div className=" flex-col justify-start items-center gap-2 inline-flex">
+      <div key={`title-${currentFeature}`} className="text-4xl font-['SF Pro']"
+      >
+        {features[currentFeature].title}
+      </div>
+      <div className="text-xs font-normal font-['SF Pro'] leading-[18px]"
+      >
+        {features[currentFeature].description}
+      </div>
+    </div>
+  );
+};

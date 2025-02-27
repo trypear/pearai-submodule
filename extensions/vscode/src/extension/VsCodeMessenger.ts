@@ -103,6 +103,9 @@ export class VsCodeMessenger {
     this.onWebview("unlockOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.unlockOverlay");
     });
+    this.onWebview("hideOverlayLoadingMessage", (msg) => {
+      vscode.commands.executeCommand("pearai.hideOverlayLoadingMessage");
+    });
     this.onWebview("importUserSettingsFromVSCode", async (msg) => {
       try {
         return await vscode.commands.executeCommand(

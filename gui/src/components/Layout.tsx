@@ -66,13 +66,14 @@ const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
   ${props => props.isPearOverlay && `
     width: 100%;
     height: 100%;
-    border-radius: var(--overlay-border-radius, 12px);
-    box-shadow: ${props.path === "/inventory/home" ? "none" : "var(--overlay-box-shadow, 0 8px 24px rgba(0, 0, 0, 0.25))"};
-    position: relative;
+    // border-radius: var(--overlay-border-radius, 12px);
+    // box-shadow: ${props.path === "/inventory/home" ? "none" : "var(--overlay-box-shadow, 0 8px 24px rgba(0, 0, 0, 0.25))"};
+    // position: relative;
     overflow: hidden; // Ensure content doesn't overflow
     display: flex;
     flex-direction: column; // Add this to ensure proper content flow
-    background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
+    // background-color: ${props.path === "/inventory/home" ? "transparent" : vscBackground};
+    background-color: transparent;
   `}
 `;
 
@@ -203,7 +204,15 @@ const Layout = () => {
   });
 
   if (window.isPearOverlay) {
-    return <OverlayContainer isPearOverlay={window.isPearOverlay} path={location.pathname}>
+    return <OverlayContainer
+      isPearOverlay={window.isPearOverlay}
+      path={location.pathname}
+      onClick={(e) => { 
+        if (e.target === e.currentTarget) {
+          ideMessenger.post("closeOverlay", undefined);
+        }
+      }}
+    >
       <GlobalStyle />
       <Outlet />
     </OverlayContainer>;
@@ -212,16 +221,16 @@ const Layout = () => {
   return (
     <div className="bg-sidebar-background flex flex-col gap-1 h-screen">
       {
-      <TextDialog
-        showDialog={showDialog}
-        onEnter={() => {
-          dispatch(setShowDialog(false));
-        }}
-        onClose={() => {
-          dispatch(setShowDialog(false));
-        }}
-        message={dialogMessage}
-      />}
+        <TextDialog
+          showDialog={showDialog}
+          onEnter={() => {
+            dispatch(setShowDialog(false));
+          }}
+          onClose={() => {
+            dispatch(setShowDialog(false));
+          }}
+          message={dialogMessage}
+        />}
 
       <PostHogPageView />
       <Outlet />
