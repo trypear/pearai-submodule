@@ -6,10 +6,10 @@ import { useState } from "react";
 
 const menuItems = [
     {
-        id: "creator",
-        name: "Creator",
+        id: "agent",
+        name: "Agent",
         icon: "creator-no-bg.svg",
-        tooltip: "Creator",
+        tooltip: "Agent",
         backgroundColor: "bg-gradient-to-b from-[#ff70bc] to-[#cc237e]",
         textColor: "#ffcee3",
         glow: "shadow-[0px_0px_57.60000228881836px_9.600000381469727px_rgba(255,113,189,1.00)]",
@@ -55,7 +55,7 @@ const menuItems = [
     }
 ];
 
-const InventoryButtons = ({ activeItemID = "creator" }: { activeItemID?: string }) => {
+const InventoryButtons = ({ activeItemID = "agent" }: { activeItemID?: string }) => {
 
     // // this is for devving.
     // const [activeItem, setActiveItem] = useState(activeItemID); 
