@@ -99,6 +99,7 @@ export async function activateExtension(context: vscode.ExtensionContext) {
     );
   }
 
+  // Force PearAI view mode
   try {
     await vscode.workspace.getConfiguration().update('workbench.sideBar.location', 'left', true);
     // Get auxiliary bar visibility state
@@ -113,7 +114,8 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   }
 
   try {
-    vscode.commands.executeCommand("pearai.focusContinueInput");
+    // Default to agent view
+    vscode.commands.executeCommand("pearai.focusAgentView");
   } catch (error) {
     // vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
     console.error(error);
