@@ -67,6 +67,7 @@ export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   overflow-y: scroll;
   position: relative;
   scrollbar-width: none;
+  padding-top: 8px;
   &::-webkit-scrollbar {
     display: none;
   }
