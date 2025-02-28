@@ -13,7 +13,7 @@ const menuItems = [
         backgroundColor: "bg-gradient-to-b from-[#ff70bc] to-[#cc237e]",
         textColor: "#ffcee3",
         glow: "shadow-[0px_0px_57.60000228881836px_9.600000381469727px_rgba(255,113,189,1.00)]",
-        expandedWidth: "w-[83px]",
+        expandedWidth: "w-[75px]",
         boxShadow: "shadow-[inset_0px_0px_0px_1.2px_#FFFFFF80]",
         textMargin: "mb-[2.7px]"
     },
