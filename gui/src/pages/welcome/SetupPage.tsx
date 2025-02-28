@@ -152,7 +152,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
       return "Install Selected Tool";
     }
     if (attemptedInstalls?.length > 0) {
-      return "Continue";
+      return "Next";
     }
     return areAllToolsSelected() ? "Install All Tools" : "Install Selected Tools";
   };
@@ -247,7 +247,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
         <Button
           onClick={handleNextClick}
           className="text-xs font-['SF Pro']"
-        >Continue</Button>,
+        >Next</Button>,
     },
     {
       icon: <Terminal className="h-6 w-6" />,
@@ -410,24 +410,24 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
               onClick={() => handleFeatureChange(index)}
             >
               <div className="relative">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 shadow outline-none" 
-                  style={{ 
-                      background: visitedSteps.includes(index + 1) ? "white" : "transparent", 
-                      borderRadius: "50%", 
-                      border: "1.5px solid gray", 
-                      appearance: "none", 
-                      width: "20px", 
-                      height: "20px", 
-                      cursor: "pointer", 
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 shadow outline-none"
+                  style={{
+                      background: visitedSteps.includes(index + 1) ? "white" : "transparent",
+                      borderRadius: "50%",
+                      border: "1.5px solid gray",
+                      appearance: "none",
+                      width: "20px",
+                      height: "20px",
+                      cursor: "pointer",
                       marginTop: "6px",
                       marginLeft: "4px"
-                  }} 
+                  }}
                   onChange={(e) => {
                       // Handle checkbox change if needed
-                  }} 
-                  checked={visitedSteps.includes(index)} 
+                  }}
+                  checked={visitedSteps.includes(index)}
                 />
                 {visitedSteps.includes(index + 1) && (
                     <Check className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 stroke-[2.5px] text-black" />
