@@ -3,7 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from "vscode";
 
-export const FIRST_LAUNCH_KEY = 'pearai.firstLaunch';
+export const FIRST_LAUNCH_KEY = 'pearai.firstLaunchKeyV2';
 const pearAISettingsDir = path.join(os.homedir(), '.pearai');
 const pearAIDevExtensionsDir = path.join(os.homedir(), '.pearai', 'extensions');
 
