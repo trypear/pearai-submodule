@@ -23,7 +23,7 @@ import {
   setupStatusBar,
 } from "./autocomplete/statusBar";
 import { ContinueGUIWebviewViewProvider } from "./ContinueGUIWebviewViewProvider";
-import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch, OLD_FIRST_LAUNCH_KEY } from "./copySettings";
+import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
 import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
 import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
