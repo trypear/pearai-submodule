@@ -61,7 +61,6 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
   // If state is set and is true, it's not first launch
   if (context.globalState.get(OLD_FIRST_LAUNCH_KEY)) {
-    vscode.window.showInformationMessage(`workks good. ${context.globalState.get(OLD_FIRST_LAUNCH_KEY)}`)
     vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete")
     // mark the old key false, so that this condition only runs once and never again.
     await context.globalState.update(OLD_FIRST_LAUNCH_KEY, false);
