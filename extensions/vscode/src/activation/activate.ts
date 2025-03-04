@@ -7,7 +7,7 @@ import registerQuickFixProvider from "../lang-server/codeActions";
 import { getExtensionVersion } from "../util/util";
 import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
-import { isFirstLaunch } from "../copySettings";
+import { isFirstLaunch, OLD_FIRST_LAUNCH_KEY } from "../copySettings";
 
 
 export async function isVSCodeExtensionInstalled(extensionId: string): Promise<boolean> {
@@ -19,16 +19,16 @@ export async function attemptInstallExtension(extensionId: string): Promise<void
   const extension = vscode.extensions.getExtension(extensionId);
 
   if (extension) {
-      // vscode.window.showInformationMessage(`Extension ${extensionId} is already installed.`);
-      return;
+    // vscode.window.showInformationMessage(`Extension ${extensionId} is already installed.`);
+    return;
   }
 
   try {
-      await vscode.commands.executeCommand('workbench.extensions.installExtension', extensionId);
-      // vscode.window.showInformationMessage(`Successfully installed extension: ${extensionId}`);
+    await vscode.commands.executeCommand('workbench.extensions.installExtension', extensionId);
+    // vscode.window.showInformationMessage(`Successfully installed extension: ${extensionId}`);
   } catch (error) {
-      // vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
-      console.error(error);
+    // vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
+    console.error(error);
   }
 }
 
@@ -37,16 +37,16 @@ export async function attemptUninstallExtension(extensionId: string): Promise<vo
   const extension = vscode.extensions.getExtension(extensionId);
 
   if (!extension) {
-      // Extension is not installed
-      return;
+    // Extension is not installed
+    return;
   }
 
   try {
-      await vscode.commands.executeCommand('workbench.extensions.uninstallExtension', extensionId);
-      // vscode.window.showInformationMessage(`Successfully uninstalled extension: ${extensionId}`);
+    await vscode.commands.executeCommand('workbench.extensions.uninstallExtension', extensionId);
+    // vscode.window.showInformationMessage(`Successfully uninstalled extension: ${extensionId}`);
   } catch (error) {
-      // vscode.window.showErrorMessage(`Failed to uninstall extension: ${extensionId}`);
-      console.error(error);
+    // vscode.window.showErrorMessage(`Failed to uninstall extension: ${extensionId}`);
+    console.error(error);
   }
 }
 
@@ -58,6 +58,13 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   // Register commands and providers
   registerQuickFixProvider();
   setupInlineTips(context);
+
+  // If state is set and is true, it's not first launch
+  if (context.globalState.get(OLD_FIRST_LAUNCH_KEY)) {
+    vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete")
+    // mark the old key false, so that this condition only runs once and never again.
+    await context.globalState.update(OLD_FIRST_LAUNCH_KEY, false);
+  }
 
   const vscodeExtension = new VsCodeExtension(context);
 
@@ -107,7 +114,7 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
     // Show auxiliary bar if it's not already visible
     if (!pearAIVisible) {
-        await vscode.commands.executeCommand('workbench.action.toggleAuxiliaryBar');
+      await vscode.commands.executeCommand('workbench.action.toggleAuxiliaryBar');
     }
   } catch (error) {
     console.dir(error);
@@ -130,9 +137,9 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   // or entire extension for testing
   return process.env.NODE_ENV === "test"
     ? {
-        ...continuePublicApi,
-        extension: vscodeExtension,
-      }
+      ...continuePublicApi,
+      extension: vscodeExtension,
+    }
     : continuePublicApi;
 }
 
@@ -141,7 +148,7 @@ const setupPearAppLayout = async (context: vscode.ExtensionContext) => {
   // move pearai extension views to auxiliary bar (secondary side bar)
   vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
 
-  if(!vscode.workspace.workspaceFolders){
+  if (!vscode.workspace.workspaceFolders) {
     vscode.commands.executeCommand("workbench.action.closeSidebar");
     vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
   }
