@@ -266,9 +266,6 @@ const commandsMap: (
       await vscode.commands.executeCommand('pearai.hideOverlay');
       await vscode.commands.executeCommand('workbench.action.markPearAIFirstLaunchComplete');
     },
-    "pearai.damn": async () => {
-      await extensionContext.globalState.update(OLD_FIRST_LAUNCH_KEY, true);
-    },
     "pearai.restFirstLaunchInGUI": async () => {
       sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEARAI_CHAT_VIEW_ID]);
     },
