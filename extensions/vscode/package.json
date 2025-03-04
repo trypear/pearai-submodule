@@ -127,6 +127,12 @@
     },
     "commands": [
       {
+        "command": "pearai.damn",
+        "category": "PearAI",
+        "title": "old done",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.acceptDiff",
         "category": "PearAI",
         "title": "Accept Diff",

@@ -3,6 +3,7 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from "vscode";
 
+export const OLD_FIRST_LAUNCH_KEY = 'pearai.firstLaunchKey';
 export const FIRST_LAUNCH_KEY = 'pearai.firstLaunchKeyV2';
 const pearAISettingsDir = path.join(os.homedir(), '.pearai');
 const pearAIDevExtensionsDir = path.join(os.homedir(), '.pearai', 'extensions');
@@ -11,7 +12,6 @@ const firstLaunchFlag = path.join(pearAISettingsDir, 'firstLaunch.flag');
 const firstPearAICreatorLaunchFlag = path.join(pearAISettingsDir, 'firstLaunchCreator.flag');
 export const isFirstPearAICreatorLaunch = !fs.existsSync(firstPearAICreatorLaunchFlag);
 
-// Removed file based flag migration, we show new onboarding to old users
 export function isFirstLaunch(context: vscode.ExtensionContext): boolean {
     const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
     console.log("isFirstLaunch");

@@ -23,7 +23,7 @@ import {
   setupStatusBar,
 } from "./autocomplete/statusBar";
 import { ContinueGUIWebviewViewProvider } from "./ContinueGUIWebviewViewProvider";
-import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch } from "./copySettings";
+import { FIRST_LAUNCH_KEY, importUserSettingsFromVSCode, isFirstLaunch, OLD_FIRST_LAUNCH_KEY } from "./copySettings";
 import { DiffManager } from "./diff/horizontal";
 import { VerticalPerLineDiffManager } from "./diff/verticalPerLine/manager";
 import { QuickEdit, QuickEditShowParams } from "./quickEdit/QuickEditQuickPick";
@@ -265,6 +265,9 @@ const commandsMap: (
       await vscode.commands.executeCommand('pearai.unlockOverlay');
       await vscode.commands.executeCommand('pearai.hideOverlay');
       await vscode.commands.executeCommand('workbench.action.markPearAIFirstLaunchComplete');
+    },
+    "pearai.damn": async () => {
+      await extensionContext.globalState.update(OLD_FIRST_LAUNCH_KEY, true);
     },
     "pearai.restFirstLaunchInGUI": async () => {
       sidebar.webviewProtocol?.request("restFirstLaunchInGUI", undefined, [PEARAI_CHAT_VIEW_ID]);
