@@ -78,6 +78,7 @@ const InputBoxDiv = styled.div<{ isNewSession?: boolean }>`
   font-size: ${getFontSize()}px;
   line-height: 18px;
   word-break: break-word;
+  overflow-x: hidden;
 
   &::placeholder {
     color: ${lightGray}cc;
@@ -104,6 +105,7 @@ const InputBoxDiv = styled.div<{ isNewSession?: boolean }>`
     // min-height: 60px;
     flex: 1;
     overflow-y: auto;
+    // border: 1px solid;
   }
 `;
 
@@ -402,7 +404,10 @@ const TipTapEditor = memo(function TipTapEditor({
             img.setAttribute(key, value as string);
           });
 
+          const imageIcon = document.createElement('div');
+          imageIcon.className = 'image-icon';
           const deleteButton = document.createElement('button');
+          
           deleteButton.className = 'image-delete-button';
           deleteButton.textContent = 'Image';
           deleteButton.onclick = (e) => {
@@ -417,6 +422,7 @@ const TipTapEditor = memo(function TipTapEditor({
           };
 
           wrapper.appendChild(img);
+          wrapper.appendChild(imageIcon);
           wrapper.appendChild(deleteButton);
 
           return wrapper;
