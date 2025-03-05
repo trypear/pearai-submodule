@@ -6,7 +6,6 @@ import { VscThemeContext } from "../../context/VscTheme";
 const StyledPre = styled.pre<{ theme: any }>`
   & .hljs {
     color: ${vscForeground};
-    background: ${window.isPearOverlay ? vscBackground : vscEditorBackground};
   }
 
   ${(props) =>

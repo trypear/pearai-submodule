@@ -2,7 +2,7 @@ import { JSONContent } from "@tiptap/react";
 import { ContextItemWithId, InputModifiers } from "core";
 import { useDispatch, useSelector } from "react-redux";
 import styled, { keyframes } from "styled-components";
-import { defaultBorderRadius, lightGray, vscBackground } from "..";
+import { defaultBorderRadius, lightGray, vscBackground, vscInputBorder } from "..";
 import { useWebviewListener } from "../../hooks/useWebviewListener";
 import { selectSlashCommands } from "../../redux/selectors";
 import { newSession, setMessageAtIndex } from "../../redux/slices/stateSlice";
@@ -29,6 +29,7 @@ const GradientBorder = styled.div<{
   borderColor?: string;
   isFirst: boolean;
   isLast: boolean;
+  isMainInput: boolean;
   loading: 0 | 1;
 }>`
   border-radius: ${(props) => props.borderRadius || "0"};
@@ -53,6 +54,8 @@ const GradientBorder = styled.div<{
   flex-direction: row;
   align-items: center;
   position: relative;
+  border: ${(props) => (!props.loading && props.isMainInput ? `2px solid ${vscInputBorder}` : "")};
+  box-shadow: ${(props) => (!props.loading && props.isMainInput ? "0px 0px 20px 0px rgba(0, 0, 0, 0.50)" : "")};
 `;
 
 const wave = keyframes`
@@ -180,6 +183,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
         loading={active && isLastUserInput ? 1 : 0}
         isFirst={false}
         isLast={false}
+        isMainInput={isMainInput}
         borderColor={active && isLastUserInput ? undefined : vscBackground}
         borderRadius={"12px"}
       >

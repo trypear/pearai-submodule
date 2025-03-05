@@ -21,15 +21,21 @@ const PreviewMarkdownDiv = styled.div<{
   border: 1.5px solid #2A3238;
   overflow: hidden;
   position: relative;
-
+  code {
+    font-size: 0.9em;
+    line-height: 0;
+    white-space: pre;
+  }
   & div {
-    background-color: ${vscEditorBackground};
+    background-color: ${vscBackground};
 		user-select: text;
   }
 `;
 
 const PreviewMarkdownHeader = styled.div`
-  padding: 3px;
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 4px;
   border-radius: ${defaultBorderRadius};
   word-break: break-all;
   display: flex;
@@ -101,7 +107,7 @@ function CodeSnippetPreview(props: CodeSnippetPreviewProps) {
       >
 
 				<CodeBracketIcon className="h-4 w-4 stroke-2 pl-1" style={{ color: lightGray}}/>
-        <div className="flex p-1 pl-2 gap-1 rounded-[4px] items-center" style={{ backgroundColor: vscBackground}}>
+        <div className="flex p-1 pl-2 gap-1 rounded-[4px] items-center" style={{ backgroundColor: vscEditorBackground}}>
 				{/* <FileIcon
             height="20px"
             width="20px"

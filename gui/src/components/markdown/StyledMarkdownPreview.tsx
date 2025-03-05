@@ -27,7 +27,7 @@ const StyledMarkdown = styled.div<{
 	isCodeSnippet?: boolean;
 }>`
   pre {
-    background-color: ${window.isPearOverlay ?  vscBackground : vscEditorBackground};
+    background-color: ${props => window.isPearOverlay ?  vscBackground : (props.isCodeSnippet ? vscBackground : vscEditorBackground)};
     border-radius: ${defaultBorderRadius};
 
     max-width: calc(100vw - 24px);
@@ -58,7 +58,7 @@ const StyledMarkdown = styled.div<{
       display: none;
     }
     word-wrap: break-word;
-    background-color: ${vscEditorBackground};
+    background-color: ${props => props.isCodeSnippet ? vscBackground : vscEditorBackground};
     font-size: ${getFontSize() - 2}px;
     font-family: var(--vscode-editor-font-family);
   }
