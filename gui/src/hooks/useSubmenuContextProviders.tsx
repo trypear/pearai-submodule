@@ -6,7 +6,7 @@ import {
   groupByLastNPathParts,
 } from "core/util";
 import MiniSearch, { SearchResult } from "minisearch";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { selectContextProviderDescriptions } from "../redux/selectors";
@@ -14,6 +14,7 @@ import { useWebviewListener } from "./useWebviewListener";
 import { store } from '../redux/store';
 import { shouldSkipContextProviders } from "../integrations/util/integrationSpecificContextProviders";
 import { defaultModelSelector } from "@/redux/selectors/modelSelectors";
+import fuzzysort from 'fuzzysort';
 
 const MINISEARCH_OPTIONS = {
   prefix: true,
@@ -59,30 +60,20 @@ function useSubmenuContextProviders() {
   });
 
   useWebviewListener("updateSubmenuItems", async (data) => {
-    const minisearch = new MiniSearch<ContextSubmenuItem>({
-      fields: ["title", "description"],
-      storeFields: ["id", "title", "description"],
-    });
+    // Remove MiniSearch
+    // const minisearch = new MiniSearch<ContextSubmenuItem>({
+    //   fields: ["title", "description"],
+    //   storeFields: ["id", "title", "description"],
+    // });
 
-    minisearch.addAll(data.submenuItems);
+    // minisearch.addAll(data.submenuItems);
+    // setMinisearches((prev) => ({ ...prev, [data.provider]: minisearch }));
 
-    setMinisearches((prev) => ({ ...prev, [data.provider]: minisearch }));
-
-    if (data.provider === "file") {
-      const openFiles = await getOpenFileItems();
-      setFallbackResults((prev) => ({
-        ...prev,
-        file: [
-          ...openFiles,
-          ...data.submenuItems.slice(0, MAX_LENGTH - openFiles.length),
-        ],
-      }));
-    } else {
-      setFallbackResults((prev) => ({
-        ...prev,
-        [data.provider]: data.submenuItems.slice(0, MAX_LENGTH),
-      }));
-    }
+    // Instead, store the raw items
+    setFallbackResults((prev) => ({
+      ...prev,
+      [data.provider]: data.submenuItems,
+    }));
   });
 
   function addItem(providerTitle: string, item: ContextSubmenuItem) {
@@ -197,47 +188,47 @@ function useSubmenuContextProviders() {
     [fallbackResults, getSubmenuSearchResults],
   );
 
-useEffect(() => {
-  if ((contextProviderDescriptions.length === 0 || loaded) && defaultModel?.title === lastDefaultModelTitle) {
-    return;
-  }
-  setMinisearches({});
-  setFallbackResults({});
-  setLoaded(true);
-  setLastDefaultModelTitle(defaultModel?.title);
-
-  contextProviderDescriptions.forEach(async (description) => {
-    // Check if we should use relative file paths by checking the default model title
-    if (shouldSkipContextProviders(defaultModel.title, description))
+  useEffect(() => {
+    if ((contextProviderDescriptions.length === 0 || loaded) && defaultModel?.title === lastDefaultModelTitle) {
       return;
-
-    const minisearch = new MiniSearch<ContextSubmenuItem>({
-      fields: ["title", "description"],
-      storeFields: ["id", "title", "description"],
-    });
-    const items = await ideMessenger.request("context/loadSubmenuItems", {
-      title: description.title,
-    });
-    minisearch.addAll(items);
-    setMinisearches((prev) => ({ ...prev, [description.title]: minisearch }));
-
-    if (description.title === "file") {
-      const openFiles = await getOpenFileItems();
-      setFallbackResults((prev) => ({
-        ...prev,
-        file: [
-          ...openFiles,
-          ...items.slice(0, MAX_LENGTH - openFiles.length),
-        ],
-      }));
-    } else {
-      setFallbackResults((prev) => ({
-        ...prev,
-        [description.title]: items.slice(0, MAX_LENGTH),
-      }));
     }
-  });
-}, [contextProviderDescriptions, loaded, defaultModel]);
+    setMinisearches({});
+    setFallbackResults({});
+    setLoaded(true);
+    setLastDefaultModelTitle(defaultModel?.title);
+
+    contextProviderDescriptions.forEach(async (description) => {
+      // Check if we should use relative file paths by checking the default model title
+      if (shouldSkipContextProviders(defaultModel.title, description))
+        return;
+
+      const minisearch = new MiniSearch<ContextSubmenuItem>({
+        fields: ["title", "description"],
+        storeFields: ["id", "title", "description"],
+      });
+      const items = await ideMessenger.request("context/loadSubmenuItems", {
+        title: description.title,
+      });
+      minisearch.addAll(items);
+      setMinisearches((prev) => ({ ...prev, [description.title]: minisearch }));
+
+      if (description.title === "file") {
+        const openFiles = await getOpenFileItems();
+        setFallbackResults((prev) => ({
+          ...prev,
+          file: [
+            ...openFiles,
+            ...items.slice(0, MAX_LENGTH - openFiles.length),
+          ],
+        }));
+      } else {
+        setFallbackResults((prev) => ({
+          ...prev,
+          [description.title]: items.slice(0, MAX_LENGTH),
+        }));
+      }
+    });
+  }, [contextProviderDescriptions, loaded, defaultModel]);
 
   useWebviewListener("configUpdate", async () => {
     // When config is updated (for example switching to a different workspace)
@@ -245,7 +236,30 @@ useEffect(() => {
     setLoaded(false);
   });
 
+  // Add new fuzzy search function
+  const searchItems = (items: ContextSubmenuItem[], query: string) => {
+    if (!query) return items.slice(0, 20);
+
+    const results = fuzzysort.go(query, items, {
+      keys: ['title', 'description'],
+      limit: 20,
+      threshold: -10000,
+    });
+
+    return results.map(result => result.obj);
+  };
+
+  // Use fuzzy search when filtering items
+  const getFilteredItems = useCallback((provider: string, query: string) => {
+    const items = fallbackResults[provider] || [];
+    if (!query) return items.slice(0, 20);
+    
+    return searchItems(items, query);
+  }, [fallbackResults]);
+
   return {
+    getFilteredItems,
+    loaded,
     getSubmenuContextItems,
     addItem,
   };

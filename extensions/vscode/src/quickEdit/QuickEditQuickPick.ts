@@ -61,7 +61,7 @@ export class QuickEdit {
     storeFields: ["filename"],
     searchOptions: {
       prefix: true,
-      fuzzy: 2,
+      // fuzzy: 0,
     },
   });
 
