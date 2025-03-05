@@ -404,7 +404,10 @@ const TipTapEditor = memo(function TipTapEditor({
             img.setAttribute(key, value as string);
           });
 
+          const imageIcon = document.createElement('div');
+          imageIcon.className = 'image-icon';
           const deleteButton = document.createElement('button');
+          
           deleteButton.className = 'image-delete-button';
           deleteButton.textContent = 'Image';
           deleteButton.onclick = (e) => {
@@ -419,6 +422,7 @@ const TipTapEditor = memo(function TipTapEditor({
           };
 
           wrapper.appendChild(img);
+          wrapper.appendChild(imageIcon);
           wrapper.appendChild(deleteButton);
 
           return wrapper;

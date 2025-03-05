@@ -33,9 +33,7 @@ const PreviewMarkdownDiv = styled.div<{
 `;
 
 const PreviewMarkdownHeader = styled.div`
-  padding-left: 8px;
-  padding-right: 8px;
-  padding-top: 4px;
+  padding: 3px;
   border-radius: ${defaultBorderRadius};
   word-break: break-all;
   display: flex;
