@@ -26,6 +26,7 @@ import { ContextMenuProvider } from './components/ContextMenuProvider';
 import Mem0GUI from "./integrations/mem0/mem0gui";
 // import PerplexitySidebarGUI from "./integrations/perplexity/PerplexitySidebarGUI";
 import Mem0SidebarGUI from "./integrations/mem0/Mem0SidebarGUI";
+import PearSettings from "./inventory/pearSettings/PearSettings";
 
 
 declare global {
@@ -121,6 +122,10 @@ const router = createMemoryRouter(
           element: <Inventory />,
         },
         {
+          path: "/pearSettings",
+          element: <PearSettings/>
+        },
+        {
           path: "/welcome",
           element: <Welcome/>
         },
@@ -131,7 +136,7 @@ const router = createMemoryRouter(
   {
     initialEntries: [
       window.isPearOverlay
-        ? (window.isFirstLaunch ? "/welcome" : "/inventory/home")
+        ? (window.isFirstLaunch ? "/welcome" : "/pearSettings")
         : window.initialRoute
     ],
     // FOR DEV'ing welcome:
