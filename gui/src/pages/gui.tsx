@@ -61,7 +61,7 @@ import { getLogoPath } from "./welcome/setup/ImportExtensions";
 import { Badge } from "../components/ui/badge";
 import { cn } from "@/lib/utils";
 
-const LENGTHY_MESSAGE_WARNING_INDEX = 14; // number of messages after which we show the warning card
+const LENGTHY_MESSAGE_WARNING_INDEX = 15; // number of messages after which we show the warning card
 
 export const TopGuiDiv = styled.div<{ isNewSession: boolean }>`
   overflow-y: scroll;
