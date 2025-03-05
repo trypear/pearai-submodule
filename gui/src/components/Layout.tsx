@@ -37,9 +37,9 @@ const isWindows = platform.includes("win");
 const HEADER_HEIGHT = "1.55rem";
 export const FOOTER_HEIGHT = "9.5rem";
 
-const GlobalStyle = createGlobalStyle`
+const GlobalStyle = createGlobalStyle<{ isPearOverlay?: boolean }>`
   :root {
-	background-color:${vscBackground};
+	background-color: ${props => props.isPearOverlay ? "transparent" : vscBackground};
     --overlay-border-radius: 12px;
     --overlay-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
   }
@@ -213,7 +213,7 @@ const Layout = () => {
         }
       }}
     >
-      <GlobalStyle />
+      <GlobalStyle isPearOverlay={window.isPearOverlay} />
       <Outlet />
     </OverlayContainer>;
   }
