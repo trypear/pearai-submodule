@@ -78,6 +78,7 @@ const InputBoxDiv = styled.div<{ isNewSession?: boolean }>`
   font-size: ${getFontSize()}px;
   line-height: 18px;
   word-break: break-word;
+  overflow-x: hidden;
 
   &::placeholder {
     color: ${lightGray}cc;

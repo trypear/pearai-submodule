@@ -49,7 +49,7 @@ interface CodeSnippetPreviewProps {
   borderColor?: string;
   editing?: boolean;
 }
-const MAX_PREVIEW_HEIGHT = 300;
+const MAX_PREVIEW_HEIGHT = 180;
 
 // Pre-compile the regular expression outside of the function
 const backticksRegex = /`{3,}/gm;
