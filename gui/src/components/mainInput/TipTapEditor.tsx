@@ -105,6 +105,7 @@ const InputBoxDiv = styled.div<{ isNewSession?: boolean }>`
     // min-height: 60px;
     flex: 1;
     overflow-y: auto;
+    // border: 1px solid;
   }
 `;
 
