@@ -5,6 +5,7 @@ import tippy from "tippy.js";
 import { IIdeMessenger } from "../../context/IdeMessenger";
 import MentionList from "./MentionList";
 import { ComboBoxItem, ComboBoxItemType, ComboBoxSubAction } from "./types";
+import fuzzysort from 'fuzzysort';
 
 function getSuggestion(
   items: (props: { query: string }) => Promise<ComboBoxItem[]>,
@@ -159,21 +160,64 @@ export function getContextProviderDropdownOptions(
   ideMessenger: IIdeMessenger,
 ) {
 
+  const splitIntoWords = (filename: string): string[] => {
+    // Split on common delimiters and filter out empty strings
+    return filename
+      .replace(/\.[^/.]+$/, '') // Remove extension
+      .split(/[-_.\s]/g)
+      .filter(Boolean)
+      .map(word => word.toLowerCase());
+  };
+
   const items = async ({ query }) => {
     if (inSubmenu.current) {
-      const results = getSubmenuContextItemsRef.current(
+      const allResults = getSubmenuContextItemsRef.current(
         inSubmenu.current,
-        query,
+        "",
       );
-      return results.map((result) => {
-        return {
+
+      if (!query) {
+        return allResults.slice(0, 20).map(result => ({
           ...result,
           label: result.title,
           type: inSubmenu.current as ComboBoxItemType,
           query: result.id,
           subActions: getSubActionsForSubmenuItem(result, ideMessenger),
-        };
+        }));
+      }
+
+      const lowerQuery = query.toLowerCase();
+
+      // First find exact word matches in filenames
+      const exactMatches = allResults.filter(result => {
+        const words = splitIntoWords(result.title);
+        return words.some(word => word.startsWith(lowerQuery));
       });
+
+      // Then get fuzzy matches for remaining items
+      const remainingItems = allResults.filter(result => 
+        !exactMatches.includes(result)
+      );
+      
+      const fuzzyResults = fuzzysort.go(query, remainingItems, {
+        keys: ['title', 'description'],
+        limit: Math.max(20 - exactMatches.length, 0),
+        threshold: -10000,
+      });
+
+      // Combine exact matches and fuzzy matches
+      const combinedResults = [
+        ...exactMatches,
+        ...(fuzzyResults.map(r => r.obj))
+      ];
+
+      return combinedResults.map(result => ({
+        ...result,
+        label: result.title,
+        type: inSubmenu.current as ComboBoxItemType,
+        query: result.id,
+        subActions: getSubActionsForSubmenuItem(result, ideMessenger),
+      }));
     }
 
     const mainResults: any[] =
