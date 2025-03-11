@@ -120,6 +120,16 @@ export async function activateExtension(context: vscode.ExtensionContext) {
     console.dir(error);
   }
 
+    // Force PearAI update mode
+    try {
+      const currentUpdateMode = vscode.workspace.getConfiguration().get('update.mode');
+      if (currentUpdateMode !== 'default') {
+        await vscode.workspace.getConfiguration().update('update.mode', 'default', true);
+      }
+    } catch (error) {
+      console.dir(error);
+    }
+
   try {
     // Default to agent view
     vscode.commands.executeCommand("pearai.focusAgentView");
