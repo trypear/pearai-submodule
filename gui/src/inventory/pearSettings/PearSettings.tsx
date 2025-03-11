@@ -5,7 +5,10 @@ import { title } from "process";
 import { useState } from "react";
 import GeneralSettings from "./general";
 import AccountSettings from "./account";
-import ChatSettings from "./chat";
+import ChatSettings from "./chatSettings";
+import AgentSettings from "./agentSettings";
+import SearchSettings from "./searchSettings";
+import MemorySettings from "./memorySettings";
 
 const inventoryItems = [
     {
@@ -135,9 +138,9 @@ const ContentArea = ({ selectedItem }: { selectedItem: string }) => {
             {selectedItem === 'account' && <AccountSettings />}
             {selectedItem === 'help' && <ChatSettings />}
             {selectedItem === 'chat' && <ChatSettings />}
-            {selectedItem === 'agent' && <div>Agent Content</div>}
-            {selectedItem === 'search' && <div>Search Content</div>}
-            {selectedItem === 'memory' && <div>Memory Content</div>}
+            {selectedItem === 'agent' && <AgentSettings />}
+            {selectedItem === 'search' && <SearchSettings />}
+            {selectedItem === 'memory' && <MemorySettings />}
         </div>
     )
 }

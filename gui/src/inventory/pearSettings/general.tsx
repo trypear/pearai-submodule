@@ -41,7 +41,7 @@ const GeneralSettings = () => {
                 <div className="self-stretch justify-start items-center gap-5 inline-flex">
                     {socials.map(item => (
                         <a
-                            className="grow shrink basis-0 p-3 bg-list-hoverBackground rounded-lg border  justify-between items-center flex overflow-hidden cursor-pointer no-underline text-decoration-line text-inherit hover:text-inherit"
+                            className="grow shrink basis-0 p-3 bg-list-hoverBackground rounded-lg border border-solid  justify-between items-center flex overflow-hidden cursor-pointer no-underline text-decoration-line text-inherit hover:text-inherit"
                             href={item.link}
                         >
                             <div className=" text-xs font-normal font-['SF Pro']">{item.title}</div>
@@ -53,7 +53,7 @@ const GeneralSettings = () => {
 
             <div className="self-stretch pb-2 flex-col justify-start items-start gap-3 flex">
                 <div className="self-stretch  opacity-50  text-[10px] font-bold font-['SF Pro'] tracking-tight">TUTORIAL</div>
-                <a className="p-3 bg-list-hoverBackground rounded-lg border  justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit" href={demolink}>
+                <a className="p-3 bg-list-hoverBackground rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit" href={demolink}>
                     <div className=" text-xs font-normal font-['SF Pro']" >Open tutorial</div>
                     <ChevronRight className="size-4"></ChevronRight>
                 </a>

@@ -1,6 +1,32 @@
 import { Button, vscBackground, vscBadgeBackground, vscButtonBackground, vscForeground, vscSidebarBorder } from "@/components";
 import { Progress } from "@/components/ui/progress"
+import { useContext, useEffect, useState } from "react";
+import { IdeMessengerContext } from "@/context/IdeMessenger";
+
 const AccountSettings = () => {
+    const [auth, setAuth] = useState<{ accessToken?: string, refreshToken?: string } | null>(null);
+    const ideMessenger = useContext(IdeMessengerContext);
+
+    useEffect(() => {
+        const checkAuth = async () => {
+            try {
+                const res = await ideMessenger.request("getPearAuth", undefined);
+                setAuth(res);
+            } catch (error) {
+                console.error("Error checking auth status:", error);
+            }
+        };
+        checkAuth();
+    }, []);
+
+    const handleLogin = () => {
+        ideMessenger.request("authenticatePear", undefined);
+    };
+
+    const handleLogout = () => {
+        // ideMessenger.request("pearai.logout", undefined);
+        setAuth(null);
+    };
 
     return (
         <div className="border border-solidd w-full h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-hidden">
@@ -8,54 +34,62 @@ const AccountSettings = () => {
                 <div className="justify-center items-center inline-flex">
                     <div className=" text-lg font-['SF Pro']">Account</div>
                 </div>
-                <div className="self-stretch rounded-lg justify-start items-center gap-3 inline-flex">
-                    <img className="w-8 h-8 rounded-[32px]" src="https://placehold.co/32x32" />
-                    <div className="grow shrink basis-0 flex-col justify-center items-start gap-1 inline-flex">
-                        <div className="self-stretch  text-xs font-normal font-['SF Pro']">Jensen Huang</div>
-                        <div className="opacity-50  text-xs font-normal font-['SF Pro']">jensen@nvidia.com</div>
-                    </div>
-                    <Button>Login</Button>
-                </div>
-                <div className=" flex rounded-lg flex-col w-full justify-center gap-3 overflow-hidden">
-                    <div className="flex justify-end items-start gap-3">
-                        <div className="grow shrink basis-0 text-white text-xs font-normal font-['SF Pro']">API Key</div>
-                        <EyeSVG />
-                        <CopySVG />
-                    </div>
-                    <div className=" p-3 bg-list-hoverBackground rounded-lg flex flex-col justify-start items-start gap-1  overflow-hidden">
-                        <div className="self-stretch text-xs font-normal font-['SF Pro'] leading-[18px]">•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••</div>
-                    </div>
-                </div>
-                <div className="self-stretch flex-col justify-start items-start gap-3 flex">
-                    <div className="self-stretch opacity-50  text-[10px] font-bold font-['SF Pro'] tracking-tight">SUBSCRIPTION</div>
-                    <div className="self-stretch rounded-lg flex-col justify-center items-end gap-4 flex overflow-hidden">
-                        <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
-                            <div className=" text-2xl font-['SF Pro']">42%</div>
-                            <div className="opacity-50  text-xs font-normal font-['SF Pro']">of PearAI Credits used</div>
-                        </div>
-                        <div data-svg-wrapper className="w-full">
-                            <Progress value={33} className="h-2 bg-input [&>div]:bg-button" />
 
+                {auth?.accessToken ? (
+                    <>
+                        <div className="self-stretch rounded-lg justify-start items-center gap-3 inline-flex">
+                            <img className="w-8 h-8 rounded-[32px]" src="https://placehold.co/32x32" />
+                            <div className="grow shrink basis-0 flex-col justify-center items-start gap-1 inline-flex">
+                                <div className="self-stretch text-xs font-normal font-['SF Pro']">PearAI User</div>
+                                <div className="opacity-50 text-xs font-normal font-['SF Pro']">Authenticated</div>
+                            </div>
+                            <Button onClick={handleLogout}>Logout</Button>
                         </div>
-                    </div>
-                    <div className="flex flex-row w-full gap-3">
-                        <div className="w-1/2 p-3 rounded-lg flex-col justify-center items-start gap-2 inline-flex overflow-hidden relative">
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-[#aff349] rounded-full blur-[100px] opacity-70" />
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] bg-[#aff349] rounded-full blur-[50px] opacity-80" />
-                            <div className="relative text-white text-xs font-normal font-['SF Pro']">Pro · Annual</div>
-                            <div className="relative opacity-50 text-white text-xs font-normal font-['SF Pro']">Current Plan</div>
+
+                        <div className="flex rounded-lg flex-col w-full justify-center gap-3 overflow-hidden">
+                            <div className="flex justify-end items-start gap-3">
+                                <div className="grow shrink basis-0 text-white text-xs font-normal font-['SF Pro']">API Key</div>
+                                <EyeSVG />
+                                <CopySVG />
+                            </div>
+                            <div className="p-3 bg-list-hoverBackground rounded-lg flex flex-col justify-start items-start gap-1 overflow-hidden">
+                                <div className="self-stretch text-xs font-normal font-['SF Pro'] leading-[18px]">•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••</div>
+                            </div>
                         </div>
-                        <div className="w-1/2 h-[60px] justify-start items-start gap-3 flex">
-                            <div className="grow p-3 rounded-lg flex-col justify-center items-start gap-3 inline-flex overflow-hidden bg-list-hoverBackground">
-                                <div className="self-stretch h-9 flex-col justify-start items-start gap-2 flex">
-                                    <div className=" text-xs font-normal font-['SF Pro']">11/23/2024 - 11/23/2025</div>
-                                    <div className="opacity-50  text-xs font-normal font-['SF Pro']">Current Period</div>
+
+                        <div className="self-stretch flex-col justify-start items-start gap-3 flex">
+                            <div className="self-stretch opacity-50  text-[10px] font-bold font-['SF Pro'] tracking-tight">SUBSCRIPTION</div>
+                            <div className="self-stretch rounded-lg flex-col justify-center items-end gap-4 flex overflow-hidden">
+                                <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
+                                    <div className=" text-2xl font-['SF Pro']">42%</div>
+                                    <div className="opacity-50  text-xs font-normal font-['SF Pro']">of PearAI Credits used</div>
+                                </div>
+                                <div data-svg-wrapper className="w-full">
+                                    <Progress value={33} className="h-2 bg-input [&>div]:bg-button" />
+
+                                </div>
+                            </div>
+                            <div className="flex flex-row w-full gap-3">
+                                <div className="w-1/2 p-3 rounded-lg flex-col justify-center border-2 border-solid items-start gap-2 inline-flex overflow-hidden relative">
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-[#aff349] rounded-full blur-[100px] opacity-70" />
+                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] bg-[#aff349] rounded-full blur-[50px] opacity-80" />
+                                    <div className="relative text-white text-xs font-normal font-['SF Pro']">Pro · Annual</div>
+                                    <div className="relative opacity-50 text-white text-xs font-normal font-['SF Pro']">Current Plan</div>
+                                </div>
+                                <div className="w-1/2 justify-start items-start gap-3 flex">
+                                    <div className="grow p-3 rounded-lg flex-col justify-center items-start gap-3 inline-flex overflow-hidden bg-list-hoverBackground">
+                                        <div className="relative text-white text-xs font-normal font-['SF Pro']">date here</div>
+                                        <div className="relative opacity-50 text-white text-xs font-normal font-['SF Pro']">something here</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </>
+                ) : (
+                    <div className="self-stretch rounded-lg justify-center items-center gap-3 inline-flex">
+                        <Button onClick={handleLogin}>Login to PearAI</Button>
                     </div>
-                </div>
-
+                )}
             </div>
         </div>
     )

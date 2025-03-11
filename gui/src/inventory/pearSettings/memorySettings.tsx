@@ -1,3 +1,4 @@
+import { vscBadgeBackground, vscEditorBackground } from "@/components";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { getMetaKeyLabel } from "@/util";
 
@@ -11,15 +12,20 @@ const keyboardShortcuts = [
     { key: '⇧ + L', description: 'Append Selected' },
 ];
 
-const ChatSettings = () => {
+const MemorySettings = () => {
 
     return (
         <div className="h-full w-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-hidden">
             <div className="justify-center items-center gap-2 inline-flex">
                 <div className="flex-shrink-0 w-7 flex items-center justify-center">
-                    <img src={getLogoPath("chat-default.svg")} className="size-6 mr-1" />
+                    <img src={getLogoPath("memory-default.svg")} className="size-6 mr-1" />
                 </div>
                 <div className=" text-lg font-['SF Pro']">PearAI Chat</div>
+            </div>
+            <div className="flex justify-center items-center w-full rounded-xl" style={{
+                background: vscEditorBackground
+            }}>
+                <img src={getLogoPath("pearai-memory-splash.svg")} className="size-60" />
             </div>
             <div className="self-stretch pb-2 flex-col justify-start items-start gap-3 flex">
                 <div className="self-stretch opacity-50  text-[10px] font-bold font-['SF Pro'] tracking-tight">KEYBOARD SHORTCUTS</div>
@@ -40,4 +46,4 @@ const ChatSettings = () => {
     )
 }
 
-export default ChatSettings;
+export default MemorySettings;
