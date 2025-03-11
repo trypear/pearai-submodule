@@ -54,7 +54,6 @@ const GradientBorder = styled.div<{
   flex-direction: row;
   align-items: center;
   position: relative;
-  border: ${(props) => (!props.loading && props.isMainInput ? `2px solid ${vscInputBorder}` : "")};
   box-shadow: ${(props) => (!props.loading && props.isMainInput ? "0px 0px 20px 0px rgba(0, 0, 0, 0.50)" : "")};
 `;
 
