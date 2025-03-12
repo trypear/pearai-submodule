@@ -9,6 +9,7 @@ import ChatSettings from "./chatSettings";
 import AgentSettings from "./agentSettings";
 import SearchSettings from "./searchSettings";
 import MemorySettings from "./memorySettings";
+import HelpSettings from "./help";
 
 const inventoryItems = [
     {
@@ -43,7 +44,7 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
     // Settings section
-    { id: 'general', title: 'General', section: 'settings' },
+    // { id: 'general', title: 'General', section: 'settings' },
     { id: 'account', title: 'Account', section: 'settings' },
     { id: 'help', title: 'Help', section: 'settings' },
     // Inventory section
@@ -69,10 +70,10 @@ const Sidebar = ({ selectedItem, onSelectItem }: { selectedItem: string, onSelec
             style={{ backgroundColor: vscEditorBackground }}
         >
             {/* search bar */}
-            <div className="self-stretch h-[30px] px-2 py-1 bg-sidebar-background rounded-lg justify-start items-center gap-1 inline-flex overflow-hidden">
+            {/* <div className="self-stretch h-[30px] px-2 py-1 bg-sidebar-background rounded-lg justify-start items-center gap-1 inline-flex overflow-hidden">
                 <SearchIconSVG />
                 <div className="text-xs font-normal font-['SF Pro']">Search</div>
-            </div>
+            </div> */}
 
             {/* Settings Section */}
             <SidebarSection
@@ -83,12 +84,12 @@ const Sidebar = ({ selectedItem, onSelectItem }: { selectedItem: string, onSelec
             />
 
             {/* Inventory Section */}
-            <SidebarSection
+            {/* <SidebarSection
                 title="INVENTORY"
                 items={menuItems.filter(item => item.section === 'inventory')}
                 selectedItem={selectedItem}
                 onSelectItem={onSelectItem}
-            />
+            /> */}
         </div>
     )
 }
@@ -136,7 +137,7 @@ const ContentArea = ({ selectedItem }: { selectedItem: string }) => {
             {/* Add your content components here based on selectedItem */}
             {selectedItem === 'general' && <GeneralSettings />}
             {selectedItem === 'account' && <AccountSettings />}
-            {selectedItem === 'help' && <ChatSettings />}
+            {selectedItem === 'help' && <HelpSettings />}
             {selectedItem === 'chat' && <ChatSettings />}
             {selectedItem === 'agent' && <AgentSettings />}
             {selectedItem === 'search' && <SearchSettings />}

@@ -5,6 +5,7 @@ import { IdeMessengerContext } from "@/context/IdeMessenger";
 
 const AccountSettings = () => {
     const [auth, setAuth] = useState<{ accessToken?: string, refreshToken?: string } | null>(null);
+    const [showApiKey, setShowApiKey] = useState(false);
     const ideMessenger = useContext(IdeMessengerContext);
 
     useEffect(() => {
@@ -28,6 +29,16 @@ const AccountSettings = () => {
         setAuth(null);
     };
 
+    const handleCopyApiKey = async () => {
+        if (auth?.accessToken) {
+            try {
+                await navigator.clipboard.writeText(auth.accessToken);
+            } catch (error) {
+                console.error("Failed to copy API key:", error);
+            }
+        }
+    };
+
     return (
         <div className="border border-solidd w-full h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-hidden">
             <div className="border border-solidd  flex flex-col justify-start items-start gap-5 h-full w-full">
@@ -49,11 +60,15 @@ const AccountSettings = () => {
                         <div className="flex rounded-lg flex-col w-full justify-center gap-3 overflow-hidden">
                             <div className="flex justify-end items-start gap-3">
                                 <div className="grow shrink basis-0 text-white text-xs font-normal font-['SF Pro']">API Key</div>
-                                <EyeSVG />
-                                <CopySVG />
+                                <div className="cursor-pointer" onClick={() => setShowApiKey(!showApiKey)}>
+                                    <EyeSVG />
+                                </div>
+                                <div className="cursor-pointer" onClick={handleCopyApiKey}>
+                                    <CopySVG />
+                                </div>
                             </div>
-                            <div className="p-3 bg-list-hoverBackground rounded-lg flex flex-col justify-start items-start gap-1 overflow-hidden">
-                                <div className="self-stretch text-xs font-normal font-['SF Pro'] leading-[18px]">•••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••</div>
+                            <div className="p-3 bg-list-hoverBackground rounded-lg flex items-center overflow-hidden text-ellipsis whitespace-normal break-all">
+                                {showApiKey ? auth.accessToken : "•".repeat(100)}
                             </div>
                         </div>
 
