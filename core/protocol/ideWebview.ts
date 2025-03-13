@@ -49,6 +49,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   openHistorySearch: [undefined, void];
   appendSelected: [undefined, void];
   pearaiLogin: [undefined, void];
+  pearaiLogout: [undefined, void];
   closePearAIOverlay: [undefined, void];
   getNumberOfChanges: [undefined, number];
   isSupermavenInstalled: [undefined, boolean];

@@ -77,6 +77,7 @@ const AccountSettings = () => {
   const [showApiKey, setShowApiKey] = useState(false);
   const [usageDetails, setUsageDetails] = useState<UsageDetails | null>(null);
   const [accountDetails, setAccountDetails] = useState<AccountDetails | null>(null);
+  const [isUsageLoading, setIsUsageLoading] = useState(false);
   const ideMessenger = useContext(IdeMessengerContext);
 
   useEffect(() => {
@@ -98,6 +99,7 @@ const AccountSettings = () => {
     };
 
     const fetchUsageData = async (authData: Auth) => {
+      setIsUsageLoading(true);
       try {
         const response = await fetch(`${SERVER_URL}/get-usage`, {
           method: "GET",
@@ -116,6 +118,8 @@ const AccountSettings = () => {
         setUsageDetails(data);
       } catch (err) {
         console.error("Error fetching usage data", err);
+      } finally {
+        setIsUsageLoading(false);
       }
     };
 
@@ -135,7 +139,7 @@ const AccountSettings = () => {
           );
         }
         const data = await response.json();
-        
+
         // Cache the account details in localStorage
         localStorage.setItem('pearai_account_details', JSON.stringify(data));
         setAccountDetails(data);
@@ -164,6 +168,7 @@ const AccountSettings = () => {
     setAuth(null);
     setUsageDetails(null);
     setAccountDetails(null);
+    ideMessenger.post("pearaiLogout", undefined)
   };
 
   const handleCopyApiKey = async () => {
@@ -175,6 +180,10 @@ const AccountSettings = () => {
       }
     }
   };
+
+  const LoadingPlaceholder = () => (
+    <div className="animate-pulse bg-list-hoverBackground h-6 w-16 rounded"></div>
+  );
 
   return (
     <div className="border border-solidd h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-auto no-scrollbar">
@@ -203,11 +212,9 @@ const AccountSettings = () => {
               </div>
               <Button onClick={handleLogout}>Logout</Button>
             </div>
-            <div>
-              {/* {usageDetails.pay_as_you_go_credits} */}
+            {/* <div>
               {JSON.stringify(usageDetails)}
-            </div>
-
+            </div> */}
             <div className="flex flex-col w-full justify-center gap-3">
               <div className="opacity-50 text-xs font-normal font-['SF Pro']">
                 USAGE
@@ -217,63 +224,60 @@ const AccountSettings = () => {
                   PearAI Credits
                 </div>
                 <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
-                  <div className=" text-2xl font-['SF Pro']">
-                    {usageDetails
-                      ? `${Math.round(usageDetails.percent_credit_used)}%`
-                      : "0%"}
+                  <div className="text-2xl font-['SF Pro']">
+                    {isUsageLoading ? (
+                      <LoadingPlaceholder />
+                    ) : (
+                      `${usageDetails ? Math.round(usageDetails.percent_credit_used) : 0}%`
+                    )}
                   </div>
-                  <div className="opacity-50  text-xs font-normal font-['SF Pro']">
+                  <div className="opacity-50 text-xs font-normal font-['SF Pro']">
                     used
                   </div>
                 </div>
                 <div data-svg-wrapper className="w-full">
                   <Progress
                     value={usageDetails ? usageDetails.percent_credit_used : 0}
-                    className="h-2 bg-input [&>div]:bg-button"
+                    className={`h-2 bg-input [&>div]:bg-button ${isUsageLoading ? 'animate-pulse' : ''}`}
                   />
                 </div>
-                <div className="opacity-50  text-xs font-normal font-['SF Pro']">
-                  Credits refills monthly (
-                  {daysUntilCycleEnds(accountDetails.plan_period_end)} days
-                  left)
+                <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+                  Credits refills monthly ({daysUntilCycleEnds(accountDetails.plan_period_end)} days left)
                 </div>
               </div>
             </div>
-            <div className="flex flex-col w-full justify-center gap-3">
+            {usageDetails?.remaining_topup_credits && <div className="flex flex-col w-full justify-center gap-3">
               <div className="border border-solid p-4 rounded-lg flex flex-col gap-3">
                 <div className="font-normal font-['SF Pro']">TopUp Credits</div>
                 <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
-                  <div className=" text-2xl font-['SF Pro']">
-                    {usageDetails
-                      ? `$${Math.round(usageDetails.pay_as_you_go_credits)}`
-                      : "0"}
+                  <div className="text-2xl font-['SF Pro']">
+                    ${usageDetails ? Math.round(usageDetails.remaining_topup_credits || 0) : 0}
                   </div>
-                  <div className="opacity-50  text-xs font-normal font-['SF Pro']">
+                  <div className="opacity-50 text-xs font-normal font-['SF Pro']">
                     remaining
                   </div>
                 </div>
-                <div>
-                  {/* <div className="opacity-50  text-xs font-normal font-['SF Pro']"></div> */}
-                </div>
               </div>
-            </div>
+            </div>}
             <div className="flex flex-col w-full justify-center gap-3">
               <div className="border border-solid p-4 rounded-lg flex flex-col gap-3">
                 <div className="font-normal font-['SF Pro']">
                   Pay-As-You-Go Extra Credits
                 </div>
                 <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
-                  <div className=" text-2xl font-['SF Pro']">
-                    {usageDetails
-                      ? `$${Math.round(usageDetails.pay_as_you_go_credits)}`
-                      : "0"}
+                  <div className="text-2xl font-['SF Pro']">
+                    {isUsageLoading ? (
+                      <LoadingPlaceholder />
+                    ) : (
+                      `$${usageDetails ? Math.round(usageDetails.pay_as_you_go_credits) : 0}`
+                    )}
                   </div>
-                  <div className="opacity-50  text-xs font-normal font-['SF Pro']">
+                  <div className="opacity-50 text-xs font-normal font-['SF Pro']">
                     used
                   </div>
                 </div>
                 <div>
-                  <div className="opacity-50  text-xs font-normal font-['SF Pro']">
+                  <div className="opacity-50 text-xs font-normal font-['SF Pro']">
                     Credits billed monthly
                   </div>
                   <a
