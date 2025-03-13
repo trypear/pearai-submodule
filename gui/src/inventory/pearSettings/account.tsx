@@ -2,10 +2,60 @@ import { Button, vscBackground, vscBadgeBackground, vscButtonBackground, vscFore
 import { Progress } from "@/components/ui/progress"
 import { useContext, useEffect, useState } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import { SERVER_URL } from "core/util/parameters";
+
+
+interface UsageDetails {
+    percent_credit_used: number;
+    remaining_topup_credits: number | null;
+    pay_as_you_go_credits: number;
+    ttl: number;
+}
+
+// {"email":"himanshusinghc2001@gmail.com",
+//     "user_id":"4f444409-343f-4d93-9390-ac6e47978475",
+//     "first_name":"Himanshu",
+//     "last_name":"Chauhan",
+//     "profile_picture_url":null,
+//     "plan_type":"MONTHLY",
+//     "plan_period_start":1732864883,
+//     "plan_period_end":1735456883,
+//     "is_subscription_active":false,
+//     "requests_used":0,
+//     "has_set_password":true}
+
+interface AccountDetails {
+    email: string;
+    first_name: string;
+    last_name: string;
+    profile_picture_url: string;
+    plan_type: string;
+    plan_period_start: number;
+    plan_period_end: number;
+    is_subscription_active: boolean;
+    requests_used: number;
+}
+
+function unixTimeToHumanReadable(unixTimestamp) {
+    // Create a new Date object from the Unix timestamp (in milliseconds)
+    const date = new Date(unixTimestamp * 1000);
+    
+    // Get date components in user's timezone
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Month is 0-indexed
+    const year = date.getFullYear();
+    
+    // Return formatted date string
+    return `${day}/${month}/${year}`;
+  }
+
+interface Auth { accessToken?: string, refreshToken?: string }
 
 const AccountSettings = () => {
-    const [auth, setAuth] = useState<{ accessToken?: string, refreshToken?: string } | null>(null);
+    const [auth, setAuth] = useState<Auth | null>(null);
     const [showApiKey, setShowApiKey] = useState(false);
+    const [usageDetails, setUsageDetails] = useState<UsageDetails | null>(null);
+    const [accountDetails, setAccountDetails] = useState<AccountDetails | null>(null);
     const ideMessenger = useContext(IdeMessengerContext);
 
     useEffect(() => {
@@ -13,11 +63,67 @@ const AccountSettings = () => {
             try {
                 const res = await ideMessenger.request("getPearAuth", undefined);
                 setAuth(res);
+                return res;
             } catch (error) {
                 console.error("Error checking auth status:", error);
             }
         };
-        checkAuth();
+
+        const fetchUsageData = async (authData: Auth) => {
+            try {
+                const response = await fetch(
+                    `${SERVER_URL}/get-usage`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${authData.accessToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! {fetchUsageData} Status: ${response.status}`);
+                }
+                const data = await response.json();
+                setUsageDetails(data)
+            } catch (err) {
+                console.error("Error fetching usage data", err);
+            }
+        };
+
+        const fetchAccountData = async (authData: Auth) => {
+            try {
+                const response = await fetch(
+                    `${SERVER_URL}/account`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${authData.accessToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! {fetchAccountData} Status: ${response.status}`);
+                }
+                const data = await response.json();
+                console.dir(data);
+                setAccountDetails(data)
+            } catch (err) {
+                console.error("Error fetching account data", err);
+            }
+        };
+        
+        (async () => {
+            const authData = await checkAuth();
+            console.dir("BBBBBBBBBB");
+            if (authData) {
+                fetchUsageData(authData);
+                fetchAccountData(authData);
+            }
+        })();
     }, []);
 
     const handleLogin = () => {
@@ -27,6 +133,7 @@ const AccountSettings = () => {
     const handleLogout = () => {
         // ideMessenger.request("pearai.logout", undefined);
         setAuth(null);
+        setUsageDetails(null);
     };
 
     const handleCopyApiKey = async () => {
@@ -49,10 +156,10 @@ const AccountSettings = () => {
                 {auth?.accessToken ? (
                     <>
                         <div className="self-stretch rounded-lg justify-start items-center gap-3 inline-flex">
-                            <img className="w-8 h-8 rounded-[32px]" src="https://placehold.co/32x32" />
+                            {accountDetails.profile_picture_url && <img className="w-8 h-8 rounded-[32px]" src={accountDetails.profile_picture_url} />}
                             <div className="grow shrink basis-0 flex-col justify-center items-start gap-1 inline-flex">
-                                <div className="self-stretch text-xs font-normal font-['SF Pro']">PearAI User</div>
-                                <div className="opacity-50 text-xs font-normal font-['SF Pro']">Authenticated</div>
+                                <div className="self-stretch text-xs font-normal font-['SF Pro']">{accountDetails.first_name} {accountDetails.last_name ? accountDetails.last_name : ""}</div>
+                                <div className="opacity-50 text-xs font-normal font-['SF Pro']">{accountDetails.email}</div>
                             </div>
                             <Button onClick={handleLogout}>Logout</Button>
                         </div>
@@ -71,34 +178,54 @@ const AccountSettings = () => {
                                 {showApiKey ? auth.accessToken : "•".repeat(100)}
                             </div>
                         </div>
-
-                        <div className="self-stretch flex-col justify-start items-start gap-3 flex">
-                            <div className="self-stretch opacity-50  text-[10px] font-bold font-['SF Pro'] tracking-tight">SUBSCRIPTION</div>
-                            <div className="self-stretch rounded-lg flex-col justify-center items-end gap-4 flex overflow-hidden">
-                                <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
-                                    <div className=" text-2xl font-['SF Pro']">42%</div>
-                                    <div className="opacity-50  text-xs font-normal font-['SF Pro']">of PearAI Credits used</div>
-                                </div>
-                                <div data-svg-wrapper className="w-full">
-                                    <Progress value={33} className="h-2 bg-input [&>div]:bg-button" />
-
-                                </div>
-                            </div>
-                            <div className="flex flex-row w-full gap-3">
-                                <div className="w-1/2 p-3 rounded-lg flex-col justify-center border-2 border-solid items-start gap-2 inline-flex overflow-hidden relative">
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-[#aff349] rounded-full blur-[100px] opacity-70" />
-                                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] bg-[#aff349] rounded-full blur-[50px] opacity-80" />
-                                    <div className="relative text-white text-xs font-normal font-['SF Pro']">Pro · Annual</div>
-                                    <div className="relative opacity-50 text-white text-xs font-normal font-['SF Pro']">Current Plan</div>
-                                </div>
-                                <div className="w-1/2 justify-start items-start gap-3 flex">
-                                    <div className="grow p-3 rounded-lg flex-col justify-center items-start gap-3 inline-flex overflow-hidden bg-list-hoverBackground">
-                                        <div className="relative text-white text-xs font-normal font-['SF Pro']">date here</div>
-                                        <div className="relative opacity-50 text-white text-xs font-normal font-['SF Pro']">something here</div>
+                        {
+                            usageDetails ? (
+                                <div className="self-stretch flex-col justify-start items-start gap-3 flex">
+                                    <div className="self-stretch opacity-50  text-[10px] font-bold font-['SF Pro'] tracking-tight">SUBSCRIPTION</div>
+                                    <div className="self-stretch rounded-lg flex-col justify-center items-end gap-4 flex overflow-hidden">
+                                        <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
+                                            <div className=" text-2xl font-['SF Pro']">
+                                                {usageDetails ? `${Math.round(usageDetails.percent_credit_used)}%` : '0%'}
+                                            </div>
+                                            <div className="opacity-50  text-xs font-normal font-['SF Pro']">of PearAI Credits used</div>
+                                        </div>
+                                        <div data-svg-wrapper className="w-full">
+                                            <Progress
+                                                value={usageDetails ? usageDetails.percent_credit_used : 0}
+                                                className="h-2 bg-input [&>div]:bg-button"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-row w-full gap-3">
+                                        <div className="w-1/2 p-3 rounded-lg flex-col justify-center border-2 border-solid items-start gap-2 inline-flex overflow-hidden relative">
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-[#aff349] rounded-full blur-[100px] opacity-70" />
+                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100px] h-[100px] bg-[#aff349] rounded-full blur-[50px] opacity-80" />
+                                            <div className="relative text-white text-xs font-normal font-['SF Pro']">PRO - {accountDetails.plan_type}</div>
+                                            <div className="relative opacity-50 text-white text-xs font-normal font-['SF Pro']">Current Plan</div>
+                                        </div>
+                                        <div className="w-1/2 p-3 rounded-lg flex-col justify-center items-start gap-2 inline-flex overflow-hidden relative bg-list-hoverBackground">
+                                            <div className="relative text-white text-xs font-normal font-['SF Pro']">{unixTimeToHumanReadable(accountDetails.plan_period_start)} - {unixTimeToHumanReadable(accountDetails.plan_period_end)}</div>
+                                            <div className="relative opacity-50 text-white text-xs font-normal font-['SF Pro']">Current Period</div>
+                                        </div>
+                                        {/* <div className="w-1/2 justify-start items-start gap-3 flex">
+                                            <div className="grow p-3 rounded-lg flex-col justify-center items-start gap-3 inline-flex overflow-hidden bg-list-hoverBackground">
+                                                <div className="relative text-white text-xs font-normal font-['SF Pro']">
+                                                    {usageDetails ? `Credits: ${usageDetails.pay_as_you_go_credits}` : 'Loading...'}
+                                                </div>
+                                                <div className="relative opacity-50 text-white text-xs font-normal font-['SF Pro']">
+                                                    {usageDetails?.remaining_topup_credits !== null
+                                                        ? `Remaining Topup: ${usageDetails.remaining_topup_credits}`
+                                                        : 'No additional credits'}
+                                                </div>
+                                            </div>
+                                        </div> */}
+                                    </div>
+                                    <div>
+                                        {/* {usageDetails.pay_as_you_go_credits} */}
+                                        {JSON.stringify(usageDetails)}
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                            ) : null}
                     </>
                 ) : (
                     <div className="self-stretch rounded-lg justify-center items-center gap-3 inline-flex">

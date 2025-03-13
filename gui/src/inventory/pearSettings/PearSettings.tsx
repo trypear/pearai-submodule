@@ -44,8 +44,8 @@ type MenuItem = {
 
 const menuItems: MenuItem[] = [
     // Settings section
-    // { id: 'general', title: 'General', section: 'settings' },
-    { id: 'account', title: 'Account', section: 'settings' },
+    { id: 'general', title: 'General', section: 'settings' },
+    // { id: 'account', title: 'Account', section: 'settings' },
     { id: 'help', title: 'Help', section: 'settings' },
     // Inventory section
     ...inventoryItems.map(item => ({ ...item, section: 'inventory' as const }))
