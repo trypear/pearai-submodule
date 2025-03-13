@@ -76,12 +76,17 @@ const AccountSettings = () => {
   const [auth, setAuth] = useState<Auth | null>(null);
   const [showApiKey, setShowApiKey] = useState(false);
   const [usageDetails, setUsageDetails] = useState<UsageDetails | null>(null);
-  const [accountDetails, setAccountDetails] = useState<AccountDetails | null>(
-    null,
-  );
+  const [accountDetails, setAccountDetails] = useState<AccountDetails | null>(null);
   const ideMessenger = useContext(IdeMessengerContext);
 
   useEffect(() => {
+    // Try to load cached account details first
+    const cachedAccountDetails = localStorage.getItem('pearai_account_details');
+    if (cachedAccountDetails) {
+      const parsedDetails = JSON.parse(cachedAccountDetails);
+      setAccountDetails(parsedDetails);
+    }
+
     const checkAuth = async () => {
       try {
         const res = await ideMessenger.request("getPearAuth", undefined);
@@ -130,7 +135,9 @@ const AccountSettings = () => {
           );
         }
         const data = await response.json();
-        console.dir(data);
+        
+        // Cache the account details in localStorage
+        localStorage.setItem('pearai_account_details', JSON.stringify(data));
         setAccountDetails(data);
       } catch (err) {
         console.error("Error fetching account data", err);
@@ -139,9 +146,9 @@ const AccountSettings = () => {
 
     (async () => {
       const authData = await checkAuth();
-      console.dir("BBBBBBBBBB");
       if (authData) {
         fetchUsageData(authData);
+        // Always fetch account data to get fresh plan period info
         fetchAccountData(authData);
       }
     })();
@@ -152,9 +159,11 @@ const AccountSettings = () => {
   };
 
   const handleLogout = () => {
-    // ideMessenger.request("pearai.logout", undefined);
+    // Clear cached data on logout
+    localStorage.removeItem('pearai_account_details');
     setAuth(null);
     setUsageDetails(null);
+    setAccountDetails(null);
   };
 
   const handleCopyApiKey = async () => {
