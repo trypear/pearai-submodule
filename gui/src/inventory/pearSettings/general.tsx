@@ -11,6 +11,7 @@ import { useContext, useEffect, useState } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { SERVER_URL } from "core/util/parameters";
 import { ChevronRight, ExternalLink } from "lucide-react";
+import { useWebviewListener } from "@/hooks/useWebviewListener";
 
 interface UsageDetails {
   percent_credit_used: number;
@@ -18,18 +19,6 @@ interface UsageDetails {
   pay_as_you_go_credits: number;
   ttl: number;
 }
-
-// {"email":"himanshusinghc2001@gmail.com",
-//     "user_id":"4f444409-343f-4d93-9390-ac6e47978475",
-//     "first_name":"Himanshu",
-//     "last_name":"Chauhan",
-//     "profile_picture_url":null,
-//     "plan_type":"MONTHLY",
-//     "plan_period_start":1732864883,
-//     "plan_period_end":1735456883,
-//     "is_subscription_active":false,
-//     "requests_used":0,
-//     "has_set_password":true}
 
 interface AccountDetails {
   email: string;
@@ -80,6 +69,60 @@ const AccountSettings = () => {
   const [isUsageLoading, setIsUsageLoading] = useState(false);
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const fetchUsageData = async (authData: Auth) => {
+    setIsUsageLoading(true);
+    try {
+      const response = await fetch(`${SERVER_URL}/get-usage`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authData.accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! {fetchUsageData} Status: ${response.status}`);
+      }
+      const data = await response.json();
+      setUsageDetails(data);
+    } catch (err) {
+      console.error("Error fetching usage data", err);
+    } finally {
+      setIsUsageLoading(false);
+    }
+  };
+
+  const fetchAccountData = async (authData: Auth) => {
+    try {
+      const response = await fetch(`${SERVER_URL}/account`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${authData.accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! {fetchAccountData} Status: ${response.status}`);
+      }
+      const data = await response.json();
+      localStorage.setItem('pearai_account_details', JSON.stringify(data));
+      setAccountDetails(data);
+    } catch (err) {
+      console.error("Error fetching account data", err);
+    }
+  };
+
+  const checkAuth = async () => {
+    try {
+      const res = await ideMessenger.request("getPearAuth", undefined);
+      setAuth(res);
+      return res;
+    } catch (error) {
+      console.error("Error checking auth status:", error);
+    }
+  };
+
   useEffect(() => {
     // Try to load cached account details first
     const cachedAccountDetails = localStorage.getItem('pearai_account_details');
@@ -87,66 +130,6 @@ const AccountSettings = () => {
       const parsedDetails = JSON.parse(cachedAccountDetails);
       setAccountDetails(parsedDetails);
     }
-
-    const checkAuth = async () => {
-      try {
-        const res = await ideMessenger.request("getPearAuth", undefined);
-        setAuth(res);
-        return res;
-      } catch (error) {
-        console.error("Error checking auth status:", error);
-      }
-    };
-
-    const fetchUsageData = async (authData: Auth) => {
-      setIsUsageLoading(true);
-      try {
-        const response = await fetch(`${SERVER_URL}/get-usage`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${authData.accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `HTTP error! {fetchUsageData} Status: ${response.status}`,
-          );
-        }
-        const data = await response.json();
-        setUsageDetails(data);
-      } catch (err) {
-        console.error("Error fetching usage data", err);
-      } finally {
-        setIsUsageLoading(false);
-      }
-    };
-
-    const fetchAccountData = async (authData: Auth) => {
-      try {
-        const response = await fetch(`${SERVER_URL}/account`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${authData.accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(
-            `HTTP error! {fetchAccountData} Status: ${response.status}`,
-          );
-        }
-        const data = await response.json();
-
-        // Cache the account details in localStorage
-        localStorage.setItem('pearai_account_details', JSON.stringify(data));
-        setAccountDetails(data);
-      } catch (err) {
-        console.error("Error fetching account data", err);
-      }
-    };
 
     (async () => {
       const authData = await checkAuth();
@@ -159,8 +142,18 @@ const AccountSettings = () => {
   }, []);
 
   const handleLogin = () => {
-    ideMessenger.request("authenticatePear", undefined);
+    ideMessenger.post("pearaiLogin", undefined);
   };
+
+  useWebviewListener("pearAISignedIn", async () => {
+    const authData = await checkAuth();
+    if (authData) {
+      await Promise.all([
+        fetchUsageData(authData),
+        fetchAccountData(authData)
+      ]);
+    }
+  });
 
   const handleLogout = () => {
     // Clear cached data on logout
@@ -189,7 +182,7 @@ const AccountSettings = () => {
     <div className="border border-solidd h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-auto no-scrollbar">
       <div className="border border-solidd w-full flex flex-col justify-start items-start gap-5">
         <div className="justify-center items-center inline-flex">
-          <div className=" text-lg font-['SF Pro']">Account</div>
+          <div className=" text-lg font-['SF Pro']">General</div>
         </div>
 
         {accountDetails ? (
@@ -340,7 +333,7 @@ const AccountSettings = () => {
                   </div>
                 </div>
               </div>
-              <div className="p-3 self-stretch bg-list-hoverBackground rounded-lg flex items-center text-ellipsis whitespace-normal overflow-hidden relative">
+              <div className="p-3 self-stretch bg-list-hoverBackground rounded-lg flex items-center text-ellipsis whitespace-normal overflow-hidden relative text-nowrap">
                 <div className="w-full overflow-hidden relative">
                   <div className="pr-8">
                     {showApiKey ? auth.accessToken : "•".repeat(1000)}
@@ -350,59 +343,64 @@ const AccountSettings = () => {
               </div>
             </div>
 
-            <div className="flex flex-col w-full justify-center gap-3">
-              <div className="opacity-50 text-xs font-normal font-['SF Pro']">
-                EDITOR SETTINGS
-              </div>
-              <div className="flex gap-3">
-                <a
-                  className="flex-1 p-3 bg-list-hoverBackground rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit"
-                  href="command:workbench.action.openSettings"
-                >
-                  <div className=" text-xs font-normal font-['SF Pro']">
-                    Open editor settings
-                  </div>
-                  <ChevronRight className="size-4"></ChevronRight>
-                </a>
-                <a
-                  className="flex-1 p-3 bg-list-hoverBackground rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit"
-                  href="command:workbench.action.openGlobalKeybindings"
-                >
-                  <div className=" text-xs font-normal font-['SF Pro']">
-                    Configure keyboard Shortcuts
-                  </div>
-                  <ChevronRight className="size-4"></ChevronRight>
-                </a>
-              </div>
-            </div>
-            <div className="flex flex-col w-full justify-center gap-3">
-              <div className="opacity-50 text-xs font-normal font-['SF Pro']">
-                PEARAI AGENT SETTINGS
-              </div>
-              <div
-                className="flex-1 p-3 bg-list-hoverBackground cursor-pointer rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit"
-                onClick={() => {
-                  ideMessenger.post("closeOverlay", undefined);
-                  ideMessenger.post("invokeVSCodeCommandById", {
-                    commandId: "pearai-roo-cline.SidebarProvider.focus",
-                  });
-                  ideMessenger.post("invokeVSCodeCommandById", {
-                    commandId: "roo-cline.settingsButtonClicked",
-                  });
-                }}
-              >
-                <div className=" text-xs font-normal font-['SF Pro']">
-                  Open PearAI Agent Settings
-                </div>
-                <ChevronRight className="size-4"></ChevronRight>
-              </div>
-            </div>
           </>
         ) : (
-          <div className="self-stretch rounded-lg justify-center items-center gap-3 inline-flex">
-            <Button onClick={handleLogin}>Login to PearAI</Button>
+          <div className="self-stretch rounded-lg justify-start items-center gap-3 inline-flex">
+            <Button onClick={handleLogin}>Log in</Button>
+            <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+              Login to use PearAI Pro services
+            </div>
           </div>
         )}
+
+
+        <div className="flex flex-col w-full justify-center gap-3">
+          <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+            EDITOR SETTINGS
+          </div>
+          <div className="flex gap-3">
+            <a
+              className="flex-1 p-3 bg-list-hoverBackground rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit"
+              href="command:workbench.action.openSettings"
+            >
+              <div className=" text-xs font-normal font-['SF Pro']">
+                Open editor settings
+              </div>
+              <ChevronRight className="size-4"></ChevronRight>
+            </a>
+            <a
+              className="flex-1 p-3 bg-list-hoverBackground rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit"
+              href="command:workbench.action.openGlobalKeybindings"
+            >
+              <div className=" text-xs font-normal font-['SF Pro']">
+                Configure keyboard Shortcuts
+              </div>
+              <ChevronRight className="size-4"></ChevronRight>
+            </a>
+          </div>
+        </div>
+        <div className="flex flex-col w-full justify-center gap-3">
+          <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+            PEARAI AGENT SETTINGS
+          </div>
+          <div
+            className="flex-1 p-3 bg-list-hoverBackground cursor-pointer rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit"
+            onClick={() => {
+              ideMessenger.post("closeOverlay", undefined);
+              ideMessenger.post("invokeVSCodeCommandById", {
+                commandId: "pearai-roo-cline.SidebarProvider.focus",
+              });
+              ideMessenger.post("invokeVSCodeCommandById", {
+                commandId: "roo-cline.settingsButtonClicked",
+              });
+            }}
+          >
+            <div className=" text-xs font-normal font-['SF Pro']">
+              Open PearAI Agent Settings
+            </div>
+            <ChevronRight className="size-4"></ChevronRight>
+          </div>
+        </div>
       </div>
     </div>
   );
