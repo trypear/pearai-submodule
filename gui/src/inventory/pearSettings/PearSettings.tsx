@@ -2,9 +2,10 @@ import { vscBackground, vscEditorBackground } from "@/components";
 import Inventory from "@/pages/inventory";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { title } from "process";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import GeneralSettings from "./general";
 import HelpSettings from "./help";
+import { IdeMessengerContext } from "@/context/IdeMessenger";
 
 const inventoryItems = [
   {
@@ -47,9 +48,15 @@ const menuItems: MenuItem[] = [
 
 const PearSettings = () => {
   const [selectedItem, setSelectedItem] = useState<string>("general");
-
+  const ideMessenger = useContext(IdeMessengerContext);
   return (
-    <div className="flex items-center justify-center h-full border-4 border-solidd border-red-500">
+    <div
+      className="flex items-center justify-center h-full border-4 border-solidd border-red-500"
+      onClick={(e) => {
+        if (e.target === e.currentTarget)
+          ideMessenger.post("closeOverlay", undefined);
+      }}
+    >
       <div className="min-h-[80%] min-w-[80%] max-h-[80%] max-w-[80%] flex overflow-auto no-scrollbar rounded-xl bg-sidebar-background border-4 border-solidd border-green-500">
         <div className="flex border-4 border-solidd border-purple-400">
           <Sidebar selectedItem={selectedItem} onSelectItem={setSelectedItem} />
