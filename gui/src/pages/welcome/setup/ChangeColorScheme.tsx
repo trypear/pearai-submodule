@@ -9,6 +9,9 @@ export default function ChangeColorScheme({
   return (
     <div className="flex gap-4 size-full text-center">
       <div
+        role="button"
+        tabIndex={0}
+        aria-label="Select Light Theme"
         className="flex-1 bg-white text-black flex justify-center align-middle size-full rounded-xl cursor-pointer transition-colors duration-300"
         onClick={() => handleThemeChange(false)}
       >
@@ -18,6 +21,9 @@ export default function ChangeColorScheme({
         </div>
       </div>
       <div
+        role="button"
+        tabIndex={0}
+        aria-label="Select Light Theme"
         className="flex-1 bg-black text-white flex justify-center align-middle size-full rounded-xl cursor-pointer transition-colors duration-300"
         onClick={() => handleThemeChange(true)}
       >
