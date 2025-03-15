@@ -23,7 +23,7 @@ export default function ChangeColorScheme({
       <div
         role="button"
         tabIndex={0}
-        aria-label="Select Light Theme"
+        aria-label="Select Dark Theme"
         className="flex-1 bg-black text-white flex justify-center align-middle size-full rounded-xl cursor-pointer transition-colors duration-300"
         onClick={() => handleThemeChange(true)}
       >
