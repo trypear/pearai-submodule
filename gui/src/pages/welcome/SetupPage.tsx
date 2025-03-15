@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { vscBackground, vscBadgeBackground, vscBadgeForeground, vscEditorBackground, vscInputBackground, vscSidebarBorder } from "@/components";
 import { getLocalStorage } from "@/util/localStorage";
 import { setLocalStorage } from "@/util/localStorage";
+import ChangeColorScheme from "./setup/ChangeColorScheme";
 
 
 export interface Tool {
@@ -197,6 +198,10 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     }
   };
 
+  const handleThemeChange = (isDark: boolean) => {
+    ideMessenger.post("changeColorScheme", { isDark });
+  }
+
 
   //#region Setup Steps
 
@@ -288,6 +293,20 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
               <span className="text-center w-full">Add to PATH</span>
             </>
           )}
+        </div>
+      </Button>,
+    },
+    {
+      icon: <Terminal className="h-6 w-6" />,
+      title: "Color Scheme",
+      description: "Change PearAI to a light or dark theme.",
+      component: <ChangeColorScheme handleThemeChange={handleThemeChange} />,
+      button: <Button
+        className="text-xs font-['SF Pro']"
+        onClick={handleNextClick}
+      >
+        <div className="flex items-center justify-between w-full">
+          Next
         </div>
       </Button>,
     },
