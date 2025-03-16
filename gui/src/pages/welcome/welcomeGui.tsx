@@ -7,8 +7,11 @@ import { WelcomeHeader } from "./WelcomeHeader";
 import InventoryPage from "@/inventory/pages/InventoryPage";
 import SplashScreen from "./splashScreen";
 import { motion, AnimatePresence } from "framer-motion";
+import PearSettings from "@/inventory/pearSettings/PearSettings";
+import { useNavigate } from "react-router-dom";
 
 export default function Welcome() {
+  const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
   const [step, setStep] = useState(0);
 
@@ -49,6 +52,10 @@ export default function Welcome() {
   }, [ideMessenger]); // Dependency array ensures this runs once when the component mounts
 
   const handleNextStep = () => {
+    if (step === 3) {
+      return navigate("/pearSettings");
+    }
+    
     setStep((prevStep) => Math.min(prevStep + 1, 4));
   };
 
@@ -57,7 +64,7 @@ export default function Welcome() {
   };
 
   return (
-    <div className="flex flex-col h-full w-full select-none">
+    <div className="flex flex-col h-full w-full select-none bg-sidebar-background">
       {/* <WelcomeHeader onBack={handleBackStep} showBack={step > 0} /> */}
       <motion.div
         className={`flex flex-col h-full w-full ${step === 0 ? "flex" : "hidden"}`}
@@ -97,7 +104,7 @@ export default function Welcome() {
         animate={{ opacity: step === 4 ? 1 : 0 }}
         transition={{ duration: 0.5 }}
       >
-        <InventoryPage />
+        <PearSettings />
       </motion.div>
     </div>
   );
