@@ -117,10 +117,11 @@ const router = createMemoryRouter(
           path: "/apiKeyAutocompleteOnboarding",
           element: <ApiKeyAutocompleteOnboarding />,
         },
-        {
-          path: "/inventory/*",
-          element: <Inventory />,
-        },
+        // Deprecated
+        // {
+        //   path: "/inventory/*",
+        //   element: <Inventory />,
+        // },
         {
           path: "/pearSettings",
           element: <PearSettings/>
