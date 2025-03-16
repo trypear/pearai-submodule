@@ -50,7 +50,6 @@ function daysUntilCycleEnds(cycleEndDate) {
   const endDate = cycleEndDate * 1000;
   const differenceInTime = endDate - now.getTime();
   const differenceInDays = Math.floor(differenceInTime / (1000 * 60 * 60 * 24));
-  console.dir(differenceInDays);
   return differenceInDays < 0 ? 0 : differenceInDays;
 }
 
@@ -127,8 +126,13 @@ const AccountSettings = () => {
     // Try to load cached account details first
     const cachedAccountDetails = localStorage.getItem('pearai_account_details');
     if (cachedAccountDetails) {
-      const parsedDetails = JSON.parse(cachedAccountDetails);
-      setAccountDetails(parsedDetails);
+      try {
+        const parsedDetails = JSON.parse(cachedAccountDetails);
+        setAccountDetails(parsedDetails);
+      } catch (parseError) {
+        console.error("Failed to parse cached account details:", parseError);
+        // localStorage.removeItem('pearai_account_details'); // Remove invalid data
+      }
     }
 
     (async () => {

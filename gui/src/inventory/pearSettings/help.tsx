@@ -50,6 +50,7 @@ const HelpSettings = () => {
             <a
               className="grow shrink basis-0 p-3 bg-list-hoverBackground rounded-lg border border-solid  justify-between items-center flex overflow-hidden cursor-pointer no-underline text-decoration-line text-inherit hover:text-inherit"
               href={item.link}
+              key={item.title}
             >
               <div className=" text-xs font-normal font-['SF Pro']">
                 {item.title}
