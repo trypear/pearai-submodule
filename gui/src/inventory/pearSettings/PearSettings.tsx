@@ -1,4 +1,4 @@
-import { vscBackground, vscEditorBackground } from "@/components";
+import { lightGray, vscBackground, vscEditorBackground } from "@/components";
 import Inventory from "@/pages/inventory";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { title } from "process";
@@ -76,9 +76,10 @@ const Sidebar = ({
 }) => {
   return (
     <div
-      className="p-2 w-44 border-r flex flex-col items-start justify-start border-4 border-solidd border-cyan-400"
-      style={{ backgroundColor: vscEditorBackground }}
+      className="p-2 w-44 flex flex-col items-start justify-start bg-sidebar-background"
+      style={{ borderRight: `1px solid ${lightGray}20`  }}
     >
+      
       {/* Settings Section */}
       <SidebarSection
         title="SETTINGS"
