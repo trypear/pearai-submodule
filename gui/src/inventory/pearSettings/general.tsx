@@ -7,9 +7,11 @@ import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 import { useAccountSettings } from "./hooks/useAccountSettings";
-import { CopyIcon, EyeIcon } from "./components/Icons";
+import { Eye, Files } from "lucide-react";
 import { LoadingPlaceholder } from "./components/LoadingPlaceholder";
 import { unixTimeToHumanReadable, daysUntilCycleEnds, UPGRADE_LINK } from "./utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { getMetaKeyLabel } from "@/util";
 
 const AccountSettings = () => {
   const {
@@ -21,11 +23,19 @@ const AccountSettings = () => {
     isUsageLoading,
     handleLogin,
     handleLogout,
-    handleCopyApiKey,
+    copyApiKey,
     fetchUsageData,
     fetchAccountData,
     checkAuth,
   } = useAccountSettings();
+
+  const [showCopiedTooltip, setShowCopiedTooltip] = useState(false);
+
+  const handleCopyApiKey = async () => {
+    await copyApiKey();
+    setShowCopiedTooltip(true);
+    setTimeout(() => setShowCopiedTooltip(false), 1000);
+  };
 
   const ideMessenger = useContext(IdeMessengerContext);
 
@@ -175,14 +185,26 @@ const AccountSettings = () => {
                 </div>
                 <div className="flex gap-3">
                   <div
-                    className="cursor-pointer"
+                    className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-md hover:bg-background transition-colors"
                     onClick={() => setShowApiKey(!showApiKey)}
                   >
-                    <EyeIcon />
+                    <Eye size={18} />
                   </div>
-                  <div className="cursor-pointer" onClick={handleCopyApiKey}>
-                    <CopyIcon />
-                  </div>
+                  <TooltipProvider>
+                    <Tooltip open={showCopiedTooltip}>
+                      <TooltipTrigger asChild>
+                        <div
+                          className="cursor-pointer w-7 h-7 flex items-center justify-center rounded-md hover:bg-background transition-colors"
+                          onClick={handleCopyApiKey}
+                        >
+                          <Files size={16} />
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={-10}>
+                        <p className="text-xs px-2 py-1 rounded-md bg-background">Copied!</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
               <div className="p-3 self-stretch bg-list-hoverBackground rounded-lg flex items-center text-ellipsis whitespace-normal overflow-hidden relative text-nowrap">
@@ -190,7 +212,7 @@ const AccountSettings = () => {
                   <div className="pr-8">
                     {showApiKey ? auth?.accessToken : "•".repeat(1000)}
                   </div>
-                  <div className="absolute inset-y-0 right-0 w-96 bg-gradient-to-r from-transparent to-list-hoverBackground pointer-events-none"></div>
+                  {!showApiKey && <div className="absolute inset-y-0 right-0 w-96 bg-gradient-to-r from-transparent to-list-hoverBackground pointer-events-none"></div>}
                 </div>
               </div>
             </div>
@@ -225,10 +247,40 @@ const AccountSettings = () => {
               href="command:workbench.action.openGlobalKeybindings"
             >
               <div className="text-xs font-normal font-['SF Pro']">
-                Configure keyboard Shortcuts
+                Configure keyboard shortcuts
               </div>
               <ChevronRight className="size-4" />
             </a>
+            <a
+              className="flex-1 p-3 bg-list-hoverBackground rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit"
+              href="command:workbench.userDataSync.actions.turnOn"
+            >
+              <div className="text-xs font-normal font-['SF Pro']">
+                Backup and sync settings
+              </div>
+              <ChevronRight className="size-4" />
+            </a>
+          </div>
+          <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+            Settings can also be configured with <span className="px-1 py-px rounded-md border-2 border-solid justify-center items-center gap-0.5">
+              <span className="text-center font-['SF Pro']">
+                {getMetaKeyLabel()}
+              </span>
+              <span className="opacity-50 font-['SF Pro'] leading-[17px] mx-0.5">
+                +
+              </span>
+              <span className="font-medium font-['SF Mono'] leading-3">
+                Shift
+              </span>
+              <span className="opacity-50 font-['SF Pro'] leading-[17px] mx-0.5">
+                +
+              </span>
+              <span className="font-medium font-['SF Mono'] leading-3">
+                P
+              </span>
+            </span>
+            &nbsp;
+            via the Command Pallete.
           </div>
         </div>
         <div className="flex flex-col w-full justify-center gap-3">

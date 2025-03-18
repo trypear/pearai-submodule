@@ -77,7 +77,7 @@ export const useAccountSettings = () => {
     ideMessenger.post("pearaiLogout", undefined);
   };
 
-  const handleCopyApiKey = async () => {
+  const copyApiKey = async () => {
     if (auth?.accessToken) {
       try {
         await navigator.clipboard.writeText(auth.accessToken);
@@ -116,7 +116,7 @@ export const useAccountSettings = () => {
     isUsageLoading,
     handleLogin,
     handleLogout,
-    handleCopyApiKey,
+    copyApiKey,
     fetchUsageData,
     fetchAccountData,
     checkAuth,
