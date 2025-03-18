@@ -2,16 +2,17 @@ import {
   Button,
 } from "@/components";
 import { Progress } from "@/components/ui/progress";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 import { useAccountSettings } from "./hooks/useAccountSettings";
 import { Eye, Files } from "lucide-react";
 import { LoadingPlaceholder } from "./components/LoadingPlaceholder";
-import { unixTimeToHumanReadable, daysUntilCycleEnds, UPGRADE_LINK } from "./utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { getMetaKeyLabel } from "@/util";
+
+export const UPGRADE_LINK = "https://trypear.ai/pricing";
 
 const AccountSettings = () => {
   const {
@@ -47,6 +48,21 @@ const AccountSettings = () => {
   });
 
   useWebviewListener("pearAISignedOut", async () => { handleLogout() });
+
+  const timeLeftUntilRefill = useMemo(() => {
+    if (!usageDetails?.ttl || usageDetails?.ttl < 0) return "-";
+    const seconds = usageDetails.ttl;
+    const hours = seconds / 3600;
+    const days = hours / 24;
+
+    if (days >= 1) {
+      return `${Math.floor(days)} days left`;
+    } else if (hours >= 1) {
+      return `${Math.floor(hours)} hours left`;
+    } else {
+      return `${Math.floor(seconds)} seconds left`;
+    }
+  }, [usageDetails]);
 
   return (
     <div className="border border-solidd h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-auto no-scrollbar">
@@ -100,7 +116,7 @@ const AccountSettings = () => {
                   />
                 </div>
                 <div className="opacity-50 text-xs font-normal font-['SF Pro']">
-                  Credits refills monthly ({daysUntilCycleEnds(accountDetails.plan_period_end)} days left)
+                  Credits refills monthly ({timeLeftUntilRefill})
                 </div>
               </div>
               <div className="flex-1 border border-solid p-4 rounded-lg flex flex-col gap-3">
@@ -159,8 +175,13 @@ const AccountSettings = () => {
                   </span>
                 </div>
                 <div className="border border-solid w-1/2 p-3 rounded-lg">
-                  {unixTimeToHumanReadable(accountDetails.plan_period_start)} -{" "}
-                  {unixTimeToHumanReadable(accountDetails.plan_period_end)}
+                  {new Date(accountDetails.plan_period_start * 1000).toLocaleDateString()}
+                  {" "}-{" "}
+                  {accountDetails.plan_period_end
+                    ? new Date(
+                      accountDetails.plan_period_end * 1000,
+                    ).toLocaleDateString()
+                    : "Now"}
                   &nbsp;
                   <span className="opacity-50  text-xs font-normal font-['SF Pro']">
                     Current Period
