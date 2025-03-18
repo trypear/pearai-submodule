@@ -61,13 +61,13 @@ const AccountSettings = () => {
                   {accountDetails?.email}
                 </div>
               </div>
-              <Button onClick={handleLogout}>Logout</Button>
+              <Button onClick={handleLogout}>Log out</Button>
             </div>
-            <div className="flex flex-col w-full justify-center gap-3">
-              <div className="opacity-50 text-xs font-normal font-['SF Pro']">
-                USAGE
-              </div>
-              <div className="border border-solid p-4 rounded-lg flex flex-col gap-3">
+            <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+              USAGE
+            </div>
+            <div className="flex w-full gap-3">
+              <div className="flex-1 border border-solid p-4 rounded-lg flex flex-col gap-3">
                 <div className="font-normal font-['SF Pro']">PearAI Credits</div>
                 <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
                   <div className="text-2xl font-['SF Pro']">
@@ -91,22 +91,7 @@ const AccountSettings = () => {
                   Credits refills monthly ({daysUntilCycleEnds(accountDetails.plan_period_end)} days left)
                 </div>
               </div>
-            </div>
-            {usageDetails?.remaining_topup_credits && <div className="flex flex-col w-full justify-center gap-3">
-              <div className="border border-solid p-4 rounded-lg flex flex-col gap-3">
-                <div className="font-normal font-['SF Pro']">TopUp Credits</div>
-                <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
-                  <div className="text-2xl font-['SF Pro']">
-                    ${Math.round(usageDetails.remaining_topup_credits)}
-                  </div>
-                  <div className="opacity-50 text-xs font-normal font-['SF Pro']">
-                    remaining
-                  </div>
-                </div>
-              </div>
-            </div>}
-            <div className="flex flex-col w-full justify-center gap-3">
-              <div className="border border-solid p-4 rounded-lg flex flex-col gap-3">
+              <div className="flex-1 border border-solid p-4 rounded-lg flex flex-col gap-3">
                 <div className="font-normal font-['SF Pro']">
                   Pay-As-You-Go Extra Credits
                 </div>
@@ -123,7 +108,7 @@ const AccountSettings = () => {
                   </div>
                 </div>
                 <div>
-                  <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+                  <div className="opacity-50 text-xs font-normal font-['SF Pro'] -mt-1">
                     Credits billed monthly
                   </div>
                   <a
@@ -135,6 +120,21 @@ const AccountSettings = () => {
                 </div>
               </div>
             </div>
+
+            {usageDetails?.remaining_topup_credits && <div className="flex flex-col w-full justify-center gap-3">
+              <div className="border border-solid p-4 rounded-lg flex flex-col gap-3">
+                <div className="font-normal font-['SF Pro']">TopUp Credits</div>
+                <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
+                  <div className="text-2xl font-['SF Pro']">
+                    ${Math.round(usageDetails.remaining_topup_credits)}
+                  </div>
+                  <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+                    remaining
+                  </div>
+                </div>
+              </div>
+            </div>}
+
             <div className="flex flex-col w-full justify-center gap-3">
               <div className="opacity-50 text-xs font-normal font-['SF Pro']">
                 PLAN
