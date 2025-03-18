@@ -46,6 +46,8 @@ const AccountSettings = () => {
     }
   });
 
+  useWebviewListener("pearAISignedOut", async () => { handleLogout() });
+
   return (
     <div className="border border-solidd h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-auto no-scrollbar">
       <div className="border border-solidd w-full flex flex-col justify-start items-start gap-5">
@@ -84,7 +86,7 @@ const AccountSettings = () => {
                     {isUsageLoading ? (
                       <LoadingPlaceholder />
                     ) : (
-                      `${usageDetails ? Math.round(usageDetails.percent_credit_used) : 0}%`
+                      `${usageDetails ? usageDetails.percent_credit_used.toFixed(2) : 0}%`
                     )}
                   </div>
                   <div className="opacity-50 text-xs font-normal font-['SF Pro']">
@@ -110,7 +112,7 @@ const AccountSettings = () => {
                     {isUsageLoading ? (
                       <LoadingPlaceholder />
                     ) : (
-                      `$${usageDetails ? Math.round(usageDetails.pay_as_you_go_credits) : 0}`
+                      `$${usageDetails ? usageDetails.pay_as_you_go_credits.toFixed(2) : 0}`
                     )}
                   </div>
                   <div className="opacity-50 text-xs font-normal font-['SF Pro']">
@@ -136,7 +138,7 @@ const AccountSettings = () => {
                 <div className="font-normal font-['SF Pro']">TopUp Credits</div>
                 <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
                   <div className="text-2xl font-['SF Pro']">
-                    ${Math.round(usageDetails.remaining_topup_credits)}
+                    ${usageDetails.remaining_topup_credits.toFixed(2)}
                   </div>
                   <div className="opacity-50 text-xs font-normal font-['SF Pro']">
                     remaining
