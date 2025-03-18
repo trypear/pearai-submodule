@@ -1,7 +1,4 @@
-import { title } from "process";
 import {
-  Link2,
-  Link2Icon,
   LucideExternalLink,
   ChevronRight,
 } from "lucide-react";
@@ -14,7 +11,7 @@ const socials = [
   },
   {
     title: "Github",
-    link: "https://github.com/orgs/trypear/repositories",
+    link: "https://github.com/trypear/pearai-master",
   },
   {
     title: "Website",

@@ -1,24 +1,15 @@
 import {
   Button,
-  vscBackground,
-  vscBadgeBackground,
-  vscButtonBackground,
-  vscForeground,
-  vscSidebarBorder,
 } from "@/components";
 import { Progress } from "@/components/ui/progress";
 import { useContext, useEffect, useState } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
-import { SERVER_URL } from "core/util/parameters";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
 import { useAccountSettings } from "./hooks/useAccountSettings";
 import { CopyIcon, EyeIcon } from "./components/Icons";
 import { LoadingPlaceholder } from "./components/LoadingPlaceholder";
 import { unixTimeToHumanReadable, daysUntilCycleEnds, UPGRADE_LINK } from "./utils";
-import { Auth, AccountDetails, UsageDetails } from "./types";
-
-const upgradeLink = "https://trypear.ai/pricing";
 
 const AccountSettings = () => {
   const {
