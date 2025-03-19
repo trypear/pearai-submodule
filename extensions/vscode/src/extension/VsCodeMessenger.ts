@@ -143,7 +143,6 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
     });
     this.onWebview("changeColorScheme", (msg) => {
-      // TODO: CHANGE THIS NANG
       const selectedTheme = msg.data.isDark ? "Default PearAI Dark" : "Default PearAI Light";
       vscode.workspace.getConfiguration().update('workbench.colorTheme', selectedTheme, true);
     });

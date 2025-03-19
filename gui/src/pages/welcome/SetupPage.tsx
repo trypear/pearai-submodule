@@ -166,13 +166,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     localStorage.setItem('onboardingSelectedTools', JSON.stringify(selectedTools.map(t => t.id)));
     handleNextClick();
   };
-
-  // setting the theme to dark on load
-  // TODO: SET THE COLOUR ON THE APP INSTEAD TO AVOID UI FLASHES
-  useEffect(() => {
-    handleThemeChange(true);
-  }, []);
-
+  
   //#endregion Install Tools
 
   //#region Sign In
