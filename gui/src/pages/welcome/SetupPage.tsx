@@ -167,6 +167,12 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
     handleNextClick();
   };
 
+  // setting the theme to dark on load
+  // TODO: SET THE COLOUR ON THE APP INSTEAD TO AVOID UI FLASHES
+  useEffect(() => {
+    handleThemeChange(true);
+  }, []);
+
   //#endregion Install Tools
 
   //#region Sign In
