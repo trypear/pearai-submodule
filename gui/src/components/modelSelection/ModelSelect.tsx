@@ -308,7 +308,7 @@ function ModelSelect() {
               ref={buttonRef}
               className="h-[18px] flex overflow-hidden"
             >
-              {defaultModel?.provider === 'pearai_server' ? (
+              {defaultModel ? (defaultModel?.provider === 'pearai_server' ? (
                 <div className="flex flex-initial items-center">
                   <img
                     src={`${window.vscMediaUrl}/logos/pearai-color.png`}
@@ -342,7 +342,7 @@ function ModelSelect() {
                     objectFit: "contain",
                   }}
                 />
-              )}
+              )) : <CubeIcon className="w-3.5 h-3.5 stroke-2 mr-2 flex-shrink-0" />}
               <span className="truncate inline-block min-w-0">
                 {modelSelectTitle(defaultModel) || "Select model"}{" "}
               </span>

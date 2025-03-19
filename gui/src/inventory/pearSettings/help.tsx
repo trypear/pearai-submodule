@@ -1,7 +1,4 @@
-import { title } from "process";
 import {
-  Link2,
-  Link2Icon,
   LucideExternalLink,
   ChevronRight,
 } from "lucide-react";
@@ -14,7 +11,7 @@ const socials = [
   },
   {
     title: "Github",
-    link: "https://github.com/orgs/trypear/repositories",
+    link: "https://github.com/trypear/pearai-master",
   },
   {
     title: "Website",
@@ -23,7 +20,7 @@ const socials = [
 ];
 
 const keyboardShortcuts = [
-  { key: "E", description: "Open Inventory" },
+  { key: "E", description: "Open Settings" },
   { key: "I", description: "Make inline edits" },
   { key: "L", description: "Add selection to chat" },
   { key: "\\", description: "Big Chat" },
@@ -37,7 +34,7 @@ const demolink = "https://www.youtube.com/watch?v=wcaWUeaeqiA";
 
 const HelpSettings = () => {
   return (
-    <div className="border border-solidd h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-hidden">
+    <div className="border border-solidd h-full flex-col justify-start items-start gap-5 inline-flex overflow-hidden">
       <div className="justify-center items-center inline-flex">
         <div className=" text-lg font-['SF Pro']">Help</div>
       </div>
@@ -63,14 +60,14 @@ const HelpSettings = () => {
 
       <div className="self-stretch pb-2 flex-col justify-start items-start gap-3 flex">
         <div className="self-stretch  opacity-50  text-[10px] font-bold font-['SF Pro'] tracking-tight">
-          TUTORIAL
+          DEMO
         </div>
         <a
           className="p-3 bg-list-hoverBackground rounded-lg border border-solid justify-between items-center flex self-stretch no-underline text-inherit hover:text-inherit"
           href={demolink}
         >
           <div className=" text-xs font-normal font-['SF Pro']">
-            Open tutorial
+            Watch demo
           </div>
           <ChevronRight className="size-4"></ChevronRight>
         </a>

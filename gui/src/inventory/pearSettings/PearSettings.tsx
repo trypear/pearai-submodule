@@ -125,9 +125,9 @@ const SidebarSection = ({
             selectedItem === item.id ? "bg-list-hoverBackground" : ""
           }`}
         >
-          {item.icon && (
+          {item?.icon && (
             <div className="flex-shrink-0 w-7 flex items-center justify-center">
-              <img src={getLogoPath(item.icon)} className="size-6 mr-1" />
+              <img src={getLogoPath(item?.icon)} className="size-6 mr-1" />
             </div>
           )}
           <div className="text-xs font-normal font-['SF Pro']">
@@ -141,7 +141,7 @@ const SidebarSection = ({
 
 const ContentArea = ({ selectedItem }: { selectedItem: string }) => {
   return (
-    <div className="flex flex-col w-full p-6 overflow-y-auto no-scrollbar overflow-x-hidden border-3 border-solidd border-red-300">
+    <div className="flex flex-col w-full p-5 overflow-y-auto no-scrollbar overflow-x-hidden border-3 border-solidd border-red-300">
       {/* Add your content components here based on selectedItem */}
       {selectedItem === "general" && <GeneralSettings />}
       {selectedItem === "help" && <HelpSettings />}
