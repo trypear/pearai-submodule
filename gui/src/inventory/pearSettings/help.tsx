@@ -67,7 +67,7 @@ const HelpSettings = () => {
           href={demolink}
         >
           <div className=" text-xs font-normal font-['SF Pro']">
-            Watch demo on youtube 
+            Watch demo
           </div>
           <ChevronRight className="size-4"></ChevronRight>
         </a>
