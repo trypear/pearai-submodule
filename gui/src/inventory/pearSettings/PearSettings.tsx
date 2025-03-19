@@ -141,7 +141,7 @@ const SidebarSection = ({
 
 const ContentArea = ({ selectedItem }: { selectedItem: string }) => {
   return (
-    <div className="flex flex-col w-full p-6 overflow-y-auto no-scrollbar overflow-x-hidden border-3 border-solidd border-red-300">
+    <div className="flex flex-col w-full p-5 overflow-y-auto no-scrollbar overflow-x-hidden border-3 border-solidd border-red-300">
       {/* Add your content components here based on selectedItem */}
       {selectedItem === "general" && <GeneralSettings />}
       {selectedItem === "help" && <HelpSettings />}

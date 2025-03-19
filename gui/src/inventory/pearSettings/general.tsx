@@ -66,7 +66,7 @@ const AccountSettings = () => {
   }, [usageDetails]);
 
   return (
-    <div className="border border-solidd h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-auto no-scrollbar">
+    <div className="border border-solidd h-full flex-col justify-start items-start gap-5 inline-flex overflow-auto no-scrollbar">
       <div className="border border-solidd w-full flex flex-col justify-start items-start gap-5">
         <div className="justify-center items-center inline-flex">
           <div className="text-lg font-['SF Pro']">General</div>

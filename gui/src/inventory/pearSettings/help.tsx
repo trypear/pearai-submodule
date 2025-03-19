@@ -34,7 +34,7 @@ const demolink = "https://www.youtube.com/watch?v=wcaWUeaeqiA";
 
 const HelpSettings = () => {
   return (
-    <div className="border border-solidd h-full p-5 flex-col justify-start items-start gap-5 inline-flex overflow-hidden">
+    <div className="border border-solidd h-full flex-col justify-start items-start gap-5 inline-flex overflow-hidden">
       <div className="justify-center items-center inline-flex">
         <div className=" text-lg font-['SF Pro']">Help</div>
       </div>
