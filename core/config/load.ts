@@ -335,7 +335,7 @@ async function intermediateToFinalConfig(
   } else {
     // Remove free trial models
     models = models.filter((model) => model.providerName !== "free-trial");
-    console.log("Models:", models);
+    // console.log("Models:", models);
   }
 
   // Tab autocomplete model

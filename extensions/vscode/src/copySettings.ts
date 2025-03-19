@@ -14,8 +14,8 @@ export const isFirstPearAICreatorLaunch = !fs.existsSync(firstPearAICreatorLaunc
 
 export function isFirstLaunch(context: vscode.ExtensionContext): boolean {
     const stateExists = context.globalState.get<boolean>(FIRST_LAUNCH_KEY);
-    console.log("isFirstLaunch");
-    console.log(!stateExists);
+    // console.log("isFirstLaunch");
+    // console.log(!stateExists);
     // If state is set and is true, it's not first launch
     return !stateExists;
 }

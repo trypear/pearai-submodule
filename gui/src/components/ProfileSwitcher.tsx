@@ -240,7 +240,7 @@ function ProfileSwitcher(props: {}) {
         }}
         text="Configure PearAI"
       >
-        <CogIcon width="1.4m" height="1.4em" />
+        <CogIcon width="1.4em" height="1.4em" />
       </HeaderButtonWithText>
 
       {/* Only show login if beta explicitly enabled */}

@@ -24,6 +24,7 @@ const AccountSettings = () => {
     isUsageLoading,
     handleLogin,
     handleLogout,
+    clearUserData,
     copyApiKey,
     fetchUsageData,
     fetchAccountData,
@@ -47,7 +48,7 @@ const AccountSettings = () => {
     }
   });
 
-  useWebviewListener("pearAISignedOut", async () => { handleLogout() });
+  useWebviewListener("pearAISignedOut", async () => { clearUserData() });
 
   const timeLeftUntilRefill = useMemo(() => {
     if (!usageDetails?.ttl || usageDetails?.ttl < 0) return "-";
