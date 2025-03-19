@@ -125,9 +125,9 @@ const SidebarSection = ({
             selectedItem === item.id ? "bg-list-hoverBackground" : ""
           }`}
         >
-          {item.icon && (
+          {item?.icon && (
             <div className="flex-shrink-0 w-7 flex items-center justify-center">
-              <img src={getLogoPath(item.icon)} className="size-6 mr-1" />
+              <img src={getLogoPath(item?.icon)} className="size-6 mr-1" />
             </div>
           )}
           <div className="text-xs font-normal font-['SF Pro']">

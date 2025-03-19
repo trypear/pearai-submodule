@@ -70,11 +70,15 @@ export const useAccountSettings = () => {
   };
 
   const handleLogout = () => {
+    clearUserData();
+    ideMessenger.post("pearaiLogout", undefined);
+  };
+
+  const clearUserData = () => {
     localStorage.removeItem('pearai_account_details');
     setAuth(null);
     setUsageDetails(null);
     setAccountDetails(null);
-    ideMessenger.post("pearaiLogout", undefined);
   };
 
   const copyApiKey = async () => {
@@ -116,6 +120,7 @@ export const useAccountSettings = () => {
     isUsageLoading,
     handleLogin,
     handleLogout,
+    clearUserData,
     copyApiKey,
     fetchUsageData,
     fetchAccountData,
