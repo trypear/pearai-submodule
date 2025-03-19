@@ -4,7 +4,6 @@ import { Card } from "@/components/ui/card";
 import { Sparkles, Bot, Search, Download, LogIn, User, Command, Terminal, Import, Move, Check } from "lucide-react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import ImportExtensions from "./setup/ImportExtensions";
-import AddToPath from "./setup/AddToPath";
 import SignIn from "./setup/SignIn";
 import InstallTools from "./setup/InstallTools";
 import { getPlatform } from "@/util";
@@ -15,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { vscBackground, vscBadgeBackground, vscBadgeForeground, vscEditorBackground, vscInputBackground, vscSidebarBorder } from "@/components";
 import { getLocalStorage } from "@/util/localStorage";
 import { setLocalStorage } from "@/util/localStorage";
+import ChangeColorScheme from "./setup/ChangeColorScheme";
 
 
 export interface Tool {
@@ -42,7 +42,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
   };
 
   const handleNextClick = () => {
-    if (currentFeature < setupSteps.length - 1) {
+    if (currentFeature < allSetupSteps.length - 1) {
       const nextFeature = currentFeature + 1;
       setCurrentFeature(nextFeature);
       if (!visitedSteps.includes(nextFeature)) {
@@ -182,25 +182,37 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
 
   //#region Add To Path
 
-  const [pathAdded, setPathAdded] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
+  // const [pathAdded, setPathAdded] = useState(false);
+  // const [isAdding, setIsAdding] = useState(false);
 
-  const handleAddToPath = () => {
-    if (!isAdding) {
-      setIsAdding(true);
-      ideMessenger.post("pearInstallCommandLine", undefined);
-      setTimeout(() => {
-        setPathAdded(true);
-        handleNextClick();
-        setIsAdding(false);
-      }, 2000);
-    }
-  };
+  // const handleAddToPath = () => {
+  //   if (!isAdding) {
+  //     setIsAdding(true);
+  //     ideMessenger.post("pearInstallCommandLine", undefined);
+  //     setTimeout(() => {
+  //       setPathAdded(true);
+  //       handleNextClick();
+  //       setIsAdding(false);
+  //     }, 2000);
+  //   }
+  // };
 
+  const handleThemeChange = (isDark: boolean) => {
+    ideMessenger.post("changeColorScheme", { isDark });
+  }
 
   //#region Setup Steps
 
-  const allSetupSteps = [
+  interface SetupStep {
+    icon: JSX.Element;
+    title: string;
+    description: string;
+    component: JSX.Element;
+    button: JSX.Element;
+    platformSpecific?: string;
+  }
+
+  const allSetupSteps: SetupStep[] = [
     {
       icon: <Move className="h-5 w-5" />,
       title: "Import Extensions",
@@ -249,45 +261,59 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
           className="text-xs font-['SF Pro']"
         >Next</Button>,
     },
+    // {
+    //   icon: <Terminal className="h-6 w-6" />,
+    //   title: "Add PearAI To PATH",
+    //   description: "Easily open PearAI from the command line with 'pearai'.",
+    //   component: <AddToPath onNext={handleNextClick} pathAdded={pathAdded} />,
+    //   platformSpecific: "mac",
+    //   button: <Button
+    //     className="text-xs font-['SF Pro']"
+    //     onClick={handleAddToPath}
+    //   >
+    //     <div className="flex items-center justify-between w-full gap-2">
+    //       {isAdding ? (
+    //         <div className="flex items-center justify-center w-full gap-2">
+    //           <svg
+    //             className="animate-spin h-5 w-5 text-button-foreground"
+    //             fill="none"
+    //             viewBox="0 0 24 24"
+    //           >
+    //             <circle
+    //               className="opacity-25"
+    //               cx="12"
+    //               cy="12"
+    //               r="10"
+    //               stroke="currentColor"
+    //               strokeWidth="4"
+    //             />
+    //             <path
+    //               className="opacity-75"
+    //               fill="currentColor"
+    //               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    //             />
+    //           </svg>
+    //           <span>Adding...</span>
+    //         </div>
+    //       ) : (
+    //         <>
+    //           <span className="text-center w-full">Add to PATH</span>
+    //         </>
+    //       )}
+    //     </div>
+    //   </Button>,
+    // },
     {
       icon: <Terminal className="h-6 w-6" />,
-      title: "Add PearAI To PATH",
-      description: "Easily open PearAI from the command line with 'pearai'.",
-      component: <AddToPath onNext={handleNextClick} pathAdded={pathAdded} />,
-      platformSpecific: "mac",
+      title: "Color Scheme",
+      description: "Change PearAI to a light or dark theme.",
+      component: <ChangeColorScheme handleThemeChange={handleThemeChange} />,
       button: <Button
         className="text-xs font-['SF Pro']"
-        onClick={handleAddToPath}
+        onClick={handleNextClick}
       >
-        <div className="flex items-center justify-between w-full gap-2">
-          {isAdding ? (
-            <div className="flex items-center justify-center w-full gap-2">
-              <svg
-                className="animate-spin h-5 w-5 text-button-foreground"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                />
-              </svg>
-              <span>Adding...</span>
-            </div>
-          ) : (
-            <>
-              <span className="text-center w-full">Add to PATH</span>
-            </>
-          )}
+        <div className="flex items-center justify-between w-full">
+          Next
         </div>
       </Button>,
     },
@@ -303,7 +329,6 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
         {getInstallToolsButtonText()}
       </Button>
     },
-
     {
       icon: <User className="h-6 w-6" />,
       title: "Sign in",
@@ -442,7 +467,6 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
         <div className="w-full h-[500px] rounded-xl flex-col justify-center items-center gap-5 flex overflow-hidden bg-background"
         >
           <div className="self-stretch grow shrink basis-0 flex-col justify-center items-center gap-5 flex">
-            {/* <div className="self-stretch text-center text-2xl font-['SF Pro']">Import your VS Code extensions to PearAI.</div> */}
             {setupSteps[currentFeature].component}
           </div>
         </div>
@@ -461,9 +485,6 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
               style={{ background: vscInputBackground }}
             >Back (shown in dev)</Button>
           }
-          {/* <div className="px-6 py-3 rounded-lg justify-center items-center gap-1 flex overflow-hidden">
-            <div className="text-xs font-['SF Pro']">Install selected</div>
-          </div> */}
           {setupSteps[currentFeature].button}
         </div>
       </div>

@@ -142,6 +142,11 @@ export class VsCodeMessenger {
     this.onWebview("pearInstallCommandLine", (msg) => {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
     });
+    this.onWebview("changeColorScheme", (msg) => {
+      const selectedTheme = msg.data.isDark ? "Default PearAI Dark" : "Default PearAI Light";
+      vscode.workspace.getConfiguration().update('workbench.colorTheme', selectedTheme, true);
+    });
+    
     // END welcome stuff
     this.onWebview("showFile", (msg) => {
       this.ide.openFile(msg.data.filepath);
