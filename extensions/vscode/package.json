@@ -394,7 +394,7 @@
     ],
     "keybindings": [
       {
-        "command": "pearai.toggleInventorySettings",
+        "command": "pearai.toggleOverlay",
         "mac": "cmd+e",
         "key": "ctrl+e"
       },
