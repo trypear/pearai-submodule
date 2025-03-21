@@ -108,7 +108,13 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
   // Force PearAI view mode
   try {
-    await vscode.workspace.getConfiguration().update('workbench.sideBar.location', 'left', true);
+    const sidebar = vscode.workspace.getConfiguration().inspect("workbench.sideBar.location");
+    
+    // If the user has not set the sidebar location set it
+    if (!sidebar?.globalValue) {
+      await vscode.workspace.getConfiguration().update("workbench.sideBar.location", "left", true);
+    }
+
     // Get auxiliary bar visibility state
     const pearAIVisible = vscode.workspace.getConfiguration().get('workbench.auxiliaryBar.visible');
 
