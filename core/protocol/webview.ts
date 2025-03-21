@@ -10,6 +10,7 @@ export type ToWebviewFromIdeOrCoreProtocol = {
   pearAISignedIn: [undefined, void];
   pearAISignedOut: [undefined, void];
   switchModel: [string, void];
+  pearaiOverlayOpened: [undefined, void];
   addContextItem: [
     {
       historyIndex: number;

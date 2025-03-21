@@ -351,6 +351,9 @@ const commandsMap: (
     "pearai.docsReIndex": async () => {
       core.invoke("context/indexDocs", { reIndex: true });
     },
+    "pearai.notifyOverlayOpened": async () => {
+      sidebar.webviewProtocol?.request("pearaiOverlayOpened", undefined);
+    },
     "pearai.toggleSearch": async () => {
       await handleIntegrationShortcutKey("navigateToSearch", "perplexityMode", sidebar, [PEARAI_OVERLAY_VIEW_ID]);
     },
@@ -892,6 +895,31 @@ const commandsMap: (
       vscode.commands.executeCommand("pearai-roo-cline.pearaiLogin", data)
       vscode.window.showInformationMessage("PearAI: Successfully logged in!");
     },
+    "pearai.manualLogin": async () => {
+      const accessToken = await vscode.window.showInputBox({
+        prompt: "Enter your Access Token",
+        ignoreFocusOut: true,
+        password: true, // Hides input for security
+      });
+    
+      if (!accessToken) {
+        vscode.window.showErrorMessage("PearAI: Access Token is required!");
+        return;
+      }
+    
+      const refreshToken = await vscode.window.showInputBox({
+        prompt: "Enter your Refresh Token",
+        ignoreFocusOut: true,
+        password: true, // Hides input for security
+      });
+    
+      if (!refreshToken) {
+        vscode.window.showErrorMessage("PearAI: Refresh Token is required!");
+        return;
+      }
+    
+      vscode.commands.executeCommand("pearai.updateUserAuth", { accessToken, refreshToken });
+    },    
     "pearai.closeChat": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
     },

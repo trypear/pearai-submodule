@@ -91,6 +91,13 @@ export const useAccountSettings = () => {
     }
   };
 
+  const refreshData = async () => {
+    const authData = await checkAuth();
+    if (authData) {
+      await Promise.all([fetchUsageData(authData), fetchAccountData(authData)]);
+    }
+  };
+
   useEffect(() => {
     const cachedAccountDetails = localStorage.getItem('pearai_account_details');
     if (cachedAccountDetails) {
@@ -102,13 +109,7 @@ export const useAccountSettings = () => {
       }
     }
 
-    (async () => {
-      const authData = await checkAuth();
-      if (authData) {
-        fetchUsageData(authData);
-        fetchAccountData(authData);
-      }
-    })();
+    refreshData();
   }, []);
 
   return {
@@ -122,8 +123,9 @@ export const useAccountSettings = () => {
     handleLogout,
     clearUserData,
     copyApiKey,
+    checkAuth,
     fetchUsageData,
     fetchAccountData,
-    checkAuth,
+    refreshData,
   };
 }; 

@@ -350,6 +350,12 @@
         "group": "PearAI"
       },
       {
+        "command": "pearai.manualLogin",
+        "category": "PearAI Developer",
+        "title": "Manual PearAI Login",
+        "group": "PearAI"
+      },
+      {
         "command": "pearai.loadRecentChat",
         "category": "PearAI",
         "title": "Load Recent Chat",
@@ -389,6 +395,11 @@
         "command": "pearai.showInteractiveContinueTutorial",
         "category": "PearAI",
         "title": "Show Chat Tutorial",
+        "group": "PearAI"
+      },
+      {
+        "command": "pearai.notifyOverlayOpened",
+        "title": "Dev - Overlay Opened",
         "group": "PearAI"
       }
     ],
