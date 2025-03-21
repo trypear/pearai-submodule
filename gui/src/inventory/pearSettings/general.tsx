@@ -2,7 +2,7 @@ import {
   Button,
 } from "@/components";
 import { Progress } from "@/components/ui/progress";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useMemo, useState } from "react";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { ChevronRight, ExternalLink } from "lucide-react";
 import { useWebviewListener } from "@/hooks/useWebviewListener";
@@ -26,9 +26,7 @@ const AccountSettings = () => {
     handleLogout,
     clearUserData,
     copyApiKey,
-    fetchUsageData,
-    fetchAccountData,
-    checkAuth,
+    refreshData,
   } = useAccountSettings();
 
   const [showCopiedTooltip, setShowCopiedTooltip] = useState(false);
@@ -41,14 +39,9 @@ const AccountSettings = () => {
 
   const ideMessenger = useContext(IdeMessengerContext);
 
-  useWebviewListener("pearAISignedIn", async () => {
-    const authData = await checkAuth();
-    if (authData) {
-      await Promise.all([fetchUsageData(authData), fetchAccountData(authData)]);
-    }
-  });
-
+  useWebviewListener("pearAISignedIn", refreshData);
   useWebviewListener("pearAISignedOut", async () => { clearUserData() });
+  useWebviewListener("pearaiOverlayOpened", refreshData);
 
   const timeLeftUntilRefill = useMemo(() => {
     if (!usageDetails?.ttl || usageDetails?.ttl < 0) return "-";
