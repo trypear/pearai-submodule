@@ -155,16 +155,27 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
 // Custom Layout settings that we want default for PearAPP
 const setupPearAppLayout = async (context: vscode.ExtensionContext) => {
+  console.log("Starting setupPearAppLayout - IM HERE 9999");
+
   // move pearai extension views to auxiliary bar (secondary side bar)
-  vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
+  console.log("About to move extension to aux bar - IM HERE 9999");
 
   if (!vscode.workspace.workspaceFolders) {
+    console.log("No workspace folders found - IM HERE 9999");
     vscode.commands.executeCommand("workbench.action.closeSidebar");
+    console.log("Sidebar closed - IM HERE 9999");
     vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
+    console.log("Auxiliary bar closed - IM HERE 9999");
+  } else {
+    vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
   }
 
   if (isFirstLaunch(context)) {
+    console.log("First launch detected - IM HERE 9999");
     // set activity bar position to top
     vscode.commands.executeCommand("workbench.action.activityBarLocation.top");
+    console.log("Activity bar moved to top - IM HERE 9999");
   }
+
+  console.log("Setup complete - IM HERE 9999");
 };
