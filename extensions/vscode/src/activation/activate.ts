@@ -91,8 +91,6 @@ export async function activateExtension(context: vscode.ExtensionContext) {
     vscode.commands.executeCommand("pearai.startOnboarding");
   }
 
-  // vscode.commands.executeCommand("pearai.focusContinueInput");
-
 
   // Load PearAI configuration
   if (!context.globalState.get("hasBeenInstalled")) {
@@ -109,13 +107,7 @@ export async function activateExtension(context: vscode.ExtensionContext) {
   // Force PearAI view mode
   try {
     await vscode.workspace.getConfiguration().update('workbench.sideBar.location', 'left', true);
-    // Get auxiliary bar visibility state
-    const pearAIVisible = vscode.workspace.getConfiguration().get('workbench.auxiliaryBar.visible');
 
-    // Show auxiliary bar if it's not already visible
-    if (!pearAIVisible) {
-      await vscode.commands.executeCommand('workbench.action.toggleAuxiliaryBar');
-    }
   } catch (error) {
     console.dir(error);
   }
@@ -129,14 +121,6 @@ export async function activateExtension(context: vscode.ExtensionContext) {
     } catch (error) {
       console.dir(error);
     }
-
-  try {
-    // Default to agent view
-    vscode.commands.executeCommand("pearai.focusAgentView");
-  } catch (error) {
-    // vscode.window.showErrorMessage(`Failed to install extension: ${extensionId}`);
-    console.error(error);
-  }
 
   const api = new VsCodeContinueApi(vscodeExtension);
   const continuePublicApi = {
@@ -155,19 +139,20 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
 // Custom Layout settings that we want default for PearAPP
 const setupPearAppLayout = async (context: vscode.ExtensionContext) => {
-  console.log("Starting setupPearAppLayout - IM HERE 9999");
-
-  // move pearai extension views to auxiliary bar (secondary side bar)
-  console.log("About to move extension to aux bar - IM HERE 9999");
-
   if (!vscode.workspace.workspaceFolders) {
-    console.log("No workspace folders found - IM HERE 9999");
+    console.log("No workspace folders found");
     vscode.commands.executeCommand("workbench.action.closeSidebar");
-    console.log("Sidebar closed - IM HERE 9999");
     vscode.commands.executeCommand("workbench.action.closeAuxiliaryBar");
-    console.log("Auxiliary bar closed - IM HERE 9999");
   } else {
+    // Get auxiliary bar visibility state
     vscode.commands.executeCommand("workbench.action.movePearExtensionToAuxBar");
+    const pearAIVisible = vscode.workspace.getConfiguration().get('workbench.auxiliaryBar.visible');
+    // Show auxiliary bar if it's not already visible
+    if (!pearAIVisible) {
+      await vscode.commands.executeCommand('workbench.action.toggleAuxiliaryBar');
+    }
+    // Default to agent view
+    vscode.commands.executeCommand("pearai.focusAgentView");
   }
 
   if (isFirstLaunch(context)) {
