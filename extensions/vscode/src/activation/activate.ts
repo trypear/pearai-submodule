@@ -156,11 +156,7 @@ const setupPearAppLayout = async (context: vscode.ExtensionContext) => {
   }
 
   if (isFirstLaunch(context)) {
-    console.log("First launch detected - IM HERE 9999");
     // set activity bar position to top
     vscode.commands.executeCommand("workbench.action.activityBarLocation.top");
-    console.log("Activity bar moved to top - IM HERE 9999");
   }
-
-  console.log("Setup complete - IM HERE 9999");
 };
