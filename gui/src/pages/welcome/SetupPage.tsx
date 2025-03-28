@@ -470,7 +470,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
             {setupSteps[currentFeature].component}
           </div>
         </div>
-        <div className="self-stretch justify-center items-center gap-4 inline-flex overflow-hidden">
+        <div className="self-stretch justify-center items-center gap-4 inline-flex">
           <div className="opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px] cursor-pointer"
             onClick={() => {
               if (currentFeature === 2) {
