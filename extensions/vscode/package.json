@@ -430,11 +430,6 @@
         "key": "ctrl+4"
       },
       {
-        "command": "pearai.focusContinueInput",
-        "mac": "cmd+l",
-        "key": "ctrl+l"
-      },
-      {
         "command": "pearai.focusContinueInputWithoutClear",
         "mac": "cmd+shift+l",
         "key": "ctrl+shift+l"
