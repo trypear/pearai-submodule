@@ -15,6 +15,12 @@
   "bugs": {
     "url": "https://github.com/trypear/pearai-app/issues"
   },
+  "exports": {
+    ".": {
+      "types": "./out/index.d.ts",
+      "default": "./out/extension.js"
+    }
+  },
   "homepage": "https://trypear.ai",
   "qna": "https://github.com/trypear/pearai-app/issues/new/choose",
   "displayName": "PearAI",
