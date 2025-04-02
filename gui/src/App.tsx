@@ -34,7 +34,7 @@ declare global {
     initialRoute?: string;
     isFirstLaunch?: boolean;
     isPearOverlay?: boolean;
-    viewType?: 'pearai.chatView' | 'pearai.mem0View' | 'pearai.searchView';
+    viewType?: 'pearai.chatView' | 'pearai.mem0View' | 'pearai.searchView' | 'pearai.creatorView';
   }
 }
 
