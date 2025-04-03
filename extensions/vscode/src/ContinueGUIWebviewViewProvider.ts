@@ -185,7 +185,7 @@ export class ContinueGUIWebviewViewProvider
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script>
-          const vscode = acquireVsCodeApi();
+          window.vscode = acquireVsCodeApi();
         </script>
         <link href="${styleMainUri}" rel="stylesheet">
 
@@ -199,7 +199,7 @@ export class ContinueGUIWebviewViewProvider
           const text = args.map(arg =>
             typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
           ).join(' ');
-          vscode.postMessage({ messageType: 'log', level, text, messageId: "log" });
+          window.vscode.postMessage({ messageType: 'log', level, text, messageId: "log" });
         }
 
         window.console.log = (...args) => log('log', ...args);
