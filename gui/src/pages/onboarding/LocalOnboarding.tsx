@@ -7,6 +7,7 @@ import { CheckMarkHeader } from "./CheckMarkHeader";
 import { StyledButton } from "./components";
 import { CopyToTerminalButton } from "./CopyToTerminalButton";
 import { useOnboarding } from "./utils";
+import "@/continue-styles.css";
 
 type OllamaConnectionStatuses =
   | "waiting_to_download"

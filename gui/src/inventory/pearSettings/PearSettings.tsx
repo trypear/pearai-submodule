@@ -6,6 +6,7 @@ import { useContext, useState } from "react";
 import GeneralSettings from "./general";
 import HelpSettings from "./help";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
+import "@/continue-styles.css";
 
 const inventoryItems = [
   {

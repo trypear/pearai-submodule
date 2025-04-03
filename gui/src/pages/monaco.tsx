@@ -5,6 +5,7 @@ import { v4 } from "uuid";
 import { vscInputBackground } from "../components";
 import HeaderButtonWithText from "../components/HeaderButtonWithText";
 import { IdeMessengerContext } from "../context/IdeMessenger";
+import "@/continue-styles.css";
 
 interface EditorFrameProps {
   filename: string;

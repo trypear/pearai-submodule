@@ -52,7 +52,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 
 	return (
 		<div className="rounded-lg bg-white p-4">
-			<PlanningBar />
+			<PlanningBar isGenerating/>
 			<textarea
 				ref={planTextareaRef}
 				value={newProjectPlan}
