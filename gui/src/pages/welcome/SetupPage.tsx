@@ -32,7 +32,6 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
   const onboardingState = useSelector((state: RootState) => state.state.onboardingState);
   const visitedSteps = onboardingState.visitedSteps || [];
   const [timestamp, setTimestamp] = useState(Date.now());
-  console.dir(window.vscMediaUrl)
 
   const handleFeatureChange = (index: number) => {
     if (visitedSteps.includes(index)) {
