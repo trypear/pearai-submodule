@@ -44,8 +44,8 @@ export const InputBox: React.FC<InputBoxProps> = ({
 	)
 
 	return (
-		<div className="flex items-center rounded-md bg-white flex-col">
-			<div className="flex-1 w-full p-2">
+		<div className="flex items-center rounded-md bg-white flex-col px-2">
+			<div className="flex-1 w-full">
 				<textarea
 					ref={textareaRef}
 					value={initialMessage}

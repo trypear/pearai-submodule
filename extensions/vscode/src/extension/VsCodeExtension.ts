@@ -46,7 +46,7 @@ export class VsCodeExtension {
   private diffManager: DiffManager;
   private verticalDiffManager: VerticalPerLineDiffManager;
   webviewProtocolPromise: Promise<VsCodeWebviewProtocol>;
-  private core: Core;
+  public core: Core;
   private battery: Battery;
   private workOsAuthProvider: WorkOsAuthProvider;
 

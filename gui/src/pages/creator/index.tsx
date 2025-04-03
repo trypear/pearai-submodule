@@ -1,9 +1,10 @@
-import { vscode } from "@/lib/vscode"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useEvent } from "react-use"
 import { RGBWrapper } from "./rgbBackground"
 import { PlanEditor } from "./planEditor"
 import { InputBox } from "./inputBox"
+import "./ui/index.css";
+import { useMessaging } from "@/util/messagingContext"
 
 type ExtensionMessage = 
   | { type: "planCreationStream"; text: string }
@@ -12,6 +13,8 @@ type ExtensionMessage =
   | { type: "pearAiHideCreatorLoadingOverlay" }
   | { type: "newCreatorModeTask"; text: string }
   | { type: "creatorModePlannedTaskSubmit"; text: string };
+
+// TODO: SORT OUT FONTS HERE!
 
 /**
  * CreatorOverlay component provides a full-screen overlay with an auto-focusing input field
@@ -31,16 +34,16 @@ export const CreatorOverlay = () => {
 	const [isStreaming, setIsStreaming] = useState(false)
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const isCapturingRef = useRef(false)
+	const { sendMessage, registerListener, unregisterListener } = useMessaging();
+
 
 	const close = useCallback(() => {
 		setInitialMessage("")
 		setNewProjectPlan("")
 		setPlanCreationDone(false)
 		setIsStreaming(false)
-		vscode.postMessage({
-			type: "pearAiCloseCreatorInterface",
-		})
 		setInitialMessage("")
+		sendMessage("Close");
 	}, [])
 
 	const forceFocus = useCallback(() => {
@@ -56,10 +59,6 @@ export const CreatorOverlay = () => {
 	}, [])
 
 	useEffect(() => {
-		vscode.postMessage({
-			type: "pearAiHideCreatorLoadingOverlay",
-		})
-
 		forceFocus()
 
 		const handleKeyDown = (e: KeyboardEvent) => {
@@ -96,22 +95,29 @@ export const CreatorOverlay = () => {
 		}
 	}, [close, forceFocus])
 
-	const handleRequest = useCallback(() => {
-		if (initialMessage.trim()) {
-			setIsStreaming(true)
-			vscode.postMessage({
-				type: "newCreatorModeTask",
-				text: initialMessage,
-			})
-		}
-	}, [initialMessage])
+	useEffect(() => {
+		const newProjectListener = registerListener("PlanStream", (msg) => {
+			setNewProjectPlan(msg.payload.plan);
+		});
 
-	const handleMakeIt = useCallback(() => {
-		if (newProjectPlan.trim()) {
-			vscode.postMessage({
-				type: "creatorModePlannedTaskSubmit",
+		// TODO: unregister on success
+	}, [registerListener]);
+
+	const handleRequest = useCallback(async () => {
+		if (initialMessage.trim()) {
+			await sendMessage("NewIdea", {
 				text: `INITIAL IDEA: ${initialMessage} -- PLAN: ${newProjectPlan}`,
-			})
+				plan: true,
+			}, true);
+			setIsStreaming(true);
+		}
+	}, [initialMessage, close])
+
+	const handleMakeIt = useCallback(async () => {
+		if (newProjectPlan.trim()) {
+			await sendMessage("NewIdeaPlanned", {
+				text: `INITIAL IDEA: ${initialMessage} -- PLAN: ${newProjectPlan}`
+			}, true);
 			close()
 		}
 	}, [newProjectPlan, close])
@@ -131,7 +137,7 @@ export const CreatorOverlay = () => {
 	useEvent("message", onMessage)
 
 	return (
-		<div onClick={close} className="fixed inset-0 flex items-center justify-center bg-white">
+		<div onClick={close} className="all-initial fixed inset-0 flex items-center justify-center bg-white font[var(--vscode-font-family)]">
 			<div onClick={(e) => e.stopPropagation()} className="justify-center align-middle m-auto w-full max-w-3xl ">
 				<RGBWrapper className="px-4 my-auto w-full">
 					{/* Stage 1: get the input from the user about what to make */}
