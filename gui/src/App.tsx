@@ -27,6 +27,7 @@ import Mem0GUI from "./integrations/mem0/mem0gui";
 // import PerplexitySidebarGUI from "./integrations/perplexity/PerplexitySidebarGUI";
 import Mem0SidebarGUI from "./integrations/mem0/Mem0SidebarGUI";
 import PearSettings from "./inventory/pearSettings/PearSettings";
+import { CreatorOverlay } from "./pages/creator";
 
 
 declare global {
@@ -54,8 +55,8 @@ const router = createMemoryRouter(
           element: window.viewType === 'pearai.chatView' ? <GUI /> :
                    window.viewType === 'pearai.searchView' ? <PerplexityGUI /> :
                    window.viewType === 'pearai.mem0View' ? <Mem0SidebarGUI /> :
+                   window.viewType === 'pearai.creatorView' ? <CreatorOverlay /> :
                   <GUI />, // default to GUI if viewType is undefined or different
-
         },
         {
           path: "/perplexityMode",
