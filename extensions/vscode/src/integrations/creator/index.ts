@@ -1,4 +1,9 @@
 import * as vscode from 'vscode';
+import { assert } from '../../util/assert';
+import type { FromCoreProtocol, ToCoreProtocol } from "../../../../../core/protocol";
+import type { IMessenger } from "../../../../../core/util/messenger";
+import { ProtocolGeneratorType, ToCoreFromIdeOrWebviewProtocol } from 'core/protocol/core';
+import { MessageContent, ChatMessage } from 'core';
 
 /**
  * Interface for the Creator Mode API
@@ -58,10 +63,22 @@ export interface CreatorTaskRequest {
   /**
    * The text of the task
    */
-  text: string;
+  initialPrompt: string;
   
   /**
+   * The plan that the AI generated with the user
+   */
+  plan: string;
+
+  /**
+   * The file path of the new task?
+   * TODO: are we going to pass this through?
+   */
+  // filePath?: string;
+
+  /**
    * Optional base64-encoded images to include with the task
+   * TODO: are we doing images?
    */
   images?: string[];
 }
@@ -87,6 +104,22 @@ export interface ExecutePlanRequest {
 }
 
 /**
+ * The format for all of the messages that come from the webview
+ */
+export interface WebViewMessageIncoming {
+  destination: "creator";// making sure we route the message over to here
+  messageType: string; // the "action" for the message - keeping format consistent with other areas
+  messageId: string; // used to keep track of the messages, so we know which message is a reply to 
+  payload: any; // for any misc data
+}
+
+// the message format already established in the webview protocol file
+export interface WebMessageOutgoing {
+  payload: any;
+  messageId: string;
+}
+
+/**
  * Implementation of the Creator Mode API
  * Manages the creator mode interface state and events
  * TODO: GO OVER ALL OF THESE FUNCTIONS - THEY ARE PLACEHOLDERS AND THEY NEED MODIFYING
@@ -107,6 +140,24 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   
   // Disposables
   private _disposables: vscode.Disposable[] = [];
+
+  constructor(
+    private readonly messenger: IMessenger<ToCoreFromIdeOrWebviewProtocol, FromCoreProtocol>
+  ) {
+    // Add emitters to disposables
+    this._disposables.push(
+      this._onDidChangeCreatorModeState,
+      this._onDidRequestNewTask,
+      this._onDidRequestExecutePlan
+    );
+  }
+
+  public dispose(): void {
+    // Dispose of event emitters and other disposables
+    this._disposables.forEach(d => d.dispose());
+    this._disposables = [];
+  }
+  
   
   /**
    * Whether the creator mode interface is currently active
@@ -144,7 +195,6 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
     try {
       // Close the creator mode interface
-      // This could involve closing the specific webview panel
       await vscode.commands.executeCommand("workbench.action.closeCreatorView");
       this._isCreatorModeActive = false;
       this._onDidChangeCreatorModeState.fire(false);
@@ -187,7 +237,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   //   });
     
   //   // Register command to execute a plan
-  //   const executePlanCmd = vscode.commands.registerCommand('pearai.executeCreatorPlan', async (args: ExecutePlanRequest) => {
+  //   const executePlanCmd = vscode.commands.registerCommand('psorPlan', async (args: ExecutePlanRequest) => {
   //     await this.executePlan(args);
   //   });
     
@@ -207,18 +257,100 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   //     executePlanCmd
   //   );
   // }
+
+
+  public async handleIncomingWebViewMessage(msg: WebViewMessageIncoming, send: (payload: any) => Thenable<boolean>): Promise<void> {
+    assert(!!msg.messageId || !!msg.messageType, "Message ID or type missing :(");
   
-  /**
-   * Disposes of resources used by the creator mode
-   */
-  public dispose(): void {
-    // Dispose of event emitters
-    this._onDidChangeCreatorModeState.dispose();
-    this._onDidRequestNewTask.dispose();
-    this._onDidRequestExecutePlan.dispose();
-    
-    // Dispose of disposables
-    this._disposables.forEach(d => d.dispose());
-    this._disposables = [];
+    if (msg.messageType === "NewIdea") {
+      try {
+        console.dir('GOT NewIdea');
+
+        this.messenger.on("llm/streamChat", async function* (message): ProtocolGeneratorType<MessageContent> {
+          const { messages, completionOptions, title } = message.data;
+          
+          // Stream each message as a response
+          for (const msg of messages) {
+            if (msg.role === 'user') {
+              yield {
+                done: false,
+                content: msg.content,
+              };
+            }
+          }
+
+          // Return final response
+          return {
+            done: true,
+            content: {
+              role: 'assistant',
+              content: 'Plan creation completed'
+            }
+          };
+        })
+        
+        // Request plan creation from the LLM service
+        const response = this.messenger.invoke("llm/streamChat", {
+          title: "gpt-4", // or your configured model
+          messages: [
+            {
+              role: "system",
+              content: "You are a planning assistant. Create a clear, step-by-step plan for implementing the user's idea. Focus on technical implementation details and break down complex tasks into manageable steps."
+            },
+            {
+              role: "user",
+              content: msg.payload.text
+            }
+          ],
+          completionOptions: {
+            temperature: 0.7,
+            maxTokens: 2000
+          }
+        });
+  
+        // console.dir("REQUESTED STREAM CHAT");
+        // console.dir(response);
+        // console.dir(typeof response);
+        // console.dir(JSON.stringify(response));
+
+        // return;
+  
+        // Type assertion to ensure response is treated as an AsyncGenerator
+        const generator = response as AsyncGenerator<{
+          done?: boolean;
+          content: MessageContent;
+        }>;
+  
+        // Stream the response chunks
+        for await (const chunk of generator) {
+          if ('content' in chunk) {
+            await send({
+              type: "planCreationStream",
+              text: chunk.content
+            });
+          }
+        }
+  
+        console.dir("STREAMED PLAN CREATION")
+  
+        // Signal completion
+        await send({
+          type: "planCreationSuccess"
+        });
+  
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        console.error("Plan creation failed:", error);
+        await send({
+          type: "error",
+          text: "Failed to create plan: " + errorMessage
+        });
+      }
+    }
+  
+    if (msg.messageType === "Close") {
+      await this.closeCreatorMode();
+    }
   }
+  
 }
