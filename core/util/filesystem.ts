@@ -231,7 +231,7 @@ class FileSystemIde implements IDE {
     return Promise.resolve({ accessToken: undefined, refreshToken: undefined });
   }
 
-  updatePearCredentials(auth: PearAuth): Promise<void> {
+  updatePearAICredentials(auth: PearAuth): Promise<void> {
     return Promise.resolve();
   }
 

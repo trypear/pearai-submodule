@@ -879,6 +879,7 @@ const commandsMap: (
     "pearai.updateUserAuth": async (data: {
       accessToken: string;
       refreshToken: string;
+      fromLogin?: boolean;
     }) => {
       // Ensure that refreshToken and accessToken are both present
       if (!data || !(data.refreshToken && data.accessToken)) {
@@ -891,35 +892,37 @@ const commandsMap: (
       extensionContext.secrets.store("pearai-token", data.accessToken);
       extensionContext.secrets.store("pearai-refresh", data.refreshToken);
       core.invoke("llm/setPearAICredentials", { accessToken: data.accessToken, refreshToken: data.refreshToken });
-      sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
-      vscode.commands.executeCommand("pearai-roo-cline.pearaiLogin", data)
-      vscode.window.showInformationMessage("PearAI: Successfully logged in!");
-    },
-    "pearai.manualLogin": async () => {
-      const accessToken = await vscode.window.showInputBox({
-        prompt: "Enter your Access Token",
-        ignoreFocusOut: true,
-        password: true, // Hides input for security
-      });
-
-      if (!accessToken) {
-        vscode.window.showErrorMessage("PearAI: Access Token is required!");
-        return;
+      if (data.fromLogin) {
+        sidebar.webviewProtocol?.request("pearAISignedIn", undefined);
+        vscode.commands.executeCommand("pearai-roo-cline.pearaiLogin", data)
+        vscode.window.showInformationMessage("PearAI: Successfully logged in!");
       }
-
-      const refreshToken = await vscode.window.showInputBox({
-        prompt: "Enter your Refresh Token",
-        ignoreFocusOut: true,
-        password: true, // Hides input for security
-      });
-
-      if (!refreshToken) {
-        vscode.window.showErrorMessage("PearAI: Refresh Token is required!");
-        return;
-      }
-
-      vscode.commands.executeCommand("pearai.updateUserAuth", { accessToken, refreshToken });
     },
+    // "pearai.manualLogin": async () => {
+    //   const accessToken = await vscode.window.showInputBox({
+    //     prompt: "Enter your Access Token",
+    //     ignoreFocusOut: true,
+    //     password: true, // Hides input for security
+    //   });
+
+    //   if (!accessToken) {
+    //     vscode.window.showErrorMessage("PearAI: Access Token is required!");
+    //     return;
+    //   }
+
+    //   const refreshToken = await vscode.window.showInputBox({
+    //     prompt: "Enter your Refresh Token",
+    //     ignoreFocusOut: true,
+    //     password: true, // Hides input for security
+    //   });
+
+    //   if (!refreshToken) {
+    //     vscode.window.showErrorMessage("PearAI: Refresh Token is required!");
+    //     return;
+    //   }
+
+    //   vscode.commands.executeCommand("pearai.updateUserAuth", { accessToken, refreshToken });
+    // },
     "pearai.closeChat": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
     },

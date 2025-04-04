@@ -672,7 +672,7 @@ export class VsCodeIdeUtils {
   /**
    * Set the stored credentials in vscode
    */
-  async updatePearCredentials(auth: PearAuth) {
+  async updatePearAICredentials(auth: PearAuth) {
     await vscode.commands.executeCommand("pearai.updateUserAuth", auth);
   }
 }

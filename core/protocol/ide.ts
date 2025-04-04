@@ -84,7 +84,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   logoutOfControlPlane: [undefined, void];
   pathSep: [undefined, string];
   getPearAuth: [undefined, PearAuth];
-  updatePearCredentials: [PearAuth, void];
+  updatePearAICredentials: [PearAuth, void];
 
   authenticatePear: [undefined, void];
   getCurrentDirectory: [undefined, string];

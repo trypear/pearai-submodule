@@ -473,7 +473,7 @@ export interface IdeSettings {
 
 export interface IDE {
   getPearAuth(): Promise<PearAuth>;
-  updatePearCredentials(auth: PearAuth): Promise<void>;
+  updatePearAICredentials(auth: PearAuth): Promise<void>;
   authenticatePear(): Promise<void>;
   getIdeInfo(): Promise<IdeInfo>;
   getIdeSettings(): Promise<IdeSettings>;
