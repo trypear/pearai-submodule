@@ -61,6 +61,7 @@
         // Pass a directory to manually test in
         "${workspaceFolder}/extensions/vscode",
         "${workspaceFolder}/extensions/vscode/manual-testing-sandbox/test.js",
+        // "--extensionDevelopmentPath=/Users/nang/Documents/pearai-master/PearAI-Roo-Code", // Hard coded path, for devving with PearAI-Roo-Code at the same time
         "--extensionDevelopmentPath=${workspaceFolder}/extensions/vscode"
       ],
       "pauseForSourceMap": false,

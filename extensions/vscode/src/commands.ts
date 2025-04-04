@@ -901,25 +901,25 @@ const commandsMap: (
         ignoreFocusOut: true,
         password: true, // Hides input for security
       });
-    
+
       if (!accessToken) {
         vscode.window.showErrorMessage("PearAI: Access Token is required!");
         return;
       }
-    
+
       const refreshToken = await vscode.window.showInputBox({
         prompt: "Enter your Refresh Token",
         ignoreFocusOut: true,
         password: true, // Hides input for security
       });
-    
+
       if (!refreshToken) {
         vscode.window.showErrorMessage("PearAI: Refresh Token is required!");
         return;
       }
-    
+
       vscode.commands.executeCommand("pearai.updateUserAuth", { accessToken, refreshToken });
-    },    
+    },
     "pearai.closeChat": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
     },
@@ -954,6 +954,18 @@ const commandsMap: (
         sidebar.webviewProtocol?.request("switchModel", "PearAI Model (Recommended)", ["pearai.chatView"]);
       }
     },
+    "pearai.checkPearAITokens": async () => {
+      const result = await core.invoke("llm/checkPearAITokens", undefined);
+      if (result?.tokensEdited && result.accessToken && result.refreshToken) {
+        const creds = {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken
+        };
+        core.invoke("llm/setPearAICredentials", creds);
+        vscode.commands.executeCommand("pearai-roo-cline.updatePearAITokens", creds);
+      }
+    },
+
     "pearai.patchWSL": async () => {
       if (process.platform !== 'win32') {
         vscode.window.showWarningMessage("WSL is for Windows only.");
