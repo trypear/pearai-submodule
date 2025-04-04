@@ -52,7 +52,6 @@ export default function Mem0SidebarGUI() {
   const fetchMemories = async () => {
     try {
       setIsLoading(true);
-      // get all memories
       const response = await ideMessenger.request('mem0/getMemories', undefined);
       const memories = response.map((memory) => ({
         id: memory.id,

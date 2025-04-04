@@ -96,13 +96,13 @@ export const EmptyView = ({ onAddMemory }: { onAddMemory: () => void }) => (
       <div className="w-[300px] h-[240px] absolute bottom-0 overflow-hidden flex-col justify-start items-start gap-5 inline-flex">
         <div className="flex flex-col text-left">
           <div className="text-2xl font-['SF Pro']">PearAI Memory</div>
-          <div className="h-[18px] opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">Powered by Mem0</div>
+          <div className="h-[18px] opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">Local Memory Storage</div>
         </div>
         <div className="w-[300px] h-[140px] overflow-hidden text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-          PearAI Memory is a self-improving memory layer when you use PearAI Chat for a personalized experience. Memories will be added automatically, and you can also add memories manually.
+          PearAI Memory allows you to store and manage your coding memories locally. Create memories manually to enhance your coding experience.
         </div>
         <div className="w-[300px] h-[100px] overflow-hidden text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-          No memories yet– PearAI Memory automatically remembers coding information as you use PearAI Chat.
+          No memories yet – Click the button below to start creating memories.
         </div>
 
         <Button
