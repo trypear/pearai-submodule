@@ -58,9 +58,8 @@ export class PearAICredentials {
 
       const tokens = await checkTokens(this.accessToken, this.refreshToken);
 
-      console.dir("IM ACTUALLY HERE")
-      if (true || tokens.accessToken !== this.accessToken || tokens.refreshToken !== this.refreshToken) {
-        if (true || tokens.accessToken !== this.accessToken) {
+      if (tokens.accessToken !== this.accessToken || tokens.refreshToken !== this.refreshToken) {
+        if (tokens.accessToken !== this.accessToken) {
           this.accessToken = tokens.accessToken;
           console.log(
             "PearAI access token changed from:",
@@ -70,7 +69,7 @@ export class PearAICredentials {
           );
         }
 
-        if (true || tokens.refreshToken !== this.refreshToken) {
+        if (tokens.refreshToken !== this.refreshToken) {
           this.refreshToken = tokens.refreshToken;
           console.log(
             "PearAI refresh token changed from:",
