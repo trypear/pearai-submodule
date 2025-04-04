@@ -20,6 +20,17 @@ function convertToAPIMemory(localMemory: LocalMemory): APIMemory {
     };
 }
 
+function convertToLocalMemory(apiMemory: APIMemory): LocalMemory {
+    return {
+        id: apiMemory.id,
+        content: apiMemory.memory,
+        timestamp: apiMemory.updated_at || apiMemory.created_at,
+        isModified: false,
+        isDeleted: false,
+        isNew: false
+    };
+}
+
 export function getMemoriesFilePath(): string {
     const pearaiPath = process.env.CONTINUE_GLOBAL_DIR ?? path.join(os.homedir(), '.pearai');
     return path.join(pearaiPath, MEMORIES_FILE);
@@ -44,7 +55,7 @@ export function readMemories(): APIMemory[] {
     }
 }
 
-export function writeMemories(memories: LocalMemory[]): boolean {
+function writeLocalMemories(memories: LocalMemory[]): boolean {
     try {
         fs.writeFileSync(getMemoriesFilePath(), JSON.stringify(memories, null, 2));
         return true;
@@ -56,7 +67,8 @@ export function writeMemories(memories: LocalMemory[]): boolean {
 
 export function updateMemories(changes: MemoryChange[]): boolean {
     try {
-        const localMemories = JSON.parse(fs.readFileSync(getMemoriesFilePath(), 'utf8')) as LocalMemory[];
+        const content = fs.readFileSync(getMemoriesFilePath(), 'utf8');
+        const localMemories = JSON.parse(content) as LocalMemory[];
         
         changes.forEach(change => {
             switch (change.type) {
@@ -89,7 +101,7 @@ export function updateMemories(changes: MemoryChange[]): boolean {
             }
         });
         
-        return writeMemories(localMemories);
+        return writeLocalMemories(localMemories);
     } catch (error) {
         console.error('Error updating memories:', error);
         return false;
