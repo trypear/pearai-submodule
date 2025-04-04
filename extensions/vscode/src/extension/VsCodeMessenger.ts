@@ -22,7 +22,7 @@ import * as vscode from "vscode";
 import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
 import { VsCodeIde } from "../ideProtocol";
-import { getMem0Memories, updateMem0Memories } from "../integrations/mem0/mem0Service";
+import { readMemories, updateMemories } from "../integrations/mem0/localMemoryService";
 import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
 import {
   getControlPlaneSessionInfo,
@@ -123,13 +123,10 @@ export class VsCodeMessenger {
       attemptUninstallExtension(msg.data.extensionId);
     });
     this.onWebview("mem0/getMemories", async (msg) => {
-
-      const memories = await getMem0Memories(PearAIServer._getRepoId());
-      return memories;
+      return readMemories();
     });
     this.onWebview("mem0/updateMemories", async (msg) => {
-      const response = await updateMem0Memories(PearAIServer._getRepoId(), msg.data.changes);
-      return response;
+      return updateMemories(msg.data.changes);
     });
     this.onWebview("is_vscode_extension_installed", async (msg) => {
       const isInstalled = await isVSCodeExtensionInstalled(msg.data.extensionId);
