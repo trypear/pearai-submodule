@@ -65,7 +65,6 @@ function InputToolbar(props: InputToolbarProps) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileSelectHovered, setFileSelectHovered] = useState(false);
   const defaultModel = useSelector(defaultModelSelector);
-  const bareChatMode = props.source === 'continue';
   const perplexityMode = props.source === 'perplexity';
 
   const useActiveFile = useSelector(selectUseActiveFile);

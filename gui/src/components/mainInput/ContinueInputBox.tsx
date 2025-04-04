@@ -141,7 +141,6 @@ const ContinueInputBox = memo(function ContinueInputBox({
 
   const availableSlashCommands = useSelector(selectSlashCommands);
   let availableContextProviders = getContextProviders();
-  const bareChatMode = source === "continue";
 
   useWebviewListener(
     "newSessionWithPrompt",
@@ -191,9 +190,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
           onEnter={onEnter}
           isMainInput={isMainInput}
           availableContextProviders={availableContextProviders}
-          availableSlashCommands={
-            bareChatMode ? undefined : availableSlashCommands
-          }
+          availableSlashCommands={availableSlashCommands}
           source={source}
           onChange={handleEditorChange}
           onHeightChange={onHeightChange}

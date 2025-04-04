@@ -77,7 +77,6 @@ function StepContainer({
     ? useSelector((store: RootState) => store.state.active)
     : useSelector((store: RootState) => store.state.perplexityActive);
   const ideMessenger = useContext(IdeMessengerContext);
-  const bareChatMode = source === "continue"
   const isPerplexity = source === "perplexity"
 
   const [numChanges, setNumChanges] = useState<number | null>(null);
@@ -200,7 +199,7 @@ function StepContainer({
             )}
 
 						<div className="flex">
-            {truncatedEarly && !bareChatMode && (
+            {truncatedEarly && (
 							<HeaderButtonWithText
                 text="Continue generation"
                 onClick={(e) => {
@@ -220,21 +219,21 @@ function StepContainer({
               text={stripImages(item.message.content)}
               color={lightGray}
             />
-            {!bareChatMode && (
-              <HeaderButtonWithText
-                text="Regenerate"
-                onClick={(e) => {
-                  onRetry();
-                }}
-								>
-                <ArrowUturnLeftIcon
-                  color={lightGray}
-                  width="0.875rem"
-                  height="0.875rem"
-									strokeWidth={2}
-                />
-              </HeaderButtonWithText>
-            )}
+            
+            <HeaderButtonWithText
+              text="Regenerate"
+              onClick={(e) => {
+                onRetry();
+              }}
+              >
+              <ArrowUturnLeftIcon
+                color={lightGray}
+                width="0.875rem"
+                height="0.875rem"
+                strokeWidth={2}
+              />
+            </HeaderButtonWithText>
+          
             <HeaderButtonWithText text="Delete Message">
               <TrashIcon
                 color={lightGray}
