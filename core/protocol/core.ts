@@ -95,6 +95,7 @@ export type ToCoreFromIdeOrWebviewProtocol = {
     string,
   ];
   "llm/setPearAICredentials": [{ accessToken?: string; refreshToken?: string }, void];
+  "llm/checkPearAITokens": [undefined, { tokensEdited: boolean, accessToken?: string, refreshToken?: string }];
   "llm/listModels": [{ title: string }, string[] | undefined];
   "llm/streamComplete": [
     {

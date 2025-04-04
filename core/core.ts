@@ -465,6 +465,32 @@ export class Core {
       }
     });
 
+    on("llm/checkPearAITokens", async (msg) => {
+      const config = await this.configHandler.loadConfig();
+      const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
+      let tokensEdited = false;
+      let accessToken: string | undefined;
+      let refreshToken: string | undefined;
+
+      try {
+        if (pearAIModels.length > 0) {
+          for (const model of pearAIModels) {
+            const result = await model.checkAndUpdateCredentials();
+            if (result.tokensEdited) {
+              tokensEdited = true;
+              accessToken = result.accessToken;
+              refreshToken = result.refreshToken;
+              break; // Use first updated model's tokens
+            }
+          }
+        }
+        return { tokensEdited, accessToken, refreshToken };
+      } catch (e) {
+        console.warn(`Error checking PearAI tokens: ${e}`);
+        return { tokensEdited: false };
+      }
+    });
+
     on("llm/listModels", async (msg) => {
       const config = await this.configHandler.loadConfig();
       const model =

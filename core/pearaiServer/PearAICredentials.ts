@@ -34,10 +34,16 @@ export class PearAICredentials {
     return token;
   }
 
-  public async checkAndUpdateCredentials(): Promise<boolean> {
+  public getRefreshToken(): string | undefined {
+    console.log('Getting refresh token');
+    const token = this.refreshToken;
+    console.log('Returning refresh token:', token);
+    return token;
+  }
+
+  public async checkAndUpdateCredentials(): Promise<{ tokensEdited: boolean, accessToken?: string, refreshToken?: string }> {
     try {
       let creds: PearAuth | undefined;
-
       if (this.getCredentials && this.accessToken === undefined) {
         console.log("Attempting to get credentials...");
         creds = await this.getCredentials();
@@ -46,7 +52,7 @@ export class PearAICredentials {
           this.accessToken = creds.accessToken;
           this.refreshToken = creds.refreshToken;
         } else {
-          return false;
+          return { tokensEdited: false };
         }
       }
 
@@ -77,11 +83,17 @@ export class PearAICredentials {
           creds.refreshToken = tokens.refreshToken;
           await this.setCredentials(creds);
         }
+
+        return {
+          tokensEdited: true,
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken
+        };
       }
     } catch (error) {
       console.error("Error checking token expiration:", error);
-      return false;
+      return { tokensEdited: false };
     }
-    return true;
+    return { tokensEdited: false };
   }
 }

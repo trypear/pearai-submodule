@@ -249,7 +249,7 @@ async function intermediateToFinalConfig(
         config.systemMessage,
         ide.getCurrentDirectory.bind(ide),
         async () => await ide.getPearAuth(),
-        async (auth: PearAuth) => await ide.updatePearCredentials(auth),
+        async (auth: PearAuth) => await ide.updatePearAICredentials(auth),
       );
       if (!llm) {
         continue;
