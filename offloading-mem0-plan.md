@@ -38,3 +38,47 @@ Step 3: Implement Local Memory Management
 Step 4: Update Memory Attachment
 - Implement the mechanism to attach memories to new chat sessions
 - Modify the chat initialization process
+
+
+
+Later Task - full cleanup.
+API to Local Structure Adaptation:
+We're currently adapting between two memory structures:
+API Memory (old Mem0 format):
+
+interface Memory {
+    id: string;
+    memory: string;          // actual content
+    created_at: string;
+    updated_at: string;
+    total_memories: number;  // not needed locally
+    owner: string;          // not needed locally
+    organization: string;   // not needed locally
+    metadata: any;         // not needed locally
+    type: string;         // not needed locally
+}
+
+Local Memory (our new format):
+interface Memory {
+    id: string;
+    content: string;      // renamed from memory
+    timestamp: string;    // simplified from created_at/updated_at
+    isNew?: boolean;      // UI state
+    isModified?: boolean; // UI state
+    isDeleted?: boolean;  // UI state
+}
+
+The adaptation happens in localMemoryService.ts through the convertToAPIMemory and convertToLocalMemory functions. We could clean this up later by:
+- Removing the API conversion entirely once we're sure no other parts of the system expect the old format
+- Simplifying the memory interface to just id, content, and timestamp
+- Moving UI state management to a separate layer
+
+The main differences between the structures are:
+Local Memory: Simple structure with id, content, and timestamp
+API Memory: More complex with additional fields like owner, organization, metadata, etc
+
+To clean this up in the future, you could:
+Remove the API conversion layer entirely since it's no longer needed
+Simplify the memory interface to just the essential fields
+Update the chat system to work directly with the local memory format
+Remove unused fields from the state management
