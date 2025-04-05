@@ -29,7 +29,7 @@
   "description": "Supercharge your development with AI",
   "engines": {
     "vscode": "^1.70.0",
-    "node": ">=20.11.0"
+    "node": ">=20.18.0"
   },
   "engine-strict": true,
   "galleryBanner": {
@@ -211,7 +211,6 @@
         "title": "Focus PearAI Search View",
         "group": "PearAI"
       },
-
       {
         "command": "pearai.focusPearAIMem0View",
         "category": "PearAI",
@@ -737,7 +736,7 @@
     "@types/follow-redirects": "^1.14.4",
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.6",
-    "@types/node": "16.x",
+    "@types/node": "^20.17.30",
     "@types/react-dom": "^18.2.4",
     "@types/request": "^2.48.8",
     "@types/vscode": "1.70",
