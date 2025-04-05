@@ -11,11 +11,6 @@ import { MessageContent, ChatMessage } from 'core';
  */
 export interface IPearAICreatorMode {
   /**
-   * Whether the creator mode interface is currently opened
-   */
-  readonly isCreatorModeActive: boolean;
-
-  /**
    * Event that fires when the creator mode is activated or deactivated
    */
   readonly onDidChangeCreatorModeState: vscode.Event<boolean>;
@@ -136,7 +131,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   public readonly onDidRequestExecutePlan = this._onDidRequestExecutePlan.event;
   
   // Creator mode state
-  private _isCreatorModeActive: boolean = false;
+  // private _isCreatorModeActive: boolean = false;
   
   // Disposables
   private _disposables: vscode.Disposable[] = [];
@@ -157,27 +152,15 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     this._disposables.forEach(d => d.dispose());
     this._disposables = [];
   }
-  
-  
-  /**
-   * Whether the creator mode interface is currently active
-   */
-  public get isCreatorModeActive(): boolean {
-    return this._isCreatorModeActive;
-  }
+
   
   /**
    * Opens the creator mode interface
    */
   public async openCreatorMode(): Promise<void> {
-    if (this._isCreatorModeActive) {
-      return; // Already open
-    }
-    
     try {
       // Execute the command to open the creator mode interface
       await vscode.commands.executeCommand('workbench.action.toggleCreatorView');
-      this._isCreatorModeActive = true;
       this._onDidChangeCreatorModeState.fire(true);
     } catch (error) {
       console.error('Failed to open creator mode:', error);
@@ -189,14 +172,10 @@ export class PearAICreatorMode implements IPearAICreatorMode {
    * Closes the creator mode interface
    */
   public async closeCreatorMode(): Promise<void> {
-    if (!this._isCreatorModeActive) {
-      return; // Already closed
-    }
 
     try {
       // Close the creator mode interface
       await vscode.commands.executeCommand("workbench.action.closeCreatorView");
-      this._isCreatorModeActive = false;
       this._onDidChangeCreatorModeState.fire(false);
     } catch (error) {
       console.error('Failed to close creator mode:', error);
@@ -266,76 +245,11 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       try {
         console.dir('GOT NewIdea');
 
-        this.messenger.on("llm/streamChat", async function* (message): ProtocolGeneratorType<MessageContent> {
-          const { messages, completionOptions, title } = message.data;
-          
-          // Stream each message as a response
-          for (const msg of messages) {
-            if (msg.role === 'user') {
-              yield {
-                done: false,
-                content: msg.content,
-              };
-            }
-          }
 
-          // Return final response
-          return {
-            done: true,
-            content: {
-              role: 'assistant',
-              content: 'Plan creation completed'
-            }
-          };
-        })
-        
-        // Request plan creation from the LLM service
-        const response = this.messenger.invoke("llm/streamChat", {
-          title: "gpt-4", // or your configured model
-          messages: [
-            {
-              role: "system",
-              content: "You are a planning assistant. Create a clear, step-by-step plan for implementing the user's idea. Focus on technical implementation details and break down complex tasks into manageable steps."
-            },
-            {
-              role: "user",
-              content: msg.payload.text
-            }
-          ],
-          completionOptions: {
-            temperature: 0.7,
-            maxTokens: 2000
-          }
-        });
-  
-        // console.dir("REQUESTED STREAM CHAT");
-        // console.dir(response);
-        // console.dir(typeof response);
-        // console.dir(JSON.stringify(response));
-
-        // return;
-  
-        // Type assertion to ensure response is treated as an AsyncGenerator
-        const generator = response as AsyncGenerator<{
-          done?: boolean;
-          content: MessageContent;
-        }>;
-  
-        // Stream the response chunks
-        for await (const chunk of generator) {
-          if ('content' in chunk) {
-            await send({
-              type: "planCreationStream",
-              text: chunk.content
-            });
-          }
-        }
-  
-        console.dir("STREAMED PLAN CREATION")
-  
         // Signal completion
         await send({
-          type: "planCreationSuccess"
+          type: "planCreationSuccess",
+          text: "hi i am a plan"
         });
   
       } catch (error) {
@@ -346,9 +260,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
           text: "Failed to create plan: " + errorMessage
         });
       }
-    }
-  
-    if (msg.messageType === "Close") {
+    } else if (msg.messageType === "Close") {
       await this.closeCreatorMode();
     }
   }

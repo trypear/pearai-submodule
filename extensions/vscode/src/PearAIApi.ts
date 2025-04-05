@@ -1,7 +1,3 @@
-import * as vscode from 'vscode';
-import { PearAuth } from 'core';
-import { ConfigHandler } from 'core/config/ConfigHandler';
-import { Core } from 'core/core';
 import { PearAICreatorMode } from './integrations/creator';
 import { InProcessMessenger } from 'core/util/messenger';
 import { FromCoreProtocol, ToCoreProtocol } from 'core/protocol';

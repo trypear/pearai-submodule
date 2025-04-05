@@ -5,9 +5,10 @@ import { FC } from "react";
 
 export type PlanningBarProps = {
     isGenerating?: boolean;
+    requestedPlan: string;
 }
 
-export const PlanningBar: FC<PlanningBarProps> = ({ isGenerating }) => {
+export const PlanningBar: FC<PlanningBarProps> = ({ isGenerating, requestedPlan }) => {
 
     return (
         <div className="bg-[#161718] w-full rounded-full flex text-white justify-between min-w-64 h-10 gap-4">
@@ -17,7 +18,7 @@ export const PlanningBar: FC<PlanningBarProps> = ({ isGenerating }) => {
                 </div>
                 <div className="my-auto text-sm">Planning</div>
                 <div className="relative my-auto">
-                    <div className={`text-muted-foreground text-sm max-w-64 text-ellipsis truncate ${isGenerating ? "rainbow-minimal-glow" : ""}`}>Make me a facebook clone dsadsadasadsda</div>
+                    <div className={`text-muted-foreground text-sm max-w-64 text-ellipsis truncate ${isGenerating ? "rainbow-minimal-glow" : ""}`}>{requestedPlan}</div>
                 </div>
             </div>
 

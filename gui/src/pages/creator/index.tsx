@@ -158,6 +158,7 @@ export const CreatorOverlay = () => {
 							<div className="my-6 border-t border-gray-200"></div>
 
 							<PlanEditor
+								initialMessage={initialMessage}
 								newProjectPlan={newProjectPlan}
 								setNewProjectPlan={setNewProjectPlan}
 								isStreaming={isStreaming}

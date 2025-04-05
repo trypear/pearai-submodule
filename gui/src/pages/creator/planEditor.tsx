@@ -5,6 +5,7 @@ import { PlanningBar } from "./ui/planningBar"
 interface PlanEditorProps {
 	newProjectPlan: string
 	setNewProjectPlan: (value: string) => void
+	initialMessage: string;
 	isStreaming: boolean
 	planCreationDone: boolean
 	handleMakeIt: () => void
@@ -15,6 +16,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 	setNewProjectPlan,
 	isStreaming,
 	planCreationDone,
+	initialMessage,
 	handleMakeIt,
 }) => {
 	const planTextareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -52,7 +54,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 
 	return (
 		<div className="rounded-lg bg-white p-4">
-			<PlanningBar isGenerating/>
+			<PlanningBar isGenerating requestedPlan={initialMessage} />
 			<textarea
 				ref={planTextareaRef}
 				value={newProjectPlan}
