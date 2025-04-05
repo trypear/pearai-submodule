@@ -211,7 +211,6 @@
         "title": "Focus PearAI Search View",
         "group": "PearAI"
       },
-
       {
         "command": "pearai.focusPearAIMem0View",
         "category": "PearAI",
@@ -737,7 +736,7 @@
     "@types/follow-redirects": "^1.14.4",
     "@types/glob": "^8.0.0",
     "@types/mocha": "^10.0.6",
-    "@types/node": "16.x",
+    "@types/node": "^22.14.0",
     "@types/react-dom": "^18.2.4",
     "@types/request": "^2.48.8",
     "@types/vscode": "1.70",
