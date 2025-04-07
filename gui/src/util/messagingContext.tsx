@@ -12,7 +12,7 @@ export interface WebViewMessageIncoming<T = any> {
 
 export interface WebMessageOutgoing<T = any> {
   messageType: string;
-  payload: T;
+  data: T;
   messageId: string;
 }
 
@@ -44,8 +44,8 @@ interface MessagingContextValue {
   ) => () => void;
   
   // Type-safe version with explicit message type
-  typedRegister: <MessageType extends string, PayloadType = any>(
-    messageType: MessageType,
+  typedRegister: <PayloadType = any>(
+    messageType: string,
     callback: (message: WebMessageOutgoing<PayloadType>) => void
   ) => () => void;
   

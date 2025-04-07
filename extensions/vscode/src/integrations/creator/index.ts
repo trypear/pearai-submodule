@@ -30,13 +30,13 @@ export interface IPearAICreatorMode {
    * Opens the creator mode interface
    * @returns A Promise that resolves when the interface is opened
    */
-  openCreatorMode(): Promise<void>;
+  openCreatorOverlay(): Promise<void>;
 
   /**
    * Closes the creator mode interface
    * @returns A Promise that resolves when the interface is closed
    */
-  closeCreatorMode(): Promise<void>;
+  closeCreatorOverlay(): Promise<void>;
 
   /**
    * Creates a new task in creator mode
@@ -85,17 +85,17 @@ export interface ExecutePlanRequest {
   /**
    * The path to the file containing the plan
    */
-  filePath?: string;
+  // filePath?: string;
   
   /**
    * Optional code to include in the plan execution
    */
-  code?: string;
+  // code?: string;
   
   /**
    * Additional context for the plan execution
    */
-  context?: string;
+  plan?: string;
 }
 
 /**
@@ -129,6 +129,8 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   public readonly onDidChangeCreatorModeState = this._onDidChangeCreatorModeState.event;
   public readonly onDidRequestNewTask = this._onDidRequestNewTask.event;
   public readonly onDidRequestExecutePlan = this._onDidRequestExecutePlan.event;
+
+  private creatorState: "PLANNING" | "CREATING" | "NONE" = "NONE";
   
   // Creator mode state
   // private _isCreatorModeActive: boolean = false;
@@ -157,7 +159,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   /**
    * Opens the creator mode interface
    */
-  public async openCreatorMode(): Promise<void> {
+  public async openCreatorOverlay(): Promise<void> {
     try {
       // Execute the command to open the creator mode interface
       await vscode.commands.executeCommand('workbench.action.toggleCreatorView');
@@ -171,7 +173,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   /**
    * Closes the creator mode interface
    */
-  public async closeCreatorMode(): Promise<void> {
+  public async closeCreatorOverlay(): Promise<void> {
 
     try {
       // Close the creator mode interface
@@ -238,7 +240,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   // }
 
 
-  public async handleIncomingWebViewMessage(msg: WebViewMessageIncoming, send: (payload: any) => Thenable<boolean>): Promise<void> {
+  public async handleIncomingWebViewMessage(msg: WebViewMessageIncoming, send: (messageType: string, payload: Record<string, unknown>) => string): Promise<void> {
     assert(!!msg.messageId || !!msg.messageType, "Message ID or type missing :(");
   
     if (msg.messageType === "NewIdea") {
@@ -247,21 +249,27 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
 
         // Signal completion
-        await send({
-          type: "planCreationSuccess",
-          text: "hi i am a plan"
+        send("planCreationStream", {
+          plan: "THIS IS A PLAN FROM THE EXTENSION!",
         });
+        setTimeout(() => send("planCreationCompleted", {
+          plan: "THIS IS A COMPLETE PLAN",
+        }), 2000);
   
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("Plan creation failed:", error);
-        await send({
-          type: "error",
+        send("error", {
           text: "Failed to create plan: " + errorMessage
         });
       }
+    } else if (msg.messageType === "SubmitPlan") {
+      console.dir(`MSG PAYLOAD TEXT FOR SUBMITPLAN: ${msg.payload.text}`);
+      this._onDidRequestExecutePlan.fire(msg.payload);
+
+      await this.closeCreatorOverlay();
     } else if (msg.messageType === "Close") {
-      await this.closeCreatorMode();
+      await this.closeCreatorOverlay();
     }
   }
   

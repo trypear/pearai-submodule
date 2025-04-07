@@ -7,13 +7,13 @@ import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext"
 
 type ExtensionMessage = 
-  | { type: "planCreationStream"; text: string }
-  | { type: "planCreationSuccess" }
-  | { type: "pearAiCloseCreatorInterface" }
-  | { type: "pearAiHideCreatorLoadingOverlay" }
-  | { type: "newCreatorModeTask"; text: string }
-  | { type: "creatorModePlannedTaskSubmit"; text: string };
-
+  | { data: { plan: string } }
+  | { messageType: "planCreationSuccess" }
+  | { messageType: "pearAiCloseCreatorInterface" }
+  | { messageType: "pearAiHideCreatorLoadingOverlay" }
+  | { messageType: "newCreatorModeTask"; text: string }
+  | { messageType: "creatorModePlannedTaskSubmit"; text: string };
+// TODO: TYPE SHARING!!11!
 // TODO: SORT OUT FONTS HERE!
 
 /**
@@ -30,18 +30,16 @@ type ExtensionMessage =
 export const CreatorOverlay = () => {
 	const [initialMessage, setInitialMessage] = useState("")
 	const [newProjectPlan, setNewProjectPlan] = useState("")
-	const [planCreationDone, setPlanCreationDone] = useState(false)
-	const [isStreaming, setIsStreaming] = useState(false)
+	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING_PLAN" | "GENERATED_PLAN">("IDEATION")
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const isCapturingRef = useRef(false)
-	const { sendMessage, registerListener, unregisterListener } = useMessaging();
+	const { sendMessage, typedRegister } = useMessaging();
 
 
 	const close = useCallback(() => {
 		setInitialMessage("")
 		setNewProjectPlan("")
-		setPlanCreationDone(false)
-		setIsStreaming(false)
+		setCurrentState("IDEATION")
 		setInitialMessage("")
 		sendMessage("Close");
 	}, [])
@@ -96,12 +94,16 @@ export const CreatorOverlay = () => {
 	}, [close, forceFocus])
 
 	useEffect(() => {
-		const newProjectListener = registerListener("PlanStream", (msg) => {
-			setNewProjectPlan(msg.payload.plan);
+		typedRegister("planCreationStream", (msg) => {
+			console.dir(`MSG IN LISTENER: ${JSON.stringify(msg)}`);
+			setNewProjectPlan(msg.data.plan);
+			setCurrentState("GENERATING_PLAN");
 		});
-
-		// TODO: unregister on success
-	}, [registerListener]);
+		typedRegister("planCreationCompleted", (msg) => {
+			setNewProjectPlan(msg.data.plan);
+			setCurrentState("GENERATED_PLAN");
+		})
+	}, [typedRegister]);
 
 	const handleRequest = useCallback(async () => {
 		if (initialMessage.trim()) {
@@ -109,51 +111,33 @@ export const CreatorOverlay = () => {
 				text: `INITIAL IDEA: ${initialMessage} -- PLAN: ${newProjectPlan}`,
 				plan: true,
 			}, true);
-			setIsStreaming(true);
+			setCurrentState("GENERATING_PLAN");
 		}
 	}, [initialMessage, close])
 
 	const handleMakeIt = useCallback(async () => {
 		if (newProjectPlan.trim()) {
-			await sendMessage("NewIdeaPlanned", {
-				text: `INITIAL IDEA: ${initialMessage} -- PLAN: ${newProjectPlan}`
+			await sendMessage("SubmitPlan", {
+				plan: `INITIAL IDEA: ${initialMessage} -- PLAN: ${newProjectPlan}`
 			}, true);
 			close()
 		}
 	}, [newProjectPlan, close])
-
-	const onMessage = useCallback((e: MessageEvent) => {
-		const message: ExtensionMessage = e.data
-
-		if (message.type === "planCreationStream" && message.text) {
-			console.log(`STREAMED TEXT: ${message.text}`)
-			setNewProjectPlan(message.text)
-		} else if (message.type === "planCreationSuccess") {
-			setIsStreaming(false)
-			setPlanCreationDone(true)
-		}
-	}, [])
-
-	useEvent("message", onMessage)
 
 	return (
 		<div onClick={close} className="all-initial fixed inset-0 flex items-center justify-center bg-white font[var(--vscode-font-family)]">
 			<div onClick={(e) => e.stopPropagation()} className="justify-center align-middle m-auto w-full max-w-3xl ">
 				<RGBWrapper className="px-4 my-auto w-full">
 					{/* Stage 1: get the input from the user about what to make */}
-					{
-						(!isStreaming && !planCreationDone) && (
-							<InputBox
-								textareaRef={textareaRef}
-								initialMessage={initialMessage}
-								setInitialMessage={setInitialMessage}
-								handleRequest={handleRequest}
-								isDisabled={isStreaming || planCreationDone}
-							/>
-						)
-					}
+					<InputBox
+						textareaRef={textareaRef}
+						initialMessage={initialMessage}
+						setInitialMessage={setInitialMessage}
+						handleRequest={handleRequest}
+						isDisabled={currentState !== "IDEATION"}
+					/>
 					{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
-					{(isStreaming || planCreationDone) && (
+					{(currentState === "GENERATING_PLAN" || currentState === "GENERATED_PLAN") && (
 						<>
 							<div className="my-6 border-t border-gray-200"></div>
 
@@ -161,8 +145,8 @@ export const CreatorOverlay = () => {
 								initialMessage={initialMessage}
 								newProjectPlan={newProjectPlan}
 								setNewProjectPlan={setNewProjectPlan}
-								isStreaming={isStreaming}
-								planCreationDone={planCreationDone}
+								isStreaming={currentState === "GENERATING_PLAN"}
+								planCreationDone={currentState === "GENERATED_PLAN"}
 								handleMakeIt={handleMakeIt}
 							/>
 						</>

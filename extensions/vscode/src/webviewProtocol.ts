@@ -116,10 +116,19 @@ export class VsCodeWebviewProtocol
       if(msg?.destination === "creator") {
         const creatorMode = getApi()?.creatorMode;
         assert(!!creatorMode, "creator mode is not present in submodule API :(");
+        console.dir('GOT CREATOR MESSAGE FROM WEBVIEW');
+        console.dir(msg);
+        if(webView) {
+          const respond = (messageType: string, message: Record<string, unknown>) =>
+            this.send(messageType, message, msg.messageId);
+          creatorMode.handleIncomingWebViewMessage(msg, respond);
+        } else {
+          console.error("WARNING: ⚠️ CREATOR WEBVIEW DOES NOT EXIST ⚠️");
+        }
 
-        creatorMode.handleIncomingWebViewMessage(msg, (payload) => webView.postMessage({messageId: msg.messageId, payload}));
         return;
       }
+
       if (!msg.messageType || !msg.messageId) {
         throw new Error(`Invalid webview protocol msg: ${JSON.stringify(msg)}`);
       }
@@ -274,7 +283,7 @@ export class VsCodeWebviewProtocol
           }
         }
       }
-    });
+    }, this);
     this._webviewListeners.set(viewType, listener);
   }
 
