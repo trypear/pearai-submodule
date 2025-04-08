@@ -44,12 +44,14 @@ export const DisabledView = ({ hasUnsavedChanges }: { hasUnsavedChanges: boolean
             "You have unsaved changes to memories"
           ) : (
             <>
-              PearAI Memory is disabled. You can enable it in{" "}
+              PearAI Memory is disabled.
+              <br />
+              You can enable it in{" "}
               <span
                 className="cursor-pointer underline"
-                onClick={() => ideMessenger.post("openInventorySettings", undefined)}
+                onClick={() => ideMessenger.post("openConfigJson", undefined)}
               >
-                Inventory Settings
+                Config File
               </span>
               .
             </>
