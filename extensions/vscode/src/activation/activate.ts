@@ -9,7 +9,7 @@ import { VsCodeContinueApi } from "./api";
 import { setupInlineTips } from "./inlineTips";
 import { isFirstLaunch, OLD_FIRST_LAUNCH_KEY } from "../copySettings";
 
-let vscodeExtension: VsCodeExtension | undefined;
+export let vscodeExtension: VsCodeExtension | undefined;
 
 export async function isVSCodeExtensionInstalled(extensionId: string): Promise<boolean> {
   return vscode.extensions.getExtension(extensionId) !== undefined;
@@ -130,12 +130,10 @@ export async function activateExtension(context: vscode.ExtensionContext) {
 
   // 'export' public api-surface
   // or entire extension for testing
-  return process.env.NODE_ENV === "test"
-    ? {
+  return {
       ...continuePublicApi,
       extension: vscodeExtension,
-    }
-    : continuePublicApi;
+    };
 }
 
 // Custom Layout settings that we want default for PearAPP

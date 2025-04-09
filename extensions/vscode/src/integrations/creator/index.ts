@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import { assert } from '../../util/assert';
-import type { FromCoreProtocol, ToCoreProtocol } from "../../../../../core/protocol";
-import type { IMessenger } from "../../../../../core/util/messenger";
-import { ProtocolGeneratorType, ToCoreFromIdeOrWebviewProtocol } from 'core/protocol/core';
-import { MessageContent, ChatMessage } from 'core';
+import { ChatMessage } from 'core';
+import { Core } from 'core/core';
+import { IMessenger } from 'core/util/messenger';
+import { ToCoreFromIdeOrWebviewProtocol } from 'core/protocol/core';
+import { FromCoreProtocol } from 'core/protocol';
 
 /**
  * Interface for the Creator Mode API
@@ -124,11 +125,15 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   private readonly _onDidChangeCreatorModeState = new vscode.EventEmitter<boolean>();
   private readonly _onDidRequestNewTask = new vscode.EventEmitter<CreatorTaskRequest>();
   private readonly _onDidRequestExecutePlan = new vscode.EventEmitter<ExecutePlanRequest>();
-  
+
+  // The abort token we can send to the LLM
+  private cancelToken: AbortSignal | undefined;
+
   // Public events
   public readonly onDidChangeCreatorModeState = this._onDidChangeCreatorModeState.event;
   public readonly onDidRequestNewTask = this._onDidRequestNewTask.event;
   public readonly onDidRequestExecutePlan = this._onDidRequestExecutePlan.event;
+
 
   private creatorState: "PLANNING" | "CREATING" | "NONE" = "NONE";
   
@@ -139,7 +144,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   private _disposables: vscode.Disposable[] = [];
 
   constructor(
-    private readonly messenger: IMessenger<ToCoreFromIdeOrWebviewProtocol, FromCoreProtocol>
+    private readonly _messenger: IMessenger<ToCoreFromIdeOrWebviewProtocol, FromCoreProtocol>,
   ) {
     // Add emitters to disposables
     this._disposables.push(
@@ -193,51 +198,9 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     
 
     this._onDidRequestNewTask.fire(task);
-    // TODO: setup listeners in roo code
     // TODO: Go trigger creator mode view 
     // TODO: run animation to close overlay
   }
-  
-  /**
-   * Registers commands necessary for creator mode functionality
-   */
-  // public registerCommands(context: vscode.ExtensionContext): void {
-  //   // Register command to open creator mode
-  //   const openCreatorModeCmd = vscode.commands.registerCommand('pearai.openCreatorMode', async () => {
-  //     await this.openCreatorMode();
-  //   });
-    
-  //   // Register command to close creator mode
-  //   const closeCreatorModeCmd = vscode.commands.registerCommand('pearai.closeCreatorMode', async () => {
-  //     await this.closeCreatorMode();
-  //   });
-    
-  //   // Register command to create a task
-  //   const createTaskCmd = vscode.commands.registerCommand('pearai.createCreatorTask', async (args: CreatorTaskRequest) => {
-  //     await this.createTask(args);
-  //   });
-    
-  //   // Register command to execute a plan
-  //   const executePlanCmd = vscode.commands.registerCommand('psorPlan', async (args: ExecutePlanRequest) => {
-  //     await this.executePlan(args);
-  //   });
-    
-  //   // Add commands to context subscriptions
-  //   context.subscriptions.push(
-  //     openCreatorModeCmd,
-  //     closeCreatorModeCmd,
-  //     createTaskCmd,
-  //     executePlanCmd
-  //   );
-    
-  //   // Add to disposables for cleanup
-  //   this._disposables.push(
-  //     openCreatorModeCmd,
-  //     closeCreatorModeCmd,
-  //     createTaskCmd,
-  //     executePlanCmd
-  //   );
-  // }
 
 
   public async handleIncomingWebViewMessage(msg: WebViewMessageIncoming, send: (messageType: string, payload: Record<string, unknown>) => string): Promise<void> {
@@ -247,15 +210,42 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       try {
         console.dir('GOT NewIdea');
 
+        const messages: ChatMessage[] = [
+          // TODO: PROMPT INJECTION!
+          {
+            content: msg.payload.text,
+            role: "user"
+          }
+        ];
 
-        // Signal completion
-        send("planCreationStream", {
-          plan: "THIS IS A PLAN FROM THE EXTENSION!",
-        });
-        setTimeout(() => send("planCreationCompleted", {
-          plan: "THIS IS A COMPLETE PLAN",
-        }), 2000);
-  
+        const abortController = new AbortController();
+        this.cancelToken = abortController.signal;
+
+        const gen = this._messenger.invoke(
+          "llm/streamChat",
+          {
+            messages,
+            title: "pearai_model",
+            completionOptions: {
+              // TODO: FILL THIS OUT?
+            }
+          }
+        );
+        let completeResponse = "";
+        let next = await gen.next();
+
+        while (!next.done) {
+          // if (!activeRef.current) {
+          //   abortController.abort();
+          //   break;
+          // }
+          completeResponse += next.value.content;
+          send("planCreationStream", {
+            plan: completeResponse,
+          });
+          // TODO: maybe stripImages?
+          next = await gen.next();
+      }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("Plan creation failed:", error);

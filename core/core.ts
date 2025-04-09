@@ -76,7 +76,7 @@ export class Core {
   // TODO: It shouldn't actually need an IDE type, because this can happen
   // through the messenger (it does in the case of any non-VS Code IDEs already)
   constructor(
-    private readonly messenger: IMessenger<ToCoreProtocol, FromCoreProtocol>,
+    readonly messenger: IMessenger<ToCoreProtocol, FromCoreProtocol>,
     private readonly ide: IDE,
     private readonly onWrite: (text: string) => Promise<void> = async () => {},
   ) {
@@ -364,7 +364,6 @@ export class Core {
       msg: Message<ToCoreProtocol["llm/streamChat"][0]>,
     ) {
       const model = await configHandler.llmFromTitle(msg.data.title);
-      console.log(model)
       const gen = model.streamChat(
         msg.data.messages,
         msg.data.completionOptions,
