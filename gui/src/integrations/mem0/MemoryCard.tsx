@@ -17,9 +17,10 @@ interface MemoryCardProps {
   onEdit: (memory: Memory) => void;
   setEditedContent: (content: string) => void;
   handleCancelEdit: (memory: Memory) => void;
-  handleUnsavedEdit: () => void;
+  handleSaveMemory: (id: string, content: string) => void;
   handleDelete: (id: string) => void;
   handleKeyPress: (e: React.KeyboardEvent) => void;
+  validationError: string;
 }
 
 export function MemoryCard({
@@ -30,9 +31,10 @@ export function MemoryCard({
   onEdit,
   setEditedContent,
   handleCancelEdit,
-  handleUnsavedEdit,
+  handleSaveMemory,
   handleDelete,
-  handleKeyPress
+  handleKeyPress,
+  validationError
 }: MemoryCardProps) {
   return (
     <div
@@ -61,6 +63,7 @@ export function MemoryCard({
                 }}
               />
             </div>
+            {validationError && <div className="text-red-500 text-sm mt-1 mb-2">{validationError}</div>}
             <div className="flex justify-end gap-2 mt-2">
               <Button
                 size="sm"
@@ -71,9 +74,9 @@ export function MemoryCard({
               </Button>
               <Button
                 size="sm"
-                onClick={handleUnsavedEdit}
+                onClick={() => handleSaveMemory(memory.id, editedContent)}
               >
-                Save Draft
+                Save Memory
               </Button>
             </div>
           </div>

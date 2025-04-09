@@ -4,9 +4,6 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { lightGray } from "./utils";
 
 interface MemoryFooterProps {
-    unsavedChanges: boolean;
-    handleCancelAllChanges: () => void;
-    handleSaveAllChanges: () => void;
     currentPage: number;
     totalPages: number;
     handlePrevPage: () => void;
@@ -16,9 +13,6 @@ interface MemoryFooterProps {
 }
 
 export function MemoryFooter({
-    unsavedChanges,
-    handleCancelAllChanges,
-    handleSaveAllChanges,
     currentPage,
     totalPages,
     handlePrevPage,
@@ -28,22 +22,6 @@ export function MemoryFooter({
 }: MemoryFooterProps) {
     return (
         <div className="pb-2 flex items-center">
-            {(unsavedChanges && !isUpdating) && (
-                <div className="flex absolute left-1/2 transform -translate-x-1/2 gap-2">
-                    <Button
-
-                        variant="outline"
-                        onClick={handleCancelAllChanges}
-                        className="text-sm"
-                    >
-                        Cancel Changes
-                    </Button>
-                    <Button onClick={handleSaveAllChanges} className="text-sm">
-                        Save All Changes
-                    </Button>
-                </div>
-            )}
-
             {hasMemories && (
                 <div className="flex flex-1 items-center">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
