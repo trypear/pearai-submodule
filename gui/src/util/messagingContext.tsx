@@ -81,32 +81,6 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({
     Record<string, ((message: WebMessageOutgoing) => void)[]>
   >({});
 
-  // Handle incoming messages
-  const handleMessage = useCallback((event: MessageEvent) => {
-    const message: WebMessageOutgoing = event.data;
-
-    // If this message has an ID and is in pending responses, resolve the corresponding promise
-    if (message.messageId && pendingResponses[message.messageId]) {
-      const { resolve } = pendingResponses[message.messageId];
-      resolve(message);
-      
-      // Remove this pending response
-      setPendingResponses(prev => {
-        const updated = { ...prev };
-        delete updated[message.messageId];
-        return updated;
-      });
-    }
-    
-    // Trigger any registered listeners for this message type
-    if (message.messageType && listeners[message.messageType]) {
-      listeners[message.messageType].forEach(callback => callback(message));
-    }
-  }, [pendingResponses, listeners]);
-
-  // Set up the message event listener
-	useEvent("message", handleMessage);
-
   // Basic send message implementation
   const sendMessage = useCallback(<ResponseType = any>(
     messageType: string, 
@@ -150,6 +124,38 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({
     
     return Promise.resolve();
   }, []);
+
+
+  // Handle incoming messages
+  const handleMessage = useCallback((event: MessageEvent) => {
+    const message: WebMessageOutgoing = event.data;
+
+    if(message.messageType === "ping"){
+      sendMessage("pong").catch(e => console.error(e));
+      return;
+    }
+
+    // If this message has an ID and is in pending responses, resolve the corresponding promise
+    if (message.messageId && pendingResponses[message.messageId]) {
+      const { resolve } = pendingResponses[message.messageId];
+      resolve(message);
+      
+      // Remove this pending response
+      setPendingResponses(prev => {
+        const updated = { ...prev };
+        delete updated[message.messageId];
+        return updated;
+      });
+    }
+    
+    // Trigger any registered listeners for this message type
+    if (message.messageType && listeners[message.messageType]) {
+      listeners[message.messageType].forEach(callback => callback(message));
+    }
+  }, [pendingResponses, listeners]);
+
+  // Set up the message event listener
+	useEvent("message", handleMessage);
 
   // Type-safe send implementation
   const typedSend = useCallback(<MessageType extends string, PayloadType = any, ResponseType = any>(

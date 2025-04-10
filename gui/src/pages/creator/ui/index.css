@@ -88,12 +88,13 @@
 
 @keyframes rainbow-flow {
     0% {
-      background-position: 0% center;
+        background-position: 0% center;
     }
+
     100% {
-      background-position: 200% center;
+        background-position: 200% center;
     }
-  }
+}
 
 .rainbow-minimal-glow::before {
     position: absolute;
@@ -110,3 +111,39 @@
     color: transparent;
     z-index: -2;
 }
+
+body {
+    background-color: transparent;
+}
+
+@keyframes slideDown {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(-100%);
+    }
+  }
+  
+  /* Animation classes */
+  .animate-slide-down {
+    animation: slideDown 500ms cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 500ms cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
+  }
+  
+  /* For Tailwind classes */
+  .translate-y-\[-100\%\] {
+    transform: translateY(-100%);
+  }
