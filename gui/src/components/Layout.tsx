@@ -1,5 +1,5 @@
 import { IndexingProgressUpdate } from "core";
-import { useContext, useEffect, useState } from "react";
+import { FC, useContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled, { createGlobalStyle } from "styled-components";
@@ -77,7 +77,7 @@ const OverlayContainer = styled.div<{ isPearOverlay: boolean, path: string }>`
   `}
 `;
 
-const Layout = () => {
+const Layout:FC<{darkBg?: boolean}> = ({darkBg = true}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
@@ -219,7 +219,7 @@ const Layout = () => {
   }
 
   return (
-    <div className="bg-sidebar-background flex flex-col gap-1 h-screen">
+    <div className={`${darkBg ? "bg-sidebar-background" : ""} flex flex-col gap-1 h-screen`}>
       {
         <TextDialog
           showDialog={showDialog}

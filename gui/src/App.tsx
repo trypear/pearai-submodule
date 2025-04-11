@@ -34,7 +34,7 @@ const router = createMemoryRouter(
   [
     {
       path: "/",
-      element: <Layout />,
+      element: <Layout darkBg={window.viewType !== 'pearai.creatorView'} />,
       errorElement: <ErrorPage />,
       children: [
         {
