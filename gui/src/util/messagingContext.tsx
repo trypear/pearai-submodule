@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useEvent } from 'react-use';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -95,6 +95,8 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({
       messageType,
       payload,
     };
+
+
     
     // Post the message to VSCode
     window.vscode?.postMessage(message);

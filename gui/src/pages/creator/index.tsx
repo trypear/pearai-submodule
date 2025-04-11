@@ -7,7 +7,8 @@ import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext"
 import { PearIcon } from "./ui/pearIcon"
 import { Button } from "./ui/button"
-import { LogOut } from "lucide-react"
+import { FileText, LogOut, Pencil } from "lucide-react"
+import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
 
 
 
@@ -230,47 +231,74 @@ export const CreatorOverlay = () => {
 			>
 				<div
 					onClick={(e) => e.stopPropagation()}
-					className="justify-center align-middle m-auto w-full max-w-3xl gap-4 flex flex-col"
+					className="justify-center align-middle m-auto w-full max-w-2xl flex flex-col h-full"
 				>
-					{
-						currentState === "IDEATION" && (
-							<div className="flex justify-center align-middle text-black w-full gap-2 text-lg">
-								<PearIcon className="my-auto size-8" />
-								<div className="my-auto">
-									What would you like to make?
-								</div>
-							</div>
-						)
-					}
-					<RGBWrapper className="px-4 my-auto w-full">
-						{/* Stage 1: get the input from the user about what to make */}
-						<InputBox
-							textareaRef={textareaRef}
-							initialMessage={initialMessage}
-							setInitialMessage={setInitialMessage}
-							handleRequest={handleRequest}
-							isDisabled={currentState !== "IDEATION"}
-						/>
-						{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
-						{(currentState === "GENERATING_PLAN" || currentState === "GENERATED_PLAN") && (
-							<>
-								<div className="my-6 border-t border-gray-200"></div>
 
-								<PlanEditor
-									initialMessage={initialMessage}
-									newProjectPlan={newProjectPlan}
-									setNewProjectPlan={setNewProjectPlan}
-									isStreaming={currentState === "GENERATING_PLAN"}
-									planCreationDone={currentState === "GENERATED_PLAN"}
-									handleMakeIt={handleMakeIt}
-								/>
-							</>
-						)}
-					</RGBWrapper>
+					<div className="flex gap-4 flex-col">
+						<div className={`flex justify-center align-middle text-black w-full gap-2 text-lg ${currentState === "IDEATION" ? "opacity-100" : "opacity-0"} animate transition-opacity delay-`}>
+							<PearIcon className="my-auto size-8" />
+							<div className="my-auto">
+								What would you like to make?
+							</div>
+						</div>
+						{ /* TODO: WE WILL WANT TO ANIMATE THIS INTO THE PLANNING BAR IDEALLY */
+							currentState === "IDEATION" && (
+								<RGBWrapper className="px-4 my-auto w-full">
+									{/* Stage 1: get the input from the user about what to make */}
+									<InputBox
+										textareaRef={textareaRef}
+										initialMessage={initialMessage}
+										setInitialMessage={setInitialMessage}
+										handleRequest={handleRequest}
+										isDisabled={currentState !== "IDEATION"}
+										leftButtons={[
+											{
+												id: "make-plan",
+												icon: <FileText />,
+												label: "Make a plan",
+												togglable: true,
+												variant: "secondary",
+												size: "sm",
+												onToggle: (toggled) => console.log("Plan toggled:", toggled),
+											},
+											{
+												id: "edit-path",
+												icon: <Pencil className="size-4" />,
+												label: "~/pearai/yeet",
+												variant: "secondary",
+												size: "sm",
+												onClick: () => console.log("Edit path clicked"),
+											},
+										]}
+										submitButton={{
+											id: "submit",
+											label: "Start",
+											icon: <ArrowTurnDownLeftIcon className="size-4" />,
+											variant: "default" as const,
+											size: "default" as const,
+										  }}
+									/>
+								</RGBWrapper>
+							)
+						}
+
+					</div>
+
+					{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
+					{(currentState === "GENERATING_PLAN" || currentState === "GENERATED_PLAN") && (
+						<PlanEditor
+							initialMessage={initialMessage}
+							newProjectPlan={newProjectPlan}
+							setNewProjectPlan={setNewProjectPlan}
+							isStreaming={currentState === "GENERATING_PLAN"}
+							planCreationDone={currentState === "GENERATED_PLAN"}
+							handleMakeIt={handleMakeIt}
+						/>
+					)}
 				</div>
 				<div >
 				</div>
-				<Button variant="secondary" size="sm" className="mb-8 cursor-pointer">
+				<Button variant="secondary" size="sm" className="mb-8 cursor-pointer mt-4">
 					<LogOut className="size-4" />
 					Exit Creator
 				</Button>

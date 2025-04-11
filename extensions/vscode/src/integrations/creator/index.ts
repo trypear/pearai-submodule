@@ -60,7 +60,7 @@ export interface CreatorTaskRequest {
    * The text of the task
    */
   initialPrompt: string;
-  
+
   /**
    * The plan that the AI generated with the user
    */
@@ -87,12 +87,12 @@ export interface ExecutePlanRequest {
    * The path to the file containing the plan
    */
   // filePath?: string;
-  
+
   /**
    * Optional code to include in the plan execution
    */
   // code?: string;
-  
+
   /**
    * Additional context for the plan execution
    */
@@ -136,10 +136,10 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
 
   private creatorState: "PLANNING" | "CREATING" | "NONE" = "NONE";
-  
+
   // Creator mode state
   // private _isCreatorModeActive: boolean = false;
-  
+
   // Disposables
   private _disposables: vscode.Disposable[] = [];
 
@@ -160,7 +160,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     this._disposables = [];
   }
 
-  
+
   /**
    * Opens the creator mode interface
    */
@@ -174,7 +174,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       throw error;
     }
   }
-  
+
   /**
    * Closes the creator mode interface
    */
@@ -189,13 +189,13 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       throw error;
     }
   }
-  
+
   /**
    * Whenever we have a new task to execute, this create task method should be called
    * It will fire an event, which the roo code extension will listen to, then it will execute the task
    */
   public async createTask(task: CreatorTaskRequest): Promise<void> {
-    
+
 
     this._onDidRequestNewTask.fire(task);
     // TODO: Go trigger creator mode view 
@@ -205,7 +205,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
   public async handleIncomingWebViewMessage(msg: WebViewMessageIncoming, send: (messageType: string, payload: Record<string, unknown>) => string): Promise<void> {
     assert(!!msg.messageId || !!msg.messageType, "Message ID or type missing :(");
-  
+
     if (msg.messageType === "NewIdea") {
       try {
         console.dir('GOT NewIdea');
@@ -245,7 +245,12 @@ export class PearAICreatorMode implements IPearAICreatorMode {
           });
           // TODO: maybe stripImages?
           next = await gen.next();
-      }
+        }
+
+        send("planCreationCompleted", {
+          plan: completeResponse,
+        })
+
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error("Plan creation failed:", error);
@@ -262,5 +267,5 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       await this.closeCreatorOverlay();
     }
   }
-  
+
 }

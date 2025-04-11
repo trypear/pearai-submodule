@@ -116,8 +116,6 @@ export class VsCodeWebviewProtocol
       if(msg?.destination === "creator") {
         const creatorMode = getApi()?.creatorMode;
         assert(!!creatorMode, "creator mode is not present in submodule API :(");
-        console.dir('GOT CREATOR MESSAGE FROM WEBVIEW');
-        console.dir(msg);
         if(webView) {
           const respond = (messageType: string, message: Record<string, unknown>) =>
             this.send(messageType, message, msg.messageId);

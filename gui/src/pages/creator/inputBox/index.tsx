@@ -1,92 +1,152 @@
-import { Button } from "./../ui/button"
+import { Button, ButtonProps } from "./../ui/button"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
-import { EnterIcon } from "@radix-ui/react-icons"
-import { FileText, Pencil, Sun } from "lucide-react"
-import React, { useCallback, useState } from "react"
-import { PearIcon } from "../ui/pearIcon"
+import React, { useCallback, useState, useMemo } from "react"
 
-interface InputBoxProps {
-	textareaRef: React.RefObject<HTMLTextAreaElement>
-	initialMessage: string
-	setInitialMessage: (value: string) => void
-	handleRequest: () => void
-	isDisabled: boolean
+// Define our InputBoxButtonProps
+export interface InputBoxButtonProps extends ButtonProps {
+  id: string
+  icon?: React.ReactNode
+  label: string
+  togglable?: boolean
+}
+
+// Define main component props
+export interface InputBoxProps {
+  textareaRef: React.RefObject<HTMLTextAreaElement>
+  initialMessage: string
+  setInitialMessage: (value: string) => void
+  handleRequest: () => void
+  isDisabled: boolean
+  placeholder?: string
+  leftButtons?: InputBoxButtonProps[]
+  rightButtons?: InputBoxButtonProps[]
+  submitButton?: Omit<InputBoxButtonProps, 'onClick'> & { onClick?: () => void }
+  maxHeight?: number
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
-	textareaRef,
-	initialMessage,
-	setInitialMessage,
-	handleRequest,
-	isDisabled,
+  textareaRef,
+  initialMessage,
+  setInitialMessage,
+  handleRequest,
+  isDisabled,
+  placeholder = "What would you like to do?",
+  leftButtons = [],
+  rightButtons = [],
+  submitButton,
+  maxHeight = 100,
 }) => {
-	const [makeAPlan, setMakeAPlan] = useState(false);
+  // Keep track of which buttons are toggled
+  const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
 
-	const handleTextareaChange = useCallback(
-		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-			setInitialMessage(e.target.value)
+  const handleTextareaChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setInitialMessage(e.target.value)
 
-			const textarea = e.target
-			textarea.style.height = "36px"
-			const scrollHeight = textarea.scrollHeight
-			textarea.style.height = Math.min(scrollHeight, 100) + "px"
-		},
-		[setInitialMessage],
-	)
+      const textarea = e.target
+      textarea.style.height = "36px"
+      const scrollHeight = textarea.scrollHeight
+      textarea.style.height = Math.min(scrollHeight, maxHeight) + "px"
+    },
+    [setInitialMessage, maxHeight],
+  )
 
-	const handleTextareaKeyDown = useCallback(
-		(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-			if (e.key === "Enter" && !e.shiftKey && initialMessage.trim()) {
-				e.preventDefault()
-				handleRequest()
-			}
-		},
-		[handleRequest, initialMessage],
-	)
+  const handleTextareaKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey && initialMessage.trim()) {
+        e.preventDefault()
+        handleRequest()
+      }
+    },
+    [handleRequest, initialMessage],
+  )
 
-	return (
-		<div className="flex flex-col gap-4">
-			<div className="flex items-center rounded-md bg-white flex-col px-2">
-				<div className="flex-1 w-full">
-					<textarea
-						ref={textareaRef}
-						value={initialMessage}
-						onChange={handleTextareaChange}
-						onKeyDown={handleTextareaKeyDown}
-						placeholder="What would you like to do?"
-						className="w-full appearance-none bg-transparent text-gray-700 outline-none focus:outline-none resize-none overflow-y-auto rounded-lg max-h-24 leading-normal py-2 px-2 flex items-center border-none"
-						autoFocus={true}
-						tabIndex={1}
-						rows={1}
-						disabled={isDisabled}
-					/>
-				</div>
-				<div className="flex justify-between space-x-2 p-2 w-full">
-					<div className="flex flex-1 gap-2">
-						<Button
-							variant="secondary"
-							size="sm"
-							toggled={makeAPlan}
-							onToggle={(newToggled) => setMakeAPlan(newToggled)}
-						>
-							<FileText />
-							Make a plan
-						</Button>
-						<Button variant="secondary" size="sm">
-							<Pencil className="size-4" />
-							~/pearai/yeet
-						</Button>
-					</div>
-					<Button onClick={handleRequest} disabled={!initialMessage.trim() || isDisabled} tabIndex={3}>
-						<ArrowTurnDownLeftIcon className="size-4" />
-						Start
-					</Button>
-				</div>
-				{/* <div className="bg-black/10 w-full h-px" />
-			<div>
-				TODO: decide where the path should go
-			</div> */}
-			</div>
-		</div>
-	)
+  const handleToggle = useCallback((buttonId: string, toggled: boolean) => {
+    setToggleStates(prev => ({
+      ...prev,
+      [buttonId]: toggled
+    }));
+  }, []);
+
+  // Render a button based on its props
+  const renderButton = useCallback((buttonProps: InputBoxButtonProps) => {
+    const { id, icon, label, togglable, onToggle, ...rest } = buttonProps;
+
+    // Determine if button is toggled
+    const isToggled = toggleStates[id] ?? buttonProps.toggled ?? false;
+
+    return (
+      <Button
+        key={id}
+        toggled={togglable ? isToggled : undefined}
+        onToggle={togglable ? (newToggled) => {
+          handleToggle(id, newToggled);
+          onToggle?.(newToggled);
+        } : undefined}
+        {...rest}
+      >
+        {icon}
+        {label}
+      </Button>
+    );
+  }, [toggleStates, handleToggle]);
+
+  const renderedLeftButtons = useMemo(() =>
+    leftButtons.map(renderButton),
+    [leftButtons, renderButton]
+  );
+
+  const renderedRightButtons = useMemo(() =>
+    rightButtons.map(renderButton),
+    [rightButtons, renderButton]
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center rounded-md bg-white flex-col px-2">
+        <div className="flex-1 w-full">
+          <textarea
+            ref={textareaRef}
+            value={initialMessage}
+            onChange={handleTextareaChange}
+            onKeyDown={handleTextareaKeyDown}
+            placeholder={placeholder}
+            className="w-full appearance-none bg-transparent text-gray-700 outline-none focus:outline-none resize-none overflow-y-auto rounded-lg max-h-24 leading-normal py-2 px-2 flex items-center border-none"
+            autoFocus={true}
+            tabIndex={1}
+            rows={1}
+            disabled={isDisabled}
+          />
+        </div>
+        <div className="flex justify-between space-x-2 p-2 w-full">
+          {leftButtons.length > 0 && (
+            <div className="flex flex-1 gap-2">
+              {renderedLeftButtons}
+            </div>
+          )}
+          {rightButtons.length > 0 && (
+            <div className="flex gap-2">
+              {renderedRightButtons}
+            </div>
+          )}
+          {
+            submitButton && (
+              <Button
+                onClick={handleRequest}
+                disabled={!initialMessage.trim() || isDisabled}
+                tabIndex={3}
+                variant={submitButton.variant}
+                size={submitButton.size}
+                {...submitButton}
+              >
+                {submitButton.icon}
+                {submitButton.label}
+              </Button>
+            )
+          }
+
+        </div>
+      </div>
+    </div>
+  )
 }
