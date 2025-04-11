@@ -6,6 +6,45 @@ import { InputBox } from "./inputBox"
 import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext"
 
+
+
+
+// TODO: refactor - works for now and I'm too scared to touch it - James
+// Animation info stored in window to survive component remounts
+if (typeof window !== 'undefined') {
+  window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
+    direction: null,
+    timestamp: 0
+  };
+}
+
+const getAnimationDirection = () => {
+  if (typeof window === 'undefined') return null;
+  // If it's been more than 1 second since the last animation update,
+  // assume we're in a stable state based on the last known direction
+  const now = Date.now();
+  const timeSinceUpdate = now - window.__creatorOverlayAnimation.timestamp;
+  
+  if (timeSinceUpdate > 1000) {
+    // If last direction was "up", we should be hidden (-100%)
+    // If last direction was "down", we should be visible (0)
+    // If no direction yet, default null
+    return window.__creatorOverlayAnimation.direction;
+  }
+  
+  // We're in an active animation, return the current direction
+  return window.__creatorOverlayAnimation.direction;
+};
+
+const setAnimationDirection = (direction) => {
+  if (typeof window === 'undefined') return;
+  window.__creatorOverlayAnimation = {
+    direction,
+    timestamp: Date.now()
+  };
+  console.dir(`[window] Setting animation direction: ${direction}`);
+};
+
 type ExtensionMessage =
   | { data: { plan: string } }
   | { messageType: "planCreationSuccess" }
@@ -18,19 +57,20 @@ type ExtensionMessage =
 /**
  * CreatorOverlay component provides a full-screen overlay with an auto-focusing input field
  * for capturing user commands or queries.
- *
- * - This automatically captures keystrokes and redirects them to the input
- * - Global keyboard handling: Captures keyboard input even when the textarea isn't focused
- * - Automatic text area resizing
- * - Escape key closes the overlay
- * - Enter submits the request
- * - Clicking the background closes the overlay
  */
 export const CreatorOverlay = () => {
+  console.dir(`Component mounting - current animation: ${getAnimationDirection()}`);
+  
 	const [initialMessage, setInitialMessage] = useState("")
 	const [newProjectPlan, setNewProjectPlan] = useState("")
 	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING_PLAN" | "GENERATED_PLAN">("IDEATION")
-	const [animateDirection, setAnimateDirection] = useState<"down" | "up" | null>(null);
+	
+	// Keep animation state in a ref to prevent render cycles
+	const animationRef = useRef(getAnimationDirection());
+	
+	// Force a rerender when animation changes 
+	const [, forceUpdate] = useState({});
+	
 	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 	const isCapturingRef = useRef(false)
 	const { sendMessage, typedRegister, registerListener } = useMessaging();
@@ -122,46 +162,80 @@ export const CreatorOverlay = () => {
 		}
 	}, [initialMessage, newProjectPlan, close, sendMessage])
 
-	// Register the overlayAnimation listener
+	// Animation handler - directly manipulates the DOM element to ensure
+	// animation works even if component remounts
 	useEffect(() => {
-		registerListener("overlayAnimation", (msg) => {
-			console.dir(`INCOMING DIRECTION!: ${msg.data.direction}`)
-
-			if (!msg.data?.direction) {
-				console.error("overlayAnimation message did not contain direction");
-				return;
-			} else if (msg.data.direction !== "up" && msg.data.direction !== "down") {
-				console.error("overlayAnimation message formatted wrong");
-				return;
+		const handleAnimation = (msg) => {
+			if (!msg.data?.direction) return;
+			
+			const newDirection = msg.data.direction;
+			console.dir(`Received animation direction: ${newDirection}`);
+			
+			// Store direction in window for persistence
+			setAnimationDirection(newDirection);
+			
+			// Update our ref
+			animationRef.current = newDirection;
+			
+			// Force a rerender
+			forceUpdate({});
+			
+			// Direct DOM manipulation as fallback
+			try {
+				// Find the main animation container in DOM
+				const container = document.querySelector('.all-initial.fixed.inset-0');
+				if (container && container instanceof HTMLElement) {
+					container.style.transform = newDirection === 'down' ? 'translateY(0)' : 'translateY(-100%)';
+					console.dir(`Direct DOM update: translateY(${newDirection === 'down' ? '0' : '-100%'})`);
+				}
+			} catch (e) {
+				console.error('Failed to update DOM directly:', e);
 			}
+		};
 
-			const { direction } = msg.data;
-			setAnimateDirection(direction);
-			console.dir(`SETTING ANIMATE DIRECTION TO: ${direction}`)
-		});
+		// Register handler
+		const unregister = registerListener("overlayAnimation", handleAnimation);
+		
+		return () => {
+			if (typeof unregister === 'function') {
+				unregister();
+			}
+		};
 	}, [registerListener]);
 
+	// Send loaded message when component mounts
 	useEffect(() => {
-		// sending the loaded message so we can trigger all of the animations in sync
-		sendMessage("loaded");
-	}, []);
+		console.dir("Sending 'loaded' message");
+		setTimeout(() => {
+			sendMessage("loaded");
+		}, 100); // Small delay to ensure event handler is registered
+	}, [sendMessage]);
 
-	// Determine the transform class based on animation direction
-	const getTransformClass = useMemo(() => {
-		if (animateDirection === "down") {
-			return "translate-y-0";
-		} else if (animateDirection === "up") {
-			return "-translate-y-full";
-		} else {
-			return "-translate-y-full"; // Default to hidden
-		}
-	}, [animateDirection]);
+	// Get current animation state from window/ref
+	const currentDirection = useMemo(() => {
+		const direction = getAnimationDirection();
+		console.dir(`useMemo checking animation direction: ${direction}`);
+		return direction;
+	}, [/* deliberately empty to run only on mount */]);
+
+	// Use inline style instead of useMemo to ensure it's always up-to-date
+	const getTransformStyle = () => {
+		const direction = getAnimationDirection();
+		console.dir(`Getting transform for direction: ${direction}`);
+		return {
+			transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+			transform: direction === 'down' ? 'translateY(0)' : 'translateY(-100%)'
+		};
+	};
+
+	console.dir(`Rendering with animation direction: ${getAnimationDirection()}`);
 
 	return (
-		<div className="w-full h-full">
+		<div className="w-full h-full" data-animation-direction={getAnimationDirection()}>
 			<div 
 				onClick={close} 
-				className={`all-initial fixed inset-0 flex items-center justify-center bg-transparent font[var(--vscode-font-family)] transition-transform duration-500 ease-out ${getTransformClass}`}
+				style={getTransformStyle()}
+				className="all-initial fixed inset-0 flex items-center justify-center bg-transparent font[var(--vscode-font-family)] animate"
 			>
 				<div 
 					onClick={(e) => e.stopPropagation()} 

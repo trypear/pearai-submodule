@@ -8,7 +8,11 @@ declare global {
       initialRoute?: string;
       isFirstLaunch?: boolean;
       isPearOverlay?: boolean;
-      viewType?: 'pearai.chatView' | 'pearai.mem0View' | 'pearai.searchView' | 'pearai.creatorView';  
+      viewType?: 'pearai.chatView' | 'pearai.mem0View' | 'pearai.searchView' | 'pearai.creatorView';
+      __creatorOverlayAnimation?: {
+        direction: null | "up" | "down";
+        timestamp: number;
+      };
     }
   }
 
