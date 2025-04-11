@@ -1,0 +1,152 @@
+import { Button, ButtonProps } from "./../ui/button"
+import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
+import React, { useCallback, useState, useMemo } from "react"
+
+// Define our InputBoxButtonProps
+export interface InputBoxButtonProps extends ButtonProps {
+  id: string
+  icon?: React.ReactNode
+  label: string
+  togglable?: boolean
+}
+
+// Define main component props
+export interface InputBoxProps {
+  textareaRef: React.RefObject<HTMLTextAreaElement>
+  initialMessage: string
+  setInitialMessage: (value: string) => void
+  handleRequest: () => void
+  isDisabled: boolean
+  placeholder?: string
+  leftButtons?: InputBoxButtonProps[]
+  rightButtons?: InputBoxButtonProps[]
+  submitButton?: Omit<InputBoxButtonProps, 'onClick'> & { onClick?: () => void }
+  maxHeight?: number
+}
+
+export const InputBox: React.FC<InputBoxProps> = ({
+  textareaRef,
+  initialMessage,
+  setInitialMessage,
+  handleRequest,
+  isDisabled,
+  placeholder = "What would you like to do?",
+  leftButtons = [],
+  rightButtons = [],
+  submitButton,
+  maxHeight = 100,
+}) => {
+  // Keep track of which buttons are toggled
+  const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
+
+  const handleTextareaChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setInitialMessage(e.target.value)
+
+      const textarea = e.target
+      textarea.style.height = "36px"
+      const scrollHeight = textarea.scrollHeight
+      textarea.style.height = Math.min(scrollHeight, maxHeight) + "px"
+    },
+    [setInitialMessage, maxHeight],
+  )
+
+  const handleTextareaKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey && initialMessage.trim()) {
+        e.preventDefault()
+        handleRequest()
+      }
+    },
+    [handleRequest, initialMessage],
+  )
+
+  const handleToggle = useCallback((buttonId: string, toggled: boolean) => {
+    setToggleStates(prev => ({
+      ...prev,
+      [buttonId]: toggled
+    }));
+  }, []);
+
+  // Render a button based on its props
+  const renderButton = useCallback((buttonProps: InputBoxButtonProps) => {
+    const { id, icon, label, togglable, onToggle, ...rest } = buttonProps;
+
+    // Determine if button is toggled
+    const isToggled = toggleStates[id] ?? buttonProps.toggled ?? false;
+
+    return (
+      <Button
+        key={id}
+        toggled={togglable ? isToggled : undefined}
+        onToggle={togglable ? (newToggled) => {
+          handleToggle(id, newToggled);
+          onToggle?.(newToggled);
+        } : undefined}
+        {...rest}
+      >
+        {icon}
+        {label}
+      </Button>
+    );
+  }, [toggleStates, handleToggle]);
+
+  const renderedLeftButtons = useMemo(() =>
+    leftButtons.map(renderButton),
+    [leftButtons, renderButton]
+  );
+
+  const renderedRightButtons = useMemo(() =>
+    rightButtons.map(renderButton),
+    [rightButtons, renderButton]
+  );
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center rounded-md bg-white flex-col px-2">
+        <div className="flex-1 w-full">
+          <textarea
+            ref={textareaRef}
+            value={initialMessage}
+            onChange={handleTextareaChange}
+            onKeyDown={handleTextareaKeyDown}
+            placeholder={placeholder}
+            className="w-full appearance-none bg-transparent text-gray-700 outline-none focus:outline-none resize-none overflow-y-auto rounded-lg max-h-24 leading-normal py-2 px-2 flex items-center border-none"
+            autoFocus={true}
+            tabIndex={1}
+            rows={1}
+            disabled={isDisabled}
+          />
+        </div>
+        <div className="flex justify-between space-x-2 p-2 w-full">
+          {leftButtons.length > 0 && (
+            <div className="flex flex-1 gap-2">
+              {renderedLeftButtons}
+            </div>
+          )}
+          {rightButtons.length > 0 && (
+            <div className="flex gap-2">
+              {renderedRightButtons}
+            </div>
+          )}
+          {
+            submitButton && (
+              <Button
+                onClick={handleRequest}
+                disabled={!initialMessage.trim() || isDisabled}
+                tabIndex={3}
+                variant={submitButton.variant}
+                size={submitButton.size}
+                {...submitButton}
+              >
+                {submitButton.icon}
+                {submitButton.label}
+              </Button>
+            )
+          }
+
+        </div>
+      </div>
+    </div>
+  )
+}

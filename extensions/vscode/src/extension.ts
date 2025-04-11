@@ -8,6 +8,9 @@ import { setupCa } from "core/util/ca";
 import { Telemetry } from "core/util/posthog";
 import * as vscode from "vscode";
 import { getExtensionVersion } from "./util/util";
+import { PearAIApi } from "./PearAIApi";
+
+let pearAPI: PearAIApi | undefined;
 
 async function dynamicImportAndActivate(context: vscode.ExtensionContext) {
   const { activateExtension } = await import("./activation/activate");
@@ -32,9 +35,21 @@ async function dynamicImportAndActivate(context: vscode.ExtensionContext) {
   }
 }
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   setupCa();
-  dynamicImportAndActivate(context);
+  const extension = await dynamicImportAndActivate(context);
+  if(!extension) {
+    throw new Error("dynamicImportAndActivate returned undefined :(");
+  }
+
+  if(!pearAPI) {
+    pearAPI = new PearAIApi(extension.extension.core);
+  }
+
+  return {
+    pearAPI,
+    extension: context.extension,
+  };
 }
 
 export function deactivate() {
@@ -48,3 +63,7 @@ export function deactivate() {
 
   Telemetry.shutdownPosthogClient();
 }
+
+export const getApi = () => {
+  return pearAPI;
+};

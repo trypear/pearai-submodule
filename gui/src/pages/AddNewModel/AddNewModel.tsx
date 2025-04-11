@@ -17,6 +17,7 @@ import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { ModelPackage, models } from "./configs/models";
 import { providers } from "./configs/providers";
 import { CustomModelButton } from "./ConfigureProvider";
+import "@/continue-styles.css";
 
 const IntroDiv = styled.div`
   padding: 8px 12px;

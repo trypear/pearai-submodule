@@ -194,16 +194,3 @@ export async function llmFromDescription(
 
   return new cls(options);
 }
-
-export function llmFromProviderAndOptions(
-  providerName: string,
-  llmOptions: LLMOptions,
-): ILLM {
-  const cls = LLMs.find((llm) => llm.providerName === providerName);
-
-  if (!cls) {
-    throw new Error(`Unknown LLM provider type "${providerName}"`);
-  }
-
-  return new cls(llmOptions);
-}

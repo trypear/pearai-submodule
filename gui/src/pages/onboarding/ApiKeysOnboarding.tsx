@@ -7,6 +7,7 @@ import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { getLocalStorage } from "../../util/localStorage";
 import DefaultModelConfigForm from "./DefaultModelConfigForm";
 import { useOnboarding } from "./utils";
+import "@/continue-styles.css";
 
 function ApiKeysOnboarding() {
   const ideMessenger = useContext(IdeMessengerContext);
