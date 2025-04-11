@@ -3,7 +3,7 @@ import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
 import { EnterIcon } from "@radix-ui/react-icons"
 import { FileText, Pencil, Sun } from "lucide-react"
 import React, { useCallback, useState } from "react"
-import { PearIcon } from "./pearIcon"
+import { PearIcon } from "../ui/pearIcon"
 
 interface InputBoxProps {
 	textareaRef: React.RefObject<HTMLTextAreaElement>
@@ -46,16 +46,6 @@ export const InputBox: React.FC<InputBoxProps> = ({
 
 	return (
 		<div className="flex flex-col gap-4">
-			{
-				!isDisabled && (
-					<div className="flex justify-center align-middle text-black w-full gap-2 text-md">
-						<PearIcon className="my-auto" />
-						<div className="my-auto">
-							What would you like to make?
-						</div>
-					</div>
-				)
-			}
 			<div className="flex items-center rounded-md bg-white flex-col px-2">
 				<div className="flex-1 w-full">
 					<textarea
