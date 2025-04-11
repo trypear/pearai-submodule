@@ -235,9 +235,9 @@ export const CreatorOverlay = () => {
 				>
 
 					<div className="flex gap-4 flex-col">
-						<div className={`flex justify-center align-middle text-black w-full gap-2 text-lg ${currentState === "IDEATION" ? "opacity-100" : "opacity-0"} animate transition-opacity delay-`}>
-							<PearIcon className="my-auto size-8" />
-							<div className="my-auto">
+						<div className={`flex justify-center align-middle text-[var(--foreground)] w-full gap-2 text-lg ${currentState === "IDEATION" ? "opacity-100" : "opacity-0"} animate transition-opacity delay-`}>
+							<PearIcon className="my-auto size-8 fill-[var(--foreground)]" />
+							<div className="my-auto text-[var(--foreground)]">
 								What would you like to make?
 							</div>
 						</div>
