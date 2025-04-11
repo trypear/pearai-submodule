@@ -8,7 +8,6 @@ import { useMessaging } from "@/util/messagingContext"
 
 
 
-
 // TODO: refactor - works for now and I'm too scared to touch it - James
 // Animation info stored in window to survive component remounts
 if (typeof window !== 'undefined') {
