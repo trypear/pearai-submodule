@@ -9,8 +9,7 @@ import { PearIcon } from "./ui/pearIcon"
 import { Button } from "./ui/button"
 import { FileText, LogOut, Pencil } from "lucide-react"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
-
-
+import ColorManager from "./ui/colorManager"
 
 // TODO: refactor - works for now and I'm too scared to touch it - James
 // Animation info stored in window to survive component remounts
@@ -224,6 +223,7 @@ export const CreatorOverlay = () => {
 
 	return (
 		<div className="w-full h-full" data-animation-direction={getAnimationDirection()}>
+			<ColorManager />
 			<div
 				onClick={close}
 				style={getTransformStyle()}
