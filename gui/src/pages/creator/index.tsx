@@ -42,7 +42,6 @@ const setAnimationDirection = (direction) => {
     direction,
     timestamp: Date.now()
   };
-  console.dir(`[window] Setting animation direction: ${direction}`);
 };
 
 type ExtensionMessage =
@@ -59,7 +58,6 @@ type ExtensionMessage =
  * for capturing user commands or queries.
  */
 export const CreatorOverlay = () => {
-  console.dir(`Component mounting - current animation: ${getAnimationDirection()}`);
   
 	const [initialMessage, setInitialMessage] = useState("")
 	const [newProjectPlan, setNewProjectPlan] = useState("")
@@ -133,7 +131,6 @@ export const CreatorOverlay = () => {
 
 	useEffect(() => {
 		typedRegister("planCreationStream", (msg) => {
-			console.dir(`MSG IN LISTENER: ${JSON.stringify(msg)}`);
 			setNewProjectPlan(msg.data.plan);
 			setCurrentState("GENERATING_PLAN");
 		});
@@ -169,8 +166,6 @@ export const CreatorOverlay = () => {
 			if (!msg.data?.direction) return;
 			
 			const newDirection = msg.data.direction;
-			console.dir(`Received animation direction: ${newDirection}`);
-			
 			// Store direction in window for persistence
 			setAnimationDirection(newDirection);
 			
@@ -186,7 +181,6 @@ export const CreatorOverlay = () => {
 				const container = document.querySelector('.all-initial.fixed.inset-0');
 				if (container && container instanceof HTMLElement) {
 					container.style.transform = newDirection === 'down' ? 'translateY(0)' : 'translateY(-100%)';
-					console.dir(`Direct DOM update: translateY(${newDirection === 'down' ? '0' : '-100%'})`);
 				}
 			} catch (e) {
 				console.error('Failed to update DOM directly:', e);
@@ -205,7 +199,6 @@ export const CreatorOverlay = () => {
 
 	// Send loaded message when component mounts
 	useEffect(() => {
-		console.dir("Sending 'loaded' message");
 		setTimeout(() => {
 			sendMessage("loaded");
 		}, 100); // Small delay to ensure event handler is registered
@@ -214,21 +207,17 @@ export const CreatorOverlay = () => {
 	// Get current animation state from window/ref
 	const currentDirection = useMemo(() => {
 		const direction = getAnimationDirection();
-		console.dir(`useMemo checking animation direction: ${direction}`);
 		return direction;
 	}, [/* deliberately empty to run only on mount */]);
 
 	// Use inline style instead of useMemo to ensure it's always up-to-date
 	const getTransformStyle = () => {
 		const direction = getAnimationDirection();
-		console.dir(`Getting transform for direction: ${direction}`);
 		return {
 			transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
 			transform: direction === 'down' ? 'translateY(0)' : 'translateY(-100%)'
 		};
 	};
-
-	console.dir(`Rendering with animation direction: ${getAnimationDirection()}`);
 
 	return (
 		<div className="w-full h-full" data-animation-direction={getAnimationDirection()}>
