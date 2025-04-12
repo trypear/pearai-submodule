@@ -49,6 +49,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 								showCodeBorder={true}
 								isStreaming={isStreaming}
 								isLast={true}
+								hideBackground={true}
 							/>
 						) : (
 							<div className="text-[var(--widgetForeground)]">

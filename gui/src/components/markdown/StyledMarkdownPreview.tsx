@@ -24,7 +24,8 @@ import { Citation } from "core";
 const StyledMarkdown = styled.div<{
   fontSize?: number;
   showBorder?: boolean;
-	isCodeSnippet?: boolean;
+  isCodeSnippet?: boolean;
+  hideBackground?: boolean;
 }>`
   pre {
     background-color: ${props => window.isPearOverlay ?  vscBackground : (props.isCodeSnippet ? vscBackground : vscEditorBackground)};
@@ -68,7 +69,7 @@ const StyledMarkdown = styled.div<{
     color: #f78383;
   }
 
-  background-color: ${window.isPearOverlay ?  "transparent" : vscBackground};
+  background-color: ${props => props.hideBackground ? "transparent" : (window.isPearOverlay ? "transparent" : vscBackground)};
   font-family:
     var(--vscode-font-family),
     system-ui,
@@ -105,7 +106,8 @@ interface StyledMarkdownPreviewProps {
   messageIndex?: number;
   integrationSource?: "perplexity" | "continue";
   citations?: Citation[];
-	isCodeSnippet?: boolean;
+  isCodeSnippet?: boolean;
+  hideBackground?: boolean;
 }
 
 interface FadeInWordsProps extends StyledMarkdownPreviewProps {
@@ -407,7 +409,12 @@ const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
   }, [props.source, props.citations]);
 
   return (
-    <StyledMarkdown fontSize={getFontSize()} showBorder={false} isCodeSnippet={props.isCodeSnippet}>
+    <StyledMarkdown
+      fontSize={getFontSize()}
+      showBorder={false}
+      isCodeSnippet={props.isCodeSnippet}
+      hideBackground={props.hideBackground}
+    >
       {reactContent}
     </StyledMarkdown>
   );
