@@ -11,14 +11,15 @@ export type PlanningBarProps = {
 export const PlanningBar: FC<PlanningBarProps> = ({ isGenerating, requestedPlan }) => {
 
     return (
-        <div className="bg-[#161718] w-full rounded-full flex text-white justify-between min-w-64 h-10 gap-4">
-            <div className="flex-1 flex h-full align-middle ml-5 gap-4">
+        <div className="bg-[#161718] w-full rounded-full flex text-white justify-between min-w-64 h-10 gap-4 relative">
+            {isGenerating && <div className="absolute inset-0 rainbow-border-glow" />}
+            <div className="flex-1 flex h-full align-middle ml-5 gap-4 relative">
                 <div className="relative h-full my-auto mr-1">
                     <div className={`circle ${isGenerating ? "animated-circle" : ""}`} />
                 </div>
                 <div className="my-auto text-sm">Planning</div>
                 <div className="relative my-auto">
-                    <div className={`text-muted-foreground text-sm max-w-64 text-ellipsis truncate ${isGenerating ? "rainbow-minimal-glow" : ""}`}>{requestedPlan}</div>
+                    <div className="text-muted-foreground text-sm max-w-64 text-ellipsis truncate">{requestedPlan}</div>
                 </div>
             </div>
 

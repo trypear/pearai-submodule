@@ -67,50 +67,52 @@
     }
 }
 
-.rainbow-minimal-glow {
-    position: relative;
+.rainbow-border-glow {
+    border-radius: inherit;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.rainbow-border-glow::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
     background: linear-gradient(to right,
-            rgba(255, 128, 128, 0.8) 0%,
-            rgba(255, 192, 128, 0.8) 14%,
-            rgba(255, 255, 128, 0.8) 28%,
-            rgba(128, 255, 128, 0.8) 42%,
-            rgba(128, 255, 255, 0.8) 56%,
-            rgba(128, 128, 255, 0.8) 70%,
-            rgba(192, 128, 255, 0.8) 84%,
-            rgba(255, 128, 192, 0.8) 100%);
+            rgb(255, 128, 128) 0%,
+            rgb(255, 192, 128) 14%,
+            rgb(255, 255, 128) 28%,
+            rgb(128, 255, 128) 42%,
+            rgb(128, 255, 255) 56%,
+            rgb(128, 128, 255) 70%,
+            rgb(192, 128, 255) 84%,
+            rgb(255, 128, 192) 100%);
     background-size: 200% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     animation: rainbow-flow 2s linear infinite;
-    text-shadow: 0 0 3px rgba(255, 255, 255, 0.3);
+    filter: blur(2px);
+    opacity: 1;
+    border-radius: inherit;
+}
+
+.rainbow-border-glow::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    background: #161718;
+    border-radius: inherit;
 }
 
 @keyframes rainbow-flow {
     0% {
-        background-position: 0% center;
+        background-position: 0% 50%;
     }
-
+    50% {
+        background-position: 100% 50%;
+    }
     100% {
-        background-position: 200% center;
+        background-position: 0% 50%;
     }
 }
 
-.rainbow-minimal-glow::before {
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: rgba(255, 255, 255, 0.15);
-    z-index: -1;
-}
-
-.rainbow-minimal-glow::after {
-    position: absolute;
-    left: 0;
-    top: 0;
-    color: transparent;
-    z-index: -2;
-}
 
 body {
     background-color: transparent;
