@@ -3,6 +3,8 @@ import React, { useEffect, useRef, useState } from "react"
 import { PlanningBar } from "./ui/planningBar"
 import { InputBox } from "./inputBox"
 import StyledMarkdownPreview from "../../components/markdown/StyledMarkdownPreview"
+import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
+
 
 interface PlanEditorProps {
 	newProjectPlan: string
@@ -33,7 +35,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 	}, [newProjectPlan]);
 
 	return (
-		<div className="flex-1 flex flex-col min-h-0">
+		<div className="flex-1 flex flex-col min-h-0 mt-4">
 			<div className="flex flex-col gap-4 min-h-0 flex-1">
 				<PlanningBar isGenerating={isStreaming} requestedPlan={initialMessage} />
 				<div
@@ -77,6 +79,13 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 					isDisabled={isStreaming}
 					placeholder="Enter your message..."
 					initialRows={8}
+					submitButton={{
+						id: "submit",
+						label: "Start",
+						icon: <ArrowTurnDownLeftIcon className="size-4" />,
+						variant: "default" as const,
+						size: "default" as const,
+					  }}
 
 				/>
 				{/* {planCreationDone && (
