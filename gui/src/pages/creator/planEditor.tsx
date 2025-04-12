@@ -1,4 +1,3 @@
-import { Wand2 } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
 import { PlanningBar } from "./ui/planningBar"
 import { InputBox } from "./inputBox"
