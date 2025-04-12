@@ -69,10 +69,8 @@ export const CreatorOverlay = () => {
 
 	const { sendMessage, typedRegister, registerListener } = useMessaging();
 
+	// Whenever we close, the webview is reset so we don't have to worry about resetting states
 	const close = useCallback(() => {
-		setInitialMessage("")
-		setNewProjectPlan("")
-		setCurrentState("IDEATION")
 		sendMessage("Close");
 	}, [sendMessage])
 
