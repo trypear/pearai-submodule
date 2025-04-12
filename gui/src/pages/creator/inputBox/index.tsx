@@ -43,22 +43,25 @@ export const InputBox: React.FC<InputBoxProps> = ({
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setInitialMessage(e.target.value)
 
+      // Only adjust height if content exceeds current height
       const textarea = e.target
-      textarea.style.height = "36px"
+      const currentHeight = textarea.offsetHeight
       const scrollHeight = textarea.scrollHeight
-      textarea.style.height = Math.min(scrollHeight, maxHeight) + "px"
+      if (scrollHeight > currentHeight) {
+        textarea.style.height = Math.min(scrollHeight, maxHeight) + "px"
+      }
     },
     [setInitialMessage, maxHeight],
   )
 
   const handleTextareaKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === "Enter" && !e.shiftKey && initialMessage.trim()) {
+      if (!isDisabled && e.key === "Enter" && !e.shiftKey && initialMessage.trim()) {
         e.preventDefault()
         handleRequest()
       }
     },
-    [handleRequest, initialMessage],
+    [handleRequest, initialMessage, isDisabled],
   )
 
   const handleToggle = useCallback((buttonId: string, toggled: boolean) => {
