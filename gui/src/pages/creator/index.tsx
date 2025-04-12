@@ -252,6 +252,7 @@ export const CreatorOverlay = () => {
 										setInitialMessage={setInitialMessage}
 										handleRequest={handleRequest}
 										isDisabled={currentState !== "IDEATION"}
+										lockToWhite
 										leftButtons={[
 											{
 												id: "make-plan",

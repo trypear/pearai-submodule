@@ -22,6 +22,7 @@ export interface InputBoxProps {
   rightButtons?: InputBoxButtonProps[]
   submitButton?: Omit<InputBoxButtonProps, 'onClick'> & { onClick?: () => void }
   maxHeight?: number
+  lockToWhite?: boolean
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -30,11 +31,12 @@ export const InputBox: React.FC<InputBoxProps> = ({
   setInitialMessage,
   handleRequest,
   isDisabled,
-  placeholder = "What would you like to do?",
+  placeholder,
   leftButtons = [],
   rightButtons = [],
   submitButton,
   maxHeight = 100,
+  lockToWhite = false,
 }) => {
   // Keep track of which buttons are toggled
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
@@ -105,8 +107,11 @@ export const InputBox: React.FC<InputBoxProps> = ({
   );
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center rounded-md bg-white flex-col px-2">
+    <div className="flex flex-col gap-4 flex-1">
+      <div
+        className="flex items-center rounded-md flex-col px-2"
+        style={{ backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)' }}
+      >
         <div className="flex-1 w-full">
           <textarea
             ref={textareaRef}
@@ -114,7 +119,8 @@ export const InputBox: React.FC<InputBoxProps> = ({
             onChange={handleTextareaChange}
             onKeyDown={handleTextareaKeyDown}
             placeholder={placeholder}
-            className="w-full appearance-none bg-transparent text-gray-700 outline-none focus:outline-none resize-none overflow-y-auto rounded-lg max-h-24 leading-normal py-2 px-2 flex items-center border-none"
+            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg max-h-24 leading-normal py-2 px-2 flex items-center border-none"
+            style={{ color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)' }}
             autoFocus={true}
             tabIndex={1}
             rows={1}
