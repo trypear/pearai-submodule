@@ -252,6 +252,7 @@ export const CreatorOverlay = () => {
 										setInitialMessage={setInitialMessage}
 										handleRequest={handleRequest}
 										isDisabled={currentState !== "IDEATION"}
+										placeholder="Ask PearAI Creator to build anything"
 										lockToWhite
 										leftButtons={[
 											{
