@@ -15,7 +15,7 @@ import {
 import { RootState } from "../../redux/store";
 import { getFontSize } from "../../util";
 import LinkableCode from "./LinkableCode";
-import PreWithToolbar from "./PreWithToolbar";
+import PreWithToolbar, { ToolbarOptions } from "./PreWithToolbar";
 import { SyntaxHighlightedPre } from "./SyntaxHighlightedPre";
 import "./katex.css";
 import "./markdown.css";
@@ -108,6 +108,8 @@ interface StyledMarkdownPreviewProps {
   citations?: Citation[];
   isCodeSnippet?: boolean;
   hideBackground?: boolean;
+  toolbarOptions?: ToolbarOptions;
+  onBlockEditClick?: (editedContent: string) => void;
 }
 
 interface FadeInWordsProps extends StyledMarkdownPreviewProps {
@@ -264,8 +266,15 @@ const StyledMarkdownPreview = memo(function StyledMarkdownPreview(
             ?.split(" ")
             .find((word) => word.startsWith("language-"))
             ?.split("-")[1];
+          const codeString = preProps?.children?.[0]?.props?.children?.[0] || "";
+
           return props.showCodeBorder ? (
-            <PreWithToolbar language={language}>
+            <PreWithToolbar
+              language={language}
+              toolbarOptions={props.toolbarOptions}
+              onBlockEditClick={props.onBlockEditClick}
+              codeString={codeString}
+            >
               <SyntaxHighlightedPre {...preProps}></SyntaxHighlightedPre>
             </PreWithToolbar>
           ) : (

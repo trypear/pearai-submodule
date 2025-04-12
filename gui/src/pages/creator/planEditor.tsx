@@ -1,5 +1,5 @@
 import { Wand2 } from "lucide-react"
-import React, { useEffect, useRef } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { PlanningBar } from "./ui/planningBar"
 import { InputBox } from "./inputBox"
 import StyledMarkdownPreview from "../../components/markdown/StyledMarkdownPreview"
@@ -23,6 +23,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 }) => {
 	const planContainerRef = useRef<HTMLDivElement>(null);
 	const editMessageTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
+	const [message, setMessage] = useState<string>("");
 
 	// Auto-scroll to bottom when content changes
 	useEffect(() => {
@@ -50,6 +51,14 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 								isStreaming={isStreaming}
 								isLast={true}
 								hideBackground={true}
+								toolbarOptions={{
+									copy: true,
+									copyAndReturn: true,
+									insertAtCursor: false,
+									runInTerminal: false,
+									fastApply: false,
+								}}
+								onBlockEditClick={(e) => setMessage((m) => `${m}\n\n${e}`)}
 							/>
 						) : (
 							<div className="text-[var(--widgetForeground)]">
@@ -59,16 +68,17 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 					</div>
 				</div>
 			</div>
-			<div className="bg-[var(--widgetBackground)] rounded-lg p-4">
+			<div className="bg-[var(--widgetBackground)] rounded-lg p-4 flex-auto">
 				<InputBox
 					textareaRef={editMessageTextAreaRef}
 					handleRequest={() => { }}
-					initialMessage=""
+					setInitialMessage={(m) => setMessage(m)}
+					initialMessage={message}
 					isDisabled={isStreaming}
-					setInitialMessage={() => { }}
 					placeholder="Enter your message..."
+					maxHeight={9}
 				/>
-				{planCreationDone && (
+				{/* {planCreationDone && (
 					<div className="mt-4 flex justify-end">
 						<button
 							onClick={handleMakeIt}
@@ -79,7 +89,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 							<div className="flex-1">Make it</div>
 						</button>
 					</div>
-				)}
+				)} */}
 			</div>
 		</div>
 	)

@@ -104,7 +104,7 @@ export const CreatorOverlay = () => {
 				return
 			}
 
-			if (document.activeElement === textareaRef.current) {
+			if (document.activeElement === textareaRef.current || currentState !== "IDEATION") {
 				return
 			}
 
@@ -125,10 +125,10 @@ export const CreatorOverlay = () => {
 			}
 		}
 
-		window.addEventListener("keydown", handleKeyDown, { capture: true })
+		window.addEventListener("keydown", handleKeyDown)
 
 		return () => {
-			window.removeEventListener("keydown", handleKeyDown, { capture: true })
+			window.removeEventListener("keydown", handleKeyDown,)
 		}
 	}, [close, forceFocus])
 
