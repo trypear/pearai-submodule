@@ -20,59 +20,35 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 	initialMessage,
 	handleMakeIt,
 }) => {
-	const planTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+	const planContainerRef = useRef<HTMLDivElement>(null);
 	const editMessageTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
-	const handlePlanTextareaChange = useCallback(
-		(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-			setNewProjectPlan(e.target.value)
-
-			const textarea = e.target
-			textarea.style.height = "100px"
-			const scrollHeight = textarea.scrollHeight
-			textarea.style.height = Math.min(scrollHeight, 300) + "px"
-		},
-		[setNewProjectPlan],
-	)
-
-	// Auto-resize the plan textarea when content changes
+	// Auto-scroll to bottom when content changes
 	useEffect(() => {
-		if (planTextareaRef.current && newProjectPlan) {
-			const textarea = planTextareaRef.current
-			textarea.style.height = "100px"
-			const scrollHeight = textarea.scrollHeight
-			textarea.style.height = Math.min(scrollHeight, 300) + "px"
+		if (planContainerRef.current && newProjectPlan) {
+			planContainerRef.current.scrollTop = planContainerRef.current.scrollHeight;
 		}
-	}, [newProjectPlan])
-
-	// Focus the textarea when plan creation is complete
-	useEffect(() => {
-		if (planCreationDone && !isStreaming && planTextareaRef.current) {
-			setTimeout(() => {
-				planTextareaRef.current?.focus()
-			}, 100)
-		}
-	}, [planCreationDone, isStreaming])
+	}, [newProjectPlan]);
 
 	return (
 		<div className="flex-1 flex flex-col justify-between">
 			<div className="flex flex-col gap-4">
 				<PlanningBar isGenerating={isStreaming} requestedPlan={initialMessage} />
-				<div className="rounded-lg bg-white p-4">
-					<textarea
-						ref={planTextareaRef}
-						value={newProjectPlan}
-						onChange={handlePlanTextareaChange}
-						placeholder="Project plan is generating..."
-						className="w-full appearance-none bg-transparent text-gray-700 outline-none focus:outline-none resize-none overflow-y-auto rounded-lg min-h-24 leading-normal py-2 px-2 flex items-center border border-gray-200"
-						disabled={isStreaming}
-						tabIndex={4}
-						rows={5}
-					/>
+				<div
+					className="rounded-lg p-4 bg-[var(--widgetBackground)] max-h-[300px] overflow-y-auto"
+					style={{
+						scrollBehavior: 'smooth'
+					}}
+					ref={planContainerRef}
+				>
+					<div
+						className="whitespace-pre-wrap text-[var(--widgetForeground)] leading-normal py-2 px-2"
+					>
+						{newProjectPlan || "Project plan is generating..."}
+					</div>
 				</div>
 			</div>
-			<div className="bg-white rounded-lg p-4">
-
+			<div className="bg-[var(--widgetBackground)] rounded-lg p-4">
 				<InputBox
 					textareaRef={editMessageTextAreaRef}
 					handleRequest={() => { }}
@@ -86,7 +62,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 						<button
 							onClick={handleMakeIt}
 							disabled={!newProjectPlan.trim()}
-							className="flex cursor-pointer gap-2 rounded-md bg-indigo-600 px-6 py-2 text-sm font-medium text-white transition-colours duration-200 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+							className="flex cursor-pointer gap-2 rounded-md bg-[var(--buttonBackground)] px-6 py-2 text-sm font-medium text-[var(--buttonForeground)] transition-colors duration-200 hover:bg-[var(--buttonHoverBackground)] disabled:opacity-50 disabled:cursor-not-allowed"
 							tabIndex={5}>
 							<Wand2 className="h-4 w-4" />
 							<div className="flex-1">Make it</div>
