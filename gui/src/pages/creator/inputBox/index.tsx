@@ -130,18 +130,12 @@ export const InputBox: React.FC<InputBoxProps> = ({
           />
         </div>
         <div className="flex justify-between space-x-2 p-2 w-full">
-          {leftButtons.length > 0 && (
-            <div className="flex flex-1 gap-2">
-              {renderedLeftButtons}
-            </div>
-          )}
-          {rightButtons.length > 0 && (
-            <div className="flex gap-2">
-              {renderedRightButtons}
-            </div>
-          )}
-          {
-            submitButton && (
+          <div className="flex flex-1 gap-2">
+            {leftButtons.length > 0 && renderedLeftButtons}
+          </div>
+          <div className="flex gap-2 ml-auto">
+            {rightButtons.length > 0 && renderedRightButtons}
+            {submitButton && (
               <Button
                 onClick={handleRequest}
                 disabled={!initialMessage.trim() || isDisabled}
@@ -153,9 +147,8 @@ export const InputBox: React.FC<InputBoxProps> = ({
                 {submitButton.icon}
                 {submitButton.label}
               </Button>
-            )
-          }
-
+            )}
+          </div>
         </div>
       </div>
     </div>
