@@ -33,11 +33,11 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 	}, [newProjectPlan]);
 
 	return (
-		<div className="flex-1 flex flex-col">
-			<div className="flex flex-col gap-4 flex-1">
+		<div className="flex-1 flex flex-col min-h-0">
+			<div className="flex flex-col gap-4 min-h-0 flex-1">
 				<PlanningBar isGenerating={isStreaming} requestedPlan={initialMessage} />
 				<div
-					className="rounded-lg p-4 bg-[var(--widgetBackground)] overflow-hidden flex-1 max-h-full relative"
+					className="rounded-lg p-4 bg-[var(--widgetBackground)] overflow-auto flex-1 relative"
 					style={{
 						scrollBehavior: 'smooth'
 					}}
@@ -68,7 +68,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 					</div>
 				</div>
 			</div>
-			<div className="bg-[var(--widgetBackground)] rounded-lg p-4 flex-auto">
+			<div className="bg-[var(--widgetBackground)] rounded-lg p-4 mt-4">
 				<InputBox
 					textareaRef={editMessageTextAreaRef}
 					handleRequest={() => { }}
@@ -76,7 +76,8 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 					initialMessage={message}
 					isDisabled={isStreaming}
 					placeholder="Enter your message..."
-					maxHeight={9}
+					initialRows={8}
+
 				/>
 				{/* {planCreationDone && (
 					<div className="mt-4 flex justify-end">

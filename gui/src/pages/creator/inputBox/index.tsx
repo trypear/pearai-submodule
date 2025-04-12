@@ -23,6 +23,7 @@ export interface InputBoxProps {
   submitButton?: Omit<InputBoxButtonProps, 'onClick'> & { onClick?: () => void }
   maxHeight?: number
   lockToWhite?: boolean
+  initialRows?: number
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -37,6 +38,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
   submitButton,
   maxHeight = 100,
   lockToWhite = false,
+  initialRows,
 }) => {
   // Keep track of which buttons are toggled
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
@@ -123,7 +125,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
             style={{ color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)' }}
             autoFocus={true}
             tabIndex={1}
-            rows={1}
+            rows={initialRows}
             disabled={isDisabled}
           />
         </div>
