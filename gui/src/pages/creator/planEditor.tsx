@@ -31,18 +31,18 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 	}, [newProjectPlan]);
 
 	return (
-		<div className="flex-1 flex flex-col justify-between">
-			<div className="flex flex-col gap-4">
+		<div className="flex-1 flex flex-col">
+			<div className="flex flex-col gap-4 flex-1">
 				<PlanningBar isGenerating={isStreaming} requestedPlan={initialMessage} />
 				<div
-					className="rounded-lg p-4 bg-[var(--widgetBackground)] max-h-[300px] overflow-y-auto"
+					className="rounded-lg p-4 bg-[var(--widgetBackground)] overflow-y-scroll flex-1 max-h-full"
 					style={{
 						scrollBehavior: 'smooth'
 					}}
 					ref={planContainerRef}
 				>
 					<div
-						className="whitespace-pre-wrap text-[var(--widgetForeground)] leading-normal py-2 px-2"
+						className="whitespace-pre-wrap text-[var(--widgetForeground)] leading-normal py-2 px-2 max-h-0"
 					>
 						{newProjectPlan || "Project plan is generating..."}
 					</div>
