@@ -38,7 +38,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 			<div className="flex flex-col gap-4 min-h-0 flex-1">
 				<PlanningBar isGenerating={isStreaming} requestedPlan={initialMessage} />
 				<div
-					className="rounded-lg p-4 bg-[var(--widgetBackground)] overflow-auto flex-1 relative"
+					className="rounded-lg p-4 overflow-auto flex-1 relative"
 					style={{
 						scrollBehavior: 'smooth'
 					}}
@@ -76,7 +76,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 					setInitialMessage={(m) => setMessage(m)}
 					initialMessage={message}
 					isDisabled={isStreaming}
-					placeholder="Enter your message..."
+					placeholder="Propose a change"
 					initialRows={8}
 					submitButton={{
 						id: "submit",
