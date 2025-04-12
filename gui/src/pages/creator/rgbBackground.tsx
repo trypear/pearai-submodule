@@ -8,9 +8,8 @@ export const RGBWrapper: FC<{ children: ReactNode; className?: string }> = ({ ch
 	return (
 		<div className={cn(className, "relative")}>
 			{/* RGB Gradient Background */}
-			<div className="absolute -top-10 -right-10 -bottom-10 -left-10 -z-10 grid grid-cols-2 overflow-hidden rounded-3xl blur-xl opacity-50">
-				<div className="bg-gradient-to-br from-pink-500 to-blue-600"></div>
-				<div className="bg-gradient-to-tr from-blue-600 to-cyan-400"></div>
+			<div className="absolute -top-10 -right-10 -bottom-10 -left-10 -z-10 overflow-hidden rounded-3xl blur-[40px] opacity-50">
+				<div className="h-full w-full [background-image:linear-gradient(to_bottom_right,_#5DED83_0%,_#0CBBAF_33%,_#764CEA_66%,_#EA50A2_100%)]"></div>
 			</div>
 
 			{/* Content - removed shadow-lg and p-2 */}
