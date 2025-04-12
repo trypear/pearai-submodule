@@ -9,12 +9,12 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[var(--buttonBackground)] text-[var(--buttonForeground)] shadow hover:bg-[var(--buttonHoverBackground)]",
-        destructive: "bg-[#ef4444] text-[var(--buttonForeground)] shadow-sm hover:bg-[#dc2626]",
-        outline: "border border-[#e4e4e7] bg-[#ffffff] shadow-sm hover:bg-[var(--buttonHoverBackground)] hover:text-[var(--buttonForeground)]",
-        secondary: "bg-[var(--widgetBackground)] text-[var(--widgetForeground)] hover:bg-[var(--buttonHoverBackground)]",
-        ghost: "hover:bg-[var(--buttonHoverBackground)] hover:text-[var(--buttonForeground)]",
-        link: "text-[var(--buttonForeground)] underline-offset-4 hover:underline",
+        default: "bg-[#18181b] text-[#fafafa] shadow hover:bg-[#27272a]",
+        destructive: "bg-[#ef4444] text-[#fafafa] shadow-sm hover:bg-[#dc2626]",
+        outline: "border border-[#e4e4e7] bg-[#ffffff] shadow-sm hover:bg-[#f4f4f5] hover:text-[#18181b]",
+        secondary: "bg-[#f4f4f5] text-[#18181b] hover:bg-[#e4e4e7]",
+        ghost: "hover:bg-[#f4f4f5] hover:text-[#18181b]",
+        link: "text-[#18181b] underline-offset-4 hover:underline",
       },
       size: {
         // default: "h-9 px-4 py-2",
@@ -31,32 +31,33 @@ const buttonVariants = cva(
       {
         variant: "default",
         toggled: true,
-        className: "bg-[var(--buttonBackground)] text-[var(--buttonForeground)] hover:bg-[var(--buttonHoverBackground)]"
+        className: " bg-[#3030ad] text-[#0B84FF] hover:bg-[#3a3ad2]"// bg-[#27272a] text-[#fafafa]
       },
       {
         variant: "destructive",
         toggled: true,
-        className: "bg-[#dc2626] text-[var(--buttonForeground)]"
+        className: "bg-[#dc2626] text-[#fafafa]"
       },
       {
         variant: "outline",
         toggled: true,
-        className: "bg-[var(--widgetBackground)] text-[var(--widgetForeground)] border-[#a1a1aa]"
+        className: "bg-[#f4f4f5] text-[#18181b] border-[#a1a1aa]"
       },
       {
         variant: "secondary",
         toggled: true,
-        className: "bg-[var(--widgetBackground)] text-[var(--widgetForeground)] hover:bg-[var(--buttonHoverBackground)]",
+        // className: "bg-[#e4e4e7] text-[#18181b]"
+        className: "bg-[#E3EFFF] text-[#4388F8] hover:bg-[#D1E3FF]",
       },
       {
         variant: "ghost",
         toggled: true,
-        className: "bg-[var(--widgetBackground)] text-[var(--widgetForeground)]"
+        className: "bg-[#f4f4f5] text-[#18181b]"
       },
       {
         variant: "link",
         toggled: true,
-        className: "text-[var(--buttonForeground)] underline"
+        className: "text-[#18181b] underline"
       },
     ],
     defaultVariants: {
