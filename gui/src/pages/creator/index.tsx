@@ -64,6 +64,7 @@ export const CreatorOverlay = () => {
 	const [initialMessage, setInitialMessage] = useState("")
 	const [newProjectPlan, setNewProjectPlan] = useState("")
 	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING_PLAN" | "GENERATED_PLAN">("IDEATION")
+	const [makeAPlan, setMakeAPlan] = useState<boolean>(true)
 
 	// Keep animation state in a ref to prevent render cycles
 	const animationRef = useRef(getAnimationDirection());
@@ -235,9 +236,9 @@ export const CreatorOverlay = () => {
 				>
 
 					<div className="flex gap-4 flex-col">
-						<div className={`flex justify-center align-middle text-[var(--foreground)] w-full gap-2 text-lg ${currentState === "IDEATION" ? "opacity-100" : "opacity-0"} animate transition-opacity delay-`}>
-							<PearIcon className="my-auto size-8 fill-[var(--foreground)]" />
-							<div className="my-auto text-[var(--foreground)]">
+						<div className={`flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md ${currentState === "IDEATION" ? "opacity-100" : "opacity-0"} animate transition-opacity `}>
+							<PearIcon className="my-auto size-6" />
+							<div className="my-auto">
 								What would you like to make?
 							</div>
 						</div>
@@ -259,7 +260,8 @@ export const CreatorOverlay = () => {
 												togglable: true,
 												variant: "secondary",
 												size: "sm",
-												onToggle: (toggled) => console.log("Plan toggled:", toggled),
+												toggled: makeAPlan,
+												onToggle: (t) => setMakeAPlan(t),
 											},
 											{
 												id: "edit-path",
