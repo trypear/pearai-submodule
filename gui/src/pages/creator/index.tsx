@@ -1,17 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useEvent } from "react-use"
-import { RGBWrapper } from "./rgbBackground"
 import { PlanEditor } from "./planEditor"
-import { InputBox } from "./inputBox"
+import { Ideation } from "./ui/ideation"
 import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext"
-import { PearIcon } from "./ui/pearIcon"
 import { Button } from "./ui/button"
-import { FileText, LogOut, Pencil } from "lucide-react"
-import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
+import { LogOut } from "lucide-react"
 import ColorManager from "./ui/colorManager"
 
-// TODO: refactor - works for now and I'm too scared to touch it - James
 // Animation info stored in window to survive component remounts
 if (typeof window !== 'undefined') {
 	window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
@@ -60,7 +56,6 @@ type ExtensionMessage =
  * for capturing user commands or queries.
  */
 export const CreatorOverlay = () => {
-
 	const [initialMessage, setInitialMessage] = useState("")
 	const [newProjectPlan, setNewProjectPlan] = useState("")
 	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING_PLAN" | "GENERATED_PLAN">("IDEATION")
@@ -72,8 +67,6 @@ export const CreatorOverlay = () => {
 	// Force a rerender when animation changes 
 	const [, forceUpdate] = useState({});
 
-	const textareaRef = useRef<HTMLTextAreaElement | null>(null)
-	const isCapturingRef = useRef(false)
 	const { sendMessage, typedRegister, registerListener } = useMessaging();
 
 	const close = useCallback(() => {
@@ -83,54 +76,17 @@ export const CreatorOverlay = () => {
 		sendMessage("Close");
 	}, [sendMessage])
 
-	const forceFocus = useCallback(() => {
-		if (!textareaRef.current) return
-
-		try {
-			textareaRef.current.focus()
-			textareaRef.current.focus({ preventScroll: false })
-			textareaRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
-		} catch (e) {
-			console.error("Focus attempt failed:", e)
-		}
-	}, [])
-
+	// Handle escape key globally
 	useEffect(() => {
-		forceFocus()
-
 		const handleKeyDown = (e: KeyboardEvent) => {
 			if (e.key === "Escape") {
 				close()
-				return
-			}
-
-			if (document.activeElement === textareaRef.current || currentState !== "IDEATION") {
-				return
-			}
-
-			if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-				e.preventDefault()
-				e.stopPropagation()
-
-				forceFocus()
-
-				if (!isCapturingRef.current) {
-					setInitialMessage((prevText) => prevText + e.key)
-					isCapturingRef.current = true
-
-					setTimeout(() => {
-						isCapturingRef.current = false
-					}, 100)
-				}
 			}
 		}
 
 		window.addEventListener("keydown", handleKeyDown)
-
-		return () => {
-			window.removeEventListener("keydown", handleKeyDown,)
-		}
-	}, [close, forceFocus])
+		return () => window.removeEventListener("keydown", handleKeyDown)
+	}, [close])
 
 	useEffect(() => {
 		typedRegister("planCreationStream", (msg) => {
@@ -234,59 +190,15 @@ export const CreatorOverlay = () => {
 					onClick={(e) => e.stopPropagation()}
 					className="justify-center align-middle m-auto w-full max-w-2xl flex flex-col h-full"
 				>
-
-					<div className="flex gap-4 flex-col">
-						<div className={`flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md ${currentState === "IDEATION" ? "opacity-100" : "opacity-0"} animate transition-opacity `}>
-							<PearIcon className="my-auto size-6" />
-							<div className="my-auto">
-								What would you like to make?
-							</div>
-						</div>
-						{ /* TODO: WE WILL WANT TO ANIMATE THIS INTO THE PLANNING BAR IDEALLY */
-							currentState === "IDEATION" && (
-								<RGBWrapper className="px-4 my-auto w-full">
-									{/* Stage 1: get the input from the user about what to make */}
-									<InputBox
-										textareaRef={textareaRef}
-										initialMessage={initialMessage}
-										setInitialMessage={setInitialMessage}
-										handleRequest={handleRequest}
-										isDisabled={currentState !== "IDEATION"}
-										placeholder="Ask PearAI Creator to build anything"
-										lockToWhite
-										leftButtons={[
-											{
-												id: "make-plan",
-												icon: <FileText />,
-												label: "Make a plan",
-												togglable: true,
-												variant: "secondary",
-												size: "sm",
-												toggled: makeAPlan,
-												onToggle: (t) => setMakeAPlan(t),
-											},
-											{
-												id: "edit-path",
-												icon: <Pencil className="size-4" />,
-												label: "~/pearai/yeet",
-												variant: "secondary",
-												size: "sm",
-												onClick: () => console.log("Edit path clicked"),
-											},
-										]}
-										submitButton={{
-											id: "submit",
-											label: "Start",
-											icon: <ArrowTurnDownLeftIcon className="size-4" />,
-											variant: "default" as const,
-											size: "default" as const,
-										  }}
-									/>
-								</RGBWrapper>
-							)
-						}
-
-					</div>
+					{currentState === "IDEATION" && (
+						<Ideation
+							initialMessage={initialMessage}
+							setInitialMessage={setInitialMessage}
+							handleRequest={handleRequest}
+							makeAPlan={makeAPlan}
+							setMakeAPlan={setMakeAPlan}
+						/>
+					)}
 
 					{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
 					{(currentState === "GENERATING_PLAN" || currentState === "GENERATED_PLAN") && (
@@ -300,9 +212,7 @@ export const CreatorOverlay = () => {
 						/>
 					)}
 				</div>
-				<div >
-				</div>
-				<Button variant="secondary" size="sm" className="mb-8 cursor-pointer mt-4">
+				<Button variant="secondary" size="sm" className="mb-8 cursor-pointer mt-4" onClick={close}>
 					<LogOut className="size-4" />
 					Exit Creator
 				</Button>
