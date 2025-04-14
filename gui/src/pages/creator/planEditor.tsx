@@ -25,12 +25,11 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 	const planContainerRef = useRef<HTMLDivElement>(null);
 	const editMessageTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
 	const [message, setMessage] = useState<string>("");
+	const scrollElementRef = useRef<HTMLDivElement>()
 
 	// Auto-scroll to bottom when content changes
 	useEffect(() => {
-		if (planContainerRef.current && newProjectPlan) {
-			planContainerRef.current.scrollTop = planContainerRef.current.scrollHeight;
-		}
+		scrollElementRef.current.scrollIntoView({ behavior: "smooth" });
 	}, [newProjectPlan]);
 
 	return (
@@ -66,6 +65,11 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 								Project plan is generating...
 							</div>
 						)}
+						{
+							isStreaming && (
+								<div className="size-0" ref={scrollElementRef} />
+							)
+						}
 					</div>
 				</div>
 			</div>
