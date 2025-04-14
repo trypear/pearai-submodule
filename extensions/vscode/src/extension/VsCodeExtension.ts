@@ -184,6 +184,7 @@ export class VsCodeExtension {
               const data = {
                 accessToken: queryParams.get("accessToken"),
                 refreshToken: queryParams.get("refreshToken"),
+                fromLogin: true,
               };
               vscode.commands.executeCommand("pearai.updateUserAuth", data);
             }

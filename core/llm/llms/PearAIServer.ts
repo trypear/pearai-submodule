@@ -46,6 +46,10 @@ class PearAIServer extends BaseLLM {
     this.credentials.setRefreshToken(value);
   }
 
+  public async checkAndUpdateCredentials(): Promise<{ tokensEdited: boolean, accessToken?: string, refreshToken?: string }> {
+    return this.credentials.checkAndUpdateCredentials();
+  }
+
   private async _getHeaders() {
     await this.credentials.checkAndUpdateCredentials();
     return {
@@ -194,7 +198,7 @@ class PearAIServer extends BaseLLM {
         completion += value.content;
       }
     }
-    
+
     if (warningMsg.includes("pay-as-you-go")) {
           vscode.window.showInformationMessage(
             warningMsg,
@@ -205,7 +209,7 @@ class PearAIServer extends BaseLLM {
             }
         });
     }
-    
+
     // vscode.window.showInformationMessage(warningMsg);
     // vscode.commands.executeCommand("pearai.freeModelSwitch", {warningMsg});
     this._countTokens(completion, args.model, false);
@@ -218,8 +222,8 @@ class PearAIServer extends BaseLLM {
   ): AsyncGenerator<string> {
     options.stream = true;
 
-    let user_logged_in = await this.credentials.checkAndUpdateCredentials();
-    if (!user_logged_in) {
+    const result = await this.credentials.checkAndUpdateCredentials();
+    if (!result.tokensEdited && !this.credentials.getAccessToken()) {
       return null
     }
 

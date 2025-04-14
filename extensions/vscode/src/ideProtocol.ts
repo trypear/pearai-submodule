@@ -548,8 +548,8 @@ class VsCodeIde implements IDE {
     return creds;
   }
 
-  async updatePearCredentials(auth: PearAuth): Promise<void> {
-    await this.ideUtils.updatePearCredentials(auth);
+  async updatePearAICredentials(auth: PearAuth): Promise<void> {
+    await this.ideUtils.updatePearAICredentials(auth);
   }
 
   async authenticatePear(): Promise<void> {

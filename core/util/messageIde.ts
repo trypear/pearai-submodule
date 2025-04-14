@@ -210,8 +210,8 @@ export class MessageIde implements IDE {
     return this.request("getPearAuth", undefined);
   }
 
-  updatePearCredentials(auth: PearAuth): Promise<void> {
-    return this.request("updatePearCredentials", auth);
+  updatePearAICredentials(auth: PearAuth): Promise<void> {
+    return this.request("updatePearAICredentials", auth);
   }
 
   authenticatePear(): Promise<void> {
