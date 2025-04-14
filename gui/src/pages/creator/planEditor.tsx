@@ -36,7 +36,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 	return (
 		<div className="flex-1 flex flex-col min-h-0 mt-4">
 			<div className="flex flex-col gap-4 min-h-0 flex-1">
-				<PlanningBar isGenerating={isStreaming} requestedPlan={initialMessage} />
+				<PlanningBar isGenerating={isStreaming} requestedPlan={initialMessage} playCallback={handleMakeIt} nextCallback={handleMakeIt} />
 				<div
 					className="rounded-lg p-4 overflow-auto flex-1 relative"
 					style={{

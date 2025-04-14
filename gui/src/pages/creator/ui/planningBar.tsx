@@ -6,9 +6,11 @@ import { FC } from "react";
 export type PlanningBarProps = {
     isGenerating?: boolean;
     requestedPlan: string;
+    playCallback?: () => void;
+    nextCallback?: () => void;
 }
 
-export const PlanningBar: FC<PlanningBarProps> = ({ isGenerating, requestedPlan }) => {
+export const PlanningBar: FC<PlanningBarProps> = ({ isGenerating, requestedPlan, playCallback, nextCallback }) => {
 
     return (
         <div className="bg-[#161718] w-full rounded-full flex text-white justify-between min-w-64 h-10 gap-4 relative">
@@ -31,11 +33,11 @@ export const PlanningBar: FC<PlanningBarProps> = ({ isGenerating, requestedPlan 
                     <Button>
                         <CodeBracketIcon />
                     </Button>
-                    <Button>
+                    <Button onClick={playCallback}>
                         <PlayIcon />
                     </Button>
                 </div>
-                <Button size="default" variant="secondary" className="my-auto rounded-lg text-[0.9em]">
+                <Button size="default" variant="secondary" className="my-auto rounded-lg text-[0.9em]" onClick={nextCallback}>
                     Next
                 </Button>
                 {/* <ArrowTurnDownLeftIcon className="size-4" /> */}
