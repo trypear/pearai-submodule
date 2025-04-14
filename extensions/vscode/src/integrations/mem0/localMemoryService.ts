@@ -3,8 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { Memory as LocalMemory, MemoryChange } from './types';
 import { Memory as APIMemory } from '../../util/integrationUtils';
-
-const MEMORIES_FILE = 'memories.json';
+import { MEMORIES_FILE } from '../../util/pearai';
 
 function convertToAPIMemory(localMemory: LocalMemory): APIMemory {
     return {
