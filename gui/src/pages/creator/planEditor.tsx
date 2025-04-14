@@ -69,7 +69,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 					</div>
 				</div>
 			</div>
-			<div className="bg-[var(--widgetBackground)] rounded-lg p-4 mt-4">
+			<div className="bg-[var(--widgetBackground)] rounded-lg mt-4">
 				<InputBox
 					textareaRef={editMessageTextAreaRef}
 					handleRequest={() => { }}
@@ -85,6 +85,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 						variant: "default" as const,
 						size: "default" as const,
 					  }}
+					showBorder
 
 				/>
 				{/* {planCreationDone && (

@@ -24,6 +24,8 @@ export interface InputBoxProps {
   maxHeight?: number
   lockToWhite?: boolean
   initialRows?: number
+  showBorder?: boolean // Add new prop for toggling border
+  borderColor?: string // Optional prop for custom border color
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -39,6 +41,8 @@ export const InputBox: React.FC<InputBoxProps> = ({
   maxHeight = 100,
   lockToWhite = false,
   initialRows,
+  showBorder = false, // Default to no border
+  borderColor,
 }) => {
   // Keep track of which buttons are toggled
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
@@ -108,20 +112,32 @@ export const InputBox: React.FC<InputBoxProps> = ({
     [rightButtons, renderButton]
   );
 
+  // Determine border style based on props
+  const borderStyle = useMemo(() => {
+    if (!showBorder) return {};
+    
+    return {
+      border: `1px solid ${borderColor || (lockToWhite ? 'rgb(209, 213, 219)' : 'var(--textSeparatorForeground, #e5e7eb)')}`
+    };
+  }, [showBorder, borderColor, lockToWhite]);
+
   return (
     <div className="flex flex-col gap-4 flex-1">
       <div
-        className="flex items-center rounded-md flex-col px-2"
-        style={{ backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)' }}
+        className={`flex items-center rounded-md flex-col px-2 ${showBorder ? 'border-box' : ''}`}
+        style={{ 
+          backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)',
+          ...borderStyle
+        }}
       >
-        <div className="flex-1 w-full">
+        <div className="flex-1 w-full ">
           <textarea
             ref={textareaRef}
             value={initialMessage}
             onChange={handleTextareaChange}
             onKeyDown={handleTextareaKeyDown}
             placeholder={placeholder}
-            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg max-h-24 leading-normal py-2 px-2 flex items-center border-none"
+            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg max-h-24 leading-normal py-2 px-2 flex items-center border-none  p-2"
             style={{ color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)' }}
             autoFocus={true}
             tabIndex={1}
