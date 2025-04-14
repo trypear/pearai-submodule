@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { useEvent } from "react-use"
 import { PlanEditor } from "./planEditor"
 import { Ideation } from "./ui/ideation"
 import "./ui/index.css";
@@ -7,40 +6,16 @@ import { useMessaging } from "@/util/messagingContext"
 import { Button } from "./ui/button"
 import { LogOut } from "lucide-react"
 import ColorManager from "./ui/colorManager"
+import { ChatMessage, MessageContent, MessagePart } from "core";
+import { getAnimationDirection, setAnimationDirection } from "./utils";
 
 // Animation info stored in window to survive component remounts
 if (typeof window !== 'undefined') {
-	window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
-		direction: null,
-		timestamp: 0
-	};
+    window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
+        direction: null,
+        timestamp: 0
+    };
 }
-
-const getAnimationDirection = () => {
-	if (typeof window === 'undefined') return null;
-	// If it's been more than 1 second since the last animation update,
-	// assume we're in a stable state based on the last known direction
-	const now = Date.now();
-	const timeSinceUpdate = now - window.__creatorOverlayAnimation.timestamp;
-
-	if (timeSinceUpdate > 1000) {
-		// If last direction was "up", we should be hidden (-100%)
-		// If last direction was "down", we should be visible (0)
-		// If no direction yet, default null
-		return window.__creatorOverlayAnimation.direction;
-	}
-
-	// We're in an active animation, return the current direction
-	return window.__creatorOverlayAnimation.direction;
-};
-
-const setAnimationDirection = (direction) => {
-	if (typeof window === 'undefined') return;
-	window.__creatorOverlayAnimation = {
-		direction,
-		timestamp: Date.now()
-	};
-};
 
 type ExtensionMessage =
 	| { data: { plan: string } }
@@ -56,10 +31,27 @@ type ExtensionMessage =
  * for capturing user commands or queries.
  */
 export const CreatorOverlay = () => {
-	const [initialMessage, setInitialMessage] = useState("")
-	const [newProjectPlan, setNewProjectPlan] = useState("")
-	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING_PLAN" | "GENERATED_PLAN">("IDEATION")
+	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING" | "GENERATED">("IDEATION")
 	const [makeAPlan, setMakeAPlan] = useState<boolean>(true)
+
+	const [messages, setMessages] = useState<ChatMessage[]>([
+	]);
+
+	const initialMessage = useMemo(() => {
+		const msg = messages.find(x => x.role === "user")?.content;
+		
+		// Handle the different possible content types
+		if (typeof msg === "string") {
+			return msg;
+		} else if (Array.isArray(msg)) {
+			// If it's an array of MessageParts, extract text parts
+			return msg
+				.filter(part => part.type === "text" && part.text)
+				.map(part => part.text)
+				.join("");
+		}
+		return ""; 
+	}, [messages]);
 
 	// Keep animation state in a ref to prevent render cycles
 	const animationRef = useRef(getAnimationDirection());
@@ -72,7 +64,58 @@ export const CreatorOverlay = () => {
 	// Whenever we close, the webview is reset so we don't have to worry about resetting states
 	const close = useCallback(() => {
 		sendMessage("Close");
-	}, [sendMessage])
+	}, [sendMessage]);
+
+	// Create a text-only MessageContent from a string
+	const createTextContent = useCallback((text: string): MessageContent => {
+		// For simplicity, we'll use the string variant for most messages
+		return text;
+		
+		// Alternative: return an array of MessageParts if you need that format
+		// return [{ type: "text", text }];
+	}, []);
+
+	// Convenience function to update an existing assistant message or add a new one
+	const updateAssistantMessage = useCallback((content: string) => {
+		const messageContent = createTextContent(content);
+		
+		setMessages(prev => {
+			const assistantIndex = prev.findLastIndex(msg => msg.role === "assistant");
+			
+			if (assistantIndex === -1) {
+				// No assistant message yet, add one
+				return [...prev, { role: "assistant", content: messageContent }];
+			} else {
+				// Create a new array with the updated assistant message
+				const newMessages = [...prev];
+				newMessages[assistantIndex] = { ...newMessages[assistantIndex], content: messageContent };
+				return newMessages;
+			}
+		});
+	}, [createTextContent]);
+
+	// Convenience function to update the initial user message
+	const setInitialMessage = useCallback((content: string) => {
+		const messageContent = createTextContent(content);
+		
+		setMessages(prev => {
+			const firstUserIndex = prev.findIndex(msg => msg.role === "user");
+			if (firstUserIndex === -1) {
+				return [{ role: "user", content: messageContent }, ...prev];
+			} else {
+				// Create a new array with the updated user message
+				const newMessages = [...prev];
+				newMessages[firstUserIndex] = { ...newMessages[firstUserIndex], content: messageContent };
+				return newMessages;
+			}
+		});
+	}, [createTextContent]);
+
+	// Convenience function to add a new message
+	const addMessage = useCallback((role: "user" | "assistant", content: string, reset?: boolean) => {
+		const messageContent = createTextContent(content);
+		setMessages(prev => [...(reset ? [] : prev), { role, content: messageContent }]);
+	}, [createTextContent]);
 
 	// Handle escape key globally
 	useEffect(() => {
@@ -84,42 +127,47 @@ export const CreatorOverlay = () => {
 
 		window.addEventListener("keydown", handleKeyDown)
 		return () => window.removeEventListener("keydown", handleKeyDown)
-	}, [close])
+	}, [close]);
+
 
 	useEffect(() => {
 		typedRegister("planCreationStream", (msg) => {
-			setNewProjectPlan(msg.data.plan);
-			setCurrentState("GENERATING_PLAN");
+			// Update messages with streaming content
+			updateAssistantMessage(msg.data.plan);
 		});
+		
 		typedRegister("planCreationCompleted", (msg) => {
-			setNewProjectPlan(msg.data.plan);
-			setCurrentState("GENERATED_PLAN");
-		})
-	}, [typedRegister]);
+			setCurrentState("GENERATED");
+			// Finalize assistant message
+			updateAssistantMessage(msg.data.plan);
+		});
+	}, [typedRegister, updateAssistantMessage]);
 
-	const handleRequest = useCallback(async () => {
-		if (initialMessage.trim()) {
-			await sendMessage("NewIdea", {
-				text: `INITIAL IDEA: ${initialMessage} -- PLAN: ${newProjectPlan}`,
-				plan: true,
-			}, true);
-			setCurrentState("GENERATING_PLAN");
-		}
-	}, [initialMessage, newProjectPlan, sendMessage])
+	const handleLlmCall = useCallback(async () => {
+		setMessages((msgs) => [...msgs, { content: "", role: "assistant"}])
+		sendMessage("ProcessLLM", {
+			messages,
+			plan: true,
+		});
+		setCurrentState("GENERATING");
+	}, [messages, sendMessage, setCurrentState]);
 
 	const handleMakeIt = useCallback(async () => {
-		if (newProjectPlan.trim()) {
-			await sendMessage("SubmitPlan", {
-				plan: `INITIAL IDEA: ${initialMessage} -- PLAN: ${newProjectPlan}`
-			}, true);
-			close()
-		}
-	}, [initialMessage, newProjectPlan, close, sendMessage])
+		// TODO: EXTRACT THE PLAN FROM THE CHAT
+		// await sendMessage("SubmitPlan", {
+		// 	plan: `PLAN: ${newProjectPlan}`
+		// });
+		close();// TODO: close the overlay but stay in creator mode
+	}, [sendMessage, close]);
+
+	const handleUserChangeMessage = useCallback((userMessage: ChatMessage) => {
+		setMessages((msgs) => [...msgs, userMessage])
+	}, [setCurrentState]);
 
 	// Animation handler - directly manipulates the DOM element to ensure
 	// animation works even if component remounts
 	useEffect(() => {
-		const handleAnimation = (msg) => {
+		const handleAnimation = (msg) => { // TODO: TYPES
 			if (!msg.data?.direction) return;
 
 			const newDirection = msg.data.direction;
@@ -161,12 +209,6 @@ export const CreatorOverlay = () => {
 		}, 100); // Small delay to ensure event handler is registered
 	}, [sendMessage]);
 
-	// Get current animation state from window/ref
-	const currentDirection = useMemo(() => {
-		const direction = getAnimationDirection();
-		return direction;
-	}, [/* deliberately empty to run only on mount */]);
-
 	// Use inline style instead of useMemo to ensure it's always up-to-date
 	const getTransformStyle = () => {
 		const direction = getAnimationDirection();
@@ -192,21 +234,26 @@ export const CreatorOverlay = () => {
 						<Ideation
 							initialMessage={initialMessage}
 							setInitialMessage={setInitialMessage}
-							handleRequest={handleRequest}
+							handleRequest={() => {
+								addMessage("user", initialMessage, true)
+								handleLlmCall()
+							}}
 							makeAPlan={makeAPlan}
 							setMakeAPlan={setMakeAPlan}
 						/>
 					)}
 
 					{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
-					{(currentState === "GENERATING_PLAN" || currentState === "GENERATED_PLAN") && (
+					{(currentState === "GENERATING" || currentState === "GENERATED") && (
 						<PlanEditor
 							initialMessage={initialMessage}
-							newProjectPlan={newProjectPlan}
-							setNewProjectPlan={setNewProjectPlan}
-							isStreaming={currentState === "GENERATING_PLAN"}
-							planCreationDone={currentState === "GENERATED_PLAN"}
+							handleUserChangeMessage={(msg: string) => {
+								addMessage("user", msg)
+								handleLlmCall()
+							}}
+							isStreaming={currentState === "GENERATING"}
 							handleMakeIt={handleMakeIt}
+							messages={messages}
 						/>
 					)}
 				</div>

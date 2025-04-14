@@ -6,6 +6,8 @@ import { IMessenger } from 'core/util/messenger';
 import { ToCoreFromIdeOrWebviewProtocol } from 'core/protocol/core';
 import { FromCoreProtocol } from 'core/protocol';
 
+type CreatorModeState = "OVERLAY_CLOSED" | "OVERLAY_OPEN" | "OVERLAY_CLOSED_CREATOR_ACTIVE";
+
 /**
  * Interface for the Creator Mode API
  * Provides methods and events for controlling the Creator Mode UI and functionality
@@ -14,7 +16,7 @@ export interface IPearAICreatorMode {
   /**
    * Event that fires when the creator mode is activated or deactivated
    */
-  readonly onDidChangeCreatorModeState: vscode.Event<boolean>;
+  readonly onDidChangeCreatorModeState: vscode.Event<CreatorModeState>;
 
   /**
    * Event that fires when a new task should be created
@@ -38,6 +40,8 @@ export interface IPearAICreatorMode {
    * @returns A Promise that resolves when the interface is closed
    */
   closeCreatorOverlay(): Promise<void>;
+
+  changeState(state: CreatorModeState): Promise<void>;
 
   /**
    * Creates a new task in creator mode
@@ -122,7 +126,7 @@ export interface WebMessageOutgoing {
  */
 export class PearAICreatorMode implements IPearAICreatorMode {
   // Private event emitters
-  private readonly _onDidChangeCreatorModeState = new vscode.EventEmitter<boolean>();
+  private readonly _onDidChangeCreatorModeState = new vscode.EventEmitter<CreatorModeState>();
   private readonly _onDidRequestNewTask = new vscode.EventEmitter<CreatorTaskRequest>();
   private readonly _onDidRequestExecutePlan = new vscode.EventEmitter<ExecutePlanRequest>();
 
@@ -135,7 +139,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   public readonly onDidRequestExecutePlan = this._onDidRequestExecutePlan.event;
 
 
-  private creatorState: "PLANNING" | "CREATING" | "NONE" = "NONE";
+  private creatorState: CreatorModeState = "OVERLAY_CLOSED";
 
   // Creator mode state
   // private _isCreatorModeActive: boolean = false;
@@ -158,6 +162,20 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     // Dispose of event emitters and other disposables
     this._disposables.forEach(d => d.dispose());
     this._disposables = [];
+  }
+
+  public async changeState(state: CreatorModeState): Promise<void> {
+    switch(state) {
+      case "OVERLAY_OPEN": 
+        await vscode.commands.executeCommand('workbench.action.toggleCreatorView'); // TODO: change into openCreatorView
+        break;
+      case "OVERLAY_CLOSED": 
+        await vscode.commands.executeCommand("workbench.action.closeCreatorView");
+
+
+    }
+
+    this._onDidChangeCreatorModeState.fire(this.creatorState);
   }
 
 
@@ -206,17 +224,11 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   public async handleIncomingWebViewMessage(msg: WebViewMessageIncoming, send: (messageType: string, payload: Record<string, unknown>) => string): Promise<void> {
     assert(!!msg.messageId || !!msg.messageType, "Message ID or type missing :(");
 
-    if (msg.messageType === "NewIdea") {
+    if (msg.messageType === "ProcessLLM") {
       try {
-        console.dir('GOT NewIdea');
+        console.dir('GOT ProcessLLM');
 
-        const messages: ChatMessage[] = [
-          // TODO: PROMPT INJECTION!
-          {
-            content: msg.payload.text,
-            role: "user"
-          }
-        ];
+        const { messages } = msg.payload;
 
         const abortController = new AbortController();
         this.cancelToken = abortController.signal;
@@ -228,6 +240,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
             title: "pearai_model",
             completionOptions: {
               // TODO: FILL THIS OUT?
+              stream: true,
             }
           }
         );

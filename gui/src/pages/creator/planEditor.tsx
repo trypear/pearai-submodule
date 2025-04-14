@@ -1,110 +1,148 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { PlanningBar } from "./ui/planningBar"
 import { InputBox } from "./inputBox"
 import StyledMarkdownPreview from "../../components/markdown/StyledMarkdownPreview"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
-
+import { ChatMessage, MessageContent, MessagePart } from "core"
 
 interface PlanEditorProps {
-	newProjectPlan: string
-	setNewProjectPlan: (value: string) => void
-	initialMessage: string;
-	isStreaming: boolean
-	planCreationDone: boolean
-	handleMakeIt: () => void
+  initialMessage: string
+  isStreaming: boolean
+  handleMakeIt: () => void
+  messages: ChatMessage[]
+  handleUserChangeMessage: (m: string) => void;
+}
+
+// Helper function to extract text content from a message
+const getMessageText = (content: MessageContent): string => {
+  if (typeof content === "string") {
+    return content
+  } else if (Array.isArray(content)) {
+    return content
+      .filter(part => part.type === "text" && part.text)
+      .map(part => part.text)
+      .join("")
+  }
+  return ""
 }
 
 export const PlanEditor: React.FC<PlanEditorProps> = ({
-	newProjectPlan,
-	setNewProjectPlan,
-	isStreaming,
-	planCreationDone,
-	initialMessage,
-	handleMakeIt,
+  isStreaming,
+  initialMessage,
+  handleUserChangeMessage,
+  handleMakeIt,
+  messages,
 }) => {
-	const planContainerRef = useRef<HTMLDivElement>(null);
-	const editMessageTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
-	const [message, setMessage] = useState<string>("");
-	const scrollElementRef = useRef<HTMLDivElement>()
+  const planContainerRef = useRef<HTMLDivElement>(null)
+  const editMessageTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
+  const [message, setMessage] = useState<string>("")
+  const scrollElementRef = useRef<HTMLDivElement>(null)
 
-	// Auto-scroll to bottom when content changes
-	useEffect(() => {
-		scrollElementRef.current.scrollIntoView({ behavior: "smooth" });
-	}, [newProjectPlan]);
+  // Filter out the initial user message and process the remaining messages
+  const displayMessages = useMemo(() => {
+    // Skip the first user message as it's already shown in the PlanningBar
+    if (messages.length <= 1) return []
+    
+    // Start from the second message (index 1)
+    return messages.slice(1).map(msg => ({
+      role: msg.role,
+      content: getMessageText(msg.content),
+      isLatestAssistant: msg.role === "assistant" && 
+        messages.findIndex(m => m.role === "assistant") === messages.indexOf(msg)
+    }))
+  }, [messages])
 
-	return (
-		<div className="flex-1 flex flex-col min-h-0 mt-4">
-			<div className="flex flex-col gap-4 min-h-0 flex-1">
-				<PlanningBar isGenerating={isStreaming} requestedPlan={initialMessage} playCallback={handleMakeIt} nextCallback={handleMakeIt} />
-				<div
-					className="rounded-lg p-4 overflow-auto flex-1 relative"
-					style={{
-						scrollBehavior: 'smooth'
-					}}
-					ref={planContainerRef}
-				>
-					<div className="absolute inset-0 overflow-y-auto px-4">
-						{newProjectPlan ? (
-							<StyledMarkdownPreview
-								source={newProjectPlan}
-								showCodeBorder={true}
-								isStreaming={isStreaming}
-								isLast={true}
-								hideBackground={true}
-								toolbarOptions={{
-									copy: true,
-									copyAndReturn: true,
-									insertAtCursor: false,
-									runInTerminal: false,
-									fastApply: false,
-								}}
-								onBlockEditClick={(e) => setMessage((m) => `${m}\n\n${e}`)}
-							/>
-						) : (
-							<div className="text-[var(--widgetForeground)]">
-								Project plan is generating...
-							</div>
-						)}
-						{
-							isStreaming && (
-								<div className="size-0" ref={scrollElementRef} />
-							)
-						}
-					</div>
-				</div>
-			</div>
-			<div className="bg-[var(--widgetBackground)] rounded-lg mt-4">
-				<InputBox
-					textareaRef={editMessageTextAreaRef}
-					handleRequest={() => { }}
-					setInitialMessage={(m) => setMessage(m)}
-					initialMessage={message}
-					isDisabled={isStreaming}
-					placeholder="Propose a change"
-					initialRows={4}
-					submitButton={{
-						id: "submit",
-						label: "Start",
-						icon: <ArrowTurnDownLeftIcon className="size-4" />,
-						variant: "default" as const,
-						size: "default" as const,
-					  }}
-					showBorder
+  // Handle user edits through the input box
+  const handleUserEdit = useCallback((userInput: string) => {
+	handleUserChangeMessage(userInput)
+    setMessage("")
+	
+  }, [handleUserChangeMessage])
 
-				/>
-				{/* {planCreationDone && (
-					<div className="mt-4 flex justify-end">
-						<button
-							onClick={handleMakeIt}
-							disabled={!newProjectPlan.trim()}
-							className="flex cursor-pointer gap-2 rounded-md bg-[var(--buttonBackground)] px-6 py-2 text-sm font-medium text-[var(--buttonForeground)] transition-colors duration-200 hover:bg-[var(--buttonHoverBackground)] disabled:opacity-50 disabled:cursor-not-allowed"
-							tabIndex={5}>
-							<Wand2 className="h-4 w-4" />
-							<div className="flex-1">Make it</div>
-						</button>
-					</div>
-				)} */}
-			</div>
-		</div>
-	)
+  // Auto-scroll to bottom when content changes
+  useEffect(() => {
+    if (scrollElementRef.current) {
+      scrollElementRef.current.scrollIntoView({ behavior: "smooth" })
+    }
+  }, [messages])
+
+  return (
+    <div className="flex-1 flex flex-col min-h-0 mt-4">
+      <div className="flex flex-col gap-4 min-h-0 flex-1">
+        <PlanningBar 
+          isGenerating={isStreaming} 
+          requestedPlan={initialMessage} 
+          playCallback={handleMakeIt} 
+          nextCallback={handleMakeIt} 
+        />
+        <div
+          className="rounded-lg p-4 overflow-auto flex-1 relative"
+          style={{
+            scrollBehavior: 'smooth'
+          }}
+          ref={planContainerRef}
+        >
+          <div className="absolute inset-0 overflow-y-auto px-4">
+            {displayMessages.length > 0 ? (
+              <div className="flex flex-col gap-6">
+                {displayMessages.map((msg, index) => (
+                  <div 
+                    key={index} 
+                    className={`flex flex-col ${msg.role === "assistant" ? "" : "pl-8"}`}
+                  >
+                    <div className="text-xs text-[var(--foreground)] opacity-70 mb-1">
+                      {msg.role === "assistant" ? "AI Assistant" : "You"}
+                    </div>
+                    <StyledMarkdownPreview
+                      source={
+                        // For the latest assistant message, show newProjectPlan if it exists
+						msg.content
+                      }
+                      showCodeBorder={true}
+                      isStreaming={isStreaming && msg.role === "assistant" && msg.isLatestAssistant}
+                      isLast={index === displayMessages.length - 1}
+                      hideBackground={true}
+                      toolbarOptions={{
+                        copy: true,
+                        copyAndReturn: true,
+                        insertAtCursor: false,
+                        runInTerminal: false,
+                        fastApply: false,
+                      }}
+                      onBlockEditClick={(e) => setMessage((m) => `${m}\n\n${e}`)}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-[var(--widgetForeground)]">
+                Project plan is generating...
+              </div>
+            )}
+
+			<div className="size-0" ref={scrollElementRef} />
+          </div>
+        </div>
+      </div>
+      <div className="bg-[var(--widgetBackground)] rounded-lg mt-4">
+        <InputBox
+          textareaRef={editMessageTextAreaRef}
+          handleRequest={() => handleUserEdit(message)}
+          setInitialMessage={setMessage}
+          initialMessage={message}
+          isDisabled={isStreaming}
+          placeholder="Add a message or propose a change"
+          initialRows={4}
+          submitButton={{
+            id: "submit",
+            label: "Send",
+            icon: <ArrowTurnDownLeftIcon className="size-4" />,
+            variant: "default" as const,
+            size: "default" as const,
+          }}
+          showBorder
+        />
+      </div>
+    </div>
+  )
 }
