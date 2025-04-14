@@ -260,9 +260,10 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       }
     } else if (msg.messageType === "SubmitPlan") {
       console.dir(`MSG PAYLOAD TEXT FOR SUBMITPLAN: ${msg.payload.text}`);
-      this._onDidRequestExecutePlan.fire(msg.payload);
+      this._onDidRequestExecutePlan.fire(msg.payload); // sends off the request to the roo code extension to execute the plan
+      vscode.commands.executeCommand("workbench.action.enterCreatorMode")// sets the "view" in vscode to the creator view
 
-      await this.closeCreatorOverlay();
+      // TODO: handle being inside of the "creator mode" whilst still having access to all of the shizz
     } else if (msg.messageType === "Close") {
       await this.closeCreatorOverlay();
     }
