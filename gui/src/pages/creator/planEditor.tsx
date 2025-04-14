@@ -77,7 +77,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
 					initialMessage={message}
 					isDisabled={isStreaming}
 					placeholder="Propose a change"
-					initialRows={8}
+					initialRows={4}
 					submitButton={{
 						id: "submit",
 						label: "Start",

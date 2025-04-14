@@ -1,6 +1,6 @@
 import { Button, ButtonProps } from "./../ui/button"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
-import React, { useCallback, useState, useMemo } from "react"
+import React, { useCallback, useState, useMemo, useEffect } from "react"
 
 // Define our InputBoxButtonProps
 export interface InputBoxButtonProps extends ButtonProps {
@@ -21,11 +21,11 @@ export interface InputBoxProps {
   leftButtons?: InputBoxButtonProps[]
   rightButtons?: InputBoxButtonProps[]
   submitButton?: Omit<InputBoxButtonProps, 'onClick'> & { onClick?: () => void }
-  maxHeight?: number
+  maxHeight?: string | number // Modified to accept string values like '50vh'
   lockToWhite?: boolean
   initialRows?: number
-  showBorder?: boolean // Add new prop for toggling border
-  borderColor?: string // Optional prop for custom border color
+  showBorder?: boolean
+  borderColor?: string
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -38,28 +38,34 @@ export const InputBox: React.FC<InputBoxProps> = ({
   leftButtons = [],
   rightButtons = [],
   submitButton,
-  maxHeight = 100,
+  maxHeight = '40vh', // Default to 50vh instead of a fixed pixel value
   lockToWhite = false,
   initialRows,
-  showBorder = false, // Default to no border
+  showBorder = false,
   borderColor,
 }) => {
   // Keep track of which buttons are toggled
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
 
+  // Adjust textarea height on content change or when initialMessage changes
+  useEffect(() => {
+    if (textareaRef.current) {
+      // Reset height to auto to get the correct scrollHeight
+      textareaRef.current.style.height = 'auto';
+      
+      // Set the height to the scrollHeight, but not exceeding maxHeight
+      // maxHeight will be handled by CSS max-height property
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  }, [initialMessage, textareaRef]);
+
   const handleTextareaChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-      setInitialMessage(e.target.value)
-
-      // Only adjust height if content exceeds current height
-      const textarea = e.target
-      const currentHeight = textarea.offsetHeight
-      const scrollHeight = textarea.scrollHeight
-      if (scrollHeight > currentHeight) {
-        textarea.style.height = Math.min(scrollHeight, maxHeight) + "px"
-      }
+      setInitialMessage(e.target.value);
+      
+      // The height adjustment is now handled by the useEffect
     },
-    [setInitialMessage, maxHeight],
+    [setInitialMessage],
   )
 
   const handleTextareaKeyDown = useCallback(
@@ -117,9 +123,12 @@ export const InputBox: React.FC<InputBoxProps> = ({
     if (!showBorder) return {};
     
     return {
-      border: `1px solid ${borderColor || (lockToWhite ? 'rgb(209, 213, 219)' : 'var(--textSeparatorForeground, #e5e7eb)')}`
+      border: `1px solid ${borderColor || (lockToWhite ? 'rgb(209, 213, 219)' : 'var(--textSeparatorForeground, #e5e7eb)')}`,
     };
   }, [showBorder, borderColor, lockToWhite]);
+
+  // Convert maxHeight to a CSS value
+  const maxHeightStyle = typeof maxHeight === 'number' ? `${maxHeight}px` : maxHeight;
 
   return (
     <div className="flex flex-col gap-4 flex-1">
@@ -130,18 +139,22 @@ export const InputBox: React.FC<InputBoxProps> = ({
           ...borderStyle
         }}
       >
-        <div className="flex-1 w-full ">
+        <div className="flex-1 w-full">
           <textarea
             ref={textareaRef}
             value={initialMessage}
             onChange={handleTextareaChange}
             onKeyDown={handleTextareaKeyDown}
             placeholder={placeholder}
-            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg max-h-24 leading-normal py-2 px-2 flex items-center border-none  p-2"
-            style={{ color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)' }}
+            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg leading-normal py-2 px-2 flex items-center border-none p-2 pr-4"
+            style={{ 
+              color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)',
+              maxHeight: maxHeightStyle, // Apply the maxHeight as a style
+              overflowY: 'auto' // Ensure scrolling is enabled when content exceeds maxHeight
+            }}
             autoFocus={true}
             tabIndex={1}
-            rows={initialRows}
+            rows={initialRows || 1}
             disabled={isDisabled}
           />
         </div>

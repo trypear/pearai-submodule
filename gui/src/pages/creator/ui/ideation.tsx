@@ -87,6 +87,7 @@ export const Ideation: React.FC<IdeationProps> = ({
           isDisabled={false}
           placeholder="Ask PearAI Creator to build anything"
           lockToWhite
+          maxHeight="30vh"
           leftButtons={[
             {
               id: "make-plan",
