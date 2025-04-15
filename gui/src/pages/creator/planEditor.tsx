@@ -4,6 +4,7 @@ import { InputBox } from "./inputBox"
 import StyledMarkdownPreview from "../../components/markdown/StyledMarkdownPreview"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
 import { ChatMessage, MessageContent, MessagePart } from "core"
+import { Dot, DotsContainer, LoadingContainer } from "@/components/mainInput/ContinueInputBox"
 
 interface PlanEditorProps {
   initialMessage: string
@@ -42,21 +43,21 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
   const displayMessages = useMemo(() => {
     // Skip the first user message as it's already shown in the PlanningBar
     if (messages.length <= 1) return []
-    
+
     // Start from the second message (index 1)
     return messages.slice(1).map(msg => ({
       role: msg.role,
       content: getMessageText(msg.content),
-      isLatestAssistant: msg.role === "assistant" && 
+      isLatestAssistant: msg.role === "assistant" &&
         messages.findIndex(m => m.role === "assistant") === messages.indexOf(msg)
     }))
   }, [messages])
 
   // Handle user edits through the input box
   const handleUserEdit = useCallback((userInput: string) => {
-	handleUserChangeMessage(userInput)
+    handleUserChangeMessage(userInput)
     setMessage("")
-	
+
   }, [handleUserChangeMessage])
 
   // Auto-scroll to bottom when content changes
@@ -69,11 +70,11 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
   return (
     <div className="flex-1 flex flex-col min-h-0 mt-4">
       <div className="flex flex-col gap-4 min-h-0 flex-1">
-        <PlanningBar 
-          isGenerating={isStreaming} 
-          requestedPlan={initialMessage} 
-          playCallback={handleMakeIt} 
-          nextCallback={handleMakeIt} 
+        <PlanningBar
+          isGenerating={isStreaming}
+          requestedPlan={initialMessage}
+          playCallback={handleMakeIt}
+          nextCallback={handleMakeIt}
         />
         <div
           className="rounded-lg p-4 overflow-auto flex-1 relative"
@@ -85,18 +86,27 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
           <div className="absolute inset-0 overflow-y-auto px-4">
             {displayMessages.length > 0 ? (
               <div className="flex flex-col gap-6">
-                {displayMessages.map((msg, index) => (
-                  <div 
-                    key={index} 
-                    className={`flex flex-col ${msg.role === "assistant" ? "" : "pl-8"}`}
+                {displayMessages.map((msg, index, msgs) => (
+                  <div
+                    key={index}
+                    className={`flex flex-col ${msg.role === "user" ? "border-2 border-white" : ""}`}
                   >
-                    <div className="text-xs text-[var(--foreground)] opacity-70 mb-1">
-                      {msg.role === "assistant" ? "AI Assistant" : "You"}
+                    <div className="text-xs text-[var(--foreground)] opacity-70 mb-1 flex justify-start gap-4">
+                    <span className="text-nowrap">{msg.role === "assistant" ? "AI Assistant" : "You"}</span>
+                      {
+                        isStreaming && msg.role === "assistant" && msg.content === "" && (
+                          <DotsContainer>
+                            {[0, 1, 2].map((i) => (
+                              <Dot key={i} delay={i * 0.2} />
+                            ))}
+                          </DotsContainer>
+                        )
+                      }
                     </div>
                     <StyledMarkdownPreview
                       source={
                         // For the latest assistant message, show newProjectPlan if it exists
-						msg.content
+                        msg.content
                       }
                       showCodeBorder={true}
                       isStreaming={isStreaming && msg.role === "assistant" && msg.isLatestAssistant}
@@ -120,7 +130,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
               </div>
             )}
 
-			<div className="size-0" ref={scrollElementRef} />
+            <div className="size-0" ref={scrollElementRef} />
           </div>
         </div>
       </div>

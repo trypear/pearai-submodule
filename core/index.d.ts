@@ -1,3 +1,5 @@
+import * as vscode from "vscode";
+
 declare global {
   interface Window {
     ide?: "vscode";
@@ -1066,4 +1068,68 @@ export interface BrowserSerializedContinueConfig {
 export interface PearAuth {
   accessToken?: string;
   refreshToken?: string;
+}
+
+/**
+ * Represents a request to execute a plan
+ */
+export interface ExecutePlanRequest {
+  /**
+   * The path to the file containing the plan
+   */
+  // filePath?: string;
+
+  /**
+   * Optional code to include in the plan execution
+   */
+  // code?: string;
+
+  /**
+   * Additional context for the plan execution
+   */
+  plan?: string;
+
+  /**
+   * Optional base64-encoded images to include with the task
+   * TODO: are we doing images?
+   */
+    images?: string[];
+
+}
+
+export type CreatorModeState = "OVERLAY_CLOSED" | "OVERLAY_OPEN" | "OVERLAY_CLOSED_CREATOR_ACTIVE";
+
+/**
+ * Interface for the Creator Mode API
+ * Provides methods and events for controlling the Creator Mode UI and functionality
+ */
+export interface IPearAICreatorMode {
+  /**
+   * Event that fires when the creator mode is activated or deactivated
+   */
+  readonly onDidChangeCreatorModeState: vscode.Event<CreatorModeState>;
+
+  /**
+   * Event that fires when a plan has been created and needs to be executed
+   */
+  readonly onDidRequestExecutePlan: vscode.Event<ExecutePlanRequest>;
+
+  /**
+   * Opens the creator mode interface
+   * @returns A Promise that resolves when the interface is opened
+   */
+  openCreatorOverlay(): Promise<void>;
+
+  /**
+   * Closes the creator mode interface
+   * @returns A Promise that resolves when the interface is closed
+   */
+  closeCreatorOverlay(): Promise<void>;
+
+  changeState(state: CreatorModeState): Promise<void>;
+
+  /**
+   * Disposes of resources used by the creator mode
+   */
+  dispose(): void;
 }

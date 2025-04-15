@@ -80,19 +80,27 @@ export const CreatorOverlay = () => {
 		const messageContent = createTextContent(content);
 		
 		setMessages(prev => {
-			const assistantIndex = prev.findLastIndex(msg => msg.role === "assistant");
-			
-			if (assistantIndex === -1) {
-				// No assistant message yet, add one
-				return [...prev, { role: "assistant", content: messageContent }];
-			} else {
-				// Create a new array with the updated assistant message
-				const newMessages = [...prev];
-				newMessages[assistantIndex] = { ...newMessages[assistantIndex], content: messageContent };
-				return newMessages;
+		  // Find the last assistant message index without modifying the array
+		  const assistantIndex = (() => {
+			for (let i = prev.length - 1; i >= 0; i--) {
+			  if (prev[i].role === "assistant") {
+				return i;
+			  }
 			}
+			return -1;
+		  })();
+		  
+		  if (assistantIndex === -1) {
+			// No assistant message yet, add one
+			return [...prev, { role: "assistant", content: messageContent }];
+		  } else {
+			// Create a new array with the updated assistant message
+			const newMessages = [...prev];
+			newMessages[assistantIndex] = { ...newMessages[assistantIndex], content: messageContent };
+			return newMessages;
+		  }
 		});
-	}, [createTextContent]);
+	  }, [createTextContent]);
 
 	// Convenience function to update the initial user message
 	const setInitialMessage = useCallback((content: string) => {
