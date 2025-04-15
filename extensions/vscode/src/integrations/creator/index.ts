@@ -125,8 +125,9 @@ export class PearAICreatorMode implements IPearAICreatorMode {
             title: "pearai_model",
             completionOptions: {
               // TODO: FILL THIS OUT?
+              prompt_key: "creator_mode_plan",
               stream: true,
-            }
+            },
           }
         );
 

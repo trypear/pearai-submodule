@@ -162,7 +162,7 @@ class PearAIServer extends BaseLLM {
       true,
     );
 
-    const useCreator = "creatorMode" in options && options.creatorMode === true;
+    const promptKey = "prompt_key" in options ? (options.prompt_key as string) : undefined;
 
     await this.credentials.checkAndUpdateCredentials();
 
@@ -176,7 +176,7 @@ class PearAIServer extends BaseLLM {
       headers: {
         ...(await this._getHeaders()),
         Authorization: `Bearer ${this.credentials.getAccessToken()}`,
-        ...(useCreator ? {"creator-mode": "true"} : {})
+        ...(promptKey ? {"prompt_key": promptKey} : {})
       },
       body: body,
     });
