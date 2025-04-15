@@ -122,8 +122,10 @@ export const CreatorOverlay = () => {
 	// Convenience function to add a new message
 	const addMessage = useCallback((role: "user" | "assistant", content: string, reset?: boolean) => {
 		const messageContent = createTextContent(content);
-		setMessages(prev => [...(reset ? [] : prev), { role, content: messageContent }]);
-	}, [createTextContent]);
+		const newMsgs = [...(reset ? [] : messages), { role, content: messageContent }]
+		setMessages(newMsgs);
+		return newMsgs;
+	}, [createTextContent, messages, setMessages]);
 
 	// Handle escape key globally
 	useEffect(() => {
@@ -151,10 +153,10 @@ export const CreatorOverlay = () => {
 		});
 	}, [typedRegister, updateAssistantMessage]);
 
-	const handleLlmCall = useCallback(async () => {
+	const handleLlmCall = useCallback(async (givenMsgs?: ChatMessage[]) => {
 		setMessages((msgs) => [...msgs, { content: "", role: "assistant"}])
 		sendMessage("ProcessLLM", {
-			messages,
+			messages: givenMsgs ?? messages,
 			plan: true,
 		});
 		setCurrentState("GENERATING");
@@ -243,8 +245,7 @@ export const CreatorOverlay = () => {
 							initialMessage={initialMessage}
 							setInitialMessage={setInitialMessage}
 							handleRequest={() => {
-								addMessage("user", initialMessage, true)
-								handleLlmCall()
+								handleLlmCall(addMessage("user", initialMessage, true))
 							}}
 							makeAPlan={makeAPlan}
 							setMakeAPlan={setMakeAPlan}
@@ -256,8 +257,7 @@ export const CreatorOverlay = () => {
 						<PlanEditor
 							initialMessage={initialMessage}
 							handleUserChangeMessage={(msg: string) => {
-								addMessage("user", msg)
-								handleLlmCall()
+								handleLlmCall(addMessage("user", msg))
 							}}
 							isStreaming={currentState === "GENERATING"}
 							handleMakeIt={handleMakeIt}
