@@ -4,6 +4,7 @@ import { getHeaders } from "../../pearaiServer/stubs/headers.js";
 import {
   ChatMessage,
   CompletionOptions,
+  LLMFullCompletionOptions,
   LLMOptions,
   ModelProvider,
   PearAuth,
@@ -161,6 +162,8 @@ class PearAIServer extends BaseLLM {
       true,
     );
 
+    const useCreator = "creatorMode" in options && options.creatorMode === true;
+
     await this.credentials.checkAndUpdateCredentials();
 
     const body = JSON.stringify({
@@ -173,6 +176,7 @@ class PearAIServer extends BaseLLM {
       headers: {
         ...(await this._getHeaders()),
         Authorization: `Bearer ${this.credentials.getAccessToken()}`,
+        ...(useCreator ? {"creator-mode": "true"} : {})
       },
       body: body,
     });

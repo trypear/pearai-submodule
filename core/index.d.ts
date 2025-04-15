@@ -339,6 +339,7 @@ export interface LLMFullCompletionOptions extends BaseCompletionOptions {
   log?: boolean;
 
   model?: string;
+  creatorMode?: boolean;
 }
 export interface LLMOptions {
   model: string;
