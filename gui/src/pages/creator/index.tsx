@@ -3,20 +3,31 @@ import { PlanEditor } from "./planEditor"
 import { Ideation } from "./ui/ideation"
 import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext"
-import { Button } from "./ui/button"
-import { LogOut } from "lucide-react"
 import ColorManager from "./ui/colorManager"
 import { ChatMessage, MessageContent, MessagePart } from "core";
-import { getAnimationDirection, setAnimationDirection } from "./utils";
+import { getAnimationTargetHeightOffset, setAnimationTargetHeightOffset } from "./utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlanningBar } from "./ui/planningBar"
+import { Button } from "./ui/button";
+import { LogOut } from "lucide-react";
 
 // Animation info stored in window to survive component remounts
 if (typeof window !== 'undefined') {
 	window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
-		direction: null,
+		targetHeightOffset: undefined,
 		timestamp: 0
 	};
+}
+
+type WebviewState = {
+	webview: Partial<CSSStyleDeclaration>;
+}
+
+interface OverlayStates {
+	loading: WebviewState;
+	open: WebviewState;
+	closed: WebviewState;
+	overlay_closed_creator_active: WebviewState;
 }
 
 type ExtensionMessage =
@@ -26,18 +37,18 @@ type ExtensionMessage =
 	| { messageType: "pearAiHideCreatorLoadingOverlay" }
 	| { messageType: "newCreatorModeTask"; text: string }
 	| { messageType: "creatorModePlannedTaskSubmit"; text: string }
-	| { messageType: "overlayAnimation"; data: { direction: "up" | "down" } };
+	| { messageType: "overlayAnimation"; data: { targetState: keyof OverlayStates; overlayStates: OverlayStates } };
 
 /**
  * CreatorOverlay component provides a full-screen overlay with an auto-focusing input field
  * for capturing user commands or queries.
  */
 export const CreatorOverlay = () => {
-	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING" | "GENERATED">("IDEATION")
-	const [makeAPlan, setMakeAPlan] = useState<boolean>(true)
-
-	const [messages, setMessages] = useState<ChatMessage[]>([
-	]);
+	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING" | "GENERATED">("IDEATION");
+	const [makeAPlan, setMakeAPlan] = useState<boolean>(true);
+	const [overlayState, setOverlayState] = useState<keyof OverlayStates>("loading");
+	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const [parentStyling, setParentStyling] = useState<Partial<CSSStyleDeclaration> | undefined>();
 
 	const initialMessage = useMemo(() => {
 		const msg = messages.find(x => x.role === "user")?.content;
@@ -56,24 +67,30 @@ export const CreatorOverlay = () => {
 	}, [messages]);
 
 	// Keep animation state in a ref to prevent render cycles
-	const animationRef = useRef(getAnimationDirection());
+	const animationRef = useRef(getAnimationTargetHeightOffset());
 
 	// Force a rerender when animation changes 
 	const [, forceUpdate] = useState({});
 
 	const { sendMessage, typedRegister, registerListener } = useMessaging();
 
-	// Whenever we close, the webview is reset so we don't have to worry about resetting states
+	// Handle closing the overlay based on current state
 	const close = useCallback(() => {
-		sendMessage("Close");
-	}, [sendMessage]);
+		if (overlayState === "open") {
+			// If fully open, close the overlay but stay in creator mode
+			sendMessage("Close");
+		} else if (overlayState === "overlay_closed_creator_active") {
+			// If in creator mode with minimized overlay, exit creator mode entirely
+			sendMessage("Close");
+		}
+	}, [sendMessage, overlayState]);
 
 	// Create a text-only MessageContent from a string
 	const createTextContent = useCallback((text: string): MessageContent => {
 		// For simplicity, we'll use the string variant for most messages
 		return text;
 
-		// Alternative: return an array of MessageParts if you need that format
+		// Alternative: return an array of MessageParts if we need to
 		// return [{ type: "text", text }];
 	}, []);
 
@@ -201,43 +218,34 @@ export const CreatorOverlay = () => {
 		setMessages((msgs) => [...msgs, userMessage])
 	}, [setCurrentState]);
 
-	// Animation handler - directly manipulates the DOM element to ensure
-	// animation works even if component remounts
+	const handleStateUpdate = useCallback((msg: { data: { targetState: keyof OverlayStates; overlayStates: OverlayStates } }) => {
+		if (!msg.data?.targetState || !msg.data?.overlayStates) return;
+
+		const { targetState, overlayStates } = msg.data;
+		const stateConfig = overlayStates[targetState];
+		console.dir(`Target State: ${targetState}`)
+		console.dir(JSON.stringify(overlayStates));
+
+		const { webview } = stateConfig;
+		setParentStyling(webview);
+		setOverlayState(targetState);
+	}, [setParentStyling, setOverlayState]);
+
+
+	// Animation handler - handles webview state transitions
 	useEffect(() => {
-		const handleAnimation = (msg) => { // TODO: TYPES
-			if (!msg.data?.direction) return;
-
-			const newDirection = msg.data.direction;
-			// Store direction in window for persistence
-			setAnimationDirection(newDirection);
-
-			// Update our ref
-			animationRef.current = newDirection;
-
-			// Force a rerender
-			forceUpdate({});
-
-			// Direct DOM manipulation as fallback
-			try {
-				// Find the main animation container in DOM
-				const container = document.querySelector('.all-initial.fixed.inset-0');
-				if (container && container instanceof HTMLElement) {
-					container.style.transform = newDirection === 'down' ? 'translateY(0)' : 'translateY(-100%)';
-				}
-			} catch (e) {
-				console.error('Failed to update DOM directly:', e);
-			}
-		};
-
-		// Register handler
-		const unregister = registerListener("overlayAnimation", handleAnimation);
+		// Register handlerx
+		const unregister = registerListener("stateUpdate", handleStateUpdate);
 
 		return () => {
-			if (typeof unregister === 'function') {
-				unregister();
-			}
+			unregister();
 		};
-	}, [registerListener]);
+	}, [registerListener, handleStateUpdate]);
+
+	useEffect(() => {
+		console.dir("parentStyling UPDATE!!");
+		console.dir(parentStyling);
+	}, [parentStyling])
 
 	// Send loaded message when component mounts
 	useEffect(() => {
@@ -246,22 +254,17 @@ export const CreatorOverlay = () => {
 		}, 100); // Small delay to ensure event handler is registered
 	}, [sendMessage]);
 
-	// Use inline style instead of useMemo to ensure it's always up-to-date
-	const getTransformStyle = () => {
-		const direction = getAnimationDirection();
-		return {
-			transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-			transform: direction === 'down' ? 'translateY(0)' : 'translateY(-100%)'
-		};
-	};
-
 	return (
-		<div className="w-full h-full" data-animation-direction={getAnimationDirection()}>
+		<div className="w-full h-full">
 			<ColorManager />
 			<div
 				onClick={close}
-				style={getTransformStyle()}
-				className="all-initial fixed inset-0 flex items-center justify-center bg-transparent font[var(--vscode-font-family)] animate flex-col"
+				// Kind of janky but the types are pretty similar so let's just keep an eye out here
+				style={parentStyling as unknown as React.CSSProperties ?? {
+					transform: "translateY(-100%)",
+					transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+				}}
+				className="all-initial fixed inset-0 items-center justify-center bg-transparent font[var(--vscode-font-family)] animate flex-col"
 			>
 				<div
 					onClick={(e) => e.stopPropagation()}
@@ -296,7 +299,7 @@ export const CreatorOverlay = () => {
 
 					<AnimatePresence initial={false}>
 						{(currentState === "GENERATING" || currentState === "GENERATED") && (
-							<motion.div
+							<><motion.div
 								initial={{ opacity: 0, scaleX: 0 }}
 								animate={{ opacity: 1, scaleX: 1 }}
 								exit={{ opacity: 0, scaleX: 0 }}
@@ -305,7 +308,7 @@ export const CreatorOverlay = () => {
 									scaleX: { type: "spring", stiffness: 100, damping: 20 }
 								}}
 								key="planningBar"
-								className="origin-center flex justify-center align-middle w-full"
+								className="origin-center flex justify-center align-middle w-full mt-8"
 							>
 								<PlanningBar
 									requestedPlan={initialMessage}
@@ -314,40 +317,45 @@ export const CreatorOverlay = () => {
 									className="max-w-2xl w-full m-auto"
 								/>
 							</motion.div>
+
+								{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
+
+								<div className="absolute w-full h-full flex justify-center">
+
+									<motion.div
+										initial={{ opacity: 0, y: 20, scaleX: 0 }}
+										animate={{ opacity: 1, y: 0, scaleX: 1 }}
+										exit={{ opacity: 0, y: 20, scaleX: 0 }}
+										transition={{
+											duration: 0.4,
+											scaleX: { type: "spring", stiffness: 100, damping: 20 }
+										}}
+										key="planEditor"
+										className="w-full max-w-2xl flex origin-center h-[90vh]"
+									>
+										<PlanEditor
+											initialMessage={initialMessage}
+											handleUserChangeMessage={(msg: string) => {
+												handleLlmCall(addMessage("user", msg))
+											}}
+											isStreaming={currentState === "GENERATING"}
+											messages={messages}
+										/>
+									</motion.div>
+								</div>
+							</>
+
 						)}
 					</AnimatePresence>
-					{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
-					<div className="absolute w-full h-full flex justify-center">
-						<AnimatePresence initial={false}>
-							{(currentState === "GENERATING" || currentState === "GENERATED") && (
-								<motion.div
-									initial={{ opacity: 0, y: 20, scaleX: 0 }}
-									animate={{ opacity: 1, y: 0, scaleX: 1 }}
-									exit={{ opacity: 0, y: 20, scaleX: 0 }}
-									transition={{
-										duration: 0.4,
-										scaleX: { type: "spring", stiffness: 100, damping: 20 }
-									}}
-									key="planEditor"
-									className="w-full max-w-2xl flex origin-center"
-								>
-									<PlanEditor
-										initialMessage={initialMessage}
-										handleUserChangeMessage={(msg: string) => {
-											handleLlmCall(addMessage("user", msg))
-										}}
-										isStreaming={currentState === "GENERATING"}
-										messages={messages}
-									/>
-								</motion.div>
-							)}
-						</AnimatePresence>
+					<div className="absolute flex w-full justify-center align-middle bottom-16">
+						<Button variant="secondary" size="sm" className="cursor-pointer" onClick={close}>
+							<LogOut className="size-4" />
+							Exit Creator
+						</Button>
 					</div>
+
 				</div>
-				<Button variant="secondary" size="sm" className="mb-8 cursor-pointer mt-4" onClick={close}>
-					<LogOut className="size-4" />
-					Exit Creator
-				</Button>
+
 			</div>
 		</div>
 	)
