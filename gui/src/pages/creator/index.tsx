@@ -214,10 +214,6 @@ export const CreatorOverlay = () => {
 		}
 	}, [sendMessage, close, currentPlan]);
 
-	const handleUserChangeMessage = useCallback((userMessage: ChatMessage) => {
-		setMessages((msgs) => [...msgs, userMessage])
-	}, [setCurrentState]);
-
 	const handleStateUpdate = useCallback((msg: { data: { targetState: keyof OverlayStates; overlayStates: OverlayStates } }) => {
 		if (!msg.data?.targetState || !msg.data?.overlayStates) return;
 
@@ -261,6 +257,7 @@ export const CreatorOverlay = () => {
 				onClick={close}
 				// Kind of janky but the types are pretty similar so let's just keep an eye out here
 				style={parentStyling as unknown as React.CSSProperties ?? {
+					// TODO: fix this sync issue where we don't get the right starting values for the translate y offset from the app
 					transform: "translateY(-100%)",
 					transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)'
 				}}
@@ -268,11 +265,11 @@ export const CreatorOverlay = () => {
 			>
 				<div
 					onClick={(e) => e.stopPropagation()}
-					className="justify-center align-middle m-auto w-full relative h-full"
+					className="justify-center align-middle m-auto w-full relative h-full flex flex-col"
 				>
-					<div className="absolute w-full h-full flex justify-center align-middle">
-						<AnimatePresence initial={false}>
-							{currentState === "IDEATION" ? (
+					<AnimatePresence initial={false}>
+						{currentState === "IDEATION" ? (
+							<div className="absolute w-full h-full flex justify-center align-middle">
 								<motion.div
 									initial={{ opacity: 0, scale: 0, y: 0 }}
 									animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -292,10 +289,11 @@ export const CreatorOverlay = () => {
 										className=""
 									/>
 								</motion.div>
-							) : null}
+							</div>
 
-						</AnimatePresence>
-					</div>
+						) : null}
+
+					</AnimatePresence>
 
 					<AnimatePresence initial={false}>
 						{(currentState === "GENERATING" || currentState === "GENERATED") && (
@@ -320,7 +318,7 @@ export const CreatorOverlay = () => {
 
 								{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
 
-								<div className="absolute w-full h-full flex justify-center">
+								<div className="w-full h-full flex justify-center">
 
 									<motion.div
 										initial={{ opacity: 0, y: 20, scaleX: 0 }}
@@ -331,7 +329,7 @@ export const CreatorOverlay = () => {
 											scaleX: { type: "spring", stiffness: 100, damping: 20 }
 										}}
 										key="planEditor"
-										className="w-full max-w-2xl flex origin-center h-[90vh]"
+										className="w-full max-w-2xl flex origin-center mb-12"
 									>
 										<PlanEditor
 											initialMessage={initialMessage}
@@ -347,7 +345,8 @@ export const CreatorOverlay = () => {
 
 						)}
 					</AnimatePresence>
-					<div className="absolute flex w-full justify-center align-middle bottom-16">
+					<div className="flex-1" />
+					<div className="flex w-full justify-center align-middle mb-8">
 						<Button variant="secondary" size="sm" className="cursor-pointer" onClick={close}>
 							<LogOut className="size-4" />
 							Exit Creator

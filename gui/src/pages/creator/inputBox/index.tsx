@@ -133,7 +133,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
   return (
     <div className="flex flex-col gap-4 flex-1">
       <div
-        className={`flex items-center rounded-md flex-col px-2 ${showBorder ? 'border-box' : ''}`}
+        className={`min-h-24 flex items-center rounded-md flex-col px-2 ${showBorder ? 'border-box' : ''}`}
         style={{ 
           backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)',
           ...borderStyle
@@ -146,7 +146,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
             onChange={handleTextareaChange}
             onKeyDown={handleTextareaKeyDown}
             placeholder={placeholder}
-            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg leading-normal py-2 px-2 flex items-center border-none p-2 pr-4"
+            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg leading-normal py-2 px-2 flex items-center border-none p-2 pr-4 min-h-5"
             style={{ 
               color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)',
               maxHeight: maxHeightStyle, // Apply the maxHeight as a style
