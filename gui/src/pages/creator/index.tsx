@@ -8,13 +8,15 @@ import { LogOut } from "lucide-react"
 import ColorManager from "./ui/colorManager"
 import { ChatMessage, MessageContent, MessagePart } from "core";
 import { getAnimationDirection, setAnimationDirection } from "./utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { PlanningBar } from "./ui/planningBar"
 
 // Animation info stored in window to survive component remounts
 if (typeof window !== 'undefined') {
-    window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
-        direction: null,
-        timestamp: 0
-    };
+	window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
+		direction: null,
+		timestamp: 0
+	};
 }
 
 type ExtensionMessage =
@@ -39,7 +41,7 @@ export const CreatorOverlay = () => {
 
 	const initialMessage = useMemo(() => {
 		const msg = messages.find(x => x.role === "user")?.content;
-		
+
 		// Handle the different possible content types
 		if (typeof msg === "string") {
 			return msg;
@@ -50,7 +52,7 @@ export const CreatorOverlay = () => {
 				.map(part => part.text)
 				.join("");
 		}
-		return ""; 
+		return "";
 	}, [messages]);
 
 	// Keep animation state in a ref to prevent render cycles
@@ -70,7 +72,7 @@ export const CreatorOverlay = () => {
 	const createTextContent = useCallback((text: string): MessageContent => {
 		// For simplicity, we'll use the string variant for most messages
 		return text;
-		
+
 		// Alternative: return an array of MessageParts if you need that format
 		// return [{ type: "text", text }];
 	}, []);
@@ -79,7 +81,7 @@ export const CreatorOverlay = () => {
 		// Search through messages in reverse order to find the last plan
 		for (let i = messages.length - 1; i >= 0; i--) {
 			const msg = messages[i].content;
-			
+
 			// Handle different content types
 			let content = '';
 			if (typeof msg === 'string') {
@@ -103,34 +105,34 @@ export const CreatorOverlay = () => {
 	// Convenience function to update an existing assistant message or add a new one
 	const updateAssistantMessage = useCallback((content: string) => {
 		const messageContent = createTextContent(content);
-		
+
 		setMessages(prev => {
-		  // Find the last assistant message index without modifying the array
-		  const assistantIndex = (() => {
-			for (let i = prev.length - 1; i >= 0; i--) {
-			  if (prev[i].role === "assistant") {
-				return i;
-			  }
+			// Find the last assistant message index without modifying the array
+			const assistantIndex = (() => {
+				for (let i = prev.length - 1; i >= 0; i--) {
+					if (prev[i].role === "assistant") {
+						return i;
+					}
+				}
+				return -1;
+			})();
+
+			if (assistantIndex === -1) {
+				// No assistant message yet, add one
+				return [...prev, { role: "assistant", content: messageContent }];
+			} else {
+				// Create a new array with the updated assistant message
+				const newMessages = [...prev];
+				newMessages[assistantIndex] = { ...newMessages[assistantIndex], content: messageContent };
+				return newMessages;
 			}
-			return -1;
-		  })();
-		  
-		  if (assistantIndex === -1) {
-			// No assistant message yet, add one
-			return [...prev, { role: "assistant", content: messageContent }];
-		  } else {
-			// Create a new array with the updated assistant message
-			const newMessages = [...prev];
-			newMessages[assistantIndex] = { ...newMessages[assistantIndex], content: messageContent };
-			return newMessages;
-		  }
 		});
-	  }, [createTextContent]);
+	}, [createTextContent]);
 
 	// Convenience function to update the initial user message
 	const setInitialMessage = useCallback((content: string) => {
 		const messageContent = createTextContent(content);
-		
+
 		setMessages(prev => {
 			const firstUserIndex = prev.findIndex(msg => msg.role === "user");
 			if (firstUserIndex === -1) {
@@ -170,7 +172,7 @@ export const CreatorOverlay = () => {
 			// Update messages with streaming content
 			updateAssistantMessage(msg.data.plan);
 		});
-		
+
 		typedRegister("planCreationCompleted", (msg) => {
 			setCurrentState("GENERATED");
 			// Finalize assistant message
@@ -179,7 +181,7 @@ export const CreatorOverlay = () => {
 	}, [typedRegister, updateAssistantMessage]);
 
 	const handleLlmCall = useCallback(async (givenMsgs?: ChatMessage[]) => {
-		setMessages((msgs) => [...msgs, { content: "", role: "assistant"}])
+		setMessages((msgs) => [...msgs, { content: "", role: "assistant" }])
 		sendMessage("ProcessLLM", {
 			messages: givenMsgs ?? messages,
 			plan: true,
@@ -263,32 +265,84 @@ export const CreatorOverlay = () => {
 			>
 				<div
 					onClick={(e) => e.stopPropagation()}
-					className="justify-center align-middle m-auto w-full max-w-2xl flex flex-col h-full"
+					className="justify-center align-middle m-auto w-full relative h-full"
 				>
-					{currentState === "IDEATION" && (
-						<Ideation
-							initialMessage={initialMessage}
-							setInitialMessage={setInitialMessage}
-							handleRequest={() => {
-								handleLlmCall(addMessage("user", initialMessage, true))
-							}}
-							makeAPlan={makeAPlan}
-							setMakeAPlan={setMakeAPlan}
-						/>
-					)}
+					<div className="absolute w-full h-full flex justify-center align-middle">
+						<AnimatePresence initial={false}>
+							{currentState === "IDEATION" ? (
+								<motion.div
+									initial={{ opacity: 0, scale: 0, y: 0 }}
+									animate={{ opacity: 1, scale: 1, y: 0 }}
+									exit={{ opacity: 0, scale: 0.95, y: -20 }}
+									transition={{ duration: 1 }}
+									key="ideation"
+									className="m-auto w-full max-w-2xl"
+								>
+									<Ideation
+										initialMessage={initialMessage}
+										setInitialMessage={setInitialMessage}
+										handleRequest={() => {
+											handleLlmCall(addMessage("user", initialMessage, true))
+										}}
+										makeAPlan={makeAPlan}
+										setMakeAPlan={setMakeAPlan}
+										className=""
+									/>
+								</motion.div>
+							) : null}
 
+						</AnimatePresence>
+					</div>
+
+					<AnimatePresence initial={false}>
+						{(currentState === "GENERATING" || currentState === "GENERATED") && (
+							<motion.div
+								initial={{ opacity: 0, scaleX: 0 }}
+								animate={{ opacity: 1, scaleX: 1 }}
+								exit={{ opacity: 0, scaleX: 0 }}
+								transition={{
+									duration: 0.4,
+									scaleX: { type: "spring", stiffness: 100, damping: 20 }
+								}}
+								key="planningBar"
+								className="origin-center flex justify-center align-middle w-full"
+							>
+								<PlanningBar
+									requestedPlan={initialMessage}
+									isGenerating={currentState === "GENERATING"}
+									nextCallback={handleMakeIt}
+									className="max-w-2xl w-full m-auto"
+								/>
+							</motion.div>
+						)}
+					</AnimatePresence>
 					{/* Stage 2: Stream down the plan and display it to the user, let them comment and formulate the plan */}
-					{(currentState === "GENERATING" || currentState === "GENERATED") && (
-						<PlanEditor
-							initialMessage={initialMessage}
-							handleUserChangeMessage={(msg: string) => {
-								handleLlmCall(addMessage("user", msg))
-							}}
-							isStreaming={currentState === "GENERATING"}
-							handleMakeIt={handleMakeIt}
-							messages={messages}
-						/>
-					)}
+					<div className="absolute w-full h-full flex justify-center">
+						<AnimatePresence initial={false}>
+							{(currentState === "GENERATING" || currentState === "GENERATED") && (
+								<motion.div
+									initial={{ opacity: 0, y: 20, scaleX: 0 }}
+									animate={{ opacity: 1, y: 0, scaleX: 1 }}
+									exit={{ opacity: 0, y: 20, scaleX: 0 }}
+									transition={{
+										duration: 0.4,
+										scaleX: { type: "spring", stiffness: 100, damping: 20 }
+									}}
+									key="planEditor"
+									className="w-full max-w-2xl flex origin-center"
+								>
+									<PlanEditor
+										initialMessage={initialMessage}
+										handleUserChangeMessage={(msg: string) => {
+											handleLlmCall(addMessage("user", msg))
+										}}
+										isStreaming={currentState === "GENERATING"}
+										messages={messages}
+									/>
+								</motion.div>
+							)}
+						</AnimatePresence>
+					</div>
 				</div>
 				<Button variant="secondary" size="sm" className="mb-8 cursor-pointer mt-4" onClick={close}>
 					<LogOut className="size-4" />

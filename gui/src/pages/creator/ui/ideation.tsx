@@ -4,6 +4,7 @@ import { InputBox } from "../inputBox"
 import { PearIcon } from "./pearIcon"
 import { FileText, Pencil } from "lucide-react"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
+import { cn } from "@/lib/utils"
 
 interface IdeationProps {
   initialMessage: string
@@ -11,6 +12,7 @@ interface IdeationProps {
   handleRequest: () => void
   makeAPlan: boolean
   setMakeAPlan: (value: boolean) => void
+  className?: string;
 }
 
 export const Ideation: React.FC<IdeationProps> = ({
@@ -19,6 +21,7 @@ export const Ideation: React.FC<IdeationProps> = ({
   handleRequest,
   makeAPlan,
   setMakeAPlan,
+  className
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isCapturingRef = useRef(false)
@@ -71,7 +74,7 @@ export const Ideation: React.FC<IdeationProps> = ({
   }, [forceFocus, setInitialMessage])
 
   return (
-    <div className="flex gap-4 flex-col">
+    <div className={cn("flex gap-4 flex-col", className)}>
       <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
         <PearIcon className="my-auto size-6" />
         <div className="my-auto">

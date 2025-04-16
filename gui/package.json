@@ -44,6 +44,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.452.0",
     "minisearch": "^6.3.0",
+    "motion": "^12.7.3",
     "onigasm": "^2.2.5",
     "posthog-js": "^1.130.1",
     "prismjs": "^1.29.0",

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { PlanningBar } from "./ui/planningBar"
 import { InputBox } from "./inputBox"
 import StyledMarkdownPreview from "../../components/markdown/StyledMarkdownPreview"
 import { ArrowTurnDownLeftIcon, ChevronDownIcon } from "@heroicons/react/24/outline"
@@ -9,7 +8,6 @@ import { Dot, DotsContainer } from "@/components/mainInput/ContinueInputBox"
 interface PlanEditorProps {
   initialMessage: string
   isStreaming: boolean
-  handleMakeIt: () => void
   messages: ChatMessage[]
   handleUserChangeMessage: (m: string) => void;
 }
@@ -31,7 +29,6 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
   isStreaming,
   initialMessage,
   handleUserChangeMessage,
-  handleMakeIt,
   messages,
 }) => {
   const planContainerRef = useRef<HTMLDivElement>(null)
@@ -155,12 +152,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
   return (
     <div className="flex-1 flex flex-col min-h-0 mt-4">
       <div className="flex flex-col gap-4 min-h-0 flex-1">
-        <PlanningBar
-          isGenerating={isStreaming}
-          requestedPlan={initialMessage}
-          playCallback={handleMakeIt}
-          nextCallback={handleMakeIt}
-        />
+
         <div
           className="rounded-lg p-4 overflow-auto flex-1 relative"
           style={{
