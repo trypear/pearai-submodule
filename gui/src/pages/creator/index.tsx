@@ -75,6 +75,31 @@ export const CreatorOverlay = () => {
 		// return [{ type: "text", text }];
 	}, []);
 
+	const currentPlan = useMemo(() => {
+		// Search through messages in reverse order to find the last plan
+		for (let i = messages.length - 1; i >= 0; i--) {
+			const msg = messages[i].content;
+			
+			// Handle different content types
+			let content = '';
+			if (typeof msg === 'string') {
+				content = msg;
+			} else if (Array.isArray(msg)) {
+				content = msg
+					.filter(part => part.type === 'text' && part.text)
+					.map(part => part.text)
+					.join('');
+			}
+
+			// Look for plan between ```plan and ``` markers
+			const planMatch = content.match(/```plan\s*([\s\S]*?)\s*```/);
+			if (planMatch) {
+				return planMatch[1].trim();
+			}
+		}
+		return undefined;
+	}, [messages]);
+
 	// Convenience function to update an existing assistant message or add a new one
 	const updateAssistantMessage = useCallback((content: string) => {
 		const messageContent = createTextContent(content);
@@ -163,12 +188,12 @@ export const CreatorOverlay = () => {
 	}, [messages, sendMessage, setCurrentState]);
 
 	const handleMakeIt = useCallback(async () => {
-		// TODO: EXTRACT THE PLAN FROM THE CHAT
-		// await sendMessage("SubmitPlan", {
-		// 	plan: `PLAN: ${newProjectPlan}`
-		// });
-		close();// TODO: close the overlay but stay in creator mode
-	}, [sendMessage, close]);
+		if (currentPlan) {
+			await sendMessage("SubmitPlan", {
+				plan: `PLAN: ${currentPlan}`
+			});
+		}
+	}, [sendMessage, close, currentPlan]);
 
 	const handleUserChangeMessage = useCallback((userMessage: ChatMessage) => {
 		setMessages((msgs) => [...msgs, userMessage])
