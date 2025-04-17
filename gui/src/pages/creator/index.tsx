@@ -292,17 +292,14 @@ export const CreatorOverlay = () => {
 							</div>
 
 						) : null}
-
-					</AnimatePresence>
-
-					<AnimatePresence initial={false}>
+						
 						{(currentState === "GENERATING" || currentState === "GENERATED") && (
 							<><motion.div
 								initial={{ opacity: 0, scaleX: 0 }}
 								animate={{ opacity: 1, scaleX: 1 }}
 								exit={{ opacity: 0, scaleX: 0 }}
 								transition={{
-									duration: 0.4,
+									duration: 0.3,
 									scaleX: { type: "spring", stiffness: 100, damping: 20 }
 								}}
 								key="planningBar"
@@ -321,11 +318,10 @@ export const CreatorOverlay = () => {
 								<div className="w-full h-full flex justify-center">
 
 									<motion.div
-										initial={{ opacity: 0, y: 20, scaleX: 0 }}
-										animate={{ opacity: 1, y: 0, scaleX: 1 }}
-										exit={{ opacity: 0, y: 20, scaleX: 0 }}
+										initial={{ opacity: 0, y: 20}}
+										animate={{ opacity: 1, y: 0 }}
 										transition={{
-											duration: 0.4,
+											duration: 0.3,
 											scaleX: { type: "spring", stiffness: 100, damping: 20 }
 										}}
 										key="planEditor"
