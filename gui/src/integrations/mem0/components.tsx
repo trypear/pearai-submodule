@@ -5,6 +5,7 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import { Card } from "@/components/ui/card";
 import { Brain, Sparkles } from "lucide-react";
 import { StatusCardProps } from "./types";
+import { vscBackground, vscInputBackground } from "@/components";
 
 export const SearchBar = ({ searchQuery, setSearchQuery }) => (
   <div className="relative flex items-center">
@@ -41,8 +42,12 @@ export const ActionButton = ({ icon: Icon, tooltip, onClick, disabled }) => (
           <Icon className="h-4 w-4" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent side="top" sideOffset={5}>
-        <p className="text-xs px-2 py-1">{tooltip}</p>
+      <TooltipContent side="top" sideOffset={-15} alignOffset={2}>
+        <p className="text-xs px-2 py-1 rounded-lg" style={{
+          backgroundColor: vscInputBackground
+        }}>
+          {tooltip}
+        </p>
       </TooltipContent>
     </Tooltip>
   </TooltipProvider>

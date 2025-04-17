@@ -47,6 +47,7 @@ import {
   newSession,
   setDefaultModel,
   setInactive,
+  setMem0Memories,
   setShowInteractiveContinueTutorial,
 } from "../redux/slices/stateSlice";
 import { RootState } from "../redux/store";
@@ -155,6 +156,9 @@ function GUI() {
   const navigate = useNavigate();
   const ideMessenger = useContext(IdeMessengerContext);
 
+  const memories = useSelector(
+    (store: RootState) => store.state.memories,
+  );
   const sessionState = useSelector((state: RootState) => state.state);
   const defaultModel = useSelector(defaultModelSelector);
   const active = useSelector((state: RootState) => state.state.active);
@@ -164,9 +168,31 @@ function GUI() {
   // On first launch, showTutorialCard will be null, so we want to show it (true)
   // Once it's been shown and closed, it will be false in localStorage
   const showTutorialCard = getLocalStorage("showTutorialCard") ?? (setLocalStorage("showTutorialCard", true), true);
+
+  const fetchMemories = async () => {
+    try {
+      const response = await ideMessenger.request('mem0/getMemories', undefined);
+      const memories = response.map((memory) => ({
+        id: memory.id,
+        content: memory.memory,
+        timestamp: memory.updated_at || memory.created_at,
+        isModified: false,
+        isDeleted: false,
+        isNew: false
+      }));
+      dispatch(setMem0Memories(memories));
+    } catch (error) {
+      console.error('Failed to fetch memories in CHATGUI:', error);
+    }
+  };
+
   useEffect(() => {
     // Set the redux state to the updated localStorage value (true)
     dispatch(setShowInteractiveContinueTutorial(showTutorialCard ?? false));
+
+    if (memories.length === 0) {
+      fetchMemories();
+    }
   }, [])
   const onCloseTutorialCard = useCallback(() => {
     posthog.capture("closedTutorialCard");
