@@ -80,10 +80,9 @@ export const Ideation: React.FC<IdeationProps> = ({
     try {
       const response = await ideMessenger.request("pearSelectFolder", { openLabel: "Select" });
       if (response) {
-        // Get the last part of the path as the directory name
-        const dirName = response.split(/[/\\]/).pop();
+        const dirName = response;
         if (dirName) {
-          setProjectPath(`~/${dirName}/`);
+          setProjectPath(`${dirName}`);
         }
       }
     } catch (err) {
@@ -91,6 +90,8 @@ export const Ideation: React.FC<IdeationProps> = ({
     }
   }, [ideMessenger]);
 
+  // Display just the main folder name, as the path is usually extremely long
+  const displayPath = projectPath.includes('~') ? projectPath : projectPath.split(/[/\\]/).pop() + "/";
   return (
     <div className={cn("flex gap-4 flex-col", className)}>
       <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
@@ -123,7 +124,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             {
               id: "path-select",
               icon: <Pencil className="size-4" />,
-              label: projectPath,
+              label: displayPath,
               variant: "secondary",
               size: "sm",
               onClick: handleDirectorySelect,
