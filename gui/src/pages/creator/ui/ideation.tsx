@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef, useState, useContext } from "react"
 import { RGBWrapper } from "../rgbBackground"
 import { InputBox } from "../inputBox"
 import { PearIcon } from "./pearIcon"
 import { FileText, Pencil } from "lucide-react"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
 import { cn } from "@/lib/utils"
+import { IdeMessengerContext } from "../../../context/IdeMessenger"
 
 interface IdeationProps {
   initialMessage: string
@@ -25,6 +26,8 @@ export const Ideation: React.FC<IdeationProps> = ({
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isCapturingRef = useRef(false)
+  const [projectPath, setProjectPath] = useState("~/pearai-projects/")
+  const ideMessenger = useContext(IdeMessengerContext)
 
   const forceFocus = useCallback(() => {
     if (!textareaRef.current) return
@@ -73,6 +76,21 @@ export const Ideation: React.FC<IdeationProps> = ({
     }
   }, [forceFocus, setInitialMessage])
 
+  const handleDirectorySelect = useCallback(async () => {
+    try {
+      const response = await ideMessenger.request("pearSelectFolder", { openLabel: "Select" });
+      if (response) {
+        // Get the last part of the path as the directory name
+        const dirName = response.split(/[/\\]/).pop();
+        if (dirName) {
+          setProjectPath(`~/${dirName}/`);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to select directory:', err);
+    }
+  }, [ideMessenger]);
+
   return (
     <div className={cn("flex gap-4 flex-col", className)}>
       <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
@@ -103,12 +121,12 @@ export const Ideation: React.FC<IdeationProps> = ({
               onToggle: (t) => setMakeAPlan(t),
             },
             {
-              id: "edit-path",
+              id: "path-select",
               icon: <Pencil className="size-4" />,
-              label: "~/pearai/yeet",
+              label: projectPath,
               variant: "secondary",
               size: "sm",
-              onClick: () => console.log("Edit path clicked"),
+              onClick: handleDirectorySelect,
             },
           ]}
           submitButton={{

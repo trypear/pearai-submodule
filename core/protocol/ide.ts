@@ -98,6 +98,10 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   installVscodeExtension: [{ extensionId: string }, void];
   is_vscode_extension_installed: [{ extensionId: string }, boolean];
 
+  // pear file/folder selection
+  pearSelectFolder: [{ openLabel?: string }, string | undefined];
+  pearSelectFile: [{ openLabel?: string }, string | undefined];
+
   // overlay
   closeOverlay: [undefined, void];
   lockOverlay: [undefined, void];

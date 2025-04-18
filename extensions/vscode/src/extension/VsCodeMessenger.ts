@@ -139,6 +139,34 @@ export class VsCodeMessenger {
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");
     });
+
+    this.onWebview("pearSelectFolder", async (msg) => {
+      const result = await vscode.window.showOpenDialog({
+        canSelectFolders: true,
+        canSelectFiles: false,
+        canSelectMany: false,
+        openLabel: msg.data.openLabel || 'Select Folder'
+      });
+
+      if (result && result.length > 0) {
+        return result[0].fsPath;
+      }
+      return undefined;
+    });
+
+    this.onWebview("pearSelectFile", async (msg) => {
+      const result = await vscode.window.showOpenDialog({
+        canSelectFolders: false,
+        canSelectFiles: true,
+        canSelectMany: false,
+        openLabel: msg.data.openLabel || 'Select File'
+      });
+
+      if (result && result.length > 0) {
+        return result[0].fsPath;
+      }
+      return undefined;
+    });
     this.onWebview("pearInstallCommandLine", (msg) => {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
     });
@@ -146,7 +174,6 @@ export class VsCodeMessenger {
       const selectedTheme = msg.data.isDark ? "Default PearAI Dark" : "Default PearAI Light";
       vscode.workspace.getConfiguration().update('workbench.colorTheme', selectedTheme, true);
     });
-    
     // END welcome stuff
     this.onWebview("showFile", (msg) => {
       this.ide.openFile(msg.data.filepath);
