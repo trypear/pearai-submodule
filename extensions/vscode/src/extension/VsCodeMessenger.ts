@@ -30,6 +30,7 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { extractCodeFromMarkdown, TOOL_COMMANDS, ToolType } from "../util/integrationUtils";
 import { getExtensionUri } from "../util/vscode";
+import { selectFile, selectFolder } from "../util/ideUtils";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
 
 /**
@@ -139,33 +140,12 @@ export class VsCodeMessenger {
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");
     });
-
     this.onWebview("pearSelectFolder", async (msg) => {
-      const result = await vscode.window.showOpenDialog({
-        canSelectFolders: true,
-        canSelectFiles: false,
-        canSelectMany: false,
-        openLabel: msg.data.openLabel || 'Select Folder'
-      });
-
-      if (result && result.length > 0) {
-        return result[0].fsPath;
-      }
-      return undefined;
+      return selectFolder(msg.data.openLabel);
     });
 
     this.onWebview("pearSelectFile", async (msg) => {
-      const result = await vscode.window.showOpenDialog({
-        canSelectFolders: false,
-        canSelectFiles: true,
-        canSelectMany: false,
-        openLabel: msg.data.openLabel || 'Select File'
-      });
-
-      if (result && result.length > 0) {
-        return result[0].fsPath;
-      }
-      return undefined;
+      return selectFile(msg.data.openLabel);
     });
     this.onWebview("pearInstallCommandLine", (msg) => {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
