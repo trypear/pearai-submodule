@@ -36,7 +36,29 @@ export const Ideation: React.FC<IdeationProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isCapturingRef = useRef(false)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [hasWorkspaceFolders, setHasWorkspaceFolders] = useState(true)
   const ideMessenger = useContext(IdeMessengerContext)
+
+  useEffect(() => {
+    const checkWorkspaceFolders = async () => {
+      try {
+        let folders = await ideMessenger.request("getWorkspaceDirs", undefined)
+        // TESTING TO EMULATE NO WORKSPACE FOLDERS, DO NOT USE IN PRODUCTION
+        // folders = []
+        console.dir("WORKSPACE FOLDERS:")
+        console.dir(folders)
+        setHasWorkspaceFolders(Array.isArray(folders) && folders.length > 0)
+        if (!folders || folders.length === 0) {
+          setIsPopoverOpen(true)
+        }
+      } catch (err) {
+        console.error('Failed to check workspace folders:', err)
+        setHasWorkspaceFolders(false)
+        setIsPopoverOpen(true)
+      }
+    }
+    checkWorkspaceFolders()
+  }, [ideMessenger])
 
   const forceFocus = useCallback(() => {
     if (!textareaRef.current) return
@@ -150,9 +172,9 @@ export const Ideation: React.FC<IdeationProps> = ({
               label: "New Project",
               variant: "secondary",
               size: "sm",
-              togglable: true,
-              toggled: isPopoverOpen,
-              onToggle: (t) => setIsPopoverOpen(t),
+              togglable: hasWorkspaceFolders,
+              toggled: isPopoverOpen || !hasWorkspaceFolders,
+              onToggle: (t) => hasWorkspaceFolders && setIsPopoverOpen(t),
             },
           ]}
           submitButton={{
