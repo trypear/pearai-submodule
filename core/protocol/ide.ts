@@ -93,6 +93,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   markNewOnboardingComplete: [undefined, void];
   importUserSettingsFromVSCode: [undefined, boolean];
   pearWelcomeOpenFolder: [undefined, void];
+  pearOpenCreator: [undefined, void];
   pearInstallCommandLine: [undefined, void];
   changeColorScheme: [{ isDark: boolean }, void];
   installVscodeExtension: [{ extensionId: string }, void];

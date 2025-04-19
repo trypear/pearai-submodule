@@ -17,12 +17,17 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
   const handleOpenFolder = () => {
     ideMessenger.post("pearWelcomeOpenFolder", undefined);
     initiateInstallations();
-    onNext() // navigates to inventory page
+    onNext() 
+  };
+
+  const handleOpenCreator = () => {
+    ideMessenger.post("pearOpenCreator", undefined);
+    initiateInstallations();
   };
 
   const handleClose = () => {
     initiateInstallations();
-    onNext() // navigates to inventory page
+    onNext()
   };
 
   useEffect(() => {
@@ -57,13 +62,23 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
       </div>
       <div className="flex flex-col items-center gap-4 ">
         <Button
+          className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative mb-4"
+          onClick={handleOpenCreator}
+        >
+          <div className="flex items-center justify-center w-full gap-2">
+            <div className="flex items-center gap-2">
+              <span>Open PearAI Creator</span>
+            </div>
+          </div>
+        </Button>
+        <Button
           className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative"
           onClick={handleOpenFolder}
         >
           <div className="flex items-center justify-center w-full gap-2">
             <div className="flex items-center gap-2">
               <FolderOpen className="w-5 h-5" />
-              <span>Open folder</span>
+              <span>Open Existing folder</span>
             </div>
           </div>
         </Button>
