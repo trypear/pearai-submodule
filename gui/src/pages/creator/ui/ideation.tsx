@@ -34,6 +34,7 @@ export const Ideation: React.FC<IdeationProps> = ({
   setProjectConfig
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const projectNameRef = useRef<HTMLInputElement | null>(null)
   const isCapturingRef = useRef(false)
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [hasWorkspaceFolders, setHasWorkspaceFolders] = useState(true)
@@ -59,6 +60,22 @@ export const Ideation: React.FC<IdeationProps> = ({
     }
     checkWorkspaceFolders()
   }, [ideMessenger])
+
+  // Set default project path when isPopoverOpen changes
+  useEffect(() => {
+    if (isPopoverOpen || !hasWorkspaceFolders) {
+      setProjectConfig(prev => ({ ...prev, path: "~/pearai-projects/" }));
+    } else {
+      setProjectConfig({ path: "", name: "" });
+    }
+  }, [isPopoverOpen, hasWorkspaceFolders, setProjectConfig]);
+
+  // Focus project name input when popover opens
+  useEffect(() => {
+    if (isPopoverOpen && projectNameRef.current) {
+      projectNameRef.current.focus();
+    }
+  }, [isPopoverOpen]);
 
   const forceFocus = useCallback(() => {
     if (!textareaRef.current) return
@@ -198,6 +215,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-foreground/90">Project Name:</label>
               <input
+                ref={projectNameRef}
                 type="text"
                 value={projectConfig.name}
                 onChange={handleProjectNameChange}

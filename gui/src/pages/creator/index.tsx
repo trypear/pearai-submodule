@@ -54,7 +54,7 @@ export const CreatorOverlay = () => {
 	const [overlayState, setOverlayState] = useState<keyof OverlayStates>("loading");
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [parentStyling, setParentStyling] = useState<Partial<CSSStyleDeclaration> | undefined>();
-	const [projectConfig, setProjectConfig] = useState<ProjectConfig>({ path: "~/pearai-projects/", name: "default" });
+	const [projectConfig, setProjectConfig] = useState<ProjectConfig>({ path: "", name: "" });
 	const ideMessenger = useContext(IdeMessengerContext);
 
 	const initialMessage = useMemo(() => {
@@ -208,7 +208,7 @@ export const CreatorOverlay = () => {
 		console.dir("PROJECT CONFIG");
 		console.dir(projectConfig.path);
 
-		if (projectConfig.path) {
+		if (projectConfig.path && projectConfig.name) {
 			console.dir("CREATING FOLDER");
 			// Create the project folder first
 			const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
@@ -220,10 +220,15 @@ export const CreatorOverlay = () => {
 				path: safePath
 			});
 
-			// Submit the direct request
+			// Submit the direct request with project path
 			sendMessage("SubmitRequestNoPlan", {
 				request,
 				projectPath: safePath
+			});
+		} else {
+			// Submit the direct request without project path
+			sendMessage("SubmitRequestNoPlan", {
+				request
 			});
 		}
 	}, [ideMessenger, sendMessage, projectConfig]);
@@ -260,25 +265,33 @@ export const CreatorOverlay = () => {
 		console.dir("PROJECT CONFIG");
 		console.dir(projectConfig.path);
 		console.dir(currentPlan)
-		if (currentPlan && projectConfig.path) {
-			console.dir("CREATING FOLDER");
-			// Create the project folder first
+		if (currentPlan) {
+			if (projectConfig.path && projectConfig.name) {
+				console.dir("CREATING FOLDER");
+				// Create the project folder first
 
-			// Sanitize the project name by removing any path-traversal characters
-			const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
-			// Handle path joining manually, ensuring no double slashes
-			const safePath = projectConfig.path.endsWith('/')
-				? `${projectConfig.path}${safeName}`
-				: `${projectConfig.path}/${safeName}`;
+				// Sanitize the project name by removing any path-traversal characters
+				const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
+				// Handle path joining manually, ensuring no double slashes
+				const safePath = projectConfig.path.endsWith('/')
+					? `${projectConfig.path}${safeName}`
+					: `${projectConfig.path}/${safeName}`;
 
-			await ideMessenger.request("pearCreateFolder", {
-				path: safePath
-			});
+				await ideMessenger.request("pearCreateFolder", {
+					path: safePath
+				});
 
-			// Then submit the plan
-			await sendMessage("SubmitPlan", {
-				plan: `PLAN: ${currentPlan}`
-			});
+				// Then submit the plan with project path
+				await sendMessage("SubmitPlan", {
+					plan: `PLAN: ${currentPlan}`,
+					projectPath: safePath
+				});
+			} else {
+				// Submit the plan without project path
+				await sendMessage("SubmitPlan", {
+					plan: `PLAN: ${currentPlan}`
+				});
+			}
 		}
 	}, [ideMessenger, sendMessage, currentPlan, projectConfig.path]);
 

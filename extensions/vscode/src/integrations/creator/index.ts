@@ -165,7 +165,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       // Handle direct request without planning
       // Format payload to match ExecutePlanRequest
       const payload = {
-        plan: `DIRECT: ${msg.payload.request}`,
+        plan: `${msg.payload.request}`,
         text: msg.payload.request,
         ...msg.payload
       };
