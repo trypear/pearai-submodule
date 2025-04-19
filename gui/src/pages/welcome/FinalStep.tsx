@@ -17,7 +17,7 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
   const handleOpenFolder = () => {
     ideMessenger.post("pearWelcomeOpenFolder", undefined);
     initiateInstallations();
-    onNext() 
+    onNext()
   };
 
   const handleOpenCreator = () => {
@@ -78,7 +78,7 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
           <div className="flex items-center justify-center w-full gap-2">
             <div className="flex items-center gap-2">
               <FolderOpen className="w-5 h-5" />
-              <span>Open Existing folder</span>
+              <span>Open folder</span>
             </div>
           </div>
         </Button>
