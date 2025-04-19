@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, useContext } from "react"
 import { RGBWrapper } from "../rgbBackground"
 import { InputBox } from "../inputBox"
 import { PearIcon } from "./pearIcon"
-import { FileText, Pencil } from "lucide-react"
+import { FileText, FolderPlus, Pencil } from "lucide-react"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
 import { cn } from "@/lib/utils"
 import { IdeMessengerContext } from "../../../context/IdeMessenger"
@@ -27,6 +27,8 @@ export const Ideation: React.FC<IdeationProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isCapturingRef = useRef(false)
   const [projectPath, setProjectPath] = useState("~/pearai-projects/")
+  const [projectName, setProjectName] = useState("")
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const ideMessenger = useContext(IdeMessengerContext)
 
   const forceFocus = useCallback(() => {
@@ -77,22 +79,33 @@ export const Ideation: React.FC<IdeationProps> = ({
   }, [forceFocus, setInitialMessage])
 
   const handleDirectorySelect = useCallback(async () => {
+    console.log("handleDirectorySelect called with projectName:", projectName);
+    if (!projectName.trim()) {
+      alert("Please enter a project name first");
+      return;
+    }
+
     try {
       const response = await ideMessenger.request("pearSelectFolder", { openLabel: "Select" });
 
       if (response && typeof response === 'string') {
         const dirName = response;
         if (dirName) {
-          setProjectPath(`${dirName}`);
+          const fullPath = `${dirName}/${projectName.trim()}`;
+          setProjectPath(fullPath);
         }
       }
     } catch (err) {
       console.error('Failed to select directory:', err);
     }
-  }, [ideMessenger]);
+  }, [ideMessenger, projectName]);
 
   // Display just the main folder name, as the path is usually extremely long
   const displayPath = projectPath.includes('~') ? projectPath : projectPath.split(/[/\\]/).pop() + "/";
+
+  const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setProjectName(e.target.value);
+  };
   return (
     <div className={cn("flex gap-4 flex-col", className)}>
       <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
@@ -123,12 +136,12 @@ export const Ideation: React.FC<IdeationProps> = ({
               onToggle: (t) => setMakeAPlan(t),
             },
             {
-              id: "path-select",
-              icon: <Pencil className="size-4" />,
-              label: displayPath,
+              id: "new-project",
+              icon: <FolderPlus className="size-4" />,
+              label: "New Project",
               variant: "secondary",
               size: "sm",
-              onClick: handleDirectorySelect,
+              onClick: () => setIsPopoverOpen(!isPopoverOpen),
             },
           ]}
           submitButton={{
@@ -137,9 +150,43 @@ export const Ideation: React.FC<IdeationProps> = ({
             icon: <ArrowTurnDownLeftIcon className="size-4" />,
             variant: "default" as const,
             size: "default" as const,
+            disabled: isPopoverOpen && !projectName.trim(),
           }}
         />
       </RGBWrapper>
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-300 ease-out",
+          isPopoverOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+        )}
+      >
+        <div className="mx-4 mt-3">
+          <div className="flex flex-col gap-5 p-5 bg-background/50 backdrop-blur-sm rounded-lg border border-border/50">
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-foreground/90">Project Name:</label>
+              <input
+                type="text"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Enter project name"
+                className="w-full px-4 py-2 text-sm border rounded-lg bg-background/80 focus:outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
+              />
+            </div>
+            <div className="space-y-2.5">
+              <button
+                onClick={handleDirectorySelect}
+                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm bg-background rounded-lg hover:bg-background/90 border border-border/50 transition-all duration-200"
+              >
+                <Pencil className="size-4" />
+                Select Directory
+              </button>
+              <div className="text-sm text-muted-foreground/80 px-1">
+                {projectPath && `Selected: ${displayPath}`}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
