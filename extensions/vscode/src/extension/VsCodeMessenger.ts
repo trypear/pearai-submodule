@@ -18,6 +18,7 @@ import { InProcessMessenger, Message } from "core/util/messenger";
 import { getConfigJsonPath } from "core/util/paths";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as os from "node:os";
 import * as vscode from "vscode";
 import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
@@ -30,6 +31,7 @@ import {
 } from "../stubs/WorkOsAuthProvider";
 import { extractCodeFromMarkdown, TOOL_COMMANDS, ToolType } from "../util/integrationUtils";
 import { getExtensionUri } from "../util/vscode";
+import { selectFile, selectFolder } from "../util/ideUtils";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
 
 /**
@@ -139,6 +141,13 @@ export class VsCodeMessenger {
     this.onWebview("pearWelcomeOpenFolder", (msg) => {
       vscode.commands.executeCommand("workbench.action.files.openFolder");
     });
+    this.onWebview("pearSelectFolder", async (msg) => {
+      return selectFolder(msg.data.openLabel);
+    });
+
+    this.onWebview("pearSelectFile", async (msg) => {
+      return selectFile(msg.data.openLabel);
+    });
     this.onWebview("pearInstallCommandLine", (msg) => {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
     });
@@ -146,7 +155,6 @@ export class VsCodeMessenger {
       const selectedTheme = msg.data.isDark ? "Default PearAI Dark" : "Default PearAI Light";
       vscode.workspace.getConfiguration().update('workbench.colorTheme', selectedTheme, true);
     });
-    
     // END welcome stuff
     this.onWebview("showFile", (msg) => {
       this.ide.openFile(msg.data.filepath);
@@ -181,6 +189,42 @@ export class VsCodeMessenger {
     });
     this.onWebview("openInventorySettings", (msg) => {
       vscode.commands.executeCommand("pearai.toggleInventorySettings");
+    });
+    this.onWebview("pearOpenCreator", (msg) => {
+      vscode.commands.executeCommand("workbench.action.toggleCreatorView");
+    });
+    this.onWebview("pearCreateFolder", (msg) => {
+      console.dir("CREATE FOLDER:")
+        console.dir(msg.data.path)
+        let path = msg.data.path;
+
+        // Resolve ~ to home directory
+        if (path.startsWith('~')) {
+          const os = require('os');
+          path = path.replace('~', os.homedir());
+          console.dir("RESOLVED PATH:")
+          console.dir(path)
+        }
+
+        // Create the new folder URI
+        const folderUri = vscode.Uri.file(path)
+
+        console.dir("FOLDERURI:")
+        console.dir(folderUri)
+
+        // Create the folder
+        try {
+            vscode.workspace.fs.createDirectory(folderUri);
+            vscode.window.showInformationMessage(`Folder "${path}" created.`);
+        } catch (error) {
+            vscode.window.showErrorMessage(`Failed to create folder: ${error}`);
+        }
+
+        vscode.workspace.updateWorkspaceFolders(
+          vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0,
+          0,
+          { uri: folderUri }
+        );
     });
     this.onWebview("pearAIinstallation", (msg) => {
       const { tools } = msg.data;
