@@ -118,7 +118,7 @@ export const Ideation: React.FC<IdeationProps> = ({
       <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
         <PearIcon className="my-auto size-6" />
         <div className="my-auto">
-          What would you like to make?
+          {isPopoverOpen ? "What would you like to make?" : "What would you like to do?"}
         </div>
       </div>
       <RGBWrapper className="px-4 my-auto w-full">
@@ -128,9 +128,11 @@ export const Ideation: React.FC<IdeationProps> = ({
           setInitialMessage={setInitialMessage}
           handleRequest={handleRequest}
           isDisabled={false}
-          placeholder="Ask PearAI Creator to build anything"
+          placeholder={isPopoverOpen
+            ? "Ask PearAI Creator to build anything! Currently works best with web applications."
+            : "Ask PearAI Creator to add new features, fix bugs, and more to your current project!"}
           lockToWhite
-          maxHeight="30vh"
+          maxHeight="40vh"
           leftButtons={[
             {
               id: "make-plan",
