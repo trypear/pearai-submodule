@@ -81,7 +81,7 @@ export const Ideation: React.FC<IdeationProps> = ({
           What would you like to make?
         </div>
       </div>
-      <RGBWrapper className="px-4 my-auto w-full">
+      <RGBWrapper className="my-auto w-full">
         <InputBox
           textareaRef={textareaRef}
           initialMessage={initialMessage}
