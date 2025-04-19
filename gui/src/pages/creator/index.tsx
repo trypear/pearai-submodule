@@ -204,14 +204,57 @@ export const CreatorOverlay = () => {
 		});
 	}, [typedRegister, updateAssistantMessage]);
 
+	const handleDirectRequest = useCallback(async (request: string) => {
+		console.dir("PROJECT CONFIG");
+		console.dir(projectConfig.path);
+
+		if (projectConfig.path) {
+			console.dir("CREATING FOLDER");
+			// Create the project folder first
+			const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
+			const safePath = projectConfig.path.endsWith('/')
+				? `${projectConfig.path}${safeName}`
+				: `${projectConfig.path}/${safeName}`;
+
+			await ideMessenger.request("pearCreateFolder", {
+				path: safePath
+			});
+
+			// Submit the direct request
+			sendMessage("SubmitRequestNoPlan", {
+				request,
+				projectPath: safePath
+			});
+		}
+	}, [ideMessenger, sendMessage, projectConfig]);
+
+	// Helper function to extract text from MessageContent
+	const getMessageText = useCallback((content: MessageContent): string => {
+		if (typeof content === 'string') {
+			return content;
+		} else if (Array.isArray(content)) {
+			return content
+				.filter(part => part.type === 'text' && part.text)
+				.map(part => part.text)
+				.join('');
+		}
+		return '';
+	}, []);
+
 	const handleLlmCall = useCallback(async (givenMsgs?: ChatMessage[]) => {
-		setMessages((msgs) => [...msgs, { content: "", role: "assistant" }])
-		sendMessage("ProcessLLM", {
-			messages: givenMsgs ?? messages,
-			plan: true,
-		});
-		setCurrentState("GENERATING");
-	}, [messages, sendMessage, setCurrentState]);
+		if (makeAPlan) {
+			setMessages((msgs) => [...msgs, { content: "", role: "assistant" }])
+			sendMessage("ProcessLLM", {
+				messages: givenMsgs ?? messages,
+				plan: true,
+			});
+			setCurrentState("GENERATING");
+		} else {
+			// Skip planning and submit directly
+			const request = givenMsgs?.[0]?.content ?? initialMessage;
+			handleDirectRequest(getMessageText(request));
+		}
+	}, [messages, sendMessage, setCurrentState, makeAPlan, initialMessage, handleDirectRequest, getMessageText]);
 
 	const handleMakeIt = useCallback(async () => {
 		console.dir("PROJECT CONFIG");

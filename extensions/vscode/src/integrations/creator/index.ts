@@ -12,7 +12,7 @@ import { FromCoreProtocol } from 'core/protocol';
 export interface WebViewMessageIncoming {
   destination: "creator";// making sure we route the message over to here
   messageType: string; // the "action" for the message - keeping format consistent with other areas
-  messageId: string; // used to keep track of the messages, so we know which message is a reply to 
+  messageId: string; // used to keep track of the messages, so we know which message is a reply to
   payload: any; // for any misc data
 }
 
@@ -66,10 +66,10 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
   public async changeState(state: CreatorModeState): Promise<void> {
     switch(state) {
-      case "OVERLAY_OPEN": 
+      case "OVERLAY_OPEN":
         await vscode.commands.executeCommand('workbench.action.toggleCreatorView'); // TODO: change into openCreatorView
         break;
-      case "OVERLAY_CLOSED": 
+      case "OVERLAY_CLOSED":
         await vscode.commands.executeCommand("workbench.action.closeCreatorView");
       case "OVERLAY_CLOSED_CREATOR_ACTIVE":
         await vscode.commands.executeCommand("workbench.action.progressCreatorToNextStage");
@@ -160,6 +160,17 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
 
       // TODO: handle being inside of the "creator mode" whilst still having access to all of the shizz
+    } else if (msg.messageType === "SubmitRequestNoPlan") {
+      console.dir(`MSG PAYLOAD TEXT FOR SubmitRequestNoPlan: ${msg.payload.text}`);
+      // Handle direct request without planning
+      // Format payload to match ExecutePlanRequest
+      const payload = {
+        plan: `DIRECT: ${msg.payload.request}`,
+        text: msg.payload.request,
+        ...msg.payload
+      };
+      this._onDidRequestExecutePlan.fire(payload);
+      this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
     } else if (msg.messageType === "Close") {
       await this.closeCreatorOverlay();
     }

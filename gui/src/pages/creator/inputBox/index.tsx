@@ -52,7 +52,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
     if (textareaRef.current) {
       // Reset height to auto to get the correct scrollHeight
       textareaRef.current.style.height = 'auto';
-      
+
       // Set the height to the scrollHeight, but not exceeding maxHeight
       // maxHeight will be handled by CSS max-height property
       textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
@@ -62,7 +62,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
   const handleTextareaChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setInitialMessage(e.target.value);
-      
+
       // The height adjustment is now handled by the useEffect
     },
     [setInitialMessage],
@@ -121,7 +121,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
   // Determine border style based on props
   const borderStyle = useMemo(() => {
     if (!showBorder) return {};
-    
+
     return {
       border: `1px solid ${borderColor || (lockToWhite ? 'rgb(209, 213, 219)' : 'var(--textSeparatorForeground, #e5e7eb)')}`,
     };
@@ -133,8 +133,8 @@ export const InputBox: React.FC<InputBoxProps> = ({
   return (
     <div className="flex flex-col gap-4 flex-1">
       <div
-        className={`min-h-24 flex items-center rounded-md flex-col px-2 ${showBorder ? 'border-box' : ''}`}
-        style={{ 
+        className={`min-h-32 flex items-center rounded-md flex-col px-4 ${showBorder ? 'border-box' : ''}`}
+        style={{
           backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)',
           ...borderStyle
         }}
@@ -146,8 +146,8 @@ export const InputBox: React.FC<InputBoxProps> = ({
             onChange={handleTextareaChange}
             onKeyDown={handleTextareaKeyDown}
             placeholder={placeholder}
-            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg leading-normal py-2 px-2 flex items-center border-none p-2 pr-4 min-h-5"
-            style={{ 
+            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg leading-normal py-3 px-4 flex items-center border-none min-h-5"
+            style={{
               color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)',
               maxHeight: maxHeightStyle, // Apply the maxHeight as a style
               overflowY: 'auto' // Ensure scrolling is enabled when content exceeds maxHeight
