@@ -22,6 +22,7 @@ import HeaderButtonWithText from "../components/HeaderButtonWithText";
 import useHistory from "../hooks/useHistory";
 import { useNavigationListener } from "../hooks/useNavigationListener";
 import { getFontSize } from "../util";
+import "@/continue-styles.css";
 
 const SearchBar = styled.input`
   padding: 8px 8px;

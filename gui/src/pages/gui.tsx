@@ -60,6 +60,8 @@ import OnboardingTutorial from "./onboarding/OnboardingTutorial";
 import { getLogoPath } from "./welcome/setup/ImportExtensions";
 import { Badge } from "../components/ui/badge";
 import { cn } from "@/lib/utils";
+import "@/continue-styles.css";
+
 
 const LENGTHY_MESSAGE_WARNING_INDEX = 15; // number of messages after which we show the warning card
 

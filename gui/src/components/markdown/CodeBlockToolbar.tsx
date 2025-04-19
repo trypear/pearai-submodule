@@ -16,6 +16,7 @@ import { CopyButton } from "./CopyButton";
 import { isPerplexityMode } from '../../util/modes';
 import { useWebviewListener } from "../../hooks/useWebviewListener";
 import { Loader, Terminal } from "lucide-react";
+import { ToolbarOptions } from "./PreWithToolbar";
 
 const SecondDiv = styled.div<{ bottom: boolean }>`
   display: flex;
@@ -30,6 +31,8 @@ interface CodeBlockToolBarProps {
   bottom: boolean;
   language: string | undefined;
   source?: 'perplexity' | 'continue';
+  toolbarOptions?: ToolbarOptions;
+  onBlockEditClick?: (editedContent: string) => void;
 }
 
 const terminalLanguages = ["bash", "sh"];
@@ -54,12 +57,12 @@ const commonTerminalCommands = [
   "ruby",
   "bundle",
 ];
-function isTerminalCodeBlock(language: string | undefined, text: string) {
+function isTerminalCodeBlock(language: string | undefined, text: string | undefined) {
   return (
     terminalLanguages.includes(language) ||
     ((!language || language?.length === 0) &&
-      (text.trim().split("\n").length === 1 ||
-        commonTerminalCommands.some((c) => text.trim().startsWith(c))))
+      (text?.trim().split("\n").length === 1 ||
+        commonTerminalCommands.some((c) => text?.trim().startsWith(c))))
   );
 }
 
@@ -99,7 +102,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
         </HeaderButtonWithText>}
         {isJetBrains() || !isPerplexityMode() && (
           <>
-            {!fastApplying && <HeaderButtonWithText
+            {!fastApplying && props.toolbarOptions?.runInTerminal !== false && <HeaderButtonWithText
               text={
                 isTerminalBlock
                   ? "Run in terminal"
@@ -109,7 +112,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
               }
               disabled={applying || fastApplying}
               onClick={() => {
-                if (isTerminalBlock) {
+                if (isTerminalBlock && props.toolbarOptions?.runInTerminal !== false) {
                   let text = props.text;
                   if (text.startsWith("$ ")) {
                     text = text.slice(2);
@@ -137,7 +140,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
               )}
             </HeaderButtonWithText>}
 
-            {!isTerminalBlock && <>
+            {!isTerminalBlock && props.toolbarOptions.fastApply !== false && <>
               {!isDiffVisible ? (
                 <>
                   <HeaderButtonWithText
@@ -182,15 +185,27 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
             </>}
           </>
         )}
-        {!isPerplexityMode() && <HeaderButtonWithText
-          text="Insert at cursor"
-          onClick={() => {
-            ideMessenger.post("insertAtCursor", { text: props.text });
-          }}
-        >
-          <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
-        </HeaderButtonWithText>}
-        <CopyButton text={props.text} />
+        {!isPerplexityMode() && props.toolbarOptions?.insertAtCursor !== false && (
+          <HeaderButtonWithText
+            text="Insert at cursor"
+            onClick={() => {
+              ideMessenger.post("insertAtCursor", { text: props.text });
+            }}
+          >
+            <ArrowLeftEndOnRectangleIcon className="w-4 h-4" />
+          </HeaderButtonWithText>
+        )}
+        {props.toolbarOptions?.copy !== false && <CopyButton text={props.text} />}
+        {props.toolbarOptions?.copyAndReturn && props.onBlockEditClick && (
+          <HeaderButtonWithText
+            text="Edit in message"
+            onClick={() => {
+              props.onBlockEditClick(props.text);
+            }}
+          >
+            <CodeBracketIcon className="w-4 h-4" />
+          </HeaderButtonWithText>
+        )}
       </SecondDiv>
     </div>
   );

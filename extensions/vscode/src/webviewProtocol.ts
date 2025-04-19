@@ -6,6 +6,8 @@ import { v4 as uuidv4 } from "uuid";
 import * as vscode from "vscode";
 import { IMessenger } from "../../../core/util/messenger";
 import { getExtensionUri } from "./util/vscode";
+import { getApi } from "./extension";
+import { assert } from "./util/assert";
 
 export async function showTutorial() {
   const tutorialPath = path.join(
@@ -111,6 +113,20 @@ export class VsCodeWebviewProtocol
   addWebview(viewType: string, webView: vscode.Webview) {
     this._webviews.set(viewType, webView);
     const listener = webView.onDidReceiveMessage(async (msg) => {
+      if(msg?.destination === "creator") {
+        const creatorMode = getApi()?.creatorMode;
+        assert(!!creatorMode, "creator mode is not present in submodule API :(");
+        if(webView) {
+          const respond = (messageType: string, message: Record<string, unknown>) =>
+            this.send(messageType, message, msg.messageId);
+          creatorMode.handleIncomingWebViewMessage(msg, respond);
+        } else {
+          console.error("WARNING: ⚠️ CREATOR WEBVIEW DOES NOT EXIST ⚠️");
+        }
+
+        return;
+      }
+
       if (!msg.messageType || !msg.messageId) {
         throw new Error(`Invalid webview protocol msg: ${JSON.stringify(msg)}`);
       }
@@ -265,7 +281,7 @@ export class VsCodeWebviewProtocol
           }
         }
       }
-    });
+    }, this);
     this._webviewListeners.set(viewType, listener);
   }
 

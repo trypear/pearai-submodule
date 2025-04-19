@@ -27,22 +27,14 @@ import Mem0GUI from "./integrations/mem0/mem0gui";
 // import PerplexitySidebarGUI from "./integrations/perplexity/PerplexitySidebarGUI";
 import Mem0SidebarGUI from "./integrations/mem0/Mem0SidebarGUI";
 import PearSettings from "./inventory/pearSettings/PearSettings";
-
-
-declare global {
-  interface Window {
-    initialRoute?: string;
-    isFirstLaunch?: boolean;
-    isPearOverlay?: boolean;
-    viewType?: 'pearai.chatView' | 'pearai.mem0View' | 'pearai.searchView';
-  }
-}
+import { CreatorOverlay } from "./pages/creator";
+import { MessagingProvider } from "./util/messagingContext";
 
 const router = createMemoryRouter(
   [
     {
       path: "/",
-      element: <Layout />,
+      element: <Layout darkBg={window.viewType !== 'pearai.creatorView'} />,
       errorElement: <ErrorPage />,
       children: [
         {
@@ -54,8 +46,12 @@ const router = createMemoryRouter(
           element: window.viewType === 'pearai.chatView' ? <GUI /> :
                    window.viewType === 'pearai.searchView' ? <PerplexityGUI /> :
                    window.viewType === 'pearai.mem0View' ? <Mem0SidebarGUI /> :
+                   window.viewType === 'pearai.creatorView' ? (
+                    <MessagingProvider destination="creator">
+                      <CreatorOverlay />
+                      </MessagingProvider>
+                    ):
                   <GUI />, // default to GUI if viewType is undefined or different
-
         },
         {
           path: "/perplexityMode",
@@ -88,10 +84,6 @@ const router = createMemoryRouter(
         {
           path: "/addModel/provider/:providerName",
           element: <ConfigureProvider />,
-        },
-        {
-          path: "/help",
-          element: <HelpPage />,
         },
         {
           path: "/monaco",

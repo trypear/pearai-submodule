@@ -4,6 +4,7 @@ import { getHeaders } from "../../pearaiServer/stubs/headers.js";
 import {
   ChatMessage,
   CompletionOptions,
+  LLMFullCompletionOptions,
   LLMOptions,
   ModelProvider,
   PearAuth,
@@ -161,6 +162,8 @@ class PearAIServer extends BaseLLM {
       true,
     );
 
+    const promptKey = "prompt_key" in options ? (options.prompt_key as string) : undefined;
+
     await this.credentials.checkAndUpdateCredentials();
 
     const body = JSON.stringify({
@@ -173,6 +176,7 @@ class PearAIServer extends BaseLLM {
       headers: {
         ...(await this._getHeaders()),
         Authorization: `Bearer ${this.credentials.getAccessToken()}`,
+        ...(promptKey ? {"prompt_key": promptKey} : {})
       },
       body: body,
     });
