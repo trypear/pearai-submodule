@@ -7,6 +7,11 @@ import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
 import { cn } from "@/lib/utils"
 import { IdeMessengerContext } from "../../../context/IdeMessenger"
 
+interface ProjectConfig {
+  path: string;
+  name: string;
+}
+
 interface IdeationProps {
   initialMessage: string
   setInitialMessage: (message: string | ((prevText: string) => string)) => void
@@ -14,6 +19,8 @@ interface IdeationProps {
   makeAPlan: boolean
   setMakeAPlan: (value: boolean) => void
   className?: string;
+  projectConfig: ProjectConfig;
+  setProjectConfig: React.Dispatch<React.SetStateAction<ProjectConfig>>;
 }
 
 export const Ideation: React.FC<IdeationProps> = ({
@@ -22,12 +29,12 @@ export const Ideation: React.FC<IdeationProps> = ({
   handleRequest,
   makeAPlan,
   setMakeAPlan,
-  className
+  className,
+  projectConfig,
+  setProjectConfig
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const isCapturingRef = useRef(false)
-  const [projectPath, setProjectPath] = useState("~/pearai-projects/")
-  const [projectName, setProjectName] = useState("")
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const ideMessenger = useContext(IdeMessengerContext)
 
@@ -79,32 +86,32 @@ export const Ideation: React.FC<IdeationProps> = ({
   }, [forceFocus, setInitialMessage])
 
   const handleDirectorySelect = useCallback(async () => {
-    console.log("handleDirectorySelect called with projectName:", projectName);
-    if (!projectName.trim()) {
-      alert("Please enter a project name first");
-      return;
-    }
-
+    console.log("handleDirectorySelect called with projectName:", projectConfig.name);
     try {
       const response = await ideMessenger.request("pearSelectFolder", { openLabel: "Select" });
 
       if (response && typeof response === 'string') {
         const dirName = response;
-        if (dirName) {
-          const fullPath = `${dirName}/${projectName.trim()}`;
-          setProjectPath(fullPath);
-        }
+          // Use default if name is empty or just whitespace
+          console.dir("DIR IN HANDLE DIRECTORY SELECT:")
+          console.dir(dirName)
+          console.dir(projectConfig.name)
+          const projectName = projectConfig.name.trim() || "default";
+          setProjectConfig({ name: projectName, path: dirName });
       }
     } catch (err) {
       console.error('Failed to select directory:', err);
     }
-  }, [ideMessenger, projectName]);
+  }, [ideMessenger, projectConfig.name, setProjectConfig]);
 
   // Display just the main folder name, as the path is usually extremely long
-  const displayPath = projectPath.includes('~') ? projectPath : projectPath.split(/[/\\]/).pop() + "/";
+  const displayPath = projectConfig.path.includes('~') ? projectConfig.path : projectConfig.path.split(/[/\\]/).pop() + "/";
 
   const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProjectName(e.target.value);
+    setProjectConfig(prev => ({
+      ...prev,
+      name: e.target.value
+    }));
   };
   return (
     <div className={cn("flex gap-4 flex-col", className)}>
@@ -141,7 +148,9 @@ export const Ideation: React.FC<IdeationProps> = ({
               label: "New Project",
               variant: "secondary",
               size: "sm",
-              onClick: () => setIsPopoverOpen(!isPopoverOpen),
+              togglable: true,
+              toggled: isPopoverOpen,
+              onToggle: (t) => setIsPopoverOpen(t),
             },
           ]}
           submitButton={{
@@ -150,7 +159,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             icon: <ArrowTurnDownLeftIcon className="size-4" />,
             variant: "default" as const,
             size: "default" as const,
-            disabled: isPopoverOpen && !projectName.trim(),
+            disabled: isPopoverOpen && !projectConfig.name.trim(),
           }}
         />
       </RGBWrapper>
@@ -166,8 +175,8 @@ export const Ideation: React.FC<IdeationProps> = ({
               <label className="text-sm font-medium text-foreground/90">Project Name:</label>
               <input
                 type="text"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
+                value={projectConfig.name}
+                onChange={handleProjectNameChange}
                 placeholder="Enter project name"
                 className="w-full px-4 py-2 text-sm border rounded-lg bg-background/80 focus:outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
               />
@@ -181,7 +190,7 @@ export const Ideation: React.FC<IdeationProps> = ({
                 Select Directory
               </button>
               <div className="text-sm text-muted-foreground/80 px-1">
-                {projectPath && `Selected: ${displayPath}`}
+                {projectConfig.path && `Selected: ${displayPath}`}
               </div>
             </div>
           </div>

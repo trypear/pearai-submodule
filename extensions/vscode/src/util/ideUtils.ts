@@ -687,6 +687,8 @@ export async function selectFolder(openLabel?: string): Promise<string | undefin
   });
 
   if (result && result.length > 0) {
+    console.dir("SELECT FOLDER:")
+    console.dir(result[0].fsPath)
     return result[0].fsPath;
   }
   return undefined;

@@ -1,16 +1,16 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, useContext } from "react"
 import { PlanEditor } from "./planEditor"
 import { Ideation } from "./ui/ideation"
 import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext"
 import ColorManager from "./ui/colorManager"
 import { ChatMessage, MessageContent, MessagePart } from "core";
+import { IdeMessengerContext } from "../../context/IdeMessenger"
 import { getAnimationTargetHeightOffset, setAnimationTargetHeightOffset } from "./utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlanningBar } from "./ui/planningBar"
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
-
 // Animation info stored in window to survive component remounts
 if (typeof window !== 'undefined') {
 	window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
@@ -28,6 +28,11 @@ interface OverlayStates {
 	open: WebviewState;
 	closed: WebviewState;
 	overlay_closed_creator_active: WebviewState;
+}
+
+interface ProjectConfig {
+	path: string;
+	name: string;
 }
 
 type ExtensionMessage =
@@ -49,6 +54,8 @@ export const CreatorOverlay = () => {
 	const [overlayState, setOverlayState] = useState<keyof OverlayStates>("loading");
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [parentStyling, setParentStyling] = useState<Partial<CSSStyleDeclaration> | undefined>();
+	const [projectConfig, setProjectConfig] = useState<ProjectConfig>({ path: "~/pearai-projects/", name: "default" });
+	const ideMessenger = useContext(IdeMessengerContext);
 
 	const initialMessage = useMemo(() => {
 		const msg = messages.find(x => x.role === "user")?.content;
@@ -69,7 +76,7 @@ export const CreatorOverlay = () => {
 	// Keep animation state in a ref to prevent render cycles
 	const animationRef = useRef(getAnimationTargetHeightOffset());
 
-	// Force a rerender when animation changes 
+	// Force a rerender when animation changes
 	const [, forceUpdate] = useState({});
 
 	const { sendMessage, typedRegister, registerListener } = useMessaging();
@@ -207,12 +214,30 @@ export const CreatorOverlay = () => {
 	}, [messages, sendMessage, setCurrentState]);
 
 	const handleMakeIt = useCallback(async () => {
-		if (currentPlan) {
+		console.dir("PROJECT CONFIG");
+		console.dir(projectConfig.path);
+		console.dir(currentPlan)
+		if (currentPlan && projectConfig.path) {
+			console.dir("CREATING FOLDER");
+			// Create the project folder first
+
+			// Sanitize the project name by removing any path-traversal characters
+			const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
+			// Handle path joining manually, ensuring no double slashes
+			const safePath = projectConfig.path.endsWith('/')
+				? `${projectConfig.path}${safeName}`
+				: `${projectConfig.path}/${safeName}`;
+
+			await ideMessenger.request("pearCreateFolder", {
+				path: safePath
+			});
+
+			// Then submit the plan
 			await sendMessage("SubmitPlan", {
 				plan: `PLAN: ${currentPlan}`
 			});
 		}
-	}, [sendMessage, close, currentPlan]);
+	}, [ideMessenger, sendMessage, currentPlan, projectConfig.path]);
 
 	const handleStateUpdate = useCallback((msg: { data: { targetState: keyof OverlayStates; overlayStates: OverlayStates } }) => {
 		if (!msg.data?.targetState || !msg.data?.overlayStates) return;
@@ -287,12 +312,14 @@ export const CreatorOverlay = () => {
 										makeAPlan={makeAPlan}
 										setMakeAPlan={setMakeAPlan}
 										className=""
+										projectConfig={projectConfig}
+										setProjectConfig={setProjectConfig}
 									/>
 								</motion.div>
 							</div>
 
 						) : null}
-						
+
 						{(currentState === "GENERATING" || currentState === "GENERATED") && (
 							<><motion.div
 								initial={{ opacity: 0, scaleX: 0 }}
