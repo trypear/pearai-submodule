@@ -18,6 +18,7 @@ import { InProcessMessenger, Message } from "core/util/messenger";
 import { getConfigJsonPath } from "core/util/paths";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import * as os from "node:os";
 import * as vscode from "vscode";
 import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
@@ -197,7 +198,13 @@ export class VsCodeMessenger {
         console.dir(msg.data.path)
         let path = msg.data.path;
 
-        const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+        // Resolve ~ to home directory
+        if (path.startsWith('~')) {
+          const os = require('os');
+          path = path.replace('~', os.homedir());
+          console.dir("RESOLVED PATH:")
+          console.dir(path)
+        }
 
         // Create the new folder URI
         const folderUri = vscode.Uri.file(path)
