@@ -79,7 +79,8 @@ export const Ideation: React.FC<IdeationProps> = ({
   const handleDirectorySelect = useCallback(async () => {
     try {
       const response = await ideMessenger.request("pearSelectFolder", { openLabel: "Select" });
-      if (response) {
+
+      if (response && typeof response === 'string') {
         const dirName = response;
         if (dirName) {
           setProjectPath(`${dirName}`);
