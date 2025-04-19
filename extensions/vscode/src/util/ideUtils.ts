@@ -686,7 +686,38 @@ export async function selectFolder(openLabel?: string): Promise<string | undefin
     openLabel: openLabel || 'Select Folder'
   });
 
+
+
   if (result && result.length > 0) {
+
+
+
+    let path = result[0].fsPath
+
+  // TEMPORARY HERE FOR TESTING TODO: REMOVE
+      const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+
+      // Create the new folder URI
+      const folderUri = vscode.Uri.file(path+"/test")
+
+      console.dir("FOLDERURI:")
+      console.dir(folderUri)
+
+
+      // Create the folder
+      try {
+          vscode.workspace.fs.createDirectory(folderUri);
+          vscode.window.showInformationMessage(`Folder "${path}" created.`);
+      } catch (error) {
+          vscode.window.showErrorMessage(`Failed to create folder: ${error}`);
+      }
+
+      vscode.workspace.updateWorkspaceFolders(
+        vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0,
+        0,
+        { uri: folderUri }
+      );
+
     return result[0].fsPath;
   }
   return undefined;

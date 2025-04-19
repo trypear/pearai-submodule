@@ -192,6 +192,27 @@ export class VsCodeMessenger {
     this.onWebview("pearOpenCreator", (msg) => {
       vscode.commands.executeCommand("workbench.action.toggleCreatorView");
     });
+    this.onWebview("pearCreateFolder", (msg) => {
+      // const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+
+      // // Create the new folder URI
+      // const folderUri = msg
+
+      // vscode.workspace.updateWorkspaceFolders(
+      //   vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0,
+      //   0,
+      //   { uri: folderUri }
+      // );
+
+      // // Create the folder
+      // try {
+      //     vscode.workspace.fs.createDirectory(folderUri);
+      //     vscode.window.showInformationMessage(`Folder "${path}" created.`);
+      // } catch (error) {
+      //     vscode.window.showErrorMessage(`Failed to create folder: ${error}`);
+      // }
+
+    });
     this.onWebview("pearAIinstallation", (msg) => {
       const { tools } = msg.data;
       if (tools) {
