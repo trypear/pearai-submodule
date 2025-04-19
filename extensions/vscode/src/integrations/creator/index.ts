@@ -156,7 +156,13 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       }
     } else if (msg.messageType === "SubmitPlan") {
       console.dir(`MSG PAYLOAD TEXT FOR SUBMITPLAN: ${msg.payload.text}`);
-      this._onDidRequestExecutePlan.fire(msg.payload); // sends off the request to the roo code extension to execute the plan
+      const payload = {
+        plan: `${msg.payload.request}`,
+        text: msg.payload.request,
+        newProject: msg.payload.request.newProject,
+        ...msg.payload
+      };
+      this._onDidRequestExecutePlan.fire(payload); // sends off the request to the roo code extension to execute the plan
       this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
 
       // TODO: handle being inside of the "creator mode" whilst still having access to all of the shizz
@@ -167,6 +173,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       const payload = {
         plan: `${msg.payload.request}`,
         text: msg.payload.request,
+        newProject: msg.payload.request.newProject,
         ...msg.payload
       };
       this._onDidRequestExecutePlan.fire(payload);

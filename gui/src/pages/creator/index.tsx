@@ -207,7 +207,6 @@ export const CreatorOverlay = () => {
 	const handleDirectRequest = useCallback(async (request: string) => {
 		console.dir("PROJECT CONFIG");
 		console.dir(projectConfig.path);
-
 		if (projectConfig.path && projectConfig.name) {
 			console.dir("CREATING FOLDER");
 			// Create the project folder first
@@ -223,12 +222,14 @@ export const CreatorOverlay = () => {
 			// Submit the direct request with project path
 			sendMessage("SubmitRequestNoPlan", {
 				request,
-				projectPath: safePath
+				projectPath: safePath,
+				newProject: true
 			});
 		} else {
 			// Submit the direct request without project path
 			sendMessage("SubmitRequestNoPlan", {
-				request
+				request,
+				newProject: false
 			});
 		}
 	}, [ideMessenger, sendMessage, projectConfig]);
@@ -284,12 +285,14 @@ export const CreatorOverlay = () => {
 				// Then submit the plan with project path
 				await sendMessage("SubmitPlan", {
 					plan: `PLAN: ${currentPlan}`,
-					projectPath: safePath
+					projectPath: safePath,
+					newProject: true
 				});
 			} else {
 				// Submit the plan without project path
 				await sendMessage("SubmitPlan", {
-					plan: `PLAN: ${currentPlan}`
+					plan: `PLAN: ${currentPlan}`,
+					newProject: false
 				});
 			}
 		}
