@@ -93,10 +93,16 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   markNewOnboardingComplete: [undefined, void];
   importUserSettingsFromVSCode: [undefined, boolean];
   pearWelcomeOpenFolder: [undefined, void];
+  pearOpenCreator: [undefined, void];
+  pearCreateFolder: [{ path: string }, void];
   pearInstallCommandLine: [undefined, void];
   changeColorScheme: [{ isDark: boolean }, void];
   installVscodeExtension: [{ extensionId: string }, void];
   is_vscode_extension_installed: [{ extensionId: string }, boolean];
+
+  // pear file/folder selection
+  pearSelectFolder: [{ openLabel?: string }, string | undefined];
+  pearSelectFile: [{ openLabel?: string }, string | undefined];
 
   // overlay
   closeOverlay: [undefined, void];

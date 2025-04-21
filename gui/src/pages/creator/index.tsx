@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState, useContext } from "react"
 import { PlanEditor } from "./planEditor"
 import { Ideation } from "./ui/ideation"
 import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext"
 import ColorManager from "./ui/colorManager"
 import { ChatMessage, MessageContent, MessagePart } from "core";
+import { IdeMessengerContext } from "../../context/IdeMessenger"
 import { getAnimationTargetHeightOffset, setAnimationTargetHeightOffset } from "./utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlanningBar } from "./ui/planningBar"
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
-
+import { vscSidebarBorder } from "@/components";
 // Animation info stored in window to survive component remounts
 if (typeof window !== 'undefined') {
 	window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
@@ -28,6 +29,11 @@ interface OverlayStates {
 	open: WebviewState;
 	closed: WebviewState;
 	overlay_closed_creator_active: WebviewState;
+}
+
+interface ProjectConfig {
+	path: string;
+	name: string;
 }
 
 type ExtensionMessage =
@@ -49,6 +55,8 @@ export const CreatorOverlay = () => {
 	const [overlayState, setOverlayState] = useState<keyof OverlayStates>("loading");
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [parentStyling, setParentStyling] = useState<Partial<CSSStyleDeclaration> | undefined>();
+	const [projectConfig, setProjectConfig] = useState<ProjectConfig>({ path: "", name: "" });
+	const ideMessenger = useContext(IdeMessengerContext);
 
 	const initialMessage = useMemo(() => {
 		const msg = messages.find(x => x.role === "user")?.content;
@@ -69,7 +77,7 @@ export const CreatorOverlay = () => {
 	// Keep animation state in a ref to prevent render cycles
 	const animationRef = useRef(getAnimationTargetHeightOffset());
 
-	// Force a rerender when animation changes 
+	// Force a rerender when animation changes
 	const [, forceUpdate] = useState({});
 
 	const { sendMessage, typedRegister, registerListener } = useMessaging();
@@ -197,22 +205,100 @@ export const CreatorOverlay = () => {
 		});
 	}, [typedRegister, updateAssistantMessage]);
 
-	const handleLlmCall = useCallback(async (givenMsgs?: ChatMessage[]) => {
-		setMessages((msgs) => [...msgs, { content: "", role: "assistant" }])
-		sendMessage("ProcessLLM", {
-			messages: givenMsgs ?? messages,
-			plan: true,
-		});
-		setCurrentState("GENERATING");
-	}, [messages, sendMessage, setCurrentState]);
+	const handleDirectRequest = useCallback(async (request: string) => {
+		console.dir("PROJECT CONFIG");
+		console.dir(projectConfig.path);
+		console.dir(projectConfig.name);
+		if (projectConfig.path && projectConfig.name) {
+			console.dir("CREATING FOLDER");
+			// Create the project folder first
+			const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
+			const safePath = projectConfig.path.endsWith('/')
+				? `${projectConfig.path}${safeName}`
+				: `${projectConfig.path}/${safeName}`;
 
-	const handleMakeIt = useCallback(async () => {
-		if (currentPlan) {
-			await sendMessage("SubmitPlan", {
-				plan: `PLAN: ${currentPlan}`
+			await ideMessenger.request("pearCreateFolder", {
+				path: safePath
+			});
+
+			// Submit the direct request with project path
+			sendMessage("SubmitRequestNoPlan", {
+				request,
+				projectPath: safePath,
+				newProject: true
+			});
+		} else {
+			// Submit the direct request without project path
+			sendMessage("SubmitRequestNoPlan", {
+				request,
+				newProject: false
 			});
 		}
-	}, [sendMessage, close, currentPlan]);
+	}, [ideMessenger, sendMessage, projectConfig]);
+
+	// Helper function to extract text from MessageContent
+	const getMessageText = useCallback((content: MessageContent): string => {
+		if (typeof content === 'string') {
+			return content;
+		} else if (Array.isArray(content)) {
+			return content
+				.filter(part => part.type === 'text' && part.text)
+				.map(part => part.text)
+				.join('');
+		}
+		return '';
+	}, []);
+
+	const handleLlmCall = useCallback(async (givenMsgs?: ChatMessage[]) => {
+		if (makeAPlan) {
+			setMessages((msgs) => [...msgs, { content: "", role: "assistant" }])
+			sendMessage("ProcessLLM", {
+				messages: givenMsgs ?? messages,
+				plan: true,
+			});
+			setCurrentState("GENERATING");
+		} else {
+			// Skip planning and submit directly
+			const request = givenMsgs?.[0]?.content ?? initialMessage;
+			handleDirectRequest(getMessageText(request));
+		}
+	}, [messages, sendMessage, setCurrentState, makeAPlan, initialMessage, handleDirectRequest, getMessageText]);
+
+	const handleMakeIt = useCallback(async () => {
+		console.dir("PROJECT CONFIG");
+		console.dir(projectConfig.path);
+		console.dir(currentPlan)
+		if (currentPlan) {
+			if (projectConfig.path && projectConfig.name) {
+				console.dir("CREATING FOLDER");
+				// Create the project folder first
+
+				// Sanitize the project name by removing any path-traversal characters
+				const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
+				// Handle path joining manually, ensuring no double slashes
+				const safePath = projectConfig.path.endsWith('/')
+					? `${projectConfig.path}${safeName}`
+					: `${projectConfig.path}/${safeName}`;
+
+				await ideMessenger.request("pearCreateFolder", {
+					path: safePath
+				});
+
+				// Then submit the plan with project path
+				await sendMessage("SubmitPlan", {
+					plan: `PLAN: ${currentPlan}`,
+					projectPath: safePath,
+					newProject: true
+				});
+			} else {
+				// Submit the plan without project path
+				await sendMessage("SubmitPlan", {
+					plan: `PLAN: ${currentPlan}`,
+					newProject: false
+				});
+			}
+		}
+	}, [ideMessenger, sendMessage, currentPlan, projectConfig.path]);
 
 	const handleStateUpdate = useCallback((msg: { data: { targetState: keyof OverlayStates; overlayStates: OverlayStates } }) => {
 		if (!msg.data?.targetState || !msg.data?.overlayStates) return;
@@ -259,9 +345,10 @@ export const CreatorOverlay = () => {
 				style={parentStyling as unknown as React.CSSProperties ?? {
 					// TODO: fix this sync issue where we don't get the right starting values for the translate y offset from the app
 					transform: "translateY(-100%)",
-					transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+					transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+					background: 'var(--vscode-sideBar-background)'
 				}}
-				className="all-initial fixed inset-0 items-center justify-center bg-transparent font[var(--vscode-font-family)] animate flex-col"
+				className="all-initial fixed inset-0 items-center justify-center font[var(--vscode-font-family)] animate flex-col"
 			>
 				<div
 					onClick={(e) => e.stopPropagation()}
@@ -287,12 +374,14 @@ export const CreatorOverlay = () => {
 										makeAPlan={makeAPlan}
 										setMakeAPlan={setMakeAPlan}
 										className=""
+										projectConfig={projectConfig}
+										setProjectConfig={setProjectConfig}
 									/>
 								</motion.div>
 							</div>
 
 						) : null}
-						
+
 						{(currentState === "GENERATING" || currentState === "GENERATED") && (
 							<><motion.div
 								initial={{ opacity: 0, scaleX: 0 }}
