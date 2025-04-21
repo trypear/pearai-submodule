@@ -220,47 +220,47 @@ export const Ideation: React.FC<IdeationProps> = ({
           }
         >
           <div className="flex flex-col text-xs gap-2 p-3 bg-background/50 backdrop-blur-sm rounded-lg border border-solidd border-red-500">
-            <div className="space-y-2.5">
-              <label className="font-medium text-black">Directory</label>
-              <br />
-              <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
-                onClick={handleDirectorySelect}
-              >
-                <Folder className="size-4 text-black" />
-                <div className="text-black">{projectConfig.path && `${displayPath}`}</div>
-              </div>
-            </div>
-            <div className="space-y-2.5">
-              <label className="font-medium text-black">Project Name</label>
-              <br />
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
-                >
-                  <Tag className="size-4 text-black" />
-                  <div className="text-black">
-                    <input
-                      type="text"
-                      placeholder="Project Name"
-                      className="w-full bg-transparent outline-none border-none focus:outline-none"
-                      value={projectConfig.name}
-                      onChange={handleProjectNameChange}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer text-black"
-                // onClick={handleProjectNameSuggestion} // Use the suggested project name by ai.
-                >
-                  <LightbulbIcon className="size-4" />
-                  <div className="text-black">
-                    ai suggested project name
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="text-xs text-black">
-              {projectConfig.path && displayPath}
-              {projectConfig.name && projectConfig.name}
-            </div>
+           <div className="space-y-2.5">
+             <label className="font-medium text-black">Project Name</label>
+             <br />
+             <div className="flex items-center gap-2">
+               <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
+               >
+                 <Tag className="size-4 text-black" />
+                 <div className="text-black">
+                   <input
+                     type="text"
+                     placeholder="Project Name"
+                     className="w-full bg-transparent outline-none border-none focus:outline-none"
+                     value={projectConfig.name}
+                     onChange={handleProjectNameChange}
+                   />
+                 </div>
+               </div>
+             </div>
+           </div>
+           <div className="space-y-2.5">
+             <label className="font-medium text-black">Directory</label>
+             <br />
+             <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
+               onClick={handleDirectorySelect}
+             >
+               <Folder className="size-4 text-black" />
+               <div className="text-black">{projectConfig.path && `${displayPath}`}</div>
+             </div>
+           </div>
+           {/* <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer text-black"
+           // onClick={handleProjectNameSuggestion} // Use the suggested project name by ai.
+           >
+             <LightbulbIcon className="size-4" />
+             <div className="text-black">
+               ai suggested project name
+             </div>
+           </div> */}
+           <div className="text-xs text-black">
+             {projectConfig.path && displayPath}
+             {projectConfig.name && projectConfig.name}
+           </div>
           </div>
         </div>
       </RGBWrapper>
