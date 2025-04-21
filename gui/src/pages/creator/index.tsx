@@ -11,6 +11,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { PlanningBar } from "./ui/planningBar"
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
+import { vscSidebarBorder } from "@/components";
 // Animation info stored in window to survive component remounts
 if (typeof window !== 'undefined') {
 	window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
@@ -343,9 +344,10 @@ export const CreatorOverlay = () => {
 				style={parentStyling as unknown as React.CSSProperties ?? {
 					// TODO: fix this sync issue where we don't get the right starting values for the translate y offset from the app
 					transform: "translateY(-100%)",
-					transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)'
+					transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
+					background: 'var(--vscode-sideBar-background)'
 				}}
-				className="all-initial fixed inset-0 items-center justify-center bg-transparent font[var(--vscode-font-family)] animate flex-col"
+				className="all-initial fixed inset-0 items-center justify-center font[var(--vscode-font-family)] animate flex-col"
 			>
 				<div
 					onClick={(e) => e.stopPropagation()}

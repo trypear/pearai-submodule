@@ -172,12 +172,12 @@ export const InputBox: React.FC<InputBoxProps> = ({
           {submitButton && (
             <Button
               onClick={handleRequest}
-              disabled={!initialMessage.trim() || isDisabled}
+              // disabled={!initialMessage.trim() || isDisabled}
               tabIndex={3}
               variant={submitButton.variant}
               size={submitButton.size}
             >
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1 cursor-pointer">
                 {submitButton.icon}
                 {submitButton.label}
               </div>

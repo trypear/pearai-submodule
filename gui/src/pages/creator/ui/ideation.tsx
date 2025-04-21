@@ -155,15 +155,9 @@ export const Ideation: React.FC<IdeationProps> = ({
     }));
   };
   return (
-    <div className={cn("flex gap-4 flex-col", className)}>
-      <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
-        <PearIcon className="my-auto size-6" />
-        <div className="my-auto font-semibold text-2xl">
-          {/* {isPopoverOpen ? "What would you like to make?" : "What would you like to do?"} */}
-          PearAI Creator
-        </div>
-      </div>
-      <RGBWrapper className="px-4 my-auto w-full">
+    <div className={cn("flex gap-4 flex-col border border-solidd border-red-500 min-w-[600px]", className)}>
+     
+      <RGBWrapper className="my-auto">
         <InputBox
           textareaRef={textareaRef}
           initialMessage={initialMessage}
