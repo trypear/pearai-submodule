@@ -133,7 +133,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
   return (
     <div className="flex flex-col gap-4 flex-1">
       <div
-        className={`min-h-32 flex items-center rounded-md flex-col px-4 ${showBorder ? 'border-box' : ''}`}
+        className={`min-h-32 flex items-center rounded-xl flex-col px-4 ${showBorder ? 'border-box' : ''}`}
         style={{
           backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)',
           ...borderStyle
@@ -146,11 +146,12 @@ export const InputBox: React.FC<InputBoxProps> = ({
             onChange={handleTextareaChange}
             onKeyDown={handleTextareaKeyDown}
             placeholder={placeholder}
-            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg leading-normal py-3 px-4 flex items-center border-none min-h-5"
+            className="w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg leading-normal py-3 px-4 flex items-center border-none min-h-5 font-inherit"
             style={{
               color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)',
               maxHeight: maxHeightStyle, // Apply the maxHeight as a style
-              overflowY: 'auto' // Ensure scrolling is enabled when content exceeds maxHeight
+              overflowY: 'auto', // Ensure scrolling is enabled when content exceeds maxHeight
+              fontFamily: "inherit"
             }}
             autoFocus={true}
             tabIndex={1}
