@@ -68,7 +68,7 @@ export const Ideation: React.FC<IdeationProps> = ({
     if (isPopoverOpen || !hasWorkspaceFolders) {
       setProjectConfig(prev => ({
         ...prev,
-        path: "~/pearai-projects/",
+        path: "~/pearai-projects",
         name: "default"
       }));
     } else {
@@ -150,7 +150,7 @@ export const Ideation: React.FC<IdeationProps> = ({
   }, [ideMessenger, projectConfig.name, setProjectConfig]);
 
   // Display just the main folder name, as the path is usually extremely long
-  const displayPath = projectConfig.path.includes('~') ? projectConfig.path : projectConfig.path.split(/[/\\]/).pop() + "/";
+  const displayPath = (projectConfig.path.includes('~') ? projectConfig.path : projectConfig.path.split(/[/\\]/).pop()) + "/";
 
   const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProjectConfig(prev => ({
@@ -182,16 +182,6 @@ export const Ideation: React.FC<IdeationProps> = ({
           maxHeight="40vh"
           leftButtons={[
             {
-              id: ButtonID.MAKE_PLAN,
-              icon: <FileText />,
-              label: "Make a plan",
-              togglable: true,
-              variant: "secondary",
-              size: "sm",
-              toggled: makeAPlan,
-              onToggle: (t) => setMakeAPlan(t),
-            },
-            {
               id: ButtonID.NEW_PROJECT,
               icon: <FolderPlus className="size-4" />,
               label: "New Project",
@@ -201,6 +191,16 @@ export const Ideation: React.FC<IdeationProps> = ({
               toggled: isPopoverOpen || !hasWorkspaceFolders,
               onToggle: (t) => hasWorkspaceFolders && setIsPopoverOpen(t),
             },
+            ...(isPopoverOpen || !hasWorkspaceFolders ? [{
+              id: ButtonID.MAKE_PLAN,
+              icon: <FileText />,
+              label: "Make a plan",
+              togglable: true,
+              variant: "secondary" as const,
+              size: "sm" as const,
+              toggled: makeAPlan,
+              onToggle: (t) => setMakeAPlan(t),
+            }] : []),
           ]}
           submitButton={{
             id: ButtonID.SUBMIT,
@@ -262,8 +262,7 @@ export const Ideation: React.FC<IdeationProps> = ({
              </div>
            </div> */}
            <div className="text-xs text-black">
-             {projectConfig.path && displayPath}
-             {projectConfig.name && projectConfig.name}
+             {projectConfig.path}/{projectConfig.name}
            </div>
           </div>
         </div>
