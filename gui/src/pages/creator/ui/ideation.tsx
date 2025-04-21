@@ -167,7 +167,7 @@ export const Ideation: React.FC<IdeationProps> = ({
           PearAI Creator
         </div>
       </div>
-      <RGBWrapper className="my-auto">
+      <RGBWrapper className="my-auto w-full">
         <InputBox
           textareaRef={textareaRef}
           initialMessage={initialMessage}

@@ -2,18 +2,22 @@ import { cn } from "@/lib/utils"
 import React, { FC, ReactNode } from "react"
 
 /**
- * A simple RGB gradient background wrapper
+ * RGB gradient border wrapper
  */
 export const RGBWrapper: FC<{ children: ReactNode; className?: string }> = ({ children, className }) => {
-	return (
-		<div className={cn(className, "relative")}>
-			{/* RGB Gradient Background */}
-			<div className="absolute -top-1 -right-1 -bottom-1 -left-1 -z-10 overflow-hidden rounded-3xl blur-[12px] opacity-50">
-				<div className="h-full w-full [background-image:linear-gradient(to_bottom_right,_#5DED83_0%,_#0CBBAF_33%,_#764CEA_66%,_#EA50A2_100%)]"></div>
-			</div>
+  return (
+    <div className={cn(className, "relative")}>
+      {/* RGB Gradient Border */}
+      <div
+        className="absolute inset-0 -z-10 rounded-xl opacity-75 blur-[30px]"
+        style={{
+          border: "40px solid transparent",
+          borderImage: "linear-gradient(to bottom right, #5DED83 0%, #0CBBAF 33%, #764CEA 66%, #EA50A2 100%) 1"
+        }}
+      ></div>
 
-			{/* Content - removed shadow-lg and p-2 */}
-			{children}
-		</div>
-	)
+      {/* Content */}
+      {children}
+    </div>
+  )
 }
