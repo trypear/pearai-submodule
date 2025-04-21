@@ -156,7 +156,13 @@ export const Ideation: React.FC<IdeationProps> = ({
   };
   return (
     <div className={cn("flex gap-4 flex-col border border-solidd border-red-500 min-w-[600px]", className)}>
-     
+      <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
+        <PearIcon className="my-auto size-7" />
+        <div className="my-auto font-semibold text-2xl">
+          {/* {isPopoverOpen ? "What would you like to make?" : "What would you like to do?"} */}
+          PearAI Creator
+        </div>
+      </div>
       <RGBWrapper className="my-auto">
         <InputBox
           textareaRef={textareaRef}
@@ -242,7 +248,7 @@ export const Ideation: React.FC<IdeationProps> = ({
                   </div>
                 </div>
                 <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer text-black"
-                  // onClick={handleProjectNameSuggestion} // Use the suggested project name by ai.
+                // onClick={handleProjectNameSuggestion} // Use the suggested project name by ai.
                 >
                   <LightbulbIcon className="size-4" />
                   <div className="text-black">
