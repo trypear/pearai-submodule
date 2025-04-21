@@ -6,7 +6,9 @@ import { FileText, FolderPlus, Pencil } from "lucide-react"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
 import { cn } from "@/lib/utils"
 import { IdeMessengerContext } from "../../../context/IdeMessenger"
-
+import { ButtonID } from "../utils"
+import { Folder, Tag } from "lucide-react"
+import { LightbulbIcon } from "lucide-react"
 interface ProjectConfig {
   path: string;
   name: string;
@@ -95,7 +97,7 @@ export const Ideation: React.FC<IdeationProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only capture keystrokes if not focused on any textarea
       if (document.activeElement?.tagName === "TEXTAREA" ||
-          document.activeElement?.tagName === "INPUT") {
+        document.activeElement?.tagName === "INPUT") {
         return
       }
 
@@ -131,12 +133,12 @@ export const Ideation: React.FC<IdeationProps> = ({
 
       if (response && typeof response === 'string') {
         const dirName = response;
-          // Use default if name is empty or just whitespace
-          console.dir("DIR IN HANDLE DIRECTORY SELECT:")
-          console.dir(dirName)
-          console.dir(projectConfig.name)
-          const projectName = projectConfig.name.trim() || "default";
-          setProjectConfig({ name: projectName, path: dirName });
+        // Use default if name is empty or just whitespace
+        console.dir("DIR IN HANDLE DIRECTORY SELECT:")
+        console.dir(dirName)
+        console.dir(projectConfig.name)
+        const projectName = projectConfig.name.trim() || "default";
+        setProjectConfig({ name: projectName, path: dirName });
       }
     } catch (err) {
       console.error('Failed to select directory:', err);
@@ -176,7 +178,7 @@ export const Ideation: React.FC<IdeationProps> = ({
           maxHeight="40vh"
           leftButtons={[
             {
-              id: "make-plan",
+              id: ButtonID.MAKE_PLAN,
               icon: <FileText />,
               label: "Make a plan",
               togglable: true,
@@ -186,7 +188,7 @@ export const Ideation: React.FC<IdeationProps> = ({
               onToggle: (t) => setMakeAPlan(t),
             },
             {
-              id: "new-project",
+              id: ButtonID.NEW_PROJECT,
               icon: <FolderPlus className="size-4" />,
               label: "New Project",
               variant: "secondary",
@@ -197,7 +199,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             },
           ]}
           submitButton={{
-            id: "submit",
+            id: ButtonID.SUBMIT,
             label: "Start",
             icon: <ArrowTurnDownLeftIcon className="size-4" />,
             variant: "default" as const,
@@ -205,41 +207,63 @@ export const Ideation: React.FC<IdeationProps> = ({
             disabled: isPopoverOpen && !projectConfig.name.trim(),
           }}
         />
-      </RGBWrapper>
-      <div
-        className={cn(
-          "overflow-hidden transition-all duration-300 ease-out",
-          isPopoverOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
-        )}
-      >
-        <div className="mx-4 mt-3">
-          <div className="flex flex-col gap-5 p-5 bg-background/50 backdrop-blur-sm rounded-lg border border-border/50">
+        <div
+          className={cn(
+            "overflow-hidden rounded-b-xl border-solid border-b-0  border-l-0 border-r-0 border-t-1 border-gray-300 transition-all duration-300 ease-out",
+            isPopoverOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+          )}
+          style={
+            {
+              // backgroundColor: 'var(--widgetBackground)',
+              backgroundColor: 'white',
+            }
+          }
+        >
+          <div className="flex flex-col text-xs gap-2 p-3 bg-background/50 backdrop-blur-sm rounded-lg border border-solidd border-red-500">
             <div className="space-y-2.5">
-              <label className="text-sm font-medium text-foreground/90">Project Name:</label>
-              <input
-                ref={projectNameRef}
-                type="text"
-                value={projectConfig.name}
-                onChange={handleProjectNameChange}
-                placeholder="Enter project name"
-                className="w-full px-4 py-2 text-sm border rounded-lg bg-background/80 focus:outline-none focus:ring-2 focus:ring-ring/50 transition-shadow"
-              />
+              <label className="font-medium text-black">Directory</label>
+              <br />
+              <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
+                onClick={handleDirectorySelect}
+              >
+                <Folder className="size-4 text-black" />
+                <div className="text-black">{projectConfig.path && `${displayPath}`}</div>
+              </div>
             </div>
             <div className="space-y-2.5">
-              <button
-                onClick={handleDirectorySelect}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm bg-background rounded-lg hover:bg-background/90 border border-border/50 transition-all duration-200"
-              >
-                <Pencil className="size-4" />
-                Select Directory
-              </button>
-              <div className="text-sm text-muted-foreground/80 px-1">
-                {projectConfig.path && `Selected: ${displayPath}`}
+              <label className="font-medium text-black">Project Name</label>
+              <br />
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
+                >
+                  <Tag className="size-4 text-black" />
+                  <div className="text-black">
+                    <input
+                      type="text"
+                      placeholder="Project Name"
+                      className="w-full bg-transparent outline-none border-none focus:outline-none"
+                      value={projectConfig.name}
+                      onChange={handleProjectNameChange}
+                    />
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer text-black"
+                  // onClick={handleProjectNameSuggestion} // Use the suggested project name by ai.
+                >
+                  <LightbulbIcon className="size-4" />
+                  <div className="text-black">
+                    ai suggested project name
+                  </div>
+                </div>
               </div>
+            </div>
+            <div className="text-xs text-black">
+              {projectConfig.path && displayPath}
+              {projectConfig.name && projectConfig.name}
             </div>
           </div>
         </div>
-      </div>
+      </RGBWrapper>
     </div>
   )
 }
