@@ -201,9 +201,9 @@ export const Ideation: React.FC<IdeationProps> = ({
           submitButton={{
             id: ButtonID.SUBMIT,
             label: "Start",
-            icon: <ArrowTurnDownLeftIcon className="size-4" />,
-            variant: "default" as const,
-            size: "default" as const,
+            icon: <ArrowTurnDownLeftIcon style={{ width: "13px", height: "13px" }} />,
+            variant: "default",
+            size: "sm",
             disabled: isPopoverOpen && !projectConfig.name.trim(),
           }}
         />

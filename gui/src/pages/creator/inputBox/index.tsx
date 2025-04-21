@@ -136,54 +136,53 @@ export const InputBox: React.FC<InputBoxProps> = ({
   }, [leftButtons, toggleStates]);
 
   return (
-    <div className="flex flex-col gap-4 flex-1">
-      <div
-        className={`min-h-32 flex items-center ${isNewProjectSelected ? 'rounded-t-xl' : 'rounded-xl'} flex-col px-4 ${showBorder ? 'border-box' : ''}`}
-        style={{
-          backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)',
-          ...borderStyle
-        }}
-      >
-        <div className="flex-1 w-full">
-          <textarea
-            ref={textareaRef}
-            value={initialMessage}
-            onChange={handleTextareaChange}
-            onKeyDown={handleTextareaKeyDown}
-            placeholder={placeholder}
-            className={`w-full appearance-none bg-transparent outline-none focus:outline-none resize-none overflow-y-auto rounded-lg leading-normal py-3 px-4 flex items-center border-none min-h-5 font-inherit ${isNewProjectSelected ? 'max-h-[200px]' : ''}`}
-            style={{
-              color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)',
-              maxHeight: maxHeightStyle, // Apply the maxHeight as a style
-              overflowY: 'auto', // Ensure scrolling is enabled when content exceeds maxHeight
-              fontFamily: "inherit"
-            }}
-            autoFocus={true}
-            tabIndex={1}
-            rows={initialRows || 1}
-            disabled={isDisabled}
-          />
+    <div
+      className={`flex flex-col gap-2 p-3 items-center border border-solidd border-red-500 ${isNewProjectSelected ? 'rounded-t-xl' : 'rounded-xl'} ${showBorder ? 'border-box' : ''}`}
+      style={{
+        backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)',
+        ...borderStyle
+      }}
+    >
+      <div className="flex w-full">
+        <textarea
+          ref={textareaRef}
+          value={initialMessage}
+          onChange={handleTextareaChange}
+          onKeyDown={handleTextareaKeyDown}
+          placeholder={placeholder}
+          className={`w-full appearance-none bg-transparent outline-none resize-none focus:outline-none overflow-y-auto rounded-lg leading-normal flex items-center border-none border-solidd border-gray-300 min-h-5 font-inherit ${isNewProjectSelected ? 'max-h-[200px]' : ''}`}
+          style={{
+            color: lockToWhite ? 'rgb(55, 65, 81)' : 'var(--widgetForeground)',
+            maxHeight: maxHeightStyle, // Apply the maxHeight as a style
+            overflowY: 'auto', // Ensure scrolling is enabled when content exceeds maxHeight
+            fontFamily: "inherit"
+          }}
+          autoFocus={true}
+          tabIndex={1}
+          rows={initialRows || 1}
+          disabled={isDisabled}
+        />
+      </div>
+      <div className="flex w-full justify-between space-x-2 border border-solidd border-red-500">
+        <div className="flex flex-1 gap-2">
+          {leftButtons.length > 0 && renderedLeftButtons}
         </div>
-        <div className="flex justify-between space-x-2 p-2 w-full">
-          <div className="flex flex-1 gap-2">
-            {leftButtons.length > 0 && renderedLeftButtons}
-          </div>
-          <div className="flex gap-2 ml-auto">
-            {rightButtons.length > 0 && renderedRightButtons}
-            {submitButton && (
-              <Button
-                onClick={handleRequest}
-                disabled={!initialMessage.trim() || isDisabled}
-                tabIndex={3}
-                variant={submitButton.variant}
-                size={submitButton.size}
-                {...submitButton}
-              >
+        <div className="flex gap-2 ml-auto">
+          {rightButtons.length > 0 && renderedRightButtons}
+          {submitButton && (
+            <Button
+              onClick={handleRequest}
+              disabled={!initialMessage.trim() || isDisabled}
+              tabIndex={3}
+              variant={submitButton.variant}
+              size={submitButton.size}
+            >
+              <div className="flex items-center gap-1">
                 {submitButton.icon}
                 {submitButton.label}
-              </Button>
-            )}
-          </div>
+              </div>
+            </Button>
+          )}
         </div>
       </div>
     </div>
