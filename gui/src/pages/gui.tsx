@@ -233,7 +233,7 @@ function GUI() {
       if (inputContainerRef.current && topGuiDivRef.current) {
         const scrollTop = topGuiDivRef.current.scrollTop;
         const height = inputContainerRef.current.offsetHeight;
-        const newPadding = `${height + 20}px`;
+        const newPadding = isNewSession ? '0px' : `${height + 20}px`;
 
         topGuiDivRef.current.style.paddingBottom = '0px';
         topGuiDivRef.current.offsetHeight;
@@ -372,9 +372,8 @@ function GUI() {
     [state.history],
   );
 
-  const adjustPadding = useCallback(() => {
-    if (inputContainerRef.current && topGuiDivRef.current) {
-      const height = inputContainerRef.current.offsetHeight;
+  const adjustPadding = useCallback((height: number) => {
+    if (topGuiDivRef.current) {
       topGuiDivRef.current.style.paddingBottom = `${height + 20}px`;
     }
   }, []);
