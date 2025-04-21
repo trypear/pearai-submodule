@@ -66,7 +66,11 @@ export const Ideation: React.FC<IdeationProps> = ({
   // Set default project path when isPopoverOpen changes
   useEffect(() => {
     if (isPopoverOpen || !hasWorkspaceFolders) {
-      setProjectConfig(prev => ({ ...prev, path: "~/pearai-projects/" }));
+      setProjectConfig(prev => ({
+        ...prev,
+        path: "~/pearai-projects/",
+        name: "default"
+      }));
     } else {
       setProjectConfig({ path: "", name: "" });
     }

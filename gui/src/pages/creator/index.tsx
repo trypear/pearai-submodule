@@ -208,6 +208,7 @@ export const CreatorOverlay = () => {
 	const handleDirectRequest = useCallback(async (request: string) => {
 		console.dir("PROJECT CONFIG");
 		console.dir(projectConfig.path);
+		console.dir(projectConfig.name);
 		if (projectConfig.path && projectConfig.name) {
 			console.dir("CREATING FOLDER");
 			// Create the project folder first

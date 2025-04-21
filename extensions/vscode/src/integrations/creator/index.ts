@@ -167,7 +167,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
       // TODO: handle being inside of the "creator mode" whilst still having access to all of the shizz
     } else if (msg.messageType === "SubmitRequestNoPlan") {
-      console.dir(`MSG PAYLOAD TEXT FOR SubmitRequestNoPlan: ${msg.payload.text}`);
+      console.dir(`MSG PAYLOAD TEXT FOR SubmitRequestNoPlan: ${msg.payload.request}`);
       // Handle direct request without planning
       // Format payload to match ExecutePlanRequest
       const payload = {
