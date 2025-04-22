@@ -102,9 +102,12 @@ export const InputBox: React.FC<InputBoxProps> = ({
           onToggle?.(newToggled);
         } : undefined}
         {...rest}
+        className="rounded-lg p-1.5 cursor-pointer"
       >
-        {icon}
-        {label}
+        <div className="flex items-center gap-1">
+          {icon}
+          {label}
+        </div>
       </Button>
     );
   }, [toggleStates, handleToggle]);
@@ -176,7 +179,8 @@ export const InputBox: React.FC<InputBoxProps> = ({
               tabIndex={3}
               variant={submitButton.variant}
               size={submitButton.size}
-            >
+              className="rounded-lg p-1.5"
+        >
               <div className="flex items-center gap-1 cursor-pointer">
                 {submitButton.icon}
                 {submitButton.label}

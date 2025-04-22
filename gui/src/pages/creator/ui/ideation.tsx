@@ -183,7 +183,7 @@ export const Ideation: React.FC<IdeationProps> = ({
           leftButtons={[
             {
               id: ButtonID.NEW_PROJECT,
-              icon: <FolderPlus className="size-4" />,
+              icon: <FolderPlus className={`${isPopoverOpen ? "text-blue-500" : "text-gray-400"}`} />,
               label: "New Project",
               variant: "secondary",
               size: "sm",
@@ -193,7 +193,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             },
             ...(isPopoverOpen || !hasWorkspaceFolders ? [{
               id: ButtonID.MAKE_PLAN,
-              icon: <FileText />,
+              icon: <FileText className={`${makeAPlan ? "text-blue-500" : "text-gray-400"}`} />,
               label: "Make a plan",
               togglable: true,
               variant: "secondary" as const,
