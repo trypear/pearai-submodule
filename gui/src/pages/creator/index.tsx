@@ -406,7 +406,7 @@ export const CreatorOverlay = () => {
 								<div className="w-full h-full flex justify-center">
 
 									<motion.div
-										initial={{ opacity: 0, y: 20}}
+										initial={{ opacity: 0, y: 20 }}
 										animate={{ opacity: 1, y: 0 }}
 										transition={{
 											duration: 0.3,
@@ -431,7 +431,7 @@ export const CreatorOverlay = () => {
 					</AnimatePresence>
 					<div className="flex-1" />
 					<div className="flex w-full justify-center align-middle mb-8">
-						<Button variant="secondary" size="sm" className="cursor-pointer" onClick={close}>
+						<Button variant="secondary" size="sm" className="cursor-pointer z-20" onClick={close}>
 							<LogOut className="size-4" />
 							Exit Creator
 						</Button>
