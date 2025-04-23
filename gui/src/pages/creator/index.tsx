@@ -347,7 +347,6 @@ export const CreatorOverlay = () => {
 					// TODO: fix this sync issue where we don't get the right starting values for the translate y offset from the app
 					transform: "translateY(-100%)",
 					transition: 'transform 500ms cubic-bezier(0.4, 0, 0.2, 1)',
-					background: 'var(--vscode-sideBar-background)'
 				}}
 				className="all-initial fixed inset-0 items-center justify-center font[var(--vscode-font-family)] animate flex-col"
 			>
