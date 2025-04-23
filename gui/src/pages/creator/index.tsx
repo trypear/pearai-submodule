@@ -51,7 +51,7 @@ type ExtensionMessage =
  */
 export const CreatorOverlay = () => {
 	const [currentState, setCurrentState] = useState<"IDEATION" | "GENERATING" | "GENERATED">("IDEATION");
-	const [makeAPlan, setMakeAPlan] = useState<boolean>(true);
+	const [makeAPlan, setMakeAPlan] = useState<boolean>(false);
 	const [overlayState, setOverlayState] = useState<keyof OverlayStates>("loading");
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const [parentStyling, setParentStyling] = useState<Partial<CSSStyleDeclaration> | undefined>();
@@ -103,28 +103,31 @@ export const CreatorOverlay = () => {
 	}, []);
 
 	const currentPlan = useMemo(() => {
+		console.dir("MESSAGES")
+		console.dir(messages)
+		return messages[ messages.length - 1]?.content;
 		// Search through messages in reverse order to find the last plan
-		for (let i = messages.length - 1; i >= 0; i--) {
-			const msg = messages[i].content;
+		// for (let i = messages.length - 1; i >= 0; i--) {
+		// 	const msg = messages[i].content;
 
-			// Handle different content types
-			let content = '';
-			if (typeof msg === 'string') {
-				content = msg;
-			} else if (Array.isArray(msg)) {
-				content = msg
-					.filter(part => part.type === 'text' && part.text)
-					.map(part => part.text)
-					.join('');
-			}
+		// 	// Handle different content types
+		// 	let content = '';
+		// 	if (typeof msg === 'string') {
+		// 		content = msg;
+		// 	} else if (Array.isArray(msg)) {
+		// 		content = msg
+		// 			.filter(part => part.type === 'text' && part.text)
+		// 			.map(part => part.text)
+		// 			.join('');
+		// 	}
 
-			// Look for plan between ```plan and ``` markers
-			const planMatch = content.match(/```plan\s*([\s\S]*?)\s*```/);
-			if (planMatch) {
-				return planMatch[1].trim();
-			}
-		}
-		return undefined;
+		// 	// Look for plan between ```plan and ``` markers
+		// 	const planMatch = content.match(/```plan\s*([\s\S]*?)\s*```/);
+		// 	if (planMatch) {
+		// 		return planMatch[1].trim();
+		// 	}
+		// }
+		// return undefined;
 	}, [messages]);
 
 	// Convenience function to update an existing assistant message or add a new one
@@ -286,14 +289,14 @@ export const CreatorOverlay = () => {
 
 				// Then submit the plan with project path
 				await sendMessage("SubmitPlan", {
-					plan: `PLAN: ${currentPlan}`,
+					request: `PLAN: ${currentPlan}`,
 					projectPath: safePath,
 					newProject: true
 				});
 			} else {
 				// Submit the plan without project path
 				await sendMessage("SubmitPlan", {
-					plan: `PLAN: ${currentPlan}`,
+					request: `PLAN: ${currentPlan}`,
 					newProject: false
 				});
 			}

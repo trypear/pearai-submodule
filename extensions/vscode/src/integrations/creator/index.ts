@@ -155,9 +155,9 @@ export class PearAICreatorMode implements IPearAICreatorMode {
         });
       }
     } else if (msg.messageType === "SubmitPlan") {
-      console.dir(`MSG PAYLOAD TEXT FOR SUBMITPLAN: ${msg.payload.text}`);
+      console.dir(`MSG PAYLOAD FOR SUBMITPLAN: ${msg.payload}`);
       const payload = {
-        plan: `${msg.payload.request}`,
+        plan:  msg.payload.request,
         text: msg.payload.request,
         newProject: msg.payload.request.newProject,
         ...msg.payload
@@ -167,11 +167,11 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
       // TODO: handle being inside of the "creator mode" whilst still having access to all of the shizz
     } else if (msg.messageType === "SubmitRequestNoPlan") {
-      console.dir(`MSG PAYLOAD TEXT FOR SubmitRequestNoPlan: ${msg.payload.request}`);
+      console.dir(`MSG PAYLOAD FOR SubmitRequestNoPlan: ${msg.payload}`);
       // Handle direct request without planning
       // Format payload to match ExecutePlanRequest
       const payload = {
-        plan: `${msg.payload.request}`,
+        plan: msg.payload.request,
         text: msg.payload.request,
         newProject: msg.payload.request.newProject,
         ...msg.payload
