@@ -103,8 +103,6 @@ export const CreatorOverlay = () => {
 	}, []);
 
 	const currentPlan = useMemo(() => {
-		console.dir("MESSAGES")
-		console.dir(messages)
 		return messages[ messages.length - 1]?.content;
 		// Search through messages in reverse order to find the last plan
 		// for (let i = messages.length - 1; i >= 0; i--) {
