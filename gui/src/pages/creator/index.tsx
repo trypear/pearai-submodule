@@ -103,29 +103,28 @@ export const CreatorOverlay = () => {
 	}, []);
 
 	const currentPlan = useMemo(() => {
-		return messages[ messages.length - 1]?.content;
 		// Search through messages in reverse order to find the last plan
-		// for (let i = messages.length - 1; i >= 0; i--) {
-		// 	const msg = messages[i].content;
+		for (let i = messages.length - 1; i >= 0; i--) {
+			const msg = messages[i].content;
 
-		// 	// Handle different content types
-		// 	let content = '';
-		// 	if (typeof msg === 'string') {
-		// 		content = msg;
-		// 	} else if (Array.isArray(msg)) {
-		// 		content = msg
-		// 			.filter(part => part.type === 'text' && part.text)
-		// 			.map(part => part.text)
-		// 			.join('');
-		// 	}
+			// Handle different content types
+			let content = '';
+			if (typeof msg === 'string') {
+				content = msg;
+			} else if (Array.isArray(msg)) {
+				content = msg
+					.filter(part => part.type === 'text' && part.text)
+					.map(part => part.text)
+					.join('');
+			}
 
-		// 	// Look for plan between ```plan and ``` markers
-		// 	const planMatch = content.match(/```plan\s*([\s\S]*?)\s*```/);
-		// 	if (planMatch) {
-		// 		return planMatch[1].trim();
-		// 	}
-		// }
-		// return undefined;
+			// Look for plan between ```plan and ``` markers
+			const planMatch = content.match(/```plan\s*([\s\S]*?)\s*```/);
+			if (planMatch) {
+				return planMatch[1].trim();
+			}
+		}
+		return undefined;
 	}, [messages]);
 
 	// Convenience function to update an existing assistant message or add a new one
