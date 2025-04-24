@@ -57,6 +57,7 @@ export const CreatorOverlay = () => {
 	const [parentStyling, setParentStyling] = useState<Partial<CSSStyleDeclaration> | undefined>();
 	const [projectConfig, setProjectConfig] = useState<ProjectConfig>({ path: "", name: "" });
 	const ideMessenger = useContext(IdeMessengerContext);
+	const [isCreatingProject, setIsCreatingProject] = useState(false);
 
 	const initialMessage = useMemo(() => {
 		const msg = messages.find(x => x.role === "user")?.content;
@@ -264,26 +265,23 @@ export const CreatorOverlay = () => {
 		}
 	}, [messages, sendMessage, setCurrentState, makeAPlan, initialMessage, handleDirectRequest, getMessageText]);
 
+	const safePath = useMemo(() => {
+		// Sanitize the project name by removing any path-traversal characters
+		const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
+		// Handle path joining manually, ensuring no double slashes
+		const safePath = projectConfig.path.endsWith('/')
+			? `${projectConfig.path}${safeName}`
+			: `${projectConfig.path}/${safeName}`;
+		
+		return safePath;
+	}, [projectConfig])
+
 	const handleMakeIt = useCallback(async () => {
 		console.dir("PROJECT CONFIG");
 		console.dir(projectConfig.path);
 		console.dir(currentPlan)
 		if (currentPlan) {
 			if (projectConfig.path && projectConfig.name) {
-				console.dir("CREATING FOLDER");
-				// Create the project folder first
-
-				// Sanitize the project name by removing any path-traversal characters
-				const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, '-');
-				// Handle path joining manually, ensuring no double slashes
-				const safePath = projectConfig.path.endsWith('/')
-					? `${projectConfig.path}${safeName}`
-					: `${projectConfig.path}/${safeName}`;
-
-				await ideMessenger.request("pearCreateFolder", {
-					path: safePath
-				});
-
 				// Then submit the plan with project path
 				await sendMessage("SubmitPlan", {
 					request: `PLAN: ${currentPlan}`,
@@ -298,7 +296,7 @@ export const CreatorOverlay = () => {
 				});
 			}
 		}
-	}, [ideMessenger, sendMessage, currentPlan, projectConfig.path]);
+	}, [ideMessenger, sendMessage, currentPlan, safePath]);
 
 	const handleStateUpdate = useCallback((msg: { data: { targetState: keyof OverlayStates; overlayStates: OverlayStates } }) => {
 		if (!msg.data?.targetState || !msg.data?.overlayStates) return;
@@ -336,6 +334,19 @@ export const CreatorOverlay = () => {
 		}, 100); // Small delay to ensure event handler is registered
 	}, [sendMessage]);
 
+	const handleIdeationRequest = useCallback(() => {
+		handleLlmCall(addMessage("user", initialMessage, true))
+
+		if(isCreatingProject) {
+			console.dir("CREATING FOLDER");
+			// Create the project folder now so roo code doesn't refresh
+			ideMessenger.request("pearCreateFolder", {
+				path: safePath
+			}).catch(e => console.error(`ERROR MAKING FOLDER ${e}`));	
+		}
+
+	}, [safePath, initialMessage, isCreatingProject, handleLlmCall, addMessage]);
+
 	return (
 		<div className="w-full h-full">
 			<ColorManager />
@@ -367,14 +378,14 @@ export const CreatorOverlay = () => {
 									<Ideation
 										initialMessage={initialMessage}
 										setInitialMessage={setInitialMessage}
-										handleRequest={() => {
-											handleLlmCall(addMessage("user", initialMessage, true))
-										}}
-										makeAPlan={makeAPlan}
-										setMakeAPlan={setMakeAPlan}
+										handleRequest={handleIdeationRequest}
 										className=""
 										projectConfig={projectConfig}
 										setProjectConfig={setProjectConfig}
+										makeAPlan={makeAPlan}
+										setMakeAPlan={setMakeAPlan}
+										isCreatingProject={isCreatingProject}
+										setIsCreatingProject={setIsCreatingProject}
 									/>
 								</motion.div>
 							</div>

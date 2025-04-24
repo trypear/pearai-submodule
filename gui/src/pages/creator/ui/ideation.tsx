@@ -23,6 +23,8 @@ interface IdeationProps {
   className?: string;
   projectConfig: ProjectConfig;
   setProjectConfig: React.Dispatch<React.SetStateAction<ProjectConfig>>;
+  isCreatingProject: boolean;
+  setIsCreatingProject: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const Ideation: React.FC<IdeationProps> = ({
@@ -33,12 +35,13 @@ export const Ideation: React.FC<IdeationProps> = ({
   setMakeAPlan,
   className,
   projectConfig,
-  setProjectConfig
+  setProjectConfig,
+  isCreatingProject,
+  setIsCreatingProject
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const projectNameRef = useRef<HTMLInputElement | null>(null)
   const isCapturingRef = useRef(false)
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [hasWorkspaceFolders, setHasWorkspaceFolders] = useState(true)
   const ideMessenger = useContext(IdeMessengerContext)
 
@@ -52,20 +55,20 @@ export const Ideation: React.FC<IdeationProps> = ({
         console.dir(folders)
         setHasWorkspaceFolders(Array.isArray(folders) && folders.length > 0)
         if (!folders || folders.length === 0) {
-          setIsPopoverOpen(true)
+          setIsCreatingProject(true)
         }
       } catch (err) {
         console.error('Failed to check workspace folders:', err)
         setHasWorkspaceFolders(false)
-        setIsPopoverOpen(true)
+        setIsCreatingProject(true)
       }
     }
     checkWorkspaceFolders()
   }, [ideMessenger])
 
-  // Set default project path when isPopoverOpen changes
+  // Set default project path when isCreatingProject changes
   useEffect(() => {
-    if (isPopoverOpen || !hasWorkspaceFolders) {
+    if (isCreatingProject || !hasWorkspaceFolders) {
       setProjectConfig(prev => ({
         ...prev,
         path: "~/pearai-projects",
@@ -74,14 +77,14 @@ export const Ideation: React.FC<IdeationProps> = ({
     } else {
       setProjectConfig({ path: "", name: "" });
     }
-  }, [isPopoverOpen, hasWorkspaceFolders, setProjectConfig]);
+  }, [isCreatingProject, hasWorkspaceFolders, setProjectConfig]);
 
   // Focus project name input when popover opens
   useEffect(() => {
-    if (isPopoverOpen && projectNameRef.current) {
+    if (isCreatingProject && projectNameRef.current) {
       projectNameRef.current.focus();
     }
-  }, [isPopoverOpen]);
+  }, [isCreatingProject]);
 
   const forceFocus = useCallback(() => {
     if (!textareaRef.current) return
@@ -163,7 +166,7 @@ export const Ideation: React.FC<IdeationProps> = ({
       <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
         <PearIcon className="my-auto size-7" />
         <div className="my-auto font-semibold text-2xl">
-          {/* {isPopoverOpen ? "What would you like to make?" : "What would you like to do?"} */}
+          {/* {isCreatingProject ? "What would you like to make?" : "What would you like to do?"} */}
           PearAI Creator
         </div>
       </div>
@@ -175,7 +178,7 @@ export const Ideation: React.FC<IdeationProps> = ({
           setInitialMessage={setInitialMessage}
           handleRequest={handleRequest}
           isDisabled={false}
-          placeholder={isPopoverOpen
+          placeholder={isCreatingProject
             ? "Ask PearAI Creator to build anything! Currently works best with web applications."
             : "Ask PearAI Creator to add new features, fix bugs, and more to your current project!"}
           lockToWhite
@@ -183,15 +186,15 @@ export const Ideation: React.FC<IdeationProps> = ({
           leftButtons={[
             {
               id: ButtonID.NEW_PROJECT,
-              icon: <FolderPlus className={`${isPopoverOpen ? "text-blue-500" : "text-gray-400"}`} />,
+              icon: <FolderPlus className={`${isCreatingProject ? "text-blue-500" : "text-gray-400"}`} />,
               label: "New Project",
               variant: "secondary",
               size: "sm",
               togglable: hasWorkspaceFolders,
-              toggled: isPopoverOpen || !hasWorkspaceFolders,
-              onToggle: (t) => hasWorkspaceFolders && setIsPopoverOpen(t),
+              toggled: isCreatingProject || !hasWorkspaceFolders,
+              onToggle: (t) => hasWorkspaceFolders && setIsCreatingProject(t),
             },
-            ...(isPopoverOpen || !hasWorkspaceFolders ? [{
+            ...(isCreatingProject || !hasWorkspaceFolders ? [{
               id: ButtonID.MAKE_PLAN,
               icon: <FileText className={`${makeAPlan ? "text-blue-500" : "text-gray-400"}`} />,
               label: "Make a plan",
@@ -208,13 +211,13 @@ export const Ideation: React.FC<IdeationProps> = ({
             icon: <ArrowTurnDownLeftIcon style={{ width: "13px", height: "13px" }} />,
             variant: "default",
             size: "sm",
-            disabled: isPopoverOpen && !projectConfig.name.trim(),
+            disabled: isCreatingProject && !projectConfig.name.trim(),
           }}
         />
         <div
           className={cn(
             "overflow-hidden rounded-b-xl border-solid border-b-0  border-l-0 border-r-0 border-t-1 border-gray-300 transition-all duration-300 ease-out",
-            isPopoverOpen ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+            isCreatingProject ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
           )}
           style={
             {
