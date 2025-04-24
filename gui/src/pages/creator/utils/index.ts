@@ -25,7 +25,7 @@ export const getAnimationTargetHeightOffset = () => {
 
 export const setAnimationTargetHeightOffset = (targetHeightOffset: string) => {
     if (typeof window === 'undefined') {
-        return; 
+        return;
     }
 
     window.__creatorOverlayAnimation = {
@@ -39,3 +39,12 @@ export const ButtonID = {
     NEW_PROJECT: 'new-project',
     SUBMIT: 'submit',
 };
+
+export const newProjectType = {
+  NONE: "",
+  WEBAPP: "webapp",
+  MOBILEAPP: "mobileapp",
+  OTHER: "other",
+} as const;
+
+export type NewProjectType = typeof newProjectType[keyof typeof newProjectType];

@@ -6,7 +6,7 @@ import { useMessaging } from "@/util/messagingContext"
 import ColorManager from "./ui/colorManager"
 import { ChatMessage, MessageContent, MessagePart } from "core";
 import { IdeMessengerContext } from "../../context/IdeMessenger"
-import { getAnimationTargetHeightOffset, setAnimationTargetHeightOffset } from "./utils";
+import { getAnimationTargetHeightOffset, newProjectType, setAnimationTargetHeightOffset } from "./utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlanningBar } from "./ui/planningBar"
 import { Button } from "./ui/button";
@@ -225,14 +225,16 @@ export const CreatorOverlay = () => {
 			// Submit the direct request with project path
 			sendMessage("SubmitRequestNoPlan", {
 				request,
-				projectPath: safePath,
-				newProject: true
+				creatorMode: true,
+				newProjectType: newProjectType.WEBAPP,
+				newProjectPath: safePath,
 			});
 		} else {
 			// Submit the direct request without project path
 			sendMessage("SubmitRequestNoPlan", {
 				request,
-				newProject: false
+				creatorMode: true,
+				newProjectType: newProjectType.NONE,
 			});
 		}
 	}, [ideMessenger, sendMessage, projectConfig]);
@@ -285,14 +287,16 @@ export const CreatorOverlay = () => {
 				// Then submit the plan with project path
 				await sendMessage("SubmitPlan", {
 					request: `PLAN: ${currentPlan}`,
-					projectPath: safePath,
-					newProject: true
+					creatorMode: true,
+					newProjectPath: safePath,
+					newProjectType: newProjectType.WEBAPP,
 				});
 			} else {
 				// Submit the plan without project path
 				await sendMessage("SubmitPlan", {
 					request: `PLAN: ${currentPlan}`,
-					newProject: false
+					creatorMode: true,
+					newProjectType: newProjectType.NONE,
 				});
 			}
 		}

@@ -159,7 +159,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       const payload = {
         plan:  msg.payload.request,
         text: msg.payload.request,
-        newProject: msg.payload.request.newProject,
+        ...msg.payload.request,
         ...msg.payload
       };
       this._onDidRequestExecutePlan.fire(payload); // sends off the request to the roo code extension to execute the plan
@@ -173,7 +173,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       const payload = {
         plan: msg.payload.request,
         text: msg.payload.request,
-        newProject: msg.payload.request.newProject,
+        ...msg.payload.request,
         ...msg.payload
       };
       this._onDidRequestExecutePlan.fire(payload);

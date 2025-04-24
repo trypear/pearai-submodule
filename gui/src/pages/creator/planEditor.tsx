@@ -35,7 +35,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
   const editMessageTextAreaRef = useRef<HTMLTextAreaElement | null>(null)
   const [message, setMessage] = useState<string>("")
   const scrollElementRef = useRef<HTMLDivElement>(null)
-  
+
   // Track if user is at the bottom
   const [isAtBottom, setIsAtBottom] = useState(true)
   // Track if there are new messages not in view
@@ -78,7 +78,7 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
       // Reset when streaming stops
       setIsInitialStreaming(false)
     }
-    
+
     // Update previous streaming state
     prevStreamingRef.current = isStreaming
   }, [isStreaming])
@@ -86,12 +86,12 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
   // Set up intersection observer to detect when user is at the bottom
   useEffect(() => {
     if (!scrollElementRef.current) return
-    
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         // Update isAtBottom state based on intersection
         setIsAtBottom(entry.isIntersecting)
-        
+
         // If we see the bottom, clear the new messages indicator
         if (entry.isIntersecting) {
           setHasNewMessages(false)
@@ -103,9 +103,9 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
         threshold: 0.1
       }
     )
-    
+
     observer.observe(scrollElementRef.current)
-    
+
     return () => {
       if (scrollElementRef.current) {
         observer.unobserve(scrollElementRef.current)
@@ -117,26 +117,26 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
   useEffect(() => {
     // Skip if no messages or container
     if (displayMessages.length === 0 || !scrollElementRef.current) return
-    
+
     const latestMessage = displayMessages[displayMessages.length - 1]
-    
+
     // Detect if new message arrived
     const newMessageArrived = messages.length > prevMessageCountRef.current
     prevMessageCountRef.current = messages.length
-    
+
     // Auto-scroll ONLY IF:
     // 1. User was already at the bottom, OR
     // 2. The latest message is from the user, OR
     // 3. ONLY the FIRST chunk of a streaming message (isInitialStreaming)
     if (isAtBottom || latestMessage.role === "user" || isInitialStreaming) {
       scrollElementRef.current.scrollIntoView({ behavior: "smooth" })
-      
+
       // Reset initial streaming flag after first scroll
       if (isInitialStreaming) {
         setIsInitialStreaming(false)
       }
     } else if (newMessageArrived || (isStreaming && !isInitialStreaming)) {
-      // If there's ongoing streaming or new message but we don't auto-scroll, 
+      // If there's ongoing streaming or new message but we don't auto-scroll,
       // show the new message indicator
       setHasNewMessages(true)
     }
@@ -169,12 +169,12 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
                     className={`flex flex-col ${msg.role === "user" ? "border-2 border-white" : ""}`}
                   >
                     <div className="text-xs text-[var(--foreground)] opacity-70 mb-1 flex justify-start gap-4">
-                      <span className="text-nowrap">{msg.role === "assistant" ? "AI Assistant" : "You"}</span>
+                      <span className="text-nowrap">{msg.role === "assistant" ? "PearAI Creator" : "You"}</span>
                       {
                         // Show loading dots for the latest assistant message when it's empty and streaming
-                        isStreaming && 
-                        msg.role === "assistant" && 
-                        msg.content === "" && 
+                        isStreaming &&
+                        msg.role === "assistant" &&
+                        msg.content === "" &&
                         index === msgs.length - 1 && (
                           <DotsContainer>
                             {[0, 1, 2].map((i) => (
@@ -201,9 +201,9 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
                     />
                   </div>
                 ))}
-                
+
                 {/* Absolutely positioned, invisible scroll marker */}
-                <div 
+                <div
                   ref={scrollElementRef}
                   data-testid="scroll-marker"
                   aria-hidden="true"
@@ -216,10 +216,10 @@ export const PlanEditor: React.FC<PlanEditorProps> = ({
               </div>
             )}
           </div>
-          
+
           {/* New message indicator button - only show when not at bottom and have new messages */}
           {hasNewMessages && !isAtBottom && (
-            <button 
+            <button
               onClick={scrollToBottom}
               className="absolute bottom-4 right-4 bg-[var(--buttonBackground)] text-[var(--buttonForeground)] hover:bg-[var(--buttonHoverBackground)] p-2 rounded-full shadow-lg flex items-center justify-center z-10 transition-colors"
               aria-label="Scroll to new messages"
