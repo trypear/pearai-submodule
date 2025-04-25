@@ -402,6 +402,7 @@ function GUI() {
               >
                 <div style={{
                   minHeight: index === state.history.length - 1 ? "50vh" : 0,
+                  paddingBottom: index === state.history.length - 1 ? "10vh" : 0,
                 }}>
                   {item.message.role === "user" ? (
                     <div className="max-w-3xl mx-auto">
