@@ -18,6 +18,22 @@ interface MentionAttrs {
   query?: string;
 }
 
+function formatMemoriesAsContext(memories: { content: string }[]): ContextItemWithId | null {
+  if (memories.length === 0) return null;
+
+  return {
+    id: {
+      itemId: "memories",
+      providerTitle: "memories"
+    },
+    name: "PearAI Memories",
+    description: "User memories and context",
+    content: "<Beginning of relevant user context separated by comma, refer these only if required>\n" +
+            memories.map(m => m.content).join(", ") + "\n" +
+            "<End of relevant user context>"
+  };
+}
+
 /**
  * This function converts the input from the editor to a string, resolving any context items
  * Context items are appended to the top of the prompt and then referenced within the input
@@ -99,6 +115,22 @@ async function resolveEditorContent(
 
   let contextItemsText = "";
   let contextItems: ContextItemWithId[] = [];
+
+  const state = store.getState() as any;
+  const history = state.state?.history || [];
+  const memories = state.state?.memories || [];
+
+  // following is the condition to check for very first msg in chat 
+  // Verifies that no messages have content yet, meaning this is truly the first message being composed
+  const isFirstMessage = history.length <= 2 && history.every(item => !item?.message?.content);
+  if (isFirstMessage && memories.length > 0) {
+    const memoriesContext = formatMemoriesAsContext(memories);
+    if (memoriesContext) {
+      contextItems.push(memoriesContext);
+      contextItemsText += memoriesContext.content + "\n\n";
+    }
+  }
+
   for (const item of contextItemAttrs) {
     const data = {
       name: item.itemType === "contextProvider" ? item.id : item.itemType,
