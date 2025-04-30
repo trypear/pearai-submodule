@@ -41,7 +41,8 @@ export default function Mem0SidebarGUI() {
   const memories = useSelector(
     (store: RootState) => store.state.memories,
   );
-  const isEnabled = (useSelector((state: RootState) => state.state.config.integrations || [])).find(i => i.name === 'mem0')?.enabled;
+  // const isEnabled = (useSelector((state: RootState) => state.state.config.integrations || [])).find(i => i.name === 'mem0')?.enabled;
+  const isEnabled = true;
 
   const searchRef = useRef<HTMLDivElement>(null)
   const editCardRef = useRef<HTMLDivElement>(null);
