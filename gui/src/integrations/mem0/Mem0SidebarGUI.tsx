@@ -307,7 +307,7 @@ export default function Mem0SidebarGUI() {
         <>
           <span className="text-muted-foreground text-xs my-2 flex justify-center gap-2">
             <InfoCircledIcon />
-            Newly created memories are only available in new sessions.
+            Newly created memories are only available in new Agent/Chat sessions.
           </span>
 
           <MemoryFooter

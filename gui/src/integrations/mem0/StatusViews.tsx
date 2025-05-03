@@ -101,10 +101,10 @@ export const EmptyView = ({ onAddMemory }: { onAddMemory: () => void }) => (
           <div className="h-[18px] opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">Local Memory Storage</div>
         </div>
         <div className="w-[300px] h-[140px] overflow-hidden text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-          PearAI Memory allows you to store and manage your coding memories locally. Create memories manually to enhance your coding experience.
+          PearAI Memory allows you to add information for PearAI to remember. Add memories to personalize your building experience!
         </div>
         <div className="w-[300px] h-[100px] overflow-hidden text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-          No memories yet – Click the button below to start creating memories.
+          No memories yet – Click the button below to add memories.
         </div>
 
         <Button
