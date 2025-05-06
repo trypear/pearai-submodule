@@ -234,8 +234,12 @@ export function getSlashCommandDropdownOptions(
   ideMessenger: IIdeMessenger,
 ) {
   const items = async ({ query }) => {
+    const availableCommands = Array.isArray(availableSlashCommandsRef.current) 
+      ? availableSlashCommandsRef.current 
+      : [];
+      
     const options = [
-      ...availableSlashCommandsRef.current,
+      ...availableCommands,
       {
         title: "Build a custom prompt",
         description: "Build a custom prompt",

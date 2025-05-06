@@ -54,7 +54,7 @@ const GradientBorder = styled.div<{
   flex-direction: row;
   align-items: center;
   position: relative;
-  box-shadow: ${(props) => (!props.loading && props.isMainInput ? "0px 0px 20px 0px rgba(0, 0, 0, 0.50)" : "")};
+  // box-shadow: ${(props) => (!props.loading && props.isMainInput ? "0px 0px 20px 0px rgba(0, 0, 0, 0.50)" : "")};
 `;
 
 const wave = keyframes`
@@ -141,7 +141,6 @@ const ContinueInputBox = memo(function ContinueInputBox({
 
   const availableSlashCommands = useSelector(selectSlashCommands);
   let availableContextProviders = getContextProviders();
-  const bareChatMode = source === "continue";
 
   useWebviewListener(
     "newSessionWithPrompt",
@@ -191,9 +190,7 @@ const ContinueInputBox = memo(function ContinueInputBox({
           onEnter={onEnter}
           isMainInput={isMainInput}
           availableContextProviders={availableContextProviders}
-          availableSlashCommands={
-            bareChatMode ? undefined : availableSlashCommands
-          }
+          availableSlashCommands={availableSlashCommands}
           source={source}
           onChange={handleEditorChange}
           onHeightChange={onHeightChange}

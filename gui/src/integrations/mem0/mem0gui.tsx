@@ -103,7 +103,7 @@ function formatTimestamp(timestamp: string): string {
     });
   }
 
-export default function Mem0GUI() {
+export function DeprecatedMem0GUI() {
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("");
   const [isExpanded, setIsExpanded] = useState(false)
@@ -386,19 +386,22 @@ export default function Mem0GUI() {
     }
 
     return getCurrentPageMemories().map((memory: Memory) => (
-      <MemoryCard
-        key={memory.id}
-        memory={memory}
-        editingId={editingId}
-        editedContent={editedContent}
-        editCardRef={editCardRef}
-        onEdit={onEdit}
-        setEditedContent={setEditedContent}
-        handleCancelEdit={handleCancelEdit}
-        handleUnsavedEdit={handleUnsavedEdit}
-        handleDelete={handleDelete}
-        handleKeyPress={handleKeyPress}
-      />
+      // <MemoryCard
+      //   key={memory.id}
+      //   memory={memory}
+      //   editingId={editingId}
+      //   editedContent={editedContent}
+      //   editCardRef={editCardRef}
+      //   onEdit={onEdit}
+      //   setEditedContent={setEditedContent}
+      //   handleCancelEdit={handleCancelEdit}
+      //   handleUnsavedEdit={handleUnsavedEdit}
+      //   handleDelete={handleDelete}
+      //   handleKeyPress={handleKeyPress}
+      // />
+      <div>
+        deprecated mem0 Mem0GUI
+      </div>
     ));
   };
 
@@ -625,4 +628,12 @@ export default function Mem0GUI() {
         </div>
     </div>
   );
+}
+
+export default function Mem0GUI() {
+  return (
+    <div>
+      This Mem0GUI is deprecated. Please use the new sidebarMem0GUI instead.
+    </div>
+  )
 }

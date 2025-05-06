@@ -114,7 +114,7 @@ export const defaultConfig: SerializedContinueConfig = {
     {
       name: "mem0",
       description: "PearAI Personalized Chat powered by Mem0",
-      enabled: false,
+      enabled: true,
     }
   ],
 };

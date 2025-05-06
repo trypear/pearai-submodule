@@ -45,7 +45,7 @@ import {
 } from "../../pages/gui";
 import { CustomTutorialCard } from "@/components/mainInput/CustomTutorialCard";
 import { cn } from "@/lib/utils";
-import { Citations } from './Citations';
+import { Citations } from "./Citations";
 import { Button } from "@/components/ui/button";
 import { HistorySidebar } from "@/components/HistorySidebar";
 import styled from "styled-components";
@@ -53,7 +53,6 @@ import { lightGray, vscBackground } from "@/components";
 import InventoryDetails from "../../components/InventoryDetails";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import "@/continue-styles.css";
-
 
 const StepsDiv = styled.div`
   padding-bottom: 8px;
@@ -81,13 +80,12 @@ const InputContainer = styled.div<{ isNewSession?: boolean }>`
   padding-bottom: 0.3rem;
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
-  position: ${props => props.isNewSession ? 'relative' : 'fixed'};
-  bottom: ${props => props.isNewSession ? 'auto' : '0'};
+  position: ${(props) => (props.isNewSession ? "relative" : "fixed")};
+  bottom: ${(props) => (props.isNewSession ? "auto" : "0")};
   left: 0;
   right: 0;
   background-color: ${vscBackground};
 `;
-
 
 function PerplexityGUI() {
   const posthog = usePostHog();
@@ -263,6 +261,12 @@ function PerplexityGUI() {
     [state.perplexityHistory],
   );
 
+  const adjustPadding = useCallback((height: number) => {
+    if (topGuiDivRef.current) {
+      topGuiDivRef.current.style.paddingBottom = `${height + 20}px`;
+    }
+  }, []);
+
   // force re-render continueInputBox when history changes
   useEffect(() => {
     historyKeyRef.current += 1;
@@ -275,9 +279,10 @@ function PerplexityGUI() {
       if (inputContainerRef.current && topGuiDivRef.current) {
         const scrollTop = topGuiDivRef.current.scrollTop;
         const height = inputContainerRef.current.offsetHeight;
-        const newPadding = state.perplexityHistory.length === 0 ? '0px' : `${height + 20}px`;
+        const newPadding =
+          state.perplexityHistory.length === 0 ? "0px" : `${height + 20}px`;
 
-        topGuiDivRef.current.style.paddingBottom = '0px';
+        topGuiDivRef.current.style.paddingBottom = "0px";
         topGuiDivRef.current.offsetHeight; // Force reflow
         topGuiDivRef.current.style.paddingBottom = newPadding;
 
@@ -307,7 +312,7 @@ function PerplexityGUI() {
         <HistorySidebar
           isOpen={historySidebarOpen}
           onClose={() => {
-            setHistorySidebarOpen(false)
+            setHistorySidebarOpen(false);
           }}
           from="perplexity"
         />
@@ -315,7 +320,7 @@ function PerplexityGUI() {
         <div
           className={cn(
             "flex-1 flex flex-col min-w-0",
-            historySidebarOpen ? "mr-72" : "mr-0"
+            historySidebarOpen ? "mr-72" : "mr-0",
           )}
         >
           {/* <Button
@@ -334,8 +339,11 @@ function PerplexityGUI() {
               </>
             )}
           </Button> */}
-          <TopGuiDiv ref={topGuiDivRef} onScroll={handleScroll} isNewSession={state.history.length === 0}>
-
+          <TopGuiDiv
+            ref={topGuiDivRef}
+            onScroll={handleScroll}
+            isNewSession={state.history.length === 0}
+          >
             <div
               className={cn(
                 "",
@@ -346,7 +354,6 @@ function PerplexityGUI() {
               {state.perplexityHistory.length === 0 && (
                 <div className="max-w-2xl mx-auto w-full h-[calc(100vh-210px)] text-center flex flex-col justify-center">
                   <div className="w-full h-[700px] text-center flex flex-col items-center justify-center relative gap-5">
-
                     <div className="flex-1 flex absolute bottom-[260px] items-center justify-center">
                       <img
                         src={getLogoPath("pearai-search-splash.svg")}
@@ -356,14 +363,19 @@ function PerplexityGUI() {
 
                     <div className="w-[300px] h-[240px] absolute bottom-0 overflow-hidden flex-col justify-start items-start gap-5 inline-flex">
                       <div className="flex flex-col text-left">
-                        <div className="text-2xl font-['SF Pro']">PearAI Search</div>
-                        <div className="h-[18px] opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">Powered by Perplexity</div>
+                        <div className="text-2xl font-['SF Pro']">
+                          PearAI Search
+                        </div>
+                        <div className="h-[18px] opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
+                          Powered by Perplexity
+                        </div>
                       </div>
                       <div className="w-[300px] h-[100px] overflow-hidden text-left opacity-50 text-xs font-normal font-['SF Pro'] leading-[18px]">
-                        AI-powered search engine: up-to-date information for docs, libraries, etc. Also good for non-coding specific questions.
+                        AI-powered search engine: up-to-date information for
+                        docs, libraries, etc. Also good for non-coding specific
+                        questions.
                       </div>
                     </div>
-
                   </div>
                 </div>
               )}
@@ -375,106 +387,126 @@ function PerplexityGUI() {
                         FallbackComponent={fallbackRender}
                         onReset={() => {
                           dispatch(
-                            newSession({ session: undefined, source: "perplexity" }),
+                            newSession({
+                              session: undefined,
+                              source: "perplexity",
+                            }),
                           );
                         }}
                       >
-                        {item.message.role === "user" ? (
-                          <div className="max-w-3xl mx-auto">
-                            <div className="max-w-96 ml-auto px-2">
-                              <ContinueInputBox
-                                key={historyKeyRef.current}
-                                onEnter={async (editorState, modifiers) => {
-                                  streamResponse(
-                                    editorState,
-                                    modifiers,
-                                    ideMessenger,
-                                    index,
-                                    "perplexity",
-                                  );
-                                }}
-                                isLastUserInput={isLastUserInput(index)}
-                                isMainInput={false}
-                                editorState={item.editorState}
-                                contextItems={item.contextItems}
-                                source="perplexity"
-                              />
+                        <div
+                          style={{
+                            minHeight:
+                              index === state.history.length - 1 ? "50vh" : 0,
+                            paddingBottom:
+                              index === state.history.length - 1 ? "10vh" : 0,
+                          }}
+                        >
+                          {item.message.role === "user" ? (
+                            <div className="max-w-3xl mx-auto">
+                              <div className="max-w-96 ml-auto px-2">
+                                <ContinueInputBox
+                                  key={historyKeyRef.current}
+                                  onEnter={async (editorState, modifiers) => {
+                                    streamResponse(
+                                      editorState,
+                                      modifiers,
+                                      ideMessenger,
+                                      index,
+                                      "perplexity",
+                                    );
+                                  }}
+                                  isLastUserInput={isLastUserInput(index)}
+                                  isMainInput={false}
+                                  editorState={item.editorState}
+                                  contextItems={item.contextItems}
+                                  source="perplexity"
+                                />
+                              </div>
                             </div>
-                          </div>
-                        ) : (
-                          <div className="thread-message">
-                            <TimelineItem
-                              item={item}
-                              iconElement={
-                                <ChatBubbleOvalLeftIcon width="16px" height="16px" />
-                              }
-                              open={
-                                typeof stepsOpen[index] === "undefined"
-                                  ? true
-                                  : stepsOpen[index]!
-                              }
-                              onToggle={() => { }}
-                            >
-                              {item.citations &&
-                                <Citations
-                                  citations={item.citations}
-                                  isLast={
-                                    index === sessionState.perplexityHistory.length - 1
-                                  }
-                                  active={active}
-                                />}
-                              <StepContainer
-                                index={index}
-                                isLast={
-                                  index === sessionState.perplexityHistory.length - 1
+                          ) : (
+                            <div className="thread-message">
+                              <TimelineItem
+                                item={item}
+                                iconElement={
+                                  <ChatBubbleOvalLeftIcon
+                                    width="16px"
+                                    height="16px"
+                                  />
                                 }
-                                isFirst={index === 0}
                                 open={
                                   typeof stepsOpen[index] === "undefined"
                                     ? true
                                     : stepsOpen[index]!
                                 }
-                                key={index}
-                                onUserInput={(input: string) => { }}
-                                item={item}
-                                onReverse={() => { }}
-                                onRetry={() => {
-                                  streamResponse(
-                                    state.perplexityHistory[index - 1].editorState,
-                                    state.perplexityHistory[index - 1].modifiers ??
-                                    defaultInputModifiers,
-                                    ideMessenger,
-                                    index - 1,
-                                    "perplexity",
-                                  );
-                                }}
-                                onContinueGeneration={() => {
-                                  window.postMessage(
-                                    {
-                                      messageType: "userInput",
-                                      data: {
-                                        input: "Keep going.",
+                                onToggle={() => { }}
+                              >
+                                {item.citations && (
+                                  <Citations
+                                    citations={item.citations}
+                                    isLast={
+                                      index ===
+                                      sessionState.perplexityHistory.length - 1
+                                    }
+                                    active={active}
+                                  />
+                                )}
+                                <StepContainer
+                                  index={index}
+                                  isLast={
+                                    index ===
+                                    sessionState.perplexityHistory.length - 1
+                                  }
+                                  isFirst={index === 0}
+                                  open={
+                                    typeof stepsOpen[index] === "undefined"
+                                      ? true
+                                      : stepsOpen[index]!
+                                  }
+                                  key={index}
+                                  onUserInput={(input: string) => { }}
+                                  item={item}
+                                  onReverse={() => { }}
+                                  onRetry={() => {
+                                    streamResponse(
+                                      state.perplexityHistory[index - 1]
+                                        .editorState,
+                                      state.perplexityHistory[index - 1]
+                                        .modifiers ?? defaultInputModifiers,
+                                      ideMessenger,
+                                      index - 1,
+                                      "perplexity",
+                                    );
+                                  }}
+                                  onContinueGeneration={() => {
+                                    window.postMessage(
+                                      {
+                                        messageType: "userInput",
+                                        data: {
+                                          input: "Keep going.",
+                                        },
                                       },
-                                    },
-                                    "*",
-                                  );
-                                }}
-                                onDelete={() => {
-                                  dispatch(
-                                    deleteMessage({
-                                      index: index,
-                                      source: "perplexity",
-                                    }),
-                                  );
-                                }}
-                                modelTitle={
-                                  item.promptLogs?.[0]?.completionOptions?.model ?? ""
-                                }
-                                source="perplexity"
-                              />
-                            </TimelineItem>
-                          </div>
-                        )}
+                                      "*",
+                                    );
+                                  }}
+                                  onDelete={() => {
+                                    dispatch(
+                                      deleteMessage({
+                                        index: index,
+                                        source: "perplexity",
+                                      }),
+                                    );
+                                  }}
+                                  modelTitle={
+                                    item.promptLogs?.[0]?.completionOptions
+                                      ?.model ?? ""
+                                  }
+                                  source="perplexity"
+                                />
+                              </TimelineItem>
+                            </div>
+                          )}
+                        </div>
                       </ErrorBoundary>
                     </Fragment>
                   ))}
@@ -504,9 +536,8 @@ function PerplexityGUI() {
             isMainInput={true}
             hidden={active}
             source="perplexity"
-            className={cn(
-              state.perplexityHistory.length === 0 && "shadow-lg"
-            )}
+            onHeightChange={adjustPadding}
+            className={cn(state.perplexityHistory.length === 0 && "shadow-lg")}
           />
         </InputContainer>
       )}

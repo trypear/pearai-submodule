@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSelector, useDispatch } from 'react-redux';
 import { Plus, RotateCcw } from "lucide-react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
+import { ChevronLeftIcon, ChevronRightIcon, InfoCircledIcon } from "@radix-ui/react-icons";
 import { useContext } from 'react';
 import { IdeMessengerContext } from '../../context/IdeMessenger';
 import { setMem0Memories } from "@/redux/slices/stateSlice";
@@ -24,7 +24,7 @@ import {
 import { MemoryFooter } from "./MemoryFooter";
 import "@/continue-styles.css";
 
-const MEMORIES_PER_PAGE = 4;
+const MEMORIES_PER_PAGE = 8;
 
 export default function Mem0SidebarGUI() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -32,6 +32,7 @@ export default function Mem0SidebarGUI() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editedContent, setEditedContent] = useState("");
+  const [validationError, setValidationError] = useState<string | null>(null);
   const ideMessenger = useContext(IdeMessengerContext);
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -41,11 +42,8 @@ export default function Mem0SidebarGUI() {
   const memories = useSelector(
     (store: RootState) => store.state.memories,
   );
-  const isEnabled = (useSelector((state: RootState) => state.state.config.integrations || [])).find(i => i.name === 'mem0')?.enabled;
-
-  // for batch edits
-  const [unsavedChanges, setUnsavedChanges] = useState<MemoryChange[]>([]);
-  const [originalMemories, setOriginalMemories] = useState<Memory[]>([]);
+  // const isEnabled = (useSelector((state: RootState) => state.state.config.integrations || [])).find(i => i.name === 'mem0')?.enabled;
+  const isEnabled = true;
 
   const searchRef = useRef<HTMLDivElement>(null)
   const editCardRef = useRef<HTMLDivElement>(null);
@@ -53,7 +51,6 @@ export default function Mem0SidebarGUI() {
   const fetchMemories = async () => {
     try {
       setIsLoading(true);
-      // get all memories
       const response = await ideMessenger.request('mem0/getMemories', undefined);
       const memories = response.map((memory) => ({
         id: memory.id,
@@ -64,7 +61,6 @@ export default function Mem0SidebarGUI() {
         isNew: false
       }));
       dispatch(setMem0Memories(memories));
-      setOriginalMemories(memories);
     } catch (error) {
       console.error('Failed to fetch memories:', error);
     } finally {
@@ -76,6 +72,8 @@ export default function Mem0SidebarGUI() {
     // reset search query if any
     setSearchQuery('');
     setIsExpanded(false);
+    // Reset to first page when adding a new memory
+    setCurrentPage(1);
 
     const newMemory: Memory = {
       id: Date.now().toString(), // temporary ID generation, this should be the id value returned from the API
@@ -84,15 +82,9 @@ export default function Mem0SidebarGUI() {
       isNew: true  // handle creation on BE
     };
     dispatch(setMem0Memories([newMemory, ...memories])); // Add to beginning of list for edit mode on new memory
-    setUnsavedChanges(prev => [...prev, {
-      type: 'new',
-      id: newMemory.id,
-      content: ""
-    }]);
     setEditedContent(""); // Clear edited content
     setEditingId(newMemory.id); // Automatically enter edit mode
   };
-
 
   // Handle edit button click
   const onEdit = (memory: Memory) => {
@@ -100,101 +92,49 @@ export default function Mem0SidebarGUI() {
     setEditedContent(memory.content);
   }
 
-  const handleSaveAllChanges = async () => {
+  const handleSaveMemory = async (memoryId: string, content: string) => {
+    // Validate content is not empty
+    if (!content.trim()) {
+      setValidationError("Content cannot be empty");
+      return;
+    }
+
     try {
+      setValidationError(null);
       setIsUpdating(true);
       setIsLoading(true);
+
+      const memory = memories.find(m => m.id === memoryId);
+      const change: MemoryChange = memory.isNew
+        ? { type: 'new', id: memoryId, content }
+        : { type: 'edit', id: memoryId, content };
+
       const response = await ideMessenger.request('mem0/updateMemories', {
-        changes: unsavedChanges
+        changes: [change]
       });
 
       if (response) {
         await fetchMemories();
       }
     } catch (error) {
-      console.error('Failed to save memories:', error);
+      console.error('Failed to save memory:', error);
     } finally {
       setIsLoading(false);
       setIsUpdating(false);
-    }
-
-    // Reset unsaved changes and editing state
-    setUnsavedChanges([]);
-    setEditingId(null);
-    setEditedContent("");
-  };
-
-  const handleCancelAllChanges = () => {
-    dispatch(setMem0Memories(originalMemories.map(memory => ({
-      ...memory,
-      isModified: false,
-      isDeleted: false,
-      isNew: false
-    }))));
-
-    setUnsavedChanges([]);
-    setEditingId(null);
-    setEditedContent("");
-  };
-
-  // batch edit
-  const handleUnsavedEdit = () => {
-    if (!editingId) return;
-    const memory = memories.find(m => m.id === editingId);
-    if (editedContent === memory.content) {
       setEditingId(null);
       setEditedContent("");
-      return
-    };
-    if (editedContent === '') {
-      handleDelete(memory.id);
-      setEditingId(null);
-      setEditedContent("");
-      return
     }
-
-    // Update or add to unsaved changes
-    setUnsavedChanges(prev => {
-      const existingChangeIndex = prev.findIndex(change => change.id === editingId);
-      if (existingChangeIndex >= 0) {
-        // Update existing change
-        const newChanges = [...prev];
-        newChanges[existingChangeIndex] = {
-          ...newChanges[existingChangeIndex],
-          content: editedContent
-        };
-        return newChanges;
-      } else {
-        // Add new change
-        return [...prev, {
-          type: memory.isNew ? 'new' : 'edit',
-          id: editingId,
-          content: editedContent
-        }];
-      }
-    });
-
-    dispatch(setMem0Memories(
-      memories.map(memory =>
-        memory.id === editingId
-          ? { ...memory, content: editedContent, isModified: true }
-          : memory
-      )
-    ));
-
-    setEditingId(null);
-    setEditedContent("");
   };
 
   // Handle cancel edit
   const handleCancelEdit = (memory: Memory) => {
-    if (memory.content === "") {
+    if (memory.isNew) {
       // If this was a new memory, remove it
-      // setMemories(prev => prev.filter(m => m.id !== memory.id));
       dispatch(setMem0Memories(memories.filter(m => m.id !== memory.id)));
     }
     setEditingId(null);
     setEditedContent("");
+    setValidationError(null);
   }
 
   // Handle click outside
@@ -218,7 +158,9 @@ export default function Mem0SidebarGUI() {
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleUnsavedEdit();
+      if (editingId) {
+        handleSaveMemory(editingId, editedContent);
+      }
     }
   };
 
@@ -262,19 +204,24 @@ export default function Mem0SidebarGUI() {
     }
   }
 
-  const handleDelete = (memoryId: string) => {
-    setUnsavedChanges(prev => {
-      // Remove any existing changes for this memory ID
-      const filteredChanges = prev.filter(change => change.id !== memoryId);
-      // Add the delete change
-      return [...filteredChanges, { type: 'delete', id: memoryId }];
-    });
+  const handleDelete = async (memoryId: string) => {
+    try {
+      setIsUpdating(true);
+      setIsLoading(true);
 
-    dispatch(setMem0Memories(memories.map(memory =>
-      memory.id === memoryId
-        ? { ...memory, isDeleted: true }
-        : memory
-    )));
+      const response = await ideMessenger.request('mem0/updateMemories', {
+        changes: [{ type: 'delete', id: memoryId }]
+      });
+
+      if (response) {
+        await fetchMemories();
+      }
+    } catch (error) {
+      console.error('Failed to delete memory:', error);
+    } finally {
+      setIsLoading(false);
+      setIsUpdating(false);
+    }
   };
 
   // Handle clicking outside of search to collapse it
@@ -290,14 +237,12 @@ export default function Mem0SidebarGUI() {
   }, [])
 
   const renderContent = () => {
-    const isEditingNewMemory = editingId && unsavedChanges.some(change => change.type === 'new' && change.id === editingId);
-
     if (isLoading) {
       return isUpdating ? <UpdatingView /> : <LoadingView />;
     }
 
-    if (!isEditingNewMemory && unsavedChanges.length > 0 && !isEnabled) {
-      return <DisabledView hasUnsavedChanges={unsavedChanges.length > 0} />;
+    if (!isEnabled) {
+      return <DisabledView hasUnsavedChanges={false} />;
     }
 
     if (memories.length === 0) {
@@ -320,9 +265,10 @@ export default function Mem0SidebarGUI() {
             onEdit={onEdit}
             setEditedContent={setEditedContent}
             handleCancelEdit={handleCancelEdit}
-            handleUnsavedEdit={handleUnsavedEdit}
+            handleSaveMemory={handleSaveMemory}
             handleDelete={handleDelete}
             handleKeyPress={handleKeyPress}
+            validationError={validationError}
           />
         ))}
       </div>
@@ -343,7 +289,7 @@ export default function Mem0SidebarGUI() {
               icon={Plus}
               tooltip="Add a new memory"
               onClick={handleAddNewMemory}
-              disabled={!!searchQuery || isExpanded}
+              disabled={!!searchQuery || isExpanded || editingId !== null}
             />
             <ActionButton
               icon={RotateCcw}
@@ -355,21 +301,26 @@ export default function Mem0SidebarGUI() {
         </div>
       </header>
 
-      <div className={`flex-1 ${memories.length === 0 ?  'absolute inset-x-0 px-2': 'space-y-3 overflow-hidden'}`}>
+      <div className={`flex-1 ${memories.length === 0 ? 'absolute inset-x-0 px-2' : 'space-y-3 overflow-hidden'}`}>
         {renderContent()}
       </div>
+      {isEnabled &&
+        <>
+          <span className="text-muted-foreground text-xs my-2 flex justify-center gap-2">
+            <InfoCircledIcon />
+            Newly created memories are only available in new Agent/Chat sessions.
+          </span>
 
-      <MemoryFooter
-        unsavedChanges={unsavedChanges.length > 0}
-        handleCancelAllChanges={handleCancelAllChanges}
-        handleSaveAllChanges={handleSaveAllChanges}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        handlePrevPage={handlePrevPage}
-        handleNextPage={handleNextPage}
-        hasMemories={filteredMemories.length > 0}
-        isUpdating={isUpdating}
-      />
+          <MemoryFooter
+            currentPage={currentPage}
+            totalPages={totalPages}
+            handlePrevPage={handlePrevPage}
+            handleNextPage={handleNextPage}
+            hasMemories={filteredMemories.length > 0}
+            isUpdating={isUpdating}
+          />
+        </>
+      }
     </div>
   );
 }
