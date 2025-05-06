@@ -2,6 +2,7 @@ import { Button, ButtonProps } from "./../ui/button"
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
 import React, { useCallback, useState, useMemo, useEffect } from "react"
 import { ButtonID } from "../utils"
+import { cn } from "../../../lib/utils"
 
 // Define our InputBoxButtonProps
 export interface InputBoxButtonProps extends ButtonProps {
@@ -27,6 +28,7 @@ export interface InputBoxProps {
   initialRows?: number
   showBorder?: boolean
   borderColor?: string
+  className?: string
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -44,9 +46,14 @@ export const InputBox: React.FC<InputBoxProps> = ({
   initialRows,
   showBorder = false,
   borderColor,
+  className,
 }) => {
   // Keep track of which buttons are toggled
-  const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
+  const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({
+    [ButtonID.NEW_PROJECT]: true,
+    [ButtonID.MAKE_PLAN]: true,
+    [ButtonID.SUBMIT]: false,
+  });
 
   // Adjust textarea height on content change or when initialMessage changes
   useEffect(() => {
@@ -97,10 +104,14 @@ export const InputBox: React.FC<InputBoxProps> = ({
       <Button
         key={id}
         toggled={togglable ? isToggled : undefined}
-        onToggle={togglable ? (newToggled) => {
-          handleToggle(id, newToggled);
-          onToggle?.(newToggled);
-        } : undefined}
+        onClick={() => {
+          if(togglable) {
+            console.log(`Button ${id} toggled: ${!isToggled}`);
+            handleToggle(id, !isToggled);
+            onToggle?.(!isToggled);
+          }
+
+        }}
         {...rest}
         className="rounded-lg p-1.5 cursor-pointer"
       >
@@ -140,7 +151,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
 
   return (
     <div
-      className={`flex flex-col gap-2 p-3 items-center border border-solidd border-red-500 ${isNewProjectSelected ? 'rounded-t-xl' : 'rounded-xl'} ${showBorder ? 'border-box' : ''}`}
+      className={cn(`flex flex-col gap-2 p-3 items-center border border-solidd border-red-500 ${isNewProjectSelected ? 'rounded-t-xl' : 'rounded-xl'} ${showBorder ? 'border-box' : ''}`, className)}
       style={{
         backgroundColor: lockToWhite ? 'white' : 'var(--widgetBackground)',
         ...borderStyle

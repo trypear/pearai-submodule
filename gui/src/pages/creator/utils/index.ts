@@ -38,7 +38,7 @@ export const ButtonID = {
     MAKE_PLAN: 'make-plan',
     NEW_PROJECT: 'new-project',
     SUBMIT: 'submit',
-};
+} as const;
 
 export const newProjectType = {
   NONE: "",
