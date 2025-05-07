@@ -10,6 +10,7 @@ import { IMessenger } from "core/util/messenger";
 import { ToCoreFromIdeOrWebviewProtocol } from "core/protocol/core";
 import { FromCoreProtocol } from "core/protocol";
 import { getGlobalContext } from "../../extension";
+import { CreatorModeStateParams } from "./types";
 
 /**
  * The format for all of the messages that come from the webview
@@ -66,6 +67,20 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       this._onDidChangeCreatorModeState,
       this._onDidRequestExecutePlan,
     );
+    this.handleInitiation();
+  }
+
+  private async handleInitiation(): Promise<void> {
+    // Get the current state of the creator mode
+    const state = await this.getCreatorModeState();
+    if (state) {
+      this.creatorState = "OVERLAY_CLOSED_CREATOR_ACTIVE";
+      this._onDidRequestExecutePlan.fire({
+        plan: state.prompt,
+      });
+      // clearing the state after we've used it
+      await this.setCreatorModeState(undefined);
+    }
   }
 
   public dispose(): void {
@@ -124,6 +139,20 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     }
   }
 
+  private async setCreatorModeState(
+    state: CreatorModeStateParams,
+  ): Promise<void> {
+    await getGlobalContext().globalState.update("creatorModeParams", state);
+  }
+
+  private async getCreatorModeState(): Promise<CreatorModeStateParams> {
+    const state =
+      getGlobalContext().globalState.get<CreatorModeStateParams>(
+        "creatorModeParams",
+      );
+    return state;
+  }
+
   private async openNewCreatorWindow({
     path,
     prompt,
@@ -137,7 +166,12 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     // The key is to explicitly set forceNewWindow: true
 
     await getGlobalContext().globalState.update("creatorModeParams", {
-      isCreatorMode: true,
+      path: folderUri.fsPath,
+      prompt,
+      timestamp: Date.now(),
+    });
+
+    await this.setCreatorModeState({
       path: folderUri.fsPath,
       prompt,
       timestamp: Date.now(),
@@ -214,7 +248,6 @@ export class PearAICreatorMode implements IPearAICreatorMode {
           path: msg.payload.newProjectPath,
           prompt: msg.payload.request,
         });
-        // TODO: HANDLE OPENING THE NEW WINDOW
       }
     } else if (msg.messageType === "SubmitRequestNoPlan") {
       console.dir(`MSG PAYLOAD FOR SubmitRequestNoPlan: ${msg.payload}`);
@@ -234,7 +267,6 @@ export class PearAICreatorMode implements IPearAICreatorMode {
           path: msg.payload.newProjectPath,
           prompt: msg.payload.request,
         });
-        // TODO: HANDLE OPENING THE NEW WINDOW
       }
       // Handle direct request without planning
       // Format payload to match ExecutePlanRequest
