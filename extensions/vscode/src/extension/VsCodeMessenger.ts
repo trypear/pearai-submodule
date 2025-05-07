@@ -210,40 +210,63 @@ export class VsCodeMessenger {
     this.onWebview("pearOpenCreator", (msg) => {
       vscode.commands.executeCommand("workbench.action.toggleCreatorView");
     });
-    this.onWebview("pearCreateFolder", (msg) => {
-      console.dir("CREATE FOLDER:");
-      console.dir(msg.data.path);
-      let path = msg.data.path;
+    this.onWebview("replaceWorkspaceFolder", async (msg) => {
+      // Type guard for msg.data and path
+      if (
+        !msg.data ||
+        typeof msg.data !== "object" ||
+        typeof (msg.data as any).path !== "string"
+      ) {
+        vscode.window.showErrorMessage(
+          "Invalid message data: expected { path: string }",
+        );
+        return;
+      }
+      const path: string = (msg.data as any).path;
+
+      console.dir("REPLACE WORKSPACE FOLDER:");
+      console.dir(path);
 
       // Resolve ~ to home directory
-      if (path.startsWith("~")) {
+      let resolvedPath = path;
+      if (resolvedPath.startsWith("~")) {
         const os = require("os");
-        path = path.replace("~", os.homedir());
+        resolvedPath = resolvedPath.replace("~", os.homedir());
         console.dir("RESOLVED PATH:");
-        console.dir(path);
+        console.dir(resolvedPath);
       }
 
       // Create the new folder URI
-      const folderUri = vscode.Uri.file(path);
+      const folderUri = vscode.Uri.file(resolvedPath);
 
       console.dir("FOLDERURI:");
       console.dir(folderUri);
 
       // Create the folder
       try {
-        vscode.workspace.fs.createDirectory(folderUri);
-        vscode.window.showInformationMessage(`Folder "${path}" created.`);
+        await vscode.workspace.fs.createDirectory(folderUri);
+        vscode.window.showInformationMessage(
+          `Folder "${resolvedPath}" created.`,
+        );
       } catch (error) {
         vscode.window.showErrorMessage(`Failed to create folder: ${error}`);
+        return;
       }
 
-      vscode.workspace.updateWorkspaceFolders(
-        vscode.workspace.workspaceFolders
-          ? vscode.workspace.workspaceFolders.length
-          : 0,
-        0,
-        { uri: folderUri },
-      );
+      // Remove all current workspace folders, then add the new one
+      try {
+        const workspaceFolders = vscode.workspace.workspaceFolders;
+        if (workspaceFolders && workspaceFolders.length > 0) {
+          // Remove all folders
+          vscode.workspace.updateWorkspaceFolders(0, workspaceFolders.length);
+        }
+        // Add the new folder
+        vscode.workspace.updateWorkspaceFolders(0, 0, { uri: folderUri });
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `Failed to replace workspace folder: ${error}`,
+        );
+      }
     });
     this.onWebview("pearAIinstallation", (msg) => {
       const { tools } = msg.data;
