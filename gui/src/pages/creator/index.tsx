@@ -11,7 +11,7 @@ import { Ideation } from "./ui/ideation";
 import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext";
 import ColorManager from "./ui/colorManager";
-import { ChatMessage, MessageContent, MessagePart, NewProjectEnum } from "core";
+import { ChatMessage, MessageContent, MessagePart, NewProjectType } from "core";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import {
   getAnimationTargetHeightOffset,
@@ -267,7 +267,7 @@ export const CreatorOverlay = () => {
         sendMessage("SubmitRequestNoPlan", {
           request,
           creatorMode: true,
-          newProjectType: NewProjectEnum.WEBAPP,
+          newProjectType: "WEBAPP" satisfies NewProjectType,
           newProjectPath: safePath,
         });
       } else {
@@ -275,7 +275,7 @@ export const CreatorOverlay = () => {
         sendMessage("SubmitRequestNoPlan", {
           request,
           creatorMode: true,
-          newProjectType: NewProjectEnum.NONE,
+          newProjectType: "NONE" satisfies NewProjectType,
         });
       }
     },
@@ -343,14 +343,14 @@ export const CreatorOverlay = () => {
           request: `PLAN: ${currentPlan}`,
           creatorMode: true,
           newProjectPath: safePath,
-          newProjectType: NewProjectEnum.WEBAPP,
+          newProjectType: "WEBAPP" satisfies NewProjectType,
         });
       } else {
         // Submit the plan without project path
         await sendMessage("SubmitPlan", {
           request: `PLAN: ${currentPlan}`,
           creatorMode: true,
-          newProjectType: NewProjectEnum.NONE,
+          newProjectType: "NONE" satisfies NewProjectType,
         });
       }
     }

@@ -4,7 +4,7 @@ import {
   CreatorModeState,
   ExecutePlanRequest,
   IPearAICreatorMode,
-  NewProjectEnum,
+  NewProjectType,
 } from "core";
 import { IMessenger } from "core/util/messenger";
 import { ToCoreFromIdeOrWebviewProtocol } from "core/protocol/core";
@@ -126,11 +126,9 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
   private async openNewCreatorWindow({
     path,
-    projectName,
     prompt,
   }: {
     path: string;
-    projectName: string;
     prompt: string;
   }): Promise<void> {
     const folderUri = vscode.Uri.file(path);
@@ -141,7 +139,6 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     await getGlobalContext().globalState.update("creatorModeParams", {
       isCreatorMode: true,
       path: folderUri.fsPath,
-      projectName,
       prompt,
       timestamp: Date.now(),
     });
@@ -202,20 +199,27 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       }
     } else if (msg.messageType === "SubmitPlan") {
       console.dir(`MSG PAYLOAD FOR SUBMITPLAN: ${msg.payload}`);
-      // TODO: HANDLE OPENING THE NEW WINDOW
-      // const payload = {
-      //   plan:  msg.payload.request,
-      //   text: msg.payload.request,
-      //   ...msg.payload.request,
-      //   ...msg.payload
-      // };
-      // this._onDidRequestExecutePlan.fire(payload); // sends off the request to the roo code extension to execute the plan
-      // this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
+      const newProjectType = msg.payload.request.projectType as NewProjectType;
+      if (newProjectType === "NONE") {
+        const payload = {
+          plan: msg.payload.request,
+          text: msg.payload.request,
+          ...msg.payload.request,
+          ...msg.payload,
+        };
+        this._onDidRequestExecutePlan.fire(payload); // sends off the request to the roo code extension to execute the plan
+        this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
+      } else {
+        this.openNewCreatorWindow({
+          path: msg.payload.newProjectPath,
+          prompt: msg.payload.request,
+        });
+        // TODO: HANDLE OPENING THE NEW WINDOW
+      }
     } else if (msg.messageType === "SubmitRequestNoPlan") {
-      // TODO: HANDLE OPENING THE NEW WINDOW
       console.dir(`MSG PAYLOAD FOR SubmitRequestNoPlan: ${msg.payload}`);
-      const newProjectType = msg.payload.request.projectType as NewProjectEnum;
-      if (newProjectType === NewProjectEnum.NONE) {
+      const newProjectType = msg.payload.request.projectType as NewProjectType;
+      if (newProjectType === "NONE") {
         const payload = {
           plan: msg.payload.request,
           text: msg.payload.request,
@@ -225,6 +229,12 @@ export class PearAICreatorMode implements IPearAICreatorMode {
         this._onDidRequestExecutePlan.fire(payload);
         this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
         return;
+      } else {
+        this.openNewCreatorWindow({
+          path: msg.payload.newProjectPath,
+          prompt: msg.payload.request,
+        });
+        // TODO: HANDLE OPENING THE NEW WINDOW
       }
       // Handle direct request without planning
       // Format payload to match ExecutePlanRequest

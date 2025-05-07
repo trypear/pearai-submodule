@@ -1136,9 +1136,4 @@ export interface IPearAICreatorMode {
   dispose(): void;
 }
 
-export enum NewProjectEnum {
-  NONE = "none",
-  WEBAPP = "webapp",
-  MOBILEAPP = "mobileapp",
-  OTHER = "other",
-}
+export type NewProjectType = "NONE" | "WEBAPP" | "MOBILEAPP" | "OTHER";
