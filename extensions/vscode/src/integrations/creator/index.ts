@@ -4,6 +4,7 @@ import { CreatorModeState, ExecutePlanRequest, IPearAICreatorMode } from 'core';
 import { IMessenger } from 'core/util/messenger';
 import { ToCoreFromIdeOrWebviewProtocol } from 'core/protocol/core';
 import { FromCoreProtocol } from 'core/protocol';
+import { getGlobalContext } from '../../extension';
 
 
 /**
@@ -109,6 +110,29 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     }
   }
 
+  private async openNewCreatorWindow({path, projectName, prompt}: {path: string, projectName: string, prompt: string}): Promise<void> {
+    const folderUri = vscode.Uri.file(path);
+    
+    // 3. Open a new window with the correct options
+    // The key is to explicitly set forceNewWindow: true
+
+    await getGlobalContext().globalState.update('creatorModeParams', {
+      isCreatorMode: true,
+      path: folderUri.fsPath,
+      projectName,
+      prompt,
+      timestamp: Date.now()
+    });
+    
+    await vscode.commands.executeCommand('vscode.openFolder', 
+      folderUri,
+      { 
+        forceNewWindow: true,  // This is critical to ensure a new window opens
+        noRecentEntry: true    // Optional: prevents cluttering the recent list
+      }
+    );
+  }
+
   public async handleIncomingWebViewMessage(msg: WebViewMessageIncoming, send: (messageType: string, payload: Record<string, unknown>) => string): Promise<void> {
     assert(!!msg.messageId || !!msg.messageType, "Message ID or type missing :(");
 
@@ -156,28 +180,28 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       }
     } else if (msg.messageType === "SubmitPlan") {
       console.dir(`MSG PAYLOAD FOR SUBMITPLAN: ${msg.payload}`);
-      const payload = {
-        plan:  msg.payload.request,
-        text: msg.payload.request,
-        ...msg.payload.request,
-        ...msg.payload
-      };
-      this._onDidRequestExecutePlan.fire(payload); // sends off the request to the roo code extension to execute the plan
-      this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
-
-      // TODO: handle being inside of the "creator mode" whilst still having access to all of the shizz
+      // TODO: HANDLE OPENING THE NEW WINDOW
+      // const payload = {
+      //   plan:  msg.payload.request,
+      //   text: msg.payload.request,
+      //   ...msg.payload.request,
+      //   ...msg.payload
+      // };
+      // this._onDidRequestExecutePlan.fire(payload); // sends off the request to the roo code extension to execute the plan
+      // this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
     } else if (msg.messageType === "SubmitRequestNoPlan") {
+      // TODO: HANDLE OPENING THE NEW WINDOW
       console.dir(`MSG PAYLOAD FOR SubmitRequestNoPlan: ${msg.payload}`);
       // Handle direct request without planning
       // Format payload to match ExecutePlanRequest
-      const payload = {
-        plan: msg.payload.request,
-        text: msg.payload.request,
-        ...msg.payload.request,
-        ...msg.payload
-      };
-      this._onDidRequestExecutePlan.fire(payload);
-      this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
+      // const payload = {
+      //   plan: msg.payload.request,
+      //   text: msg.payload.request,
+      //   ...msg.payload.request,
+      //   ...msg.payload
+      // };
+      // this._onDidRequestExecutePlan.fire(payload);
+      // this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
     } else if (msg.messageType === "Close") {
       await this.closeCreatorOverlay();
     }

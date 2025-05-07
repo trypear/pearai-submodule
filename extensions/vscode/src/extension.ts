@@ -12,6 +12,15 @@ import { PearAIApi } from "./PearAIApi";
 
 let pearAPI: PearAIApi | undefined;
 
+let globalContext: vscode.ExtensionContext | undefined;
+
+export function getGlobalContext(): vscode.ExtensionContext {
+  if (!globalContext) {
+    throw new Error("Global context is not set");
+  }
+  return globalContext;
+}
+
 async function dynamicImportAndActivate(context: vscode.ExtensionContext) {
   const { activateExtension } = await import("./activation/activate");
   try {
@@ -37,6 +46,7 @@ async function dynamicImportAndActivate(context: vscode.ExtensionContext) {
 
 export async function activate(context: vscode.ExtensionContext) {
   setupCa();
+  globalContext = context;
   const extension = await dynamicImportAndActivate(context);
   if(!extension) {
     throw new Error("dynamicImportAndActivate returned undefined :(");
