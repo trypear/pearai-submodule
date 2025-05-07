@@ -191,23 +191,23 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("workbench.action.toggleCreatorView");
     });
     this.onWebview("pearCreateFolder", (msg) => {
-      console.dir("CREATE FOLDER:")
-        console.dir(msg.data.path)
+      console.dir("CREATE FOLDER:");
+        console.dir(msg.data.path);
         let path = msg.data.path;
 
         // Resolve ~ to home directory
         if (path.startsWith('~')) {
           const os = require('os');
           path = path.replace('~', os.homedir());
-          console.dir("RESOLVED PATH:")
-          console.dir(path)
+          console.dir("RESOLVED PATH:");
+          console.dir(path);
         }
 
         // Create the new folder URI
-        const folderUri = vscode.Uri.file(path)
+        const folderUri = vscode.Uri.file(path);
 
-        console.dir("FOLDERURI:")
-        console.dir(folderUri)
+        console.dir("FOLDERURI:");
+        console.dir(folderUri);
 
         // Create the folder
         try {
