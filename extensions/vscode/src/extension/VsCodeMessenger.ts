@@ -20,16 +20,27 @@ import * as fs from "node:fs";
 import * as path from "node:path";
 import * as os from "node:os";
 import * as vscode from "vscode";
-import { attemptInstallExtension, attemptUninstallExtension, isVSCodeExtensionInstalled } from "../activation/activate";
+import {
+  attemptInstallExtension,
+  attemptUninstallExtension,
+  isVSCodeExtensionInstalled,
+} from "../activation/activate";
 import { VerticalPerLineDiffManager } from "../diff/verticalPerLine/manager";
 import { VsCodeIde } from "../ideProtocol";
-import { readMemories, updateMemories } from "../integrations/mem0/localMemoryService";
+import {
+  readMemories,
+  updateMemories,
+} from "../integrations/mem0/localMemoryService";
 import { getFastApplyChangesWithRelace } from "../integrations/relace/relace";
 import {
   getControlPlaneSessionInfo,
   WorkOsAuthProvider,
 } from "../stubs/WorkOsAuthProvider";
-import { extractCodeFromMarkdown, TOOL_COMMANDS, ToolType } from "../util/integrationUtils";
+import {
+  extractCodeFromMarkdown,
+  TOOL_COMMANDS,
+  ToolType,
+} from "../util/integrationUtils";
 import { getExtensionUri } from "../util/vscode";
 import { selectFile, selectFolder } from "../util/ideUtils";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
@@ -93,7 +104,9 @@ export class VsCodeMessenger {
     });
     // welcome stuff
     this.onWebview("markNewOnboardingComplete", (msg) => {
-      vscode.commands.executeCommand("pearai.welcome.markNewOnboardingComplete");
+      vscode.commands.executeCommand(
+        "pearai.welcome.markNewOnboardingComplete",
+      );
     });
     this.onWebview("closeOverlay", (msg) => {
       vscode.commands.executeCommand("pearai.hideOverlay");
@@ -131,7 +144,9 @@ export class VsCodeMessenger {
       return updateMemories(msg.data.changes);
     });
     this.onWebview("is_vscode_extension_installed", async (msg) => {
-      const isInstalled = await isVSCodeExtensionInstalled(msg.data.extensionId);
+      const isInstalled = await isVSCodeExtensionInstalled(
+        msg.data.extensionId,
+      );
       console.log("VSCode extension installation status:", isInstalled);
       return isInstalled;
     });
@@ -149,8 +164,12 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("workbench.action.installCommandLine");
     });
     this.onWebview("changeColorScheme", (msg) => {
-      const selectedTheme = msg.data.isDark ? "Default PearAI Dark" : "Default PearAI Light";
-      vscode.workspace.getConfiguration().update('workbench.colorTheme', selectedTheme, true);
+      const selectedTheme = msg.data.isDark
+        ? "Default PearAI Dark"
+        : "Default PearAI Light";
+      vscode.workspace
+        .getConfiguration()
+        .update("workbench.colorTheme", selectedTheme, true);
     });
     // END welcome stuff
     this.onWebview("showFile", (msg) => {
@@ -172,12 +191,13 @@ export class VsCodeMessenger {
         });
     });
     this.onWebview("getNumberOfChanges", (msg) => {
-      const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+      const gitExtension =
+        vscode.extensions.getExtension("vscode.git")?.exports;
       const repository = gitExtension?.getAPI(1).repositories[0];
 
       if (repository) {
-          const unstagedChanges = repository.state.workingTreeChanges;
-          return unstagedChanges.length;
+        const unstagedChanges = repository.state.workingTreeChanges;
+        return unstagedChanges.length;
       }
       return 0;
     });
@@ -191,37 +211,39 @@ export class VsCodeMessenger {
       vscode.commands.executeCommand("workbench.action.toggleCreatorView");
     });
     this.onWebview("pearCreateFolder", (msg) => {
-      console.dir("CREATE FOLDER:")
-        console.dir(msg.data.path)
-        let path = msg.data.path;
+      console.dir("CREATE FOLDER:");
+      console.dir(msg.data.path);
+      let path = msg.data.path;
 
-        // Resolve ~ to home directory
-        if (path.startsWith('~')) {
-          const os = require('os');
-          path = path.replace('~', os.homedir());
-          console.dir("RESOLVED PATH:")
-          console.dir(path)
-        }
+      // Resolve ~ to home directory
+      if (path.startsWith("~")) {
+        const os = require("os");
+        path = path.replace("~", os.homedir());
+        console.dir("RESOLVED PATH:");
+        console.dir(path);
+      }
 
-        // Create the new folder URI
-        const folderUri = vscode.Uri.file(path)
+      // Create the new folder URI
+      const folderUri = vscode.Uri.file(path);
 
-        console.dir("FOLDERURI:")
-        console.dir(folderUri)
+      console.dir("FOLDERURI:");
+      console.dir(folderUri);
 
-        // Create the folder
-        try {
-            vscode.workspace.fs.createDirectory(folderUri);
-            vscode.window.showInformationMessage(`Folder "${path}" created.`);
-        } catch (error) {
-            vscode.window.showErrorMessage(`Failed to create folder: ${error}`);
-        }
+      // Create the folder
+      try {
+        vscode.workspace.fs.createDirectory(folderUri);
+        vscode.window.showInformationMessage(`Folder "${path}" created.`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`Failed to create folder: ${error}`);
+      }
 
-        vscode.workspace.updateWorkspaceFolders(
-          vscode.workspace.workspaceFolders ? vscode.workspace.workspaceFolders.length : 0,
-          0,
-          { uri: folderUri }
-        );
+      vscode.workspace.updateWorkspaceFolders(
+        vscode.workspace.workspaceFolders
+          ? vscode.workspace.workspaceFolders.length
+          : 0,
+        0,
+        { uri: folderUri },
+      );
     });
     this.onWebview("pearAIinstallation", (msg) => {
       const { tools } = msg.data;
@@ -230,7 +252,10 @@ export class VsCodeMessenger {
           const toolCommand = TOOL_COMMANDS[tool];
           if (toolCommand) {
             if (toolCommand.args) {
-              vscode.commands.executeCommand(toolCommand.command, toolCommand.args);
+              vscode.commands.executeCommand(
+                toolCommand.command,
+                toolCommand.args,
+              );
             } else {
               vscode.commands.executeCommand(toolCommand.command);
             }
@@ -372,7 +397,9 @@ export class VsCodeMessenger {
         vscode.window.showErrorMessage(
           "No active editor to apply edits to. Please open a file you'd like to apply the edits to first.",
         );
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: false,
+        });
         return;
       }
 
@@ -380,9 +407,11 @@ export class VsCodeMessenger {
         const originalContent = editor.document.getText();
         const changesToApply = msg.data.contentToApply;
 
-        if (originalContent?.trim() === '') {
+        if (originalContent?.trim() === "") {
           await ide.writeFile(editor.document.uri.fsPath, changesToApply);
-          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+          this.webviewProtocol.request("setRelaceDiffState", {
+            diffVisible: false,
+          });
           return;
         }
 
@@ -394,25 +423,38 @@ export class VsCodeMessenger {
         modifiedContent = extractCodeFromMarkdown(modifiedContent);
 
         if (modifiedContent.length === 0) {
-          vscode.window.showInformationMessage("Received empty response from Relace");
-          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+          vscode.window.showInformationMessage(
+            "Received empty response from Relace",
+          );
+          this.webviewProtocol.request("setRelaceDiffState", {
+            diffVisible: false,
+          });
           return;
         }
 
         if (modifiedContent === originalContent) {
           vscode.window.showInformationMessage("No changes to apply");
-          this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+          this.webviewProtocol.request("setRelaceDiffState", {
+            diffVisible: false,
+          });
           return;
         }
 
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: true});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: true,
+        });
         // Show inline diff using the original apply method
         const stepIndex = Date.now(); // Unique identifier for this diff
-        await ide.showDiff(editor.document.uri.fsPath, modifiedContent, stepIndex);
-
+        await ide.showDiff(
+          editor.document.uri.fsPath,
+          modifiedContent,
+          stepIndex,
+        );
       } catch (error) {
         vscode.window.showErrorMessage(`Fast Apply Inline failed: ${error}`);
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: false,
+        });
       }
     });
 
@@ -420,7 +462,9 @@ export class VsCodeMessenger {
     this.onWebview("acceptRelaceDiff", async (msg) => {
       try {
         vscode.commands.executeCommand("pearai.acceptDiff");
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: false,
+        });
       } catch (error) {
         vscode.window.showErrorMessage(`Failed to apply changes: ${error}`);
       }
@@ -430,7 +474,9 @@ export class VsCodeMessenger {
     this.onWebview("rejectRelaceDiff", async (msg) => {
       try {
         vscode.commands.executeCommand("pearai.rejectDiff");
-        this.webviewProtocol.request("setRelaceDiffState", {diffVisible: false});
+        this.webviewProtocol.request("setRelaceDiffState", {
+          diffVisible: false,
+        });
       } catch (error) {
         vscode.window.showErrorMessage(`Failed to reject changes: ${error}`);
       }
