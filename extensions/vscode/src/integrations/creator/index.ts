@@ -1,17 +1,21 @@
-import * as vscode from 'vscode';
-import { assert } from '../../util/assert';
-import { CreatorModeState, ExecutePlanRequest, IPearAICreatorMode } from 'core';
-import { IMessenger } from 'core/util/messenger';
-import { ToCoreFromIdeOrWebviewProtocol } from 'core/protocol/core';
-import { FromCoreProtocol } from 'core/protocol';
-import { getGlobalContext } from '../../extension';
-
+import * as vscode from "vscode";
+import { assert } from "../../util/assert";
+import {
+  CreatorModeState,
+  ExecutePlanRequest,
+  IPearAICreatorMode,
+  NewProjectEnum,
+} from "core";
+import { IMessenger } from "core/util/messenger";
+import { ToCoreFromIdeOrWebviewProtocol } from "core/protocol/core";
+import { FromCoreProtocol } from "core/protocol";
+import { getGlobalContext } from "../../extension";
 
 /**
  * The format for all of the messages that come from the webview
  */
 export interface WebViewMessageIncoming {
-  destination: "creator";// making sure we route the message over to here
+  destination: "creator"; // making sure we route the message over to here
   messageType: string; // the "action" for the message - keeping format consistent with other areas
   messageId: string; // used to keep track of the messages, so we know which message is a reply to
   payload: any; // for any misc data
@@ -29,17 +33,19 @@ export interface WebMessageOutgoing {
  */
 export class PearAICreatorMode implements IPearAICreatorMode {
   // Private event emitters
-  private readonly _onDidChangeCreatorModeState = new vscode.EventEmitter<CreatorModeState>();
-  private readonly _onDidRequestExecutePlan = new vscode.EventEmitter<ExecutePlanRequest>();
+  private readonly _onDidChangeCreatorModeState =
+    new vscode.EventEmitter<CreatorModeState>();
+  private readonly _onDidRequestExecutePlan =
+    new vscode.EventEmitter<ExecutePlanRequest>();
 
   // The abort token we can send to the LLM
   private cancelToken: AbortSignal | undefined;
 
   // Public events
-  public readonly onDidChangeCreatorModeState = this._onDidChangeCreatorModeState.event;
+  public readonly onDidChangeCreatorModeState =
+    this._onDidChangeCreatorModeState.event;
 
   public readonly onDidRequestExecutePlan = this._onDidRequestExecutePlan.event;
-
 
   private creatorState: CreatorModeState = "OVERLAY_CLOSED";
 
@@ -50,36 +56,43 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   private _disposables: vscode.Disposable[] = [];
 
   constructor(
-    private readonly _messenger: IMessenger<ToCoreFromIdeOrWebviewProtocol, FromCoreProtocol>,
+    private readonly _messenger: IMessenger<
+      ToCoreFromIdeOrWebviewProtocol,
+      FromCoreProtocol
+    >,
   ) {
     // Add emitters to disposables
     this._disposables.push(
       this._onDidChangeCreatorModeState,
-      this._onDidRequestExecutePlan
+      this._onDidRequestExecutePlan,
     );
   }
 
   public dispose(): void {
     // Dispose of event emitters and other disposables
-    this._disposables.forEach(d => d.dispose());
+    this._disposables.forEach((d) => d.dispose());
     this._disposables = [];
   }
 
   public async changeState(state: CreatorModeState): Promise<void> {
-    switch(state) {
+    switch (state) {
       case "OVERLAY_OPEN":
-        await vscode.commands.executeCommand('workbench.action.toggleCreatorView'); // TODO: change into openCreatorView
+        await vscode.commands.executeCommand(
+          "workbench.action.toggleCreatorView",
+        ); // TODO: change into openCreatorView
         break;
       case "OVERLAY_CLOSED":
-        await vscode.commands.executeCommand("workbench.action.closeCreatorView");
+        await vscode.commands.executeCommand(
+          "workbench.action.closeCreatorView",
+        );
       case "OVERLAY_CLOSED_CREATOR_ACTIVE":
-        await vscode.commands.executeCommand("workbench.action.progressCreatorToNextStage");
-
+        await vscode.commands.executeCommand(
+          "workbench.action.progressCreatorToNextStage",
+        );
     }
 
     this._onDidChangeCreatorModeState.fire(this.creatorState);
   }
-
 
   /**
    * Opens the creator mode interface
@@ -87,10 +100,12 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   public async openCreatorOverlay(): Promise<void> {
     try {
       // Execute the command to open the creator mode interface
-      await vscode.commands.executeCommand('workbench.action.toggleCreatorView');
+      await vscode.commands.executeCommand(
+        "workbench.action.toggleCreatorView",
+      );
       // this._onDidChangeCreatorModeState.fire(true);
     } catch (error) {
-      console.error('Failed to open creator mode:', error);
+      console.error("Failed to open creator mode:", error);
       throw error;
     }
   }
@@ -99,61 +114,68 @@ export class PearAICreatorMode implements IPearAICreatorMode {
    * Closes the creator mode interface
    */
   public async closeCreatorOverlay(): Promise<void> {
-
     try {
       // Close the creator mode interface
       await vscode.commands.executeCommand("workbench.action.closeCreatorView");
       // this._onDidChangeCreatorModeState.fire(false);
     } catch (error) {
-      console.error('Failed to close creator mode:', error);
+      console.error("Failed to close creator mode:", error);
       throw error;
     }
   }
 
-  private async openNewCreatorWindow({path, projectName, prompt}: {path: string, projectName: string, prompt: string}): Promise<void> {
+  private async openNewCreatorWindow({
+    path,
+    projectName,
+    prompt,
+  }: {
+    path: string;
+    projectName: string;
+    prompt: string;
+  }): Promise<void> {
     const folderUri = vscode.Uri.file(path);
-    
+
     // 3. Open a new window with the correct options
     // The key is to explicitly set forceNewWindow: true
 
-    await getGlobalContext().globalState.update('creatorModeParams', {
+    await getGlobalContext().globalState.update("creatorModeParams", {
       isCreatorMode: true,
       path: folderUri.fsPath,
       projectName,
       prompt,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
-    
-    await vscode.commands.executeCommand('vscode.openFolder', 
-      folderUri,
-      { 
-        forceNewWindow: true,  // This is critical to ensure a new window opens
-        noRecentEntry: true    // Optional: prevents cluttering the recent list
-      }
-    );
+
+    await vscode.commands.executeCommand("vscode.openFolder", folderUri, {
+      forceNewWindow: true, // This is critical to ensure a new window opens
+      noRecentEntry: true, // Optional: prevents cluttering the recent list
+    });
   }
 
-  public async handleIncomingWebViewMessage(msg: WebViewMessageIncoming, send: (messageType: string, payload: Record<string, unknown>) => string): Promise<void> {
-    assert(!!msg.messageId || !!msg.messageType, "Message ID or type missing :(");
+  public async handleIncomingWebViewMessage(
+    msg: WebViewMessageIncoming,
+    send: (messageType: string, payload: Record<string, unknown>) => string,
+  ): Promise<void> {
+    assert(
+      !!msg.messageId || !!msg.messageType,
+      "Message ID or type missing :(",
+    );
 
     if (msg.messageType === "ProcessLLM") {
       try {
-        console.dir('GOT ProcessLLM');
+        console.dir("GOT ProcessLLM");
 
         const { messages } = msg.payload;
 
-        const gen = this._messenger.invoke(
-          "llm/streamChat",
-          {
-            messages,
-            title: "pearai_model",
-            completionOptions: {
-              // TODO: FILL THIS OUT?
-              prompt_key: "creator_mode_plan",
-              stream: true,
-            },
-          }
-        );
+        const gen = this._messenger.invoke("llm/streamChat", {
+          messages,
+          title: "pearai_model",
+          completionOptions: {
+            // TODO: FILL THIS OUT?
+            prompt_key: "creator_mode_plan",
+            stream: true,
+          },
+        });
 
         let completeResponse = "";
         let next = await gen.next();
@@ -169,13 +191,13 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
         send("planCreationCompleted", {
           plan: completeResponse,
-        })
-
+        });
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
         console.error("Plan creation failed:", error);
         send("error", {
-          text: "Failed to create plan: " + errorMessage
+          text: "Failed to create plan: " + errorMessage,
         });
       }
     } else if (msg.messageType === "SubmitPlan") {
@@ -192,19 +214,22 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     } else if (msg.messageType === "SubmitRequestNoPlan") {
       // TODO: HANDLE OPENING THE NEW WINDOW
       console.dir(`MSG PAYLOAD FOR SubmitRequestNoPlan: ${msg.payload}`);
+      const newProjectType = msg.payload.request.projectType as NewProjectEnum;
+      if (newProjectType === NewProjectEnum.NONE) {
+        const payload = {
+          plan: msg.payload.request,
+          text: msg.payload.request,
+          ...msg.payload.request,
+          ...msg.payload,
+        };
+        this._onDidRequestExecutePlan.fire(payload);
+        this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
+        return;
+      }
       // Handle direct request without planning
       // Format payload to match ExecutePlanRequest
-      // const payload = {
-      //   plan: msg.payload.request,
-      //   text: msg.payload.request,
-      //   ...msg.payload.request,
-      //   ...msg.payload
-      // };
-      // this._onDidRequestExecutePlan.fire(payload);
-      // this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
     } else if (msg.messageType === "Close") {
       await this.closeCreatorOverlay();
     }
   }
-
 }
