@@ -256,12 +256,18 @@ export class VsCodeMessenger {
       // Remove all current workspace folders, then add the new one
       try {
         const workspaceFolders = vscode.workspace.workspaceFolders;
-        if (workspaceFolders && workspaceFolders.length > 0) {
-          // Remove all folders
-          vscode.workspace.updateWorkspaceFolders(0, workspaceFolders.length);
+        const removedCount = workspaceFolders ? workspaceFolders.length : 0;
+        // Atomically replace all workspace folders with the new folder
+        const result = vscode.workspace.updateWorkspaceFolders(
+          0,
+          removedCount,
+          { uri: folderUri },
+        );
+        if (!result) {
+          vscode.window.showErrorMessage(
+            "Failed to replace workspace folder. This may be due to VS Code not supporting dynamic root changes in the current mode or a misconfiguration.",
+          );
         }
-        // Add the new folder
-        vscode.workspace.updateWorkspaceFolders(0, 0, { uri: folderUri });
       } catch (error) {
         vscode.window.showErrorMessage(
           `Failed to replace workspace folder: ${error}`,
