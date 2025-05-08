@@ -38,12 +38,12 @@ async function dynamicImportAndActivate(context: vscode.ExtensionContext) {
 export async function activate(context: vscode.ExtensionContext) {
   setupCa();
   const extension = await dynamicImportAndActivate(context);
-  if(!extension) {
+  if (!extension) {
     throw new Error("dynamicImportAndActivate returned undefined :(");
   }
 
-  if(!pearAPI) {
-    pearAPI = new PearAIApi(extension.extension.core);
+  if (!pearAPI) {
+    pearAPI = new PearAIApi(extension.extension.core, context);
   }
 
   return {

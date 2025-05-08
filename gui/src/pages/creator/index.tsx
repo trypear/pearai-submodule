@@ -14,8 +14,8 @@ import ColorManager from "./ui/colorManager";
 import {
   ChatMessage,
   MessageContent,
-  PearAICreatorModeMessage,
-  PearAICreatorModePayload,
+  ProcessLLMType,
+  SubmitIdeaType,
 } from "core";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { getAnimationTargetHeightOffset } from "./utils";
@@ -269,19 +269,19 @@ export const CreatorOverlay = () => {
           : `${projectConfig.path}/${safeName}`;
 
         // Submit the direct request with project path
-        sendMessage("SubmitRequestNoPlan", {
+        sendMessage("SubmitIdea", {
           request,
           creatorMode: true,
           newProjectType: "WEBAPP",
           newProjectPath: safePath,
-        } satisfies PearAICreatorModePayload);
+        } satisfies SubmitIdeaType["payload"]);
       } else {
         // Submit the direct request without project path
-        sendMessage("SubmitRequestNoPlan", {
+        sendMessage("SubmitIdea", {
           request,
           creatorMode: true,
           newProjectType: "NONE",
-        } satisfies PearAICreatorModePayload);
+        } satisfies SubmitIdeaType["payload"]);
       }
     },
     [ideMessenger, sendMessage, projectConfig],
@@ -307,7 +307,7 @@ export const CreatorOverlay = () => {
         sendMessage("ProcessLLM", {
           messages: givenMsgs ?? messages,
           plan: true,
-        } satisfies PearAICreatorModePayload);
+        } satisfies ProcessLLMType["payload"]);
         setCurrentState("GENERATING");
       } else {
         // Skip planning and submit directly
@@ -344,19 +344,19 @@ export const CreatorOverlay = () => {
     if (currentPlan) {
       if (projectConfig.path && projectConfig.name) {
         // Then submit the plan with project path
-        await sendMessage("SubmitPlan", {
+        await sendMessage("SubmitIdea", {
           request: `PLAN: ${currentPlan}`,
           creatorMode: true,
           newProjectPath: safePath,
           newProjectType: "WEBAPP",
-        } satisfies PearAICreatorModePayload);
+        } satisfies SubmitIdeaType["payload"]);
       } else {
         // Submit the plan without project path
         await sendMessage("SubmitPlan", {
           request: `PLAN: ${currentPlan}`,
           creatorMode: true,
           newProjectType: "NONE",
-        } satisfies PearAICreatorModePayload);
+        } satisfies SubmitIdeaType["payload"]);
       }
     }
 

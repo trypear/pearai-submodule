@@ -1138,30 +1138,28 @@ export interface IPearAICreatorMode {
 
 export type NewProjectType = "NONE" | "WEBAPP" | "MOBILE" | "OTHER";
 
-export type PearAICreatorModeMessage =
-  | {
-      messageType: "SubmitRequestNoPlan";
-      payload: {
-        request: string;
-        creatorMode: boolean;
-        projectType: NewProjectType;
-        newProjectPath?: string;
-      };
-    }
-  | {
-      messageType: "SubmitPlan";
-      payload: {
-        request: string;
-        creatorMode: boolean;
-        newProjectType: NewProjectType;
-        newProjectPath?: string;
-      };
-    }
-  | {
-      messageType: "ProcessLLM";
-      payload: {
-        messages: ChatMessage[];
-        plan: boolean;
-      };
-    };
-export type PearAICreatorModePayload = PearAICreatorModeMessage["payload"];
+export type SubmitIdeaType = {
+  messageType: "SubmitIdea";
+  payload: {
+    request: string;
+    creatorMode: boolean;
+    newProjectType: NewProjectType;
+    newProjectPath?: string;
+  };
+};
+
+export type ProcessLLMType = {
+  messageType: "ProcessLLM";
+  payload: {
+    messages: ChatMessage[];
+    plan: boolean;
+  };
+};
+
+export type CloseMessageType = {
+  messageType: "Close";
+};
+
+export type PearAICreatorModeMessage = {
+  messageId: string;
+} & (SubmitIdeaType | ProcessLLMType | CloseMessageType);
