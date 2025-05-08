@@ -1130,6 +1130,8 @@ export interface IPearAICreatorMode {
 
   changeState(state: CreatorModeState): Promise<void>;
 
+  triggerCachedCreatorEvent(clear?: boolean): void;
+
   /**
    * Disposes of resources used by the creator mode
    */
@@ -1163,3 +1165,11 @@ export type CloseMessageType = {
 export type PearAICreatorModeMessage = {
   messageId: string;
 } & (SubmitIdeaType | ProcessLLMType | CloseMessageType);
+
+export type PearAICreatorSavedGlobalState =
+  | {
+      msg: SubmitIdeaType;
+      creatorState: CreatorModeState;
+      timestamp: number;
+    }
+  | undefined;

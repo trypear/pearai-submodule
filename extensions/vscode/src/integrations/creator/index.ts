@@ -5,6 +5,8 @@ import {
   ExecutePlanRequest,
   IPearAICreatorMode,
   PearAICreatorModeMessage,
+  PearAICreatorSavedGlobalState,
+  SubmitIdeaType,
 } from "core";
 import { IMessenger } from "core/util/messenger";
 import { ToCoreFromIdeOrWebviewProtocol } from "core/protocol/core";
@@ -254,22 +256,40 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     }
   }
 
-  private async saveMsg(msg: PearAICreatorModeMessage) {
-    await this.context.globalState.update(
-      "PearAICreatorModeClassState",
-      JSON.stringify({
-        msg,
-        creatorState: this.creatorState,
-        timestamp: Date.now(),
-      }),
-    );
+  /**
+   * When we change the workspace folder, it restarts the extensions so we need to remember what we're doing
+   */
+  private async saveMsg(msg: SubmitIdeaType) {
+    await this.context.globalState.update("PearAICreatorModeClassState", {
+      msg,
+      creatorState: this.creatorState,
+      timestamp: Date.now(),
+    } satisfies PearAICreatorSavedGlobalState);
   }
 
-  // private async restoreState() {
-  //   const state = this.context.globalState.get<>(
-  //     "PearAICreatorModeClassState",
-  //   );
-  // }
+  /**
+   * When we start up the extension again, we have to check if we have a saved state
+   */
+  public triggerCachedCreatorEvent(clear: boolean = false) {
+    const globalStateMsg =
+      this.context.globalState.get<PearAICreatorSavedGlobalState>(
+        "PearAICreatorModeClassState",
+      );
 
-  // fromJson(json: any) {}
+    if (globalStateMsg) {
+      const { msg, creatorState, timestamp } = globalStateMsg;
+      if (Date.now() - timestamp < 1000 * 20) {
+        // If the timestamp is within the last 20 seconds, we can use it
+        this.creatorState = creatorState;
+        this._onDidRequestExecutePlan.fire({
+          plan: msg.payload.request,
+        });
+      }
+    }
+
+    // Clear the global state after using it
+    if (clear) {
+      this.context.globalState.update("PearAICreatorModeClassState", undefined);
+    }
+  }
 }
