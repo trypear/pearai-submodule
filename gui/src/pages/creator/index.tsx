@@ -11,18 +11,25 @@ import { Ideation } from "./ui/ideation";
 import "./ui/index.css";
 import { useMessaging } from "@/util/messagingContext";
 import ColorManager from "./ui/colorManager";
-import { ChatMessage, MessageContent, MessagePart } from "core";
-import { IdeMessengerContext } from "../../context/IdeMessenger";
 import {
-  getAnimationTargetHeightOffset,
-  newProjectType,
-  setAnimationTargetHeightOffset,
-} from "./utils";
+  ChatMessage,
+  MessageContent,
+  PearAICreatorModeMessage,
+  PearAICreatorModePayload,
+} from "core";
+import { IdeMessengerContext } from "../../context/IdeMessenger";
+import { getAnimationTargetHeightOffset } from "./utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlanningBar } from "./ui/planningBar";
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
-import { vscSidebarBorder } from "@/components";
+import {
+  uniqueNamesGenerator,
+  adjectives,
+  colors,
+  animals,
+} from "unique-names-generator";
+
 // Animation info stored in window to survive component remounts
 if (typeof window !== "undefined") {
   window.__creatorOverlayAnimation = window.__creatorOverlayAnimation || {
@@ -47,18 +54,6 @@ interface ProjectConfig {
   name: string;
 }
 
-type ExtensionMessage =
-  | { data: { plan: string } }
-  | { messageType: "planCreationSuccess" }
-  | { messageType: "pearAiCloseCreatorInterface" }
-  | { messageType: "pearAiHideCreatorLoadingOverlay" }
-  | { messageType: "newCreatorModeTask"; text: string }
-  | { messageType: "creatorModePlannedTaskSubmit"; text: string }
-  | {
-      messageType: "overlayAnimation";
-      data: { targetState: keyof OverlayStates; overlayStates: OverlayStates };
-    };
-
 /**
  * CreatorOverlay component provides a full-screen overlay with an auto-focusing input field
  * for capturing user commands or queries.
@@ -75,8 +70,12 @@ export const CreatorOverlay = () => {
     Partial<CSSStyleDeclaration> | undefined
   >();
   const [projectConfig, setProjectConfig] = useState<ProjectConfig>({
-    path: "",
-    name: "",
+    path: "~/Documents/PearAI", // TODO: FIX FOR WINDOWS MAYBE?
+    name: uniqueNamesGenerator({
+      dictionaries: [adjectives, colors, animals],
+      style: "lowerCase",
+      separator: "-",
+    }),
   });
   const ideMessenger = useContext(IdeMessengerContext);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
@@ -147,7 +146,16 @@ export const CreatorOverlay = () => {
         return planMatch[1].trim();
       }
     }
-    return undefined;
+
+    // if no ```plan is found, return the messages
+    return messages
+      .reduce((acc, msg) => {
+        const content = msg.content;
+        if (typeof content === "string") {
+          return `${acc}, ${content}`;
+        }
+      }, "")
+      .trim();
   }, [messages]);
 
   // Convenience function to update an existing assistant message or add a new one
@@ -260,24 +268,20 @@ export const CreatorOverlay = () => {
           ? `${projectConfig.path}${safeName}`
           : `${projectConfig.path}/${safeName}`;
 
-        await ideMessenger.request("replaceWorkspaceFolder", {
-          path: safePath,
-        });
-
         // Submit the direct request with project path
         sendMessage("SubmitRequestNoPlan", {
           request,
           creatorMode: true,
-          newProjectType: newProjectType.WEBAPP,
+          newProjectType: "WEBAPP",
           newProjectPath: safePath,
-        });
+        } satisfies PearAICreatorModePayload);
       } else {
         // Submit the direct request without project path
         sendMessage("SubmitRequestNoPlan", {
           request,
           creatorMode: true,
-          newProjectType: newProjectType.NONE,
-        });
+          newProjectType: "NONE",
+        } satisfies PearAICreatorModePayload);
       }
     },
     [ideMessenger, sendMessage, projectConfig],
@@ -303,7 +307,7 @@ export const CreatorOverlay = () => {
         sendMessage("ProcessLLM", {
           messages: givenMsgs ?? messages,
           plan: true,
-        });
+        } satisfies PearAICreatorModePayload);
         setCurrentState("GENERATING");
       } else {
         // Skip planning and submit directly
@@ -344,16 +348,27 @@ export const CreatorOverlay = () => {
           request: `PLAN: ${currentPlan}`,
           creatorMode: true,
           newProjectPath: safePath,
-          newProjectType: newProjectType.WEBAPP,
-        });
+          newProjectType: "WEBAPP",
+        } satisfies PearAICreatorModePayload);
       } else {
         // Submit the plan without project path
         await sendMessage("SubmitPlan", {
           request: `PLAN: ${currentPlan}`,
           creatorMode: true,
-          newProjectType: newProjectType.NONE,
-        });
+          newProjectType: "NONE",
+        } satisfies PearAICreatorModePayload);
       }
+    }
+
+    // Need to replace the workspace folder AFTER the plan is submitted - resets the comms with the extension
+    if (isCreatingProject) {
+      console.dir("CREATING FOLDER");
+      // Create the project folder now so roo code doesn't refresh
+      ideMessenger
+        .request("replaceWorkspaceFolder", {
+          path: safePath,
+        })
+        .catch((e) => console.error(`ERROR MAKING FOLDER ${e}`));
     }
   }, [ideMessenger, sendMessage, currentPlan, safePath]);
 
@@ -399,16 +414,6 @@ export const CreatorOverlay = () => {
 
   const handleIdeationRequest = useCallback(() => {
     handleLlmCall(addMessage("user", initialMessage, true));
-
-    if (isCreatingProject) {
-      console.dir("CREATING FOLDER");
-      // Create the project folder now so roo code doesn't refresh
-      ideMessenger
-        .request("replaceWorkspaceFolder", {
-          path: safePath,
-        })
-        .catch((e) => console.error(`ERROR MAKING FOLDER ${e}`));
-    }
   }, [safePath, initialMessage, isCreatingProject, handleLlmCall, addMessage]);
 
   return (

@@ -75,7 +75,6 @@ export interface ILLM extends LLMOptions {
   projectId?: string;
   getCurrentDirectory?: (() => Promise<string>) | undefined | null;
 
-
   complete(prompt: string, options?: LLMFullCompletionOptions): Promise<string>;
 
   streamComplete(
@@ -198,11 +197,12 @@ export interface IContextProvider {
 }
 
 export interface IntegrationHistoryMap {
-  perplexityHistory: 'perplexity';
-  history: 'continue';
+  perplexityHistory: "perplexity";
+  history: "continue";
 }
 
-export type IntegrationType = IntegrationHistoryMap[keyof IntegrationHistoryMap];
+export type IntegrationType =
+  IntegrationHistoryMap[keyof IntegrationHistoryMap];
 
 export interface PersistedSessionInfo {
   history: ChatHistory;
@@ -537,7 +537,6 @@ export interface IDE {
   pathSep(): Promise<string>;
 
   getCurrentDirectory(): Promise<string>;
-
 }
 
 // Slash Commands
@@ -1094,11 +1093,13 @@ export interface ExecutePlanRequest {
    * Optional base64-encoded images to include with the task
    * TODO: are we doing images?
    */
-    images?: string[];
-
+  images?: string[];
 }
 
-export type CreatorModeState = "OVERLAY_CLOSED" | "OVERLAY_OPEN" | "OVERLAY_CLOSED_CREATOR_ACTIVE";
+export type CreatorModeState =
+  | "OVERLAY_CLOSED"
+  | "OVERLAY_OPEN"
+  | "OVERLAY_CLOSED_CREATOR_ACTIVE";
 
 /**
  * Interface for the Creator Mode API
@@ -1134,3 +1135,33 @@ export interface IPearAICreatorMode {
    */
   dispose(): void;
 }
+
+export type NewProjectType = "NONE" | "WEBAPP" | "MOBILE" | "OTHER";
+
+export type PearAICreatorModeMessage =
+  | {
+      messageType: "SubmitRequestNoPlan";
+      payload: {
+        request: string;
+        creatorMode: boolean;
+        projectType: NewProjectType;
+        newProjectPath?: string;
+      };
+    }
+  | {
+      messageType: "SubmitPlan";
+      payload: {
+        request: string;
+        creatorMode: boolean;
+        newProjectType: NewProjectType;
+        newProjectPath?: string;
+      };
+    }
+  | {
+      messageType: "ProcessLLM";
+      payload: {
+        messages: ChatMessage[];
+        plan: boolean;
+      };
+    };
+export type PearAICreatorModePayload = PearAICreatorModeMessage["payload"];
