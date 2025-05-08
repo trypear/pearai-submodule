@@ -255,10 +255,12 @@ export const CreatorOverlay = () => {
 
   const handleDirectRequest = useCallback(
     async (request: string) => {
-      console.dir("PROJECT CONFIG");
-      console.dir(projectConfig.path);
-      console.dir(projectConfig.name);
-      if (projectConfig.path && projectConfig.name) {
+      console.log("PROJECT CONFIG", projectConfig, isCreatingProject);
+      if (isCreatingProject) {
+        if (!projectConfig.path || !projectConfig.name)
+          throw new Error(
+            "Project path and name are required for project creation.",
+          );
         console.dir("CREATING FOLDER");
         // Create the project folder first
         const safeName = projectConfig.name
@@ -284,7 +286,7 @@ export const CreatorOverlay = () => {
         } satisfies SubmitIdeaType["payload"]);
       }
     },
-    [ideMessenger, sendMessage, projectConfig],
+    [ideMessenger, sendMessage, projectConfig, isCreatingProject],
   );
 
   // Helper function to extract text from MessageContent

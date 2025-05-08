@@ -154,14 +154,23 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       return;
     }
 
-    // Remove all current workspace folders, then add the new one
     try {
-      const workspaceFolders = vscode.workspace.workspaceFolders;
-      const removedCount = workspaceFolders ? workspaceFolders.length : 0;
-      // Atomically replace all workspace folders with the new folder
-      const result = vscode.workspace.updateWorkspaceFolders(0, removedCount, {
-        uri: folderUri,
-      });
+      if (!vscode.workspace) {
+        throw new Error("No workspace found");
+      }
+
+      const result = vscode.workspace.updateWorkspaceFolders(
+        // vscode.workspace.workspaceFolders
+        //   ? vscode.workspace.workspaceFolders.length
+        //   : 0,
+        // null,
+        0,
+        1,
+        {
+          uri: folderUri,
+        },
+      );
+      console.log("MADE WORKSPACE FOLDER!!");
       if (!result) {
         vscode.window.showErrorMessage(
           "Failed to replace workspace folder. This may be due to VS Code not supporting dynamic root changes in the current mode or a misconfiguration.",
@@ -223,26 +232,12 @@ export class PearAICreatorMode implements IPearAICreatorMode {
         });
       }
     } else if (msg.messageType === "SubmitIdea") {
-      console.dir(`MSG PAYLOAD FOR SUBMITPLAN: ${msg.payload}`);
-
-      // this._onDidRequestExecutePlan.fire(payload); // sends off the request to the roo code extension to execute the plan
-      this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
-
-      if (msg.payload.newProjectPath) {
-        await this.saveMsg(msg);
-        await this.handleReplaceWorkspaceFolder(msg.payload.newProjectPath);
-      } else {
-        this._onDidRequestExecutePlan.fire({
-          ...msg.payload,
-          plan: msg.payload.request,
-        });
-      }
-      console.dir(`MSG PAYLOAD FOR SubmitRequestNoPlan: ${msg.payload}`);
+      console.log("MSG PAYLOAD FOR SubmitIdea:", msg.payload);
       // Handle direct request without planning
       // Format payload to match ExecutePlanRequest
       this.changeState("OVERLAY_CLOSED_CREATOR_ACTIVE");
 
-      if (msg.payload.newProjectPath) {
+      if (msg.payload.newProjectPath && msg.payload.newProjectType !== "NONE") {
         await this.saveMsg(msg);
         await this.handleReplaceWorkspaceFolder(msg.payload.newProjectPath);
       } else {
