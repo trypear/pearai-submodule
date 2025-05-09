@@ -1,151 +1,137 @@
 /* Defining these in CSS instead of tailwind config to limit potential for upstream conflicts */
 /* TODO: MOVE THIS STYLING OVER TO THE TAILWIND CONFIG NOW */
 /* Base circle styling */
+
 .circle {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    width: 10px;
-    height: 10px;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  width: 10px;
+  height: 10px;
 }
 
 /* Static green dot */
 .circle::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    background-color: #75daad;
-    border-radius: 50px;
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #75daad;
+  border-radius: 50px;
+  z-index: 2;
 }
 
-/* Animation-specific styles */
+/* Pulsing outer ring */
 .animated-circle::before {
-    content: "";
-    position: relative;
-    display: block;
-    width: 250%;
-    height: 250%;
-    box-sizing: border-box;
-    margin-left: -75%;
-    margin-top: -75%;
-    border-radius: 45px;
-    background-color: #75daad;
-    animation: pulse 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  background-color: #75daad;
+  opacity: 0.6;
+  z-index: 1;
+  animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
 }
 
-.animated-circle::after {
-    animation: circle 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) -0.4s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        transform: scale(0.33);
-    }
-
-    80%,
-    100% {
-        opacity: 0;
-    }
-}
-
-@keyframes circle {
-    0% {
-        transform: scale(0.8);
-    }
-
-    50% {
-        transform: scale(1);
-    }
-
-    100% {
-        transform: scale(0.8);
-    }
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
 }
 
 .rainbow-border-glow {
-    border-radius: inherit;
-    pointer-events: none;
-    overflow: hidden;
+  border-radius: inherit;
+  pointer-events: none;
+  overflow: hidden;
 }
 
 .rainbow-border-glow::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    background: linear-gradient(to right,
-            rgb(255, 128, 128) 0%,
-            rgb(255, 192, 128) 14%,
-            rgb(255, 255, 128) 28%,
-            rgb(128, 255, 128) 42%,
-            rgb(128, 255, 255) 56%,
-            rgb(128, 128, 255) 70%,
-            rgb(192, 128, 255) 84%,
-            rgb(255, 128, 192) 100%);
-    background-size: 200% auto;
-    animation: rainbow-flow 2s linear infinite;
-    filter: blur(2px);
-    opacity: 1;
-    border-radius: inherit;
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(
+    to right,
+    rgb(255, 128, 128) 0%,
+    rgb(255, 192, 128) 14%,
+    rgb(255, 255, 128) 28%,
+    rgb(128, 255, 128) 42%,
+    rgb(128, 255, 255) 56%,
+    rgb(128, 128, 255) 70%,
+    rgb(192, 128, 255) 84%,
+    rgb(255, 128, 192) 100%
+  );
+  background-size: 200% auto;
+  animation: rainbow-flow 2s linear infinite;
+  filter: blur(2px);
+  opacity: 1;
+  border-radius: inherit;
 }
 
 .rainbow-border-glow::after {
-    content: '';
-    position: absolute;
-    inset: 1px;
-    background: #161718;
-    border-radius: inherit;
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: #161718;
+  border-radius: inherit;
 }
 
 @keyframes rainbow-flow {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
-
 body {
-    background-color: transparent;
+  background-color: transparent;
 }
 
 @keyframes slideDown {
-    from {
-      transform: translateY(-100%);
-    }
-    to {
-      transform: translateY(0);
-    }
-  }
-  
-  @keyframes slideUp {
-    from {
-      transform: translateY(0);
-    }
-    to {
-      transform: translateY(-100%);
-    }
-  }
-  
-  /* Animation classes */
-  .animate-slide-down {
-    animation: slideDown 500ms cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
-  }
-  
-  .animate-slide-up {
-    animation: slideUp 500ms cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
-  }
-  
-  /* For Tailwind classes */
-  .translate-y-\[-100\%\] {
+  from {
     transform: translateY(-100%);
   }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+/* Animation classes */
+.animate-slide-down {
+  animation: slideDown 500ms cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
+}
+
+.animate-slide-up {
+  animation: slideUp 500ms cubic-bezier(0.25, 0.1, 0.25, 1.5) forwards;
+}
+
+/* For Tailwind classes */
+.translate-y-\[-100\%\] {
+  transform: translateY(-100%);
+}
