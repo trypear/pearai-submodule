@@ -45,20 +45,21 @@ export const PlanningBar: FC<PlanningBarProps> = ({
 
       <div className="flex justify-center align-middle mr-2 gap-4">
         <div className="my-auto">
-          <Button variant="default" toggled>
+          <Button
+            variant="default"
+            toggled
+            className="bg-blue-700/60 hover:bg-blue-700/60 rounded-r-none"
+          >
             <SolidDocumentTextIcon />
           </Button>
-          <Button>
+          <Button className="rounded-r-none bg-black hover:bg-black">
             <CodeBracketIcon />
-          </Button>
-          <Button onClick={playCallback}>
-            <PlayIcon />
           </Button>
         </div>
         <Button
           size="default"
           variant="secondary"
-          className="my-auto rounded-lg text-[0.9em]"
+          className="my-auto rounded-lg text-[0.9em] cursor-pointer"
           onClick={nextCallback}
         >
           Next
