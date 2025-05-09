@@ -52,18 +52,13 @@
   }
 }
 
+/* TODO: FIX */
 .rainbow-border-glow {
-  border-radius: inherit;
-  pointer-events: none;
-  overflow: hidden;
-}
-
-.rainbow-border-glow::before {
-  content: "";
-  position: absolute;
-  inset: -1px;
-  background: linear-gradient(
-    to right,
+  border: 2px solid;
+  border-radius: 999px;
+  border-image-slice: 1;
+  border-image-source: linear-gradient(
+    90deg,
     rgb(255, 128, 128) 0%,
     rgb(255, 192, 128) 14%,
     rgb(255, 255, 128) 28%,
@@ -73,30 +68,87 @@
     rgb(192, 128, 255) 84%,
     rgb(255, 128, 192) 100%
   );
-  background-size: 200% auto;
-  animation: rainbow-flow 2s linear infinite;
-  filter: blur(2px);
-  opacity: 1;
-  border-radius: inherit;
+  animation: rainbow-border 5s linear infinite;
 }
 
-.rainbow-border-glow::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  background: #161718;
-  border-radius: inherit;
-}
-
-@keyframes rainbow-flow {
+@keyframes rainbow-border {
   0% {
-    background-position: 0% 50%;
+    border-image-source: linear-gradient(
+      90deg,
+      rgb(255, 128, 128) 0%,
+      rgb(255, 192, 128) 14%,
+      rgb(255, 255, 128) 28%,
+      rgb(128, 255, 128) 42%,
+      rgb(128, 255, 255) 56%,
+      rgb(128, 128, 255) 70%,
+      rgb(192, 128, 255) 84%,
+      rgb(255, 128, 192) 100%
+    );
   }
-  50% {
-    background-position: 100% 50%;
+  20% {
+    border-image-source: linear-gradient(
+      90deg,
+      rgb(255, 192, 128) 0%,
+      rgb(255, 255, 128) 14%,
+      rgb(128, 255, 128) 28%,
+      rgb(128, 255, 255) 42%,
+      rgb(128, 128, 255) 56%,
+      rgb(192, 128, 255) 70%,
+      rgb(255, 128, 192) 84%,
+      rgb(255, 128, 128) 100%
+    );
+  }
+  40% {
+    border-image-source: linear-gradient(
+      90deg,
+      rgb(255, 255, 128) 0%,
+      rgb(128, 255, 128) 14%,
+      rgb(128, 255, 255) 28%,
+      rgb(128, 128, 255) 42%,
+      rgb(192, 128, 255) 56%,
+      rgb(255, 128, 192) 70%,
+      rgb(255, 128, 128) 84%,
+      rgb(255, 192, 128) 100%
+    );
+  }
+  60% {
+    border-image-source: linear-gradient(
+      90deg,
+      rgb(128, 255, 128) 0%,
+      rgb(128, 255, 255) 14%,
+      rgb(128, 128, 255) 28%,
+      rgb(192, 128, 255) 42%,
+      rgb(255, 128, 192) 56%,
+      rgb(255, 128, 128) 70%,
+      rgb(255, 192, 128) 84%,
+      rgb(255, 255, 128) 100%
+    );
+  }
+  80% {
+    border-image-source: linear-gradient(
+      90deg,
+      rgb(128, 255, 255) 0%,
+      rgb(128, 128, 255) 14%,
+      rgb(192, 128, 255) 28%,
+      rgb(255, 128, 192) 42%,
+      rgb(255, 128, 128) 56%,
+      rgb(255, 192, 128) 70%,
+      rgb(255, 255, 128) 84%,
+      rgb(128, 255, 128) 100%
+    );
   }
   100% {
-    background-position: 0% 50%;
+    border-image-source: linear-gradient(
+      90deg,
+      rgb(255, 128, 128) 0%,
+      rgb(255, 192, 128) 14%,
+      rgb(255, 255, 128) 28%,
+      rgb(128, 255, 128) 42%,
+      rgb(128, 255, 255) 56%,
+      rgb(128, 128, 255) 70%,
+      rgb(192, 128, 255) 84%,
+      rgb(255, 128, 192) 100%
+    );
   }
 }
 

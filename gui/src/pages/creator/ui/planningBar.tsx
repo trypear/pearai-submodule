@@ -26,11 +26,11 @@ export const PlanningBar: FC<PlanningBarProps> = ({
   return (
     <div
       className={cn(
-        "bg-[#161718] w-full rounded-full flex text-white justify-between min-w-64 h-10 gap-4 relative",
+        "bg-[#161718] w-full rounded-full flex text-white justify-between min-w-64 h-10 gap-4 relative overflow-clip",
         className,
       )}
     >
-      {isGenerating && <div className="absolute inset-0 rainbow-border-glow" />}
+      {/* {isGenerating && <div className="absolute inset-0 rainbow-border-glow" />} */}
       <div className="flex-1 flex h-full align-middle ml-5 gap-4 relative">
         <div className="relative h-full my-auto mr-1">
           <div className={`circle ${isGenerating ? "animated-circle" : ""}`} />
