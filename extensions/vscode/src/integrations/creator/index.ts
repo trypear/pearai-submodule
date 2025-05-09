@@ -165,7 +165,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
         //   : 0,
         // null,
         0,
-        1,
+        vscode.workspace.workspaceFolders?.length || 0,
         {
           uri: folderUri,
         },
