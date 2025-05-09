@@ -9,7 +9,7 @@ import { FC } from "react";
 import { cn } from "../../../lib/utils";
 
 export type PlanningBarProps = {
-  isGenerating?: boolean;
+  isStreaming?: boolean;
   requestedPlan: string;
   playCallback?: () => void;
   nextCallback?: () => void;
@@ -17,7 +17,7 @@ export type PlanningBarProps = {
 };
 
 export const PlanningBar: FC<PlanningBarProps> = ({
-  isGenerating,
+  isStreaming,
   requestedPlan,
   playCallback,
   nextCallback,
@@ -33,7 +33,7 @@ export const PlanningBar: FC<PlanningBarProps> = ({
       {/* {isGenerating && <div className="absolute inset-0 rainbow-border-glow" />} */}
       <div className="flex-1 flex h-full align-middle ml-5 gap-4 relative">
         <div className="relative h-full my-auto mr-1">
-          <div className={`circle ${isGenerating ? "animated-circle" : ""}`} />
+          <div className={`circle ${isStreaming ? "animated-circle" : ""}`} />
         </div>
         <div className="my-auto text-sm">Planning</div>
         <div className="relative my-auto">
@@ -61,6 +61,7 @@ export const PlanningBar: FC<PlanningBarProps> = ({
           variant="secondary"
           className="my-auto rounded-lg text-[0.9em] cursor-pointer"
           onClick={nextCallback}
+          disabled={isStreaming}
         >
           Next
         </Button>

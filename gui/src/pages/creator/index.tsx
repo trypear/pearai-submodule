@@ -480,7 +480,7 @@ export const CreatorOverlay = () => {
                 >
                   <PlanningBar
                     requestedPlan={initialMessage}
-                    isGenerating={currentState === "GENERATING"}
+                    isStreaming={currentState === "GENERATING"}
                     nextCallback={handleMakeIt}
                     className="max-w-2xl w-full m-auto"
                   />
