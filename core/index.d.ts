@@ -1132,6 +1132,8 @@ export interface IPearAICreatorMode {
 
   triggerCachedCreatorEvent(clear?: boolean): void;
 
+  openFeedbackForm(messages: any[]): Promise<void>;
+
   /**
    * Disposes of resources used by the creator mode
    */

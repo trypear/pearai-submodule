@@ -7,6 +7,7 @@ import GeneralSettings from "./general";
 import HelpSettings from "./help";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
 import "@/continue-styles.css";
+import { CreatorFeedback } from "./creatorFeedback";
 
 const inventoryItems = [
   {
@@ -39,13 +40,14 @@ type MenuItem = {
   section: "settings" | "inventory";
 };
 
-const menuItems: MenuItem[] = [
+const menuItems = [
   // Settings section
   { id: "general", title: "General", section: "settings" },
   { id: "help", title: "Help", section: "settings" },
+  { id: "creator-feedback", title: "Creator Feedback", section: "settings" },
   // Inventory section
   ...inventoryItems.map((item) => ({ ...item, section: "inventory" as const })),
-];
+] as const;
 
 const PearSettings = () => {
   const [selectedItem, setSelectedItem] = useState<string>("general");
@@ -78,9 +80,8 @@ const Sidebar = ({
   return (
     <div
       className="p-2 w-44 flex flex-col items-start justify-start bg-sidebar-background"
-      style={{ borderRight: `1px solid ${lightGray}20`  }}
+      style={{ borderRight: `1px solid ${lightGray}20` }}
     >
-      
       {/* Settings Section */}
       <SidebarSection
         title="SETTINGS"
@@ -146,6 +147,7 @@ const ContentArea = ({ selectedItem }: { selectedItem: string }) => {
       {/* Add your content components here based on selectedItem */}
       {selectedItem === "general" && <GeneralSettings />}
       {selectedItem === "help" && <HelpSettings />}
+      {selectedItem === "creator-feedback" && <CreatorFeedback />}
     </div>
   );
 };

@@ -287,4 +287,12 @@ export class PearAICreatorMode implements IPearAICreatorMode {
       this.context.globalState.update("PearAICreatorModeClassState", undefined);
     }
   }
+
+  public async openFeedbackForm(messages: any[]): Promise<void> {
+    // First, open the overlay
+    await vscode.commands.executeCommand("pearai.showOverlay");
+
+    // Then navigate to the inventory settings page
+    // TODO: navigate to the right page on the overlay
+  }
 }
