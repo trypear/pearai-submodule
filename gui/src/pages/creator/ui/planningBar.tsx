@@ -7,6 +7,7 @@ import { Button } from "./button";
 import { DocumentTextIcon as SolidDocumentTextIcon } from "@heroicons/react/24/solid";
 import { FC } from "react";
 import { cn } from "../../../lib/utils";
+import { RGBWrapper } from "../rgbBackground";
 
 export type PlanningBarProps = {
   isStreaming?: boolean;
@@ -26,12 +27,14 @@ export const PlanningBar: FC<PlanningBarProps> = ({
   return (
     <div
       className={cn(
-        "bg-[#161718] w-full rounded-full flex text-white justify-between min-w-64 h-10 gap-4 relative overflow-clip",
+        "bg-[#161718] w-full rounded-full flex text-white justify-between min-w-64 h-10 gap-4 relative",
         className,
       )}
     >
-      {/* {isGenerating && <div className="absolute inset-0 rainbow-border-glow" />} */}
-      <div className="flex-1 flex h-full align-middle ml-5 gap-4 relative">
+      {/* {isStreaming && (
+        <div className="absolute inset-0 rainbow-border-glow -z-10 blur" />
+      )} */}
+      <div className="flex-1 flex h-full align-middle ml-5 gap-4 relative ">
         <div className="relative h-full my-auto mr-1">
           <div className={`circle ${isStreaming ? "animated-circle" : ""}`} />
         </div>

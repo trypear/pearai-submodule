@@ -52,103 +52,31 @@
   }
 }
 
-/* TODO: FIX */
 .rainbow-border-glow {
-  border: 2px solid;
-  border-radius: 999px;
-  border-image-slice: 1;
-  border-image-source: linear-gradient(
+  position: absolute;
+  inset: -5.5px; /* Updated border width from 3px to 5.5px */
+  border-radius: 9999px;
+  background: linear-gradient(
     90deg,
-    rgb(255, 128, 128) 0%,
-    rgb(255, 192, 128) 14%,
-    rgb(255, 255, 128) 28%,
-    rgb(128, 255, 128) 42%,
-    rgb(128, 255, 255) 56%,
-    rgb(128, 128, 255) 70%,
-    rgb(192, 128, 255) 84%,
-    rgb(255, 128, 192) 100%
+    rgba(255, 128, 128, 0.7) 0%,
+    rgba(255, 192, 128, 0.7) 14%,
+    rgba(255, 255, 128, 0.7) 28%,
+    rgba(128, 255, 128, 0.7) 42%,
+    rgba(128, 255, 255, 0.7) 56%,
+    rgba(128, 128, 255, 0.7) 70%,
+    rgba(192, 128, 255, 0.7) 84%,
+    rgba(255, 128, 192, 0.7) 100%
   );
-  animation: rainbow-border 5s linear infinite;
+  background-size: 200% auto;
+  filter: blur(7.5px); /* Updated blur from 3px to 7.5px */
+  animation: rainbow-flow 3s linear infinite; /* Updated speed from 5s to 3s */
+  z-index: 0;
+  opacity: 0.7; /* Kept opacity at 0.7 as requested */
 }
 
-@keyframes rainbow-border {
-  0% {
-    border-image-source: linear-gradient(
-      90deg,
-      rgb(255, 128, 128) 0%,
-      rgb(255, 192, 128) 14%,
-      rgb(255, 255, 128) 28%,
-      rgb(128, 255, 128) 42%,
-      rgb(128, 255, 255) 56%,
-      rgb(128, 128, 255) 70%,
-      rgb(192, 128, 255) 84%,
-      rgb(255, 128, 192) 100%
-    );
-  }
-  20% {
-    border-image-source: linear-gradient(
-      90deg,
-      rgb(255, 192, 128) 0%,
-      rgb(255, 255, 128) 14%,
-      rgb(128, 255, 128) 28%,
-      rgb(128, 255, 255) 42%,
-      rgb(128, 128, 255) 56%,
-      rgb(192, 128, 255) 70%,
-      rgb(255, 128, 192) 84%,
-      rgb(255, 128, 128) 100%
-    );
-  }
-  40% {
-    border-image-source: linear-gradient(
-      90deg,
-      rgb(255, 255, 128) 0%,
-      rgb(128, 255, 128) 14%,
-      rgb(128, 255, 255) 28%,
-      rgb(128, 128, 255) 42%,
-      rgb(192, 128, 255) 56%,
-      rgb(255, 128, 192) 70%,
-      rgb(255, 128, 128) 84%,
-      rgb(255, 192, 128) 100%
-    );
-  }
-  60% {
-    border-image-source: linear-gradient(
-      90deg,
-      rgb(128, 255, 128) 0%,
-      rgb(128, 255, 255) 14%,
-      rgb(128, 128, 255) 28%,
-      rgb(192, 128, 255) 42%,
-      rgb(255, 128, 192) 56%,
-      rgb(255, 128, 128) 70%,
-      rgb(255, 192, 128) 84%,
-      rgb(255, 255, 128) 100%
-    );
-  }
-  80% {
-    border-image-source: linear-gradient(
-      90deg,
-      rgb(128, 255, 255) 0%,
-      rgb(128, 128, 255) 14%,
-      rgb(192, 128, 255) 28%,
-      rgb(255, 128, 192) 42%,
-      rgb(255, 128, 128) 56%,
-      rgb(255, 192, 128) 70%,
-      rgb(255, 255, 128) 84%,
-      rgb(128, 255, 128) 100%
-    );
-  }
-  100% {
-    border-image-source: linear-gradient(
-      90deg,
-      rgb(255, 128, 128) 0%,
-      rgb(255, 192, 128) 14%,
-      rgb(255, 255, 128) 28%,
-      rgb(128, 255, 128) 42%,
-      rgb(128, 255, 255) 56%,
-      rgb(128, 128, 255) 70%,
-      rgb(192, 128, 255) 84%,
-      rgb(255, 128, 192) 100%
-    );
+@keyframes rainbow-flow {
+  to {
+    background-position: 200% center;
   }
 }
 
