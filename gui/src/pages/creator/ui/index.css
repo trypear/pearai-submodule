@@ -52,9 +52,10 @@
   }
 }
 
+/* Base style without animation */
 .rainbow-border-glow {
   position: absolute;
-  inset: -5.5px; /* Updated border width from 3px to 5.5px */
+  inset: -5.5px;
   border-radius: 9999px;
   background: linear-gradient(
     90deg,
@@ -68,10 +69,16 @@
     rgba(255, 128, 192, 0.7) 100%
   );
   background-size: 200% auto;
-  filter: blur(7.5px); /* Updated blur from 3px to 7.5px */
-  animation: rainbow-flow 3s linear infinite; /* Updated speed from 5s to 3s */
+  filter: blur(7.5px);
+  animation: rainbow-flow 3s linear infinite;
   z-index: 0;
-  opacity: 0.7; /* Kept opacity at 0.7 as requested */
+  opacity: 0; /* Start invisible */
+  transition: opacity 0.5s ease; /* Add transition for smooth opacity changes */
+}
+
+/* Class to show the element */
+.rainbow-border-glow-visible {
+  opacity: 0.7;
 }
 
 @keyframes rainbow-flow {

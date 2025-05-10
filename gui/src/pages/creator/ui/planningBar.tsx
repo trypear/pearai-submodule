@@ -31,9 +31,12 @@ export const PlanningBar: FC<PlanningBarProps> = ({
         className,
       )}
     >
-      {/* {isStreaming && (
-        <div className="absolute inset-0 rainbow-border-glow -z-10 blur" />
-      )} */}
+      <div
+        className={`absolute inset-0 rainbow-border-glow -z-10 blur ${
+          isStreaming ? "rainbow-border-glow-visible" : ""
+        }
+            `}
+      />
       <div className="flex-1 flex h-full align-middle ml-5 gap-4 relative ">
         <div className="relative h-full my-auto mr-1">
           <div className={`circle ${isStreaming ? "animated-circle" : ""}`} />
