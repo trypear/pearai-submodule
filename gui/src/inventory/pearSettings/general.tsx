@@ -143,19 +143,29 @@ const AccountSettings = () => {
               </div>
             </div>
 
-            {usageDetails?.remaining_topup_credits && <div className="flex flex-col w-full justify-center gap-3">
-              <div className="border border-solid p-4 rounded-lg flex flex-col gap-3">
-                <div className="font-normal font-['SF Pro']">TopUp Credits</div>
-                <div className="self-stretch justify-start items-baseline gap-1 inline-flex">
-                  <div className="text-2xl font-['SF Pro']">
-                    ${usageDetails.remaining_topup_credits.toFixed(2)}
-                  </div>
-                  <div className="opacity-50 text-xs font-normal font-['SF Pro']">
-                    remaining
+            <div className="flex flex-col w-full justify-center gap-3">
+              <div className="border border-solid p-4 rounded-lg flex justify-between items-center">
+                <div className="flex flex-col gap-3">
+                  <div className="font-normal font-['SF Pro']">Top-Up Credits</div>
+                  <div className="justify-start items-baseline gap-1 inline-flex">
+                    <div className="text-2xl font-['SF Pro']">
+                      ${(usageDetails?.remaining_topup_credits || 0).toFixed(2)}
+                    </div>
+                    <div className="opacity-50 text-xs font-normal font-['SF Pro']">
+                      remaining
+                    </div>
                   </div>
                 </div>
+                <a
+                  href="https://trypear.ai/topup"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-4 py-2 bg-button text-foreground rounded-md hover:bg-button/90 transition-colors font-['SF Pro']"
+                >
+                  Add Credits
+                </a>
               </div>
-            </div>}
+            </div>
 
             <div className="flex flex-col w-full justify-center gap-3">
               <div className="opacity-50 text-xs font-normal font-['SF Pro']">
@@ -163,7 +173,7 @@ const AccountSettings = () => {
               </div>
               <div className="flex gap-3">
                 <div className="border border-solid w-1/2 p-3 rounded-lg">
-                  {accountDetails.plan_type.includes("free") ? "" : "Pro · "}{" "}
+                  {accountDetails.plan_type.toLowerCase().includes("free") ? "" : "Pro · "}{" "}
                   <span className="capitalize">
                     {accountDetails.plan_type.toLowerCase()}
                   </span>
