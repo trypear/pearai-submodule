@@ -13,3 +13,46 @@
   --vscode-editor-foreground: rgb(197, 200, 198);
   --vscode-textBlockQuote-background: rgba(255, 255, 255, 1);
 }
+
+/* Rainbow border glow effect */
+.rainbow-border-glow {
+  position: absolute;
+  inset: -5.5px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 128, 128, 0.7) 0%,
+    rgba(255, 192, 128, 0.7) 14%,
+    rgba(255, 255, 128, 0.7) 28%,
+    rgba(128, 255, 128, 0.7) 42%,
+    rgba(128, 255, 255, 0.7) 56%,
+    rgba(128, 128, 255, 0.7) 70%,
+    rgba(192, 128, 255, 0.7) 84%,
+    rgba(255, 128, 192, 0.7) 100%
+  );
+  background-size: 200% auto;
+  filter: blur(7.5px);
+  animation: rainbow-flow 3s linear infinite;
+  z-index: -1; /* Ensure it's behind the button */
+  opacity: 0; /* Start invisible */
+  transition: opacity 0.5s ease; /* Add transition for smooth opacity changes */
+}
+
+/* Class to show the element */
+.rainbow-border-glow-visible {
+  opacity: 0.7;
+}
+
+@keyframes rainbow-flow {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Standardized button styling for Creator buttons */
+.creator-button-container {
+  position: relative;
+  display: flex;
+  width: 100%;
+  isolation: isolate; /* Create a new stacking context */
+}

@@ -42,42 +42,7 @@ export const Ideation: React.FC<IdeationProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
   const projectNameRef = useRef<HTMLInputElement | null>(null)
   const isCapturingRef = useRef(false)
-  const [hasWorkspaceFolders, setHasWorkspaceFolders] = useState(true)
   const ideMessenger = useContext(IdeMessengerContext)
-
-  useEffect(() => {
-    const checkWorkspaceFolders = async () => {
-      try {
-        let folders = await ideMessenger.request("getWorkspaceDirs", undefined)
-        // TESTING TO EMULATE NO WORKSPACE FOLDERS, DO NOT USE IN PRODUCTION
-        // folders = []
-        console.dir("WORKSPACE FOLDERS:")
-        console.dir(folders)
-        setHasWorkspaceFolders(Array.isArray(folders) && folders.length > 0)
-        if (!folders || folders.length === 0) {
-          setIsCreatingProject(true)
-        }
-      } catch (err) {
-        console.error('Failed to check workspace folders:', err)
-        setHasWorkspaceFolders(false)
-        setIsCreatingProject(true)
-      }
-    }
-    checkWorkspaceFolders()
-  }, [ideMessenger])
-
-  // Set default project path when isCreatingProject changes
-  useEffect(() => {
-    if (isCreatingProject || !hasWorkspaceFolders) {
-      setProjectConfig(prev => ({
-        ...prev,
-        path: "~/pearai-projects",
-        name: "default"
-      }));
-    } else {
-      setProjectConfig({ path: "", name: "" });
-    }
-  }, [isCreatingProject, hasWorkspaceFolders, setProjectConfig]);
 
   // Focus project name input when popover opens
   useEffect(() => {
@@ -162,7 +127,7 @@ export const Ideation: React.FC<IdeationProps> = ({
     }));
   };
   return (
-    <div className={cn("flex gap-4 flex-col border border-solidd border-red-500 min-w-[600px]", className)}>
+    <div className={cn("flex gap-4 flex-col min-w-[600px]", className)}>
       <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
         <PearIcon className="my-auto size-7" />
         <div className="my-auto font-semibold text-2xl">
@@ -190,11 +155,11 @@ export const Ideation: React.FC<IdeationProps> = ({
               label: "New Project",
               variant: "secondary",
               size: "sm",
-              togglable: hasWorkspaceFolders,
-              toggled: isCreatingProject || !hasWorkspaceFolders,
-              onToggle: (t) => hasWorkspaceFolders && setIsCreatingProject(t),
+              togglable: true,
+              toggled: isCreatingProject,
+              onToggle: (t) => setIsCreatingProject(t),
             },
-            ...(isCreatingProject || !hasWorkspaceFolders ? [{
+            ...(isCreatingProject ? [{
               id: ButtonID.MAKE_PLAN,
               icon: <FileText className={`${makeAPlan ? "text-blue-500" : "text-gray-400"}`} />,
               label: "Make a plan",
@@ -213,6 +178,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             size: "sm",
             disabled: isCreatingProject && !projectConfig.name.trim(),
           }}
+          className="rounded-b-0"
         />
         <div
           className={cn(
@@ -226,7 +192,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             }
           }
         >
-          <div className="flex flex-col text-xs gap-2 p-3 bg-background/50 backdrop-blur-sm rounded-lg border border-solidd border-red-500">
+          <div className="flex flex-col text-xs gap-2 p-3 bg-background/50 backdrop-blur-sm rounded-lg">
            <div className="space-y-2.5">
              <label className="font-medium text-black">Project Name</label>
              <br />
