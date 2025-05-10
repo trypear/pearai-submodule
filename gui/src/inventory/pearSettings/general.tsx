@@ -83,7 +83,12 @@ const AccountSettings = () => {
                   {accountDetails?.email}
                 </div>
               </div>
-              <Button onClick={handleLogout}>Log out</Button>
+              <div
+                onClick={handleLogout}
+                className="p-3 bg-list-hoverBackground rounded-lg border border-solid text-xs font-normal font-['SF Pro'] cursor-pointer"
+              >
+                Log out
+              </div>
             </div>
             <div className="opacity-50 text-xs font-normal font-['SF Pro']">
               USAGE
@@ -156,14 +161,12 @@ const AccountSettings = () => {
                     </div>
                   </div>
                 </div>
-                <a
-                  href="https://trypear.ai/topup"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 bg-button text-foreground rounded-md hover:bg-button/90 transition-colors font-['SF Pro']"
+                <div
+                  onClick={() => window.open('https://trypear.ai/topup', '_blank', 'noopener,noreferrer')}
+                  className="p-3 bg-list-hoverBackground rounded-lg border border-solid text-xs font-normal font-['SF Pro'] cursor-pointer"
                 >
                   Add Credits
-                </a>
+                </div>
               </div>
             </div>
 
