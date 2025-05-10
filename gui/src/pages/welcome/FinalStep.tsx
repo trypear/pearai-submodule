@@ -5,9 +5,16 @@ import { IdeMessengerContext } from "@/context/IdeMessenger";
 import { FolderOpen } from "lucide-react";
 import { useContext, useEffect } from "react";
 
-export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: () => void, startOnboardingAgain: () => void }) {
-
-  const selectedTools = JSON.parse(localStorage.getItem('onboardingSelectedTools'));
+export default function FinalStep({
+  onNext,
+  startOnboardingAgain,
+}: {
+  onNext: () => void;
+  startOnboardingAgain: () => void;
+}) {
+  const selectedTools = JSON.parse(
+    localStorage.getItem("onboardingSelectedTools"),
+  );
 
   const initiateInstallations = () => {
     ideMessenger.post("pearAIinstallation", { tools: selectedTools });
@@ -17,7 +24,7 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
   const handleOpenFolder = () => {
     ideMessenger.post("pearWelcomeOpenFolder", undefined);
     initiateInstallations();
-    onNext()
+    onNext();
   };
 
   const handleOpenCreator = () => {
@@ -27,24 +34,24 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
 
   const handleClose = () => {
     initiateInstallations();
-    onNext()
+    onNext();
   };
 
   useEffect(() => {
     // unlock overlay when we get to last page
     ideMessenger.post("unlockOverlay", undefined);
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (event.key === 'Enter') {
+      if (event.key === "Enter") {
         handleOpenFolder();
-        onNext()
+        onNext();
       }
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         initiateInstallations();
-        onNext()
+        onNext();
       }
     };
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
   }, []);
 
   const ideMessenger = useContext(IdeMessengerContext);
@@ -61,16 +68,19 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
         You're all set!
       </div>
       <div className="flex flex-col items-center gap-4 ">
-        <Button
-          className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative mb-4"
-          onClick={handleOpenCreator}
-        >
-          <div className="flex items-center justify-center w-full gap-2">
-            <div className="flex items-center gap-2">
-              <span>Open PearAI Creator</span>
+        <div className="creator-button-container w-[250px] md:w-[280px] mb-4">
+          <div className="rainbow-border-glow rainbow-border-glow-visible"></div>
+          <Button
+            className="text-base md:text-lg py-5 px-2 md:py-6 h-12 flex text-white bg-black w-full relative z-10"
+            onClick={handleOpenCreator}
+          >
+            <div className="flex items-center justify-center w-full gap-2">
+              <div className="flex items-center gap-2">
+                <span>PearAI Creator</span>
+              </div>
             </div>
-          </div>
-        </Button>
+          </Button>
+        </div>
         <Button
           className="w-[250px] md:w-[280px] text-button-foreground bg-button hover:bg-button-hover py-5 px-2 md:py-6 text-base md:text-lg cursor-pointer relative"
           onClick={handleOpenFolder}
@@ -88,16 +98,16 @@ export default function FinalStep({ onNext, startOnboardingAgain }: { onNext: ()
         >
           <span className="text-center w-full">Close</span>
         </div>
-        {
-          process.env.NODE_ENV === "development" && (
-            <div
-              onClick={startOnboardingAgain}
-              className="flex items-center gap-2 cursor-pointer absolute bottom-20"
-            >
-              <span className="text-center w-full">START ONBOARDING AGAIN (shown in dev)</span>
-            </div>
-          )
-        }
+        {process.env.NODE_ENV === "development" && (
+          <div
+            onClick={startOnboardingAgain}
+            className="flex items-center gap-2 cursor-pointer absolute bottom-20"
+          >
+            <span className="text-center w-full">
+              START ONBOARDING AGAIN (shown in dev)
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
