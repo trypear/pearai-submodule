@@ -18,7 +18,6 @@
 .rainbow-border-glow {
   position: absolute;
   inset: -5.5px;
-  border-radius: 9999px;
   background: linear-gradient(
     90deg,
     rgba(255, 128, 128, 0.7) 0%,
