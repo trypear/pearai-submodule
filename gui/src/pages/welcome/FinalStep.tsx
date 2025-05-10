@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { IdeMessengerContext } from "@/context/IdeMessenger";
-import { FolderOpen } from "lucide-react";
+import { FolderOpen, SparkleIcon, Sparkles } from "lucide-react";
 import { useContext, useEffect } from "react";
 
 export default function FinalStep({
@@ -76,7 +76,8 @@ export default function FinalStep({
           >
             <div className="flex items-center justify-center w-full gap-2">
               <div className="flex items-center gap-2">
-                <span>PearAI Creator</span>
+                <Sparkles className="ml-2 size-5" />
+                <span className="flex-1">PearAI Creator</span>
               </div>
             </div>
           </Button>
