@@ -76,7 +76,6 @@ export default function FinalStep({
           >
             <div className="flex items-center justify-center w-full gap-2">
               <div className="flex items-center gap-2">
-                <Sparkles className="ml-2 size-5" />
                 <span className="flex-1">PearAI Creator</span>
               </div>
             </div>
