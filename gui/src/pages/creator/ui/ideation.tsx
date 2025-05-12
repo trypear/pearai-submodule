@@ -155,11 +155,14 @@ export const Ideation: React.FC<IdeationProps> = ({
   };
   return (
     <div className={cn("flex gap-4 flex-col min-w-[600px]", className)}>
-      <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity">
+      <div className="flex justify-center align-middle text-[var(--focusBorder)] w-full gap-2 text-md animate transition-opacity relative">
         <PearIcon className="my-auto size-7" />
         <div className="my-auto font-semibold text-2xl">
           {/* {isCreatingProject ? "What would you like to make?" : "What would you like to do?"} */}
           PearAI Creator
+        </div>
+        <div className="absolute -right-2 top-1 bg-blue-500 text-white border border-blue-400 rounded-full px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase shadow-sm">
+          Beta
         </div>
       </div>
       <RGBWrapper className="my-auto w-full">
