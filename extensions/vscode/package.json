@@ -3,7 +3,7 @@
   "name": "pearai",
   "publisher": "pearai",
   "icon": "media/icon.png",
-  "version": "1.8.9",
+  "version": "2.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/trypear/pearai-submodule"
