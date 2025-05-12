@@ -8,22 +8,27 @@ import { useAccountSettings } from "./hooks/useAccountSettings";
 
 interface FeedbackForm {
   feedback: string;
-  includeHistory: boolean;
+  history: string | null;
 }
 
 export const CreatorFeedback = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [includeHistory, setIncludeHistory] = useState(false);
   const { auth } = useAccountSettings();
 
   const form = useForm<FeedbackForm>({
     defaultValues: {
       feedback: "",
-      includeHistory: true
+      history: null,
     }
   });
 
   const handleSubmit = async (data: FeedbackForm) => {
+    const submissionData = {
+      ...data,
+      includeHistory,
+    };
     if (!auth?.accessToken) {
       setStatus('error');
       return;
@@ -38,7 +43,7 @@ export const CreatorFeedback = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${auth.accessToken}`,
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(submissionData),
       });
 
       if (!response.ok) {
@@ -72,10 +77,8 @@ export const CreatorFeedback = () => {
           <div className="flex items-center space-x-2">
             <Checkbox
               id="includeHistory"
-              checked={form.watch("includeHistory")}
-              onCheckedChange={(checked) =>
-                form.setValue("includeHistory", checked as boolean)
-              }
+              checked={includeHistory}
+              onCheckedChange={(checked) => setIncludeHistory(checked as boolean)}
             />
             <label
               htmlFor="includeHistory"
