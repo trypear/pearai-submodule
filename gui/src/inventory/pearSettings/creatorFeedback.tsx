@@ -117,8 +117,8 @@ export const CreatorFeedback = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full p-6">
-      <div className="w-full max-w-full md:max-w-2xl flex flex-col gap-4">
+    <div className="flex flex-col items-center justify-center w-full h-full p-6 box-border">
+      <div className="w-full max-w-full md:max-w-2xl flex flex-col gap-4 box-border">
         <h1 className="text-2xl font-medium text-center">How did it go?</h1>
 
         <div className="grid grid-cols-3 gap-4">
@@ -149,16 +149,14 @@ export const CreatorFeedback = () => {
 
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
-          className="w-full space-y-4"
+          className="w-full space-y-4 box-border"
         >
-          <div>
-            <h2 className="text-lg font-medium mb-2">Tell us what happened.</h2>
-            <Textarea
-              className="min-h-[128px] bg-background border-2 border-gray-300 rounded-lg text-primary w-full resize-y focus:border-gray-400 focus:ring-1 focus:ring-gray-400"
-              placeholder="Enter your feedback here..."
-              {...form.register("feedback", { required: true })}
-            />
-          </div>
+          <h2 className="text-lg font-medium mb-2">Tell us what happened.</h2>
+          <Textarea
+            className="min-h-[128px] bg-background border border-gray-300 rounded-lg text-primary w-full box-border resize-y focus:border-gray-400 focus:ring-1 focus:ring-gray-400"
+            placeholder="Enter your feedback here..."
+            {...form.register("feedback", { required: true })}
+          />
 
           <div className="space-y-2">
             <h2 className="text-lg font-medium mb-2">Attachments</h2>
