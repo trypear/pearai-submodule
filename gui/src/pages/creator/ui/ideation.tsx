@@ -254,13 +254,6 @@ export const Ideation: React.FC<IdeationProps> = ({
                   onClick={handleProjectTypeChange}
                 />
                 <ProjectTypeButton
-                  type="OTHER"
-                  label="Other"
-                  icon={<Box className="size-6" />}
-                  selected={projectConfig.type === "OTHER"}
-                  onClick={handleProjectTypeChange}
-                />
-                <ProjectTypeButton
                   type="MOBILE"
                   label="Mobile"
                   icon={<Smartphone className="size-6" />}
@@ -268,6 +261,15 @@ export const Ideation: React.FC<IdeationProps> = ({
                   disabled={true}
                   comingSoon={true}
                   onClick={handleProjectTypeChange}
+                />
+                <ProjectTypeButton
+                  type="OTHER"
+                  label="Other"
+                  icon={<Box className="size-6" />}
+                  selected={projectConfig.type === "OTHER"}
+                  onClick={handleProjectTypeChange}
+                  comingSoon={true}
+                  disabled={true}
                 />
               </div>
             </div>
