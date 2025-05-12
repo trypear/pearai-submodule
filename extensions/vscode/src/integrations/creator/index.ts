@@ -279,6 +279,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
         // If the timestamp is within the last 20 seconds, we can use it
         this.creatorState = creatorState;
         this._onDidRequestExecutePlan.fire({
+          ...msg.payload,
           plan: msg.payload.request,
         });
       }
