@@ -16,6 +16,7 @@ import {
   MessageContent,
   ProcessLLMType,
   SubmitIdeaType,
+  NewProjectType,
 } from "core";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { getAnimationTargetHeightOffset } from "./utils";
@@ -52,6 +53,7 @@ interface OverlayStates {
 interface ProjectConfig {
   path: string;
   name: string;
+  type: NewProjectType;
 }
 
 /**
@@ -76,6 +78,7 @@ export const CreatorOverlay = () => {
       style: "lowerCase",
       separator: "-",
     }),
+    type: "WEBAPP" as NewProjectType,
   });
   const ideMessenger = useContext(IdeMessengerContext);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
@@ -274,7 +277,7 @@ export const CreatorOverlay = () => {
         sendMessage("SubmitIdea", {
           request,
           creatorMode: true,
-          newProjectType: "WEBAPP",
+          newProjectType: projectConfig.type,
           newProjectPath: safePath,
         } satisfies SubmitIdeaType["payload"]);
       } else {
@@ -350,7 +353,7 @@ export const CreatorOverlay = () => {
           request: `PLAN: ${currentPlan}`,
           creatorMode: true,
           newProjectPath: safePath,
-          newProjectType: "WEBAPP",
+          newProjectType: projectConfig.type,
         } satisfies SubmitIdeaType["payload"]);
       } else {
         // Submit the plan without project path

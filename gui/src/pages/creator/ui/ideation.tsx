@@ -1,25 +1,28 @@
-import { useCallback, useEffect, useRef, useState, useContext } from "react"
-import { RGBWrapper } from "../rgbBackground"
-import { InputBox } from "../inputBox"
-import { PearIcon } from "./pearIcon"
-import { FileText, FolderPlus, Pencil } from "lucide-react"
-import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline"
-import { cn } from "@/lib/utils"
-import { IdeMessengerContext } from "../../../context/IdeMessenger"
-import { ButtonID } from "../utils"
-import { Folder, Tag } from "lucide-react"
-import { LightbulbIcon } from "lucide-react"
+import { useCallback, useEffect, useRef, useState, useContext } from "react";
+import { RGBWrapper } from "../rgbBackground";
+import { InputBox } from "../inputBox";
+import { PearIcon } from "./pearIcon";
+import { FileText, FolderPlus, Pencil } from "lucide-react";
+import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline";
+import { cn } from "@/lib/utils";
+import { IdeMessengerContext } from "../../../context/IdeMessenger";
+import { ButtonID } from "../utils";
+import { Folder, Tag, Monitor, Smartphone, Box } from "lucide-react";
+import { LightbulbIcon } from "lucide-react";
+import { ProjectTypeButton } from "./projectTypeButton";
+import type { NewProjectType } from "core";
 interface ProjectConfig {
   path: string;
   name: string;
+  type: NewProjectType;
 }
 
 interface IdeationProps {
-  initialMessage: string
-  setInitialMessage: (message: string | ((prevText: string) => string)) => void
-  handleRequest: () => void
-  makeAPlan: boolean
-  setMakeAPlan: (value: boolean) => void
+  initialMessage: string;
+  setInitialMessage: (message: string | ((prevText: string) => string)) => void;
+  handleRequest: () => void;
+  makeAPlan: boolean;
+  setMakeAPlan: (value: boolean) => void;
   className?: string;
   projectConfig: ProjectConfig;
   setProjectConfig: React.Dispatch<React.SetStateAction<ProjectConfig>>;
@@ -37,12 +40,12 @@ export const Ideation: React.FC<IdeationProps> = ({
   projectConfig,
   setProjectConfig,
   isCreatingProject,
-  setIsCreatingProject
+  setIsCreatingProject,
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
-  const projectNameRef = useRef<HTMLInputElement | null>(null)
-  const isCapturingRef = useRef(false)
-  const ideMessenger = useContext(IdeMessengerContext)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const projectNameRef = useRef<HTMLInputElement | null>(null);
+  const isCapturingRef = useRef(false);
+  const ideMessenger = useContext(IdeMessengerContext);
 
   // Focus project name input when popover opens
   useEffect(() => {
@@ -52,78 +55,102 @@ export const Ideation: React.FC<IdeationProps> = ({
   }, [isCreatingProject]);
 
   const forceFocus = useCallback(() => {
-    if (!textareaRef.current) return
+    if (!textareaRef.current) return;
 
     try {
-      textareaRef.current.focus()
-      textareaRef.current.focus({ preventScroll: false })
-      textareaRef.current.scrollIntoView({ behavior: "smooth", block: "center" })
+      textareaRef.current.focus();
+      textareaRef.current.focus({ preventScroll: false });
+      textareaRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
     } catch (e) {
-      console.error("Focus attempt failed:", e)
+      console.error("Focus attempt failed:", e);
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
-    forceFocus()
+    forceFocus();
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only capture keystrokes if not focused on any textarea
-      if (document.activeElement?.tagName === "TEXTAREA" ||
-        document.activeElement?.tagName === "INPUT") {
-        return
+      if (
+        document.activeElement?.tagName === "TEXTAREA" ||
+        document.activeElement?.tagName === "INPUT"
+      ) {
+        return;
       }
 
       // Handle single character keystrokes
       if (e.key.length === 1 && !e.ctrlKey && !e.altKey && !e.metaKey) {
-        e.preventDefault()
-        e.stopPropagation()
+        e.preventDefault();
+        e.stopPropagation();
 
-        forceFocus()
+        forceFocus();
 
         if (!isCapturingRef.current) {
-          setInitialMessage((prevText) => prevText + e.key)
-          isCapturingRef.current = true
+          setInitialMessage((prevText) => prevText + e.key);
+          isCapturingRef.current = true;
 
           setTimeout(() => {
-            isCapturingRef.current = false
-          }, 100)
+            isCapturingRef.current = false;
+          }, 100);
         }
       }
-    }
+    };
 
-    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [forceFocus, setInitialMessage])
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [forceFocus, setInitialMessage]);
 
   const handleDirectorySelect = useCallback(async () => {
-    console.log("handleDirectorySelect called with projectName:", projectConfig.name);
+    console.log(
+      "handleDirectorySelect called with projectName:",
+      projectConfig.name,
+    );
     try {
-      const response = await ideMessenger.request("pearSelectFolder", { openLabel: "Select" });
+      const response = await ideMessenger.request("pearSelectFolder", {
+        openLabel: "Select",
+      });
 
-      if (response && typeof response === 'string') {
+      if (response && typeof response === "string") {
         const dirName = response;
         // Use default if name is empty or just whitespace
-        console.dir("DIR IN HANDLE DIRECTORY SELECT:")
-        console.dir(dirName)
-        console.dir(projectConfig.name)
+        console.dir("DIR IN HANDLE DIRECTORY SELECT:");
+        console.dir(dirName);
+        console.dir(projectConfig.name);
         const projectName = projectConfig.name.trim() || "default";
-        setProjectConfig({ name: projectName, path: dirName });
+        setProjectConfig((prev) => ({
+          ...prev,
+          name: projectName,
+          path: dirName,
+        }));
       }
     } catch (err) {
-      console.error('Failed to select directory:', err);
+      console.error("Failed to select directory:", err);
     }
   }, [ideMessenger, projectConfig.name, setProjectConfig]);
 
   // Display just the main folder name, as the path is usually extremely long
-  const displayPath = (projectConfig.path.includes('~') ? projectConfig.path : projectConfig.path.split(/[/\\]/).pop()) + "/";
+  const displayPath =
+    (projectConfig.path.includes("~")
+      ? projectConfig.path
+      : projectConfig.path.split(/[/\\]/).pop()) + "/";
 
   const handleProjectNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setProjectConfig(prev => ({
+    setProjectConfig((prev) => ({
       ...prev,
-      name: e.target.value
+      name: e.target.value,
+    }));
+  };
+
+  const handleProjectTypeChange = (type: NewProjectType) => {
+    setProjectConfig((prev) => ({
+      ...prev,
+      type,
     }));
   };
   return (
@@ -143,15 +170,23 @@ export const Ideation: React.FC<IdeationProps> = ({
           setInitialMessage={setInitialMessage}
           handleRequest={handleRequest}
           isDisabled={false}
-          placeholder={isCreatingProject
-            ? "Ask PearAI Creator to build anything! Currently works best with web applications."
-            : "Ask PearAI Creator to add new features, fix bugs, and more to your current project!"}
+          placeholder={
+            isCreatingProject
+              ? "Ask PearAI Creator to build anything! Currently works best with web applications."
+              : "Ask PearAI Creator to add new features, fix bugs, and more to your current project!"
+          }
           lockToWhite
           maxHeight="40vh"
           leftButtons={[
             {
               id: ButtonID.NEW_PROJECT,
-              icon: <FolderPlus className={`${isCreatingProject ? "text-blue-500" : "text-gray-400"}`} />,
+              icon: (
+                <FolderPlus
+                  className={`${
+                    isCreatingProject ? "text-blue-500" : "text-gray-400"
+                  }`}
+                />
+              ),
               label: "New Project",
               variant: "secondary",
               size: "sm",
@@ -159,21 +194,35 @@ export const Ideation: React.FC<IdeationProps> = ({
               toggled: isCreatingProject,
               onToggle: (t) => setIsCreatingProject(t),
             },
-            ...(isCreatingProject ? [{
-              id: ButtonID.MAKE_PLAN,
-              icon: <FileText className={`${makeAPlan ? "text-blue-500" : "text-gray-400"}`} />,
-              label: "Make a plan",
-              togglable: true,
-              variant: "secondary" as const,
-              size: "sm" as const,
-              toggled: makeAPlan,
-              onToggle: (t) => setMakeAPlan(t),
-            }] : []),
+            ...(isCreatingProject
+              ? [
+                  {
+                    id: ButtonID.MAKE_PLAN,
+                    icon: (
+                      <FileText
+                        className={`${
+                          makeAPlan ? "text-blue-500" : "text-gray-400"
+                        }`}
+                      />
+                    ),
+                    label: "Make a plan",
+                    togglable: true,
+                    variant: "secondary" as const,
+                    size: "sm" as const,
+                    toggled: makeAPlan,
+                    onToggle: (t) => setMakeAPlan(t),
+                  },
+                ]
+              : []),
           ]}
           submitButton={{
             id: ButtonID.SUBMIT,
             label: "Start",
-            icon: <ArrowTurnDownLeftIcon style={{ width: "13px", height: "13px" }} />,
+            icon: (
+              <ArrowTurnDownLeftIcon
+                style={{ width: "13px", height: "13px" }}
+              />
+            ),
             variant: "default",
             size: "sm",
             disabled: isCreatingProject && !projectConfig.name.trim(),
@@ -183,46 +232,78 @@ export const Ideation: React.FC<IdeationProps> = ({
         <div
           className={cn(
             "overflow-hidden rounded-b-xl border-solid border-b-0  border-l-0 border-r-0 border-t-1 border-gray-300 transition-all duration-300 ease-out",
-            isCreatingProject ? "max-h-[200px] opacity-100" : "max-h-0 opacity-0"
+            isCreatingProject
+              ? "max-h-[400px] opacity-100"
+              : "max-h-0 opacity-0",
           )}
-          style={
-            {
-              // backgroundColor: 'var(--widgetBackground)',
-              backgroundColor: 'white',
-            }
-          }
+          style={{
+            // backgroundColor: 'var(--widgetBackground)',
+            backgroundColor: "white",
+          }}
         >
           <div className="flex flex-col text-xs gap-2 p-3 bg-background/50 backdrop-blur-sm rounded-lg">
-           <div className="space-y-2.5">
-             <label className="font-medium text-black">Project Name</label>
-             <br />
-             <div className="flex items-center gap-2">
-               <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
-               >
-                 <Tag className="size-4 text-black" />
-                 <div className="text-black">
-                   <input
-                     type="text"
-                     placeholder="Project Name"
-                     className="w-full bg-transparent outline-none border-none focus:outline-none"
-                     value={projectConfig.name}
-                     onChange={handleProjectNameChange}
-                   />
-                 </div>
-               </div>
-             </div>
-           </div>
-           <div className="space-y-2.5">
-             <label className="font-medium text-black">Directory</label>
-             <br />
-             <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
-               onClick={handleDirectorySelect}
-             >
-               <Folder className="size-4 text-black" />
-               <div className="text-black">{projectConfig.path && `${displayPath}`}</div>
-             </div>
-           </div>
-           {/* <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer text-black"
+            <div className="space-y-2.5">
+              <label className="font-medium text-black">Project Type</label>
+              <br />
+              <div className="grid grid-cols-3 gap-4">
+                <ProjectTypeButton
+                  type="WEBAPP"
+                  label="Web App"
+                  icon={<Monitor className="size-6" />}
+                  selected={projectConfig.type === "WEBAPP"}
+                  onClick={handleProjectTypeChange}
+                />
+                <ProjectTypeButton
+                  type="OTHER"
+                  label="Other"
+                  icon={<Box className="size-6" />}
+                  selected={projectConfig.type === "OTHER"}
+                  onClick={handleProjectTypeChange}
+                />
+                <ProjectTypeButton
+                  type="MOBILE"
+                  label="Mobile"
+                  icon={<Smartphone className="size-6" />}
+                  selected={projectConfig.type === "MOBILE"}
+                  disabled={true}
+                  comingSoon={true}
+                  onClick={handleProjectTypeChange}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <label className="font-medium text-black">Project Name</label>
+              <br />
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer ">
+                  <Tag className="size-4 text-black" />
+                  <div className="text-black">
+                    <input
+                      type="text"
+                      placeholder="Project Name"
+                      className="w-full bg-transparent outline-none border-none focus:outline-none"
+                      value={projectConfig.name}
+                      onChange={handleProjectNameChange}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2.5">
+              <label className="font-medium text-black">Directory</label>
+              <br />
+              <div
+                className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer "
+                onClick={handleDirectorySelect}
+              >
+                <Folder className="size-4 text-black" />
+                <div className="text-black">
+                  {projectConfig.path && `${displayPath}`}
+                </div>
+              </div>
+            </div>
+            {/* <div className="flex items-center gap-2 rounded-lg border border-solid border-gray-300 p-1.5 w-fit cursor-pointer text-black"
            // onClick={handleProjectNameSuggestion} // Use the suggested project name by ai.
            >
              <LightbulbIcon className="size-4" />
@@ -230,12 +311,12 @@ export const Ideation: React.FC<IdeationProps> = ({
                ai suggested project name
              </div>
            </div> */}
-           <div className="text-xs text-black">
-             {projectConfig.path}/{projectConfig.name}
-           </div>
+            <div className="text-xs text-black">
+              {projectConfig.path}/{projectConfig.name}
+            </div>
           </div>
         </div>
       </RGBWrapper>
     </div>
-  )
-}
+  );
+};
