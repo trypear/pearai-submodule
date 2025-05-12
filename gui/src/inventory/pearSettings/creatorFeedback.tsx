@@ -71,16 +71,10 @@ export const CreatorFeedback = () => {
   const form = useForm<FeedbackForm>({
     defaultValues: {
       feedback: "",
-      history: null,
     },
   });
 
   const handleSubmit = async (data: FeedbackForm) => {
-    const submissionData = {
-      ...data,
-      messages: includeHistory ? messages : [],
-      includeHistory,
-    };
     if (!auth?.accessToken) {
       setStatus("error");
       return;
