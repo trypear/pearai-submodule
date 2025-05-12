@@ -9,7 +9,7 @@ import { IdeMessengerContext } from "../../context/IdeMessenger";
 
 interface FeedbackForm {
   feedback: string;
-  history: string | null;
+  messages: any[];
 }
 
 export const CreatorFeedback = () => {
@@ -39,7 +39,7 @@ export const CreatorFeedback = () => {
   const form = useForm<FeedbackForm>({
     defaultValues: {
       feedback: "",
-      history: null,
+      messages: [],
     },
   });
 
@@ -47,7 +47,6 @@ export const CreatorFeedback = () => {
     const submissionData = {
       ...data,
       messages: includeHistory ? messages : [],
-      includeHistory,
     };
     if (!auth?.accessToken) {
       setStatus("error");
