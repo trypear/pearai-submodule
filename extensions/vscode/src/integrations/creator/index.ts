@@ -39,6 +39,8 @@ export class PearAICreatorMode implements IPearAICreatorMode {
   private readonly _onDidRequestExecutePlan =
     new vscode.EventEmitter<ExecutePlanRequest>();
 
+  private feedbackMessages: any[] | undefined = undefined;
+
   // The abort token we can send to the LLM
   private cancelToken: AbortSignal | undefined;
 
@@ -292,7 +294,13 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     // First, open the overlay
     await vscode.commands.executeCommand("pearai.showOverlay.feedback");
 
+    this.feedbackMessages = messages;
+
     // Then navigate to the inventory settings page
     // TODO: navigate to the right page on the overlay
+  }
+
+  public getFeedbackMessages(): any[] | undefined {
+    return this.feedbackMessages;
   }
 }

@@ -44,6 +44,7 @@ import {
 import { getExtensionUri } from "../util/vscode";
 import { selectFile, selectFolder } from "../util/ideUtils";
 import { VsCodeWebviewProtocol } from "../webviewProtocol";
+import { getApi } from "../extension";
 
 /**
  * A shared messenger class between Core and Webview
@@ -601,6 +602,10 @@ export class VsCodeMessenger {
       await Promise.all(
         sessions.map((session) => workOsAuthProvider.removeSession(session.id)),
       );
+    });
+
+    this.onWebview("getCreatorFeedbackMessages", async (msg) => {
+      return getApi()!.creatorMode.getFeedbackMessages();
     });
   }
 }

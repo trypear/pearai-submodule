@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { SERVER_URL } from "core/util/parameters";
 import { useAccountSettings } from "./hooks/useAccountSettings";
+import { IdeMessengerContext } from "../../context/IdeMessenger";
 
 interface FeedbackForm {
   feedback: string;
@@ -16,6 +17,24 @@ export const CreatorFeedback = () => {
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [includeHistory, setIncludeHistory] = useState(false);
   const { auth } = useAccountSettings();
+  const ideMessenger = useContext(IdeMessengerContext);
+
+  const [messages, setMessages] = useState<any[]>([]);
+
+  useEffect(() => {
+    const callback = async () => {
+      const res = await ideMessenger.request(
+        "getCreatorFeedbackMessages",
+        undefined,
+      );
+
+      setMessages(res);
+    };
+
+    callback().catch((e) => {
+      console.error("Error getting messages", e);
+    });
+  }, []);
 
   const form = useForm<FeedbackForm>({
     defaultValues: {
@@ -27,6 +46,7 @@ export const CreatorFeedback = () => {
   const handleSubmit = async (data: FeedbackForm) => {
     const submissionData = {
       ...data,
+      messages: includeHistory ? messages : [],
       includeHistory,
     };
     if (!auth?.accessToken) {
