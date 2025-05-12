@@ -10,6 +10,7 @@ import { ThumbsDown, ThumbsUp, AlertTriangle } from "lucide-react";
 
 interface FeedbackForm {
   feedback: string;
+  messages: any[];
   feedbackType: "worked" | "issues" | "didnt_work" | null;
   includeMessages: boolean;
   contactConsent: boolean;
@@ -70,13 +71,16 @@ export const CreatorFeedback = () => {
   const form = useForm<FeedbackForm>({
     defaultValues: {
       feedback: "",
-      feedbackType: null,
-      includeMessages: true,
-      contactConsent: true,
+      history: null,
     },
   });
 
   const handleSubmit = async (data: FeedbackForm) => {
+    const submissionData = {
+      ...data,
+      messages: includeHistory ? messages : [],
+      includeHistory,
+    };
     if (!auth?.accessToken) {
       setStatus("error");
       return;
