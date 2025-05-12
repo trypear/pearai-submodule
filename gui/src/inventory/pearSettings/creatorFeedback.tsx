@@ -13,7 +13,7 @@ interface FeedbackForm {
 
 export const CreatorFeedback = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [includeHistory, setIncludeHistory] = useState(false);
   const { auth } = useAccountSettings();
 
@@ -21,7 +21,7 @@ export const CreatorFeedback = () => {
     defaultValues: {
       feedback: "",
       history: null,
-    }
+    },
   });
 
   const handleSubmit = async (data: FeedbackForm) => {
@@ -30,31 +30,34 @@ export const CreatorFeedback = () => {
       includeHistory,
     };
     if (!auth?.accessToken) {
-      setStatus('error');
+      setStatus("error");
       return;
     }
 
     setIsLoading(true);
-    setStatus('idle');
+    setStatus("idle");
     try {
-      const response = await fetch(`${SERVER_URL}/feedback/creator-app-feedback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${auth.accessToken}`,
+      const response = await fetch(
+        `${SERVER_URL}/feedback/creator-app-feedback`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${auth.accessToken}`,
+          },
+          body: JSON.stringify(submissionData),
         },
-        body: JSON.stringify(submissionData),
-      });
+      );
 
       if (!response.ok) {
-        throw new Error('Failed to submit feedback');
+        throw new Error("Failed to submit feedback");
       }
 
-      setStatus('success');
+      setStatus("success");
       form.reset();
     } catch (error) {
       console.error("Error submitting feedback:", error);
-      setStatus('error');
+      setStatus("error");
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +70,10 @@ export const CreatorFeedback = () => {
           <div className="text-lg font-['SF Pro']">Feedback</div>
         </div>
 
-        <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full space-y-4">
+        <form
+          onSubmit={form.handleSubmit(handleSubmit)}
+          className="w-full space-y-4"
+        >
           <Textarea
             className="min-h-[128px] bg-list-hoverBackground border border-solid rounded-lg"
             placeholder="Enter your feedback here..."
@@ -78,7 +84,9 @@ export const CreatorFeedback = () => {
             <Checkbox
               id="includeHistory"
               checked={includeHistory}
-              onCheckedChange={(checked) => setIncludeHistory(checked as boolean)}
+              onCheckedChange={(checked) =>
+                setIncludeHistory(checked as boolean)
+              }
             />
             <label
               htmlFor="includeHistory"
@@ -97,13 +105,19 @@ export const CreatorFeedback = () => {
           </Button>
 
           {!auth?.accessToken && (
-            <p className="text-yellow-500 text-xs font-normal font-['SF Pro']">Please log in to submit feedback</p>
+            <p className="text-yellow-500 text-xs font-normal font-['SF Pro']">
+              Please log in to submit feedback
+            </p>
           )}
-          {status === 'success' && (
-            <p className="text-green-500 text-xs font-normal font-['SF Pro']">Feedback submitted successfully!</p>
+          {status === "success" && (
+            <p className="text-green-500 text-xs font-normal font-['SF Pro']">
+              Feedback submitted successfully!
+            </p>
           )}
-          {status === 'error' && (
-            <p className="text-red-500 text-xs font-normal font-['SF Pro']">Failed to submit feedback. Please try again.</p>
+          {status === "error" && (
+            <p className="text-red-500 text-xs font-normal font-['SF Pro']">
+              Failed to submit feedback. Please try again.
+            </p>
           )}
         </form>
       </div>

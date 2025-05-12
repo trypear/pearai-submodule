@@ -290,7 +290,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
   public async openFeedbackForm(messages: any[]): Promise<void> {
     // First, open the overlay
-    await vscode.commands.executeCommand("pearai.showOverlay");
+    await vscode.commands.executeCommand("pearai.showOverlay.feedback");
 
     // Then navigate to the inventory settings page
     // TODO: navigate to the right page on the overlay
