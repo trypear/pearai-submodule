@@ -405,10 +405,10 @@ export const CreatorOverlay = () => {
     };
   }, [registerListener, handleStateUpdate]);
 
-  useEffect(() => {
-    console.dir("parentStyling UPDATE!!");
-    console.dir(parentStyling);
-  }, [parentStyling]);
+  // useEffect(() => {
+  //   console.dir("parentStyling UPDATE!!");
+  //   console.dir(parentStyling);
+  // }, [parentStyling]);
 
   // Send loaded message when component mounts
   useEffect(() => {
