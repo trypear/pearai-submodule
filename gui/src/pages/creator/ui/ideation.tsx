@@ -161,7 +161,8 @@ export const Ideation: React.FC<IdeationProps> = ({
           {/* {isCreatingProject ? "What would you like to make?" : "What would you like to do?"} */}
           PearAI Creator
         </div>
-        <div className="absolute -right-2 top-1 bg-blue-500 text-white border border-blue-400 rounded-full px-2 py-0.5 text-[11px] font-bold tracking-wider uppercase shadow-sm">
+        {/* <div>beta</div> */}
+        <div className={`absolute -right-0 top-[6px] bg-white text-black rounded-md px-1.5 py-1 text-[11px] tracking-wide uppercase`}>
           Beta
         </div>
       </div>
