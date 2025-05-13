@@ -1,6 +1,11 @@
 import * as fs from "node:fs";
 import { v4 as uuidv4 } from "uuid";
-import type { ChatMessage, ContextItemId, IDE, IndexingProgressUpdate } from ".";
+import type {
+  ChatMessage,
+  ContextItemId,
+  IDE,
+  IndexingProgressUpdate,
+} from ".";
 import { CompletionProvider } from "./autocomplete/completionProvider";
 import { ConfigHandler } from "./config/ConfigHandler";
 import {
@@ -10,7 +15,12 @@ import {
   setupLocalMode,
 } from "./config/onboarding";
 import { createNewPromptFile } from "./config/promptFile";
-import { addModel, addOpenAIKey, deleteModel, toggleIntegration } from "./config/util";
+import {
+  addModel,
+  addOpenAIKey,
+  deleteModel,
+  toggleIntegration,
+} from "./config/util";
 import { recentlyEditedFilesCache } from "./context/retrieval/recentlyEditedFilesCache";
 import { ContinueServerClient } from "./continueServer/stubs/client";
 import { getAuthUrlForTokenPage } from "./control-plane/auth/index";
@@ -29,7 +39,6 @@ import { editConfigJson } from "./util/paths";
 import { Telemetry } from "./util/posthog";
 import { streamDiffLines } from "./util/verticalEdit";
 import PearAIServer from "./llm/llms/PearAIServer";
-
 
 export class Core {
   // implements IMessenger<ToCoreProtocol, FromCoreProtocol>
@@ -387,7 +396,7 @@ export class Core {
 
         yield {
           content: chatMessage.content,
-          citations: chatMessage.citations
+          citations: chatMessage.citations,
         };
 
         next = await gen.next();
@@ -396,10 +405,9 @@ export class Core {
       return { done: true, content: next.value };
     }
 
-  on("llm/streamChat", (msg) => {
-    return llmStreamChat(this.configHandler, this.abortedMessageIds, msg);
-  });
-
+    on("llm/streamChat", (msg) => {
+      return llmStreamChat(this.configHandler, this.abortedMessageIds, msg);
+    });
 
     async function* llmStreamComplete(
       configHandler: ConfigHandler,
@@ -449,11 +457,13 @@ export class Core {
     on("llm/setPearAICredentials", async (msg) => {
       const { accessToken, refreshToken } = msg.data || {};
       const config = await this.configHandler.loadConfig();
-      const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
+      const pearAIModels = config.models.filter(
+        (model) => model instanceof PearAIServer,
+      ) as PearAIServer[];
 
       try {
         if (pearAIModels.length > 0) {
-          pearAIModels.forEach(model => {
+          pearAIModels.forEach((model) => {
             model.setPearAIAccessToken(accessToken);
             model.setPearAIRefreshToken(refreshToken);
           });
@@ -466,7 +476,9 @@ export class Core {
 
     on("llm/checkPearAITokens", async (msg) => {
       const config = await this.configHandler.loadConfig();
-      const pearAIModels = config.models.filter(model => model instanceof PearAIServer) as PearAIServer[];
+      const pearAIModels = config.models.filter(
+        (model) => model instanceof PearAIServer,
+      ) as PearAIServer[];
       let tokensEdited = false;
       let accessToken: string | undefined;
       let refreshToken: string | undefined;
@@ -487,6 +499,28 @@ export class Core {
       } catch (e) {
         console.warn(`Error checking PearAI tokens: ${e}`);
         return { tokensEdited: false };
+      }
+    });
+
+    on("llm/getUserId", async () => {
+      try {
+        const result = await this.messenger.invoke(
+          "llm/checkPearAITokens",
+          undefined,
+        );
+        if (result.accessToken) {
+          const parts = result.accessToken.split(".");
+          if (parts.length === 3) {
+            const payload = JSON.parse(
+              atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")),
+            );
+            return payload.sub;
+          }
+        }
+        return undefined;
+      } catch (e) {
+        console.warn(`Error getting user ID: ${e}`);
+        return undefined;
       }
     });
 
