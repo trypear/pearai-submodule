@@ -140,7 +140,7 @@ function CodeBlockToolBar(props: CodeBlockToolBarProps) {
               )}
             </HeaderButtonWithText>}
 
-            {!isTerminalBlock && props.toolbarOptions.fastApply !== false && <>
+            {!isTerminalBlock && props.toolbarOptions?.fastApply !== false && <>
               {!isDiffVisible ? (
                 <>
                   <HeaderButtonWithText
