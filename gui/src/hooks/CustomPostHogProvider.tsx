@@ -1,16 +1,31 @@
 import posthog from "posthog-js";
 import { PostHogProvider } from "posthog-js/react";
-import React, { PropsWithChildren, useEffect } from "react";
+import React, {
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-import { useAuth } from "./useAuth";
+import { IdeMessengerContext } from "../context/IdeMessenger";
 
 const CustomPostHogProvider = ({ children }: PropsWithChildren) => {
   const allowAnonymousTelemetry = useSelector(
     (store: RootState) => store?.state?.config.allowAnonymousTelemetry,
   );
-  const { session } = useAuth();
-  const [client, setClient] = React.useState<any>(undefined);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
+  const [client, setClient] = useState<any>(undefined);
+  const ideMessenger = useContext(IdeMessengerContext);
+
+  useEffect(() => {
+    const callback = async () => {
+      const userId = await ideMessenger.request("llm/getUserId", undefined);
+      setUserId(userId);
+    };
+
+    void callback();
+  }, []);
 
   useEffect(() => {
     if (allowAnonymousTelemetry) {
@@ -22,9 +37,17 @@ const CustomPostHogProvider = ({ children }: PropsWithChildren) => {
       });
 
       // If user is logged in, use their account ID as the primary identifier
-      if (session?.account.id) {
-        posthog.identify(session.account.id, {
+      if (userId) {
+        posthog.identify(userId, {
           vscMachineId: window.vscMachineId, // Keep machine ID as a property
+        });
+
+        // Merging the user id with the machine ID
+        // Not amazing but it's fine for now
+        posthog.capture("$merge_dangerously", {
+          properties: {
+            alias: window.vscMachineId,
+          },
         });
       } else {
         // Otherwise fall back to machine ID
@@ -36,7 +59,7 @@ const CustomPostHogProvider = ({ children }: PropsWithChildren) => {
     } else {
       setClient(undefined);
     }
-  }, [allowAnonymousTelemetry, session]);
+  }, [allowAnonymousTelemetry, userId]);
 
   return allowAnonymousTelemetry ? (
     <PostHogProvider client={client}>{children}</PostHogProvider>
