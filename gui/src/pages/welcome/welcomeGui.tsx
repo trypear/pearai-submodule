@@ -57,7 +57,7 @@ export default function Welcome() {
     if (step === 3) {
       return navigate("/pearSettings");
     }
-    
+
     setStep((prevStep) => Math.min(prevStep + 1, 4));
   };
 
@@ -99,16 +99,6 @@ export default function Welcome() {
         transition={{ duration: 0.5 }}
       >
         <FinalStep onNext={handleNextStep} startOnboardingAgain={() => setStep(0)} />
-      </motion.div>
-      <motion.div
-        className={`flex flex-col h-full w-full ${step === 4 ? "flex" : "hidden"}`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: step === 4 ? 1 : 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <MessagingProvider destination="settings">
-          <PearSettings />
-        </MessagingProvider>
       </motion.div>
     </div>
   );
