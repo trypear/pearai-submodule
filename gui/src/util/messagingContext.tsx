@@ -159,7 +159,7 @@ export const MessagingProvider: React.FC<MessagingProviderProps> = ({
           return updated;
         });
       }
-      console.dir(`GOT MESSAGE: ${JSON.stringify(message)}`);
+      // console.dir(`GOT MESSAGE: ${JSON.stringify(message)}`);
       // Trigger any registered listeners for this message type
       if (message.messageType && listeners[message.messageType]) {
         listeners[message.messageType].forEach((callback) => callback(message));
