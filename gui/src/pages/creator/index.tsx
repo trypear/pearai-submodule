@@ -30,6 +30,7 @@ import {
   colors,
   animals,
 } from "unique-names-generator";
+import posthog from "posthog-js";
 
 // Animation info stored in window to survive component remounts
 if (typeof window !== "undefined") {
@@ -346,6 +347,14 @@ export const CreatorOverlay = () => {
     console.dir("PROJECT CONFIG");
     console.dir(projectConfig.path);
     console.dir(currentPlan);
+
+    posthog.capture("creator_submit", {
+      hasPlan: !!currentPlan,
+      projectName: projectConfig.name,
+      initialMessage,
+      projectType: projectConfig.type,
+    });
+
     if (currentPlan) {
       if (projectConfig.path && projectConfig.name) {
         // Then submit the plan with project path

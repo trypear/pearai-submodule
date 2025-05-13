@@ -11,6 +11,7 @@ import { Folder, Tag, Monitor, Smartphone, Box } from "lucide-react";
 import { LightbulbIcon } from "lucide-react";
 import { ProjectTypeButton } from "./projectTypeButton";
 import type { NewProjectType } from "core";
+import posthog from "posthog-js";
 interface ProjectConfig {
   path: string;
   name: string;
@@ -46,6 +47,10 @@ export const Ideation: React.FC<IdeationProps> = ({
   const projectNameRef = useRef<HTMLInputElement | null>(null);
   const isCapturingRef = useRef(false);
   const ideMessenger = useContext(IdeMessengerContext);
+
+  useEffect(() => {
+    posthog.capture("creator_opened");
+  }, []);
 
   // Focus project name input when popover opens
   useEffect(() => {
@@ -162,7 +167,9 @@ export const Ideation: React.FC<IdeationProps> = ({
           PearAI Creator
         </div>
         {/* <div>beta</div> */}
-        <div className={`absolute -right-0 top-[6px] bg-white text-black rounded-md px-1.5 py-1 text-[11px] tracking-wide uppercase`}>
+        <div
+          className={`absolute -right-0 top-[6px] bg-white text-black rounded-md px-1.5 py-1 text-[11px] tracking-wide uppercase`}
+        >
           Beta
         </div>
       </div>
