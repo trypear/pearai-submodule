@@ -3,12 +3,13 @@ import { PostHogProvider } from "posthog-js/react";
 import React, { PropsWithChildren, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
+import { useAuth } from "./useAuth";
 
 const CustomPostHogProvider = ({ children }: PropsWithChildren) => {
   const allowAnonymousTelemetry = useSelector(
     (store: RootState) => store?.state?.config.allowAnonymousTelemetry,
   );
-
+  const { session } = useAuth();
   const [client, setClient] = React.useState<any>(undefined);
 
   useEffect(() => {
@@ -16,16 +17,26 @@ const CustomPostHogProvider = ({ children }: PropsWithChildren) => {
       posthog.init("phc_RRjQ4roADRjH6xMbXDUDTA9WLeM5ePPvAJK19w3yj0z", {
         api_host: "https://us.i.posthog.com",
         disable_session_recording: true,
-        // // We need to manually track pageviews since we're a SPA
+        // We need to manually track pageviews since we're a SPA
         capture_pageview: false,
       });
-      posthog.identify(window.vscMachineId);
+
+      // If user is logged in, use their account ID as the primary identifier
+      if (session?.account.id) {
+        posthog.identify(session.account.id, {
+          vscMachineId: window.vscMachineId, // Keep machine ID as a property
+        });
+      } else {
+        // Otherwise fall back to machine ID
+        posthog.identify(window.vscMachineId);
+      }
+
       posthog.opt_in_capturing();
       setClient(client);
     } else {
       setClient(undefined);
     }
-  }, [allowAnonymousTelemetry]);
+  }, [allowAnonymousTelemetry, session]);
 
   return allowAnonymousTelemetry ? (
     <PostHogProvider client={client}>{children}</PostHogProvider>
