@@ -9,6 +9,7 @@ import { Telemetry } from "core/util/posthog";
 import * as vscode from "vscode";
 import { getExtensionVersion } from "./util/util";
 import { PearAIApi } from "./PearAIApi";
+import { PearAIExtensionExports } from "core";
 
 let pearAPI: PearAIApi | undefined;
 
@@ -49,7 +50,7 @@ export async function activate(context: vscode.ExtensionContext) {
   return {
     pearAPI,
     extension: context.extension,
-  };
+  } satisfies PearAIExtensionExports;
 }
 
 export function deactivate() {

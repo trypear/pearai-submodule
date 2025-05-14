@@ -3,14 +3,12 @@ import { IMessenger } from "core/util/messenger";
 import { ToCoreProtocol, FromCoreProtocol } from "core/protocol";
 import { Core } from "core/core";
 import * as vscode from "vscode";
+import { IPearAIApi } from "core";
 
 /**
  * Public interface for the PearAI Extension API
  * This interface defines the public classes that other extensions can use
  */
-export interface IPearAIApi {
-  readonly creatorMode: PearAICreatorMode;
-}
 
 export class PearAIApi implements IPearAIApi {
   private readonly messenger: IMessenger<ToCoreProtocol, FromCoreProtocol>;

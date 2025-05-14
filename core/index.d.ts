@@ -1070,6 +1070,9 @@ export interface PearAuth {
   refreshToken?: string;
 }
 
+export type NewProjectType = "NONE" | "WEBAPP" | "MOBILE" | "OTHER";
+
+
 /**
  * Represents a request to execute a plan
  */
@@ -1094,7 +1097,10 @@ export interface ExecutePlanRequest {
    * TODO: are we doing images?
    */
   images?: string[];
-}
+  creatorMode: boolean;
+  newProjectType?: NewProjectType;
+  newProjectPath?: string;
+}			
 
 export type CreatorModeState =
   | "OVERLAY_CLOSED"
@@ -1140,7 +1146,6 @@ export interface IPearAICreatorMode {
   dispose(): void;
 }
 
-export type NewProjectType = "NONE" | "WEBAPP" | "MOBILE" | "OTHER";
 
 export type SubmitIdeaType = {
   messageType: "SubmitIdea";
@@ -1175,3 +1180,13 @@ export type PearAICreatorSavedGlobalState =
       timestamp: number;
     }
   | undefined;
+
+export interface IPearAIApi {
+  readonly creatorMode: IPearAICreatorMode;
+  getUserId(): Promise<string | undefined>;
+}
+
+export interface PearAIExtensionExports {
+  pearAPI: IPearAIApi;
+  extension: vscode.Extension<any>;
+}
