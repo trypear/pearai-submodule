@@ -38,17 +38,12 @@ const CustomPostHogProvider = ({ children }: PropsWithChildren) => {
 
       // If user is logged in, use their account ID as the primary identifier
       if (userId) {
-        posthog.identify(userId, {
-          vscMachineId: window.vscMachineId, // Keep machine ID as a property
+        posthog.identify(window.vscMachineId, {
+          pearAiId: userId,
         });
-
         // Merging the user id with the machine ID
         // Not amazing but it's fine for now
-        posthog.capture("$merge_dangerously", {
-          properties: {
-            alias: window.vscMachineId,
-          },
-        });
+        posthog.alias(userId, window.vscMachineId);
       } else {
         // Otherwise fall back to machine ID
         posthog.identify(window.vscMachineId);
