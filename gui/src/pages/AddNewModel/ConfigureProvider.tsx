@@ -22,6 +22,7 @@ import { setDefaultModel } from "../../redux/slices/stateSlice";
 import { updatedObj } from "../../util";
 import type { ProviderInfo } from "./configs/providers";
 import { providers } from "./configs/providers";
+import "@/continue-styles.css";
 
 const GridDiv = styled.div`
   display: grid;

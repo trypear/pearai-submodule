@@ -5,7 +5,6 @@ import {
   SlashCommandDescription,
   CustomCommand,
 } from "../index.js";
-import { SERVER_URL } from "../util/parameters";
 
 
 export const FREE_TRIAL_MODELS: ModelDescription[] = [

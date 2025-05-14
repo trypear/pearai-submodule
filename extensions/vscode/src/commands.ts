@@ -32,6 +32,7 @@ import { handleIntegrationShortcutKey } from "./util/integrationUtils";
 import { getExtensionUri } from "./util/vscode";
 import type { VsCodeWebviewProtocol } from "./webviewProtocol";
 import { PEARAI_CHAT_VIEW_ID, PEARAI_OVERLAY_VIEW_ID, PEARAI_SEARCH_VIEW_ID } from "./util/pearai/pearaiViewTypes";
+import { getApi } from "./extension";
 
 
 let fullScreenPanel: vscode.WebviewPanel | undefined;
@@ -968,7 +969,9 @@ const commandsMap: (
         vscode.commands.executeCommand("pearai-roo-cline.updatePearAITokens", creds);
       }
     },
-
+    "pearai.closeCreator": async () => {
+      getApi()?.creatorMode.changeState("OVERLAY_CLOSED");
+    },
     "pearai.patchWSL": async () => {
       if (process.platform !== 'win32') {
         vscode.window.showWarningMessage("WSL is for Windows only.");

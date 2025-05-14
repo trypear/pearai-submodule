@@ -3,6 +3,21 @@
   "tasks": [
     // Compile and bundle the extension
     {
+      "label": "vscode-extension:dev",
+      "dependsOn": [
+        // To detect compile errors
+        "vscode-extension:tsc-watch",
+        // To bundle the code the same way we do for publishing
+        "vscode-extension:esbuild",
+        // Start the React app that is used in the extension
+        "gui:dev"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
       "label": "vscode-extension:build",
       "dependsOn": [
         // To detect compile errors
@@ -51,6 +66,17 @@
       "label": "vscode-extension:tsc",
       "type": "npm",
       "script": "tsc",
+      "path": "extensions/vscode",
+      "problemMatcher": ["$tsc"],
+      "presentation": {
+        "revealProblems": "onProblem",
+        "clear": true
+      }
+    },
+    {
+      "label": "vscode-extension:tsc-watch",
+      "type": "npm",
+      "script": "tsc-watch",
       "path": "extensions/vscode",
       "problemMatcher": ["$tsc"],
       "presentation": {

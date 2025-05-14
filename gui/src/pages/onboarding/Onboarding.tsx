@@ -14,6 +14,7 @@ import styled from "styled-components";
 import _ from "lodash";
 import { useWebviewListener } from "../../hooks/useWebviewListener";
 import { Button } from "@/components/ui/button";
+import "@/continue-styles.css";
 
 function Onboarding() {
   const navigate = useNavigate();

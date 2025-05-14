@@ -4,7 +4,7 @@ import { ContinueGUIWebviewViewProvider } from "../ContinueGUIWebviewViewProvide
 import { ToWebviewProtocol } from "core/protocol";
 
 export enum InstallableTool {
-  SUPERMAVEN = "supermaven"
+  SUPERMAVEN = "supermaven",
 }
 
 export interface ToolCommand {
@@ -25,38 +25,50 @@ export interface Memory {
 }
 
 export interface MemoryChange {
-  type: 'edit' | 'delete' | 'new';
+  type: "edit" | "delete" | "new";
   id: string;
   content?: string;
 }
 
-export type ToolType = typeof InstallableTool[keyof typeof InstallableTool];
+export type ToolType = (typeof InstallableTool)[keyof typeof InstallableTool];
 
 export const TOOL_COMMANDS: Record<ToolType, ToolCommand> = {
   [InstallableTool.SUPERMAVEN]: {
     command: "workbench.extensions.installExtension",
-    args: "supermaven.supermaven"
-  }
+    args: "supermaven.supermaven",
+  },
 };
 
-
 export function getIntegrationTab(webviewName: string) {
-    const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs);
-    return tabs.find((tab) => {
-      const viewType = (tab.input as any)?.viewType;
-      return viewType?.endsWith(webviewName);
-    });
+  const tabs = vscode.window.tabGroups.all.flatMap((tabGroup) => tabGroup.tabs);
+  return tabs.find((tab) => {
+    const viewType = (tab.input as any)?.viewType;
+    return viewType?.endsWith(webviewName);
+  });
 }
 
-export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProtocol, integrationName: string, sidebar: ContinueGUIWebviewViewProvider, webviews: string[]) {
-  const isOverlayVisible = await vscode.commands.executeCommand('pearai.isOverlayVisible');
+export async function handleIntegrationShortcutKey(
+  protocol: keyof ToWebviewProtocol,
+  integrationName: string,
+  sidebar: ContinueGUIWebviewViewProvider,
+  webviews: string[],
+) {
+  const isOverlayVisible = await vscode.commands.executeCommand(
+    "pearai.isOverlayVisible",
+  );
 
-  let currentTab = await sidebar.webviewProtocol.request("getCurrentTab", undefined, webviews);
+  let currentTab = await sidebar.webviewProtocol.request(
+    "getCurrentTab",
+    undefined,
+    webviews,
+  );
 
   if (isOverlayVisible && currentTab === integrationName) {
     // close overlay
     await vscode.commands.executeCommand("pearai.hideOverlay");
-    await vscode.commands.executeCommand("workbench.action.focusActiveEditorGroup");
+    await vscode.commands.executeCommand(
+      "workbench.action.focusActiveEditorGroup",
+    );
     return;
   }
 
@@ -65,7 +77,7 @@ export async function handleIntegrationShortcutKey(protocol: keyof ToWebviewProt
   if (!isOverlayVisible) {
     // If overlay isn't open, open it first
     // Navigate to creator tab via webview protocol
-    await vscode.commands.executeCommand("pearai.showOverlay");
+    await vscode.commands.executeCommand("pearai.showOverlay.feedback");
   }
 }
 
@@ -75,11 +87,14 @@ export function extractCodeFromMarkdown(text: string): string {
   let match = text.match(codeBlockRegex);
 
   if (!match) {
-    const lines = text.split('\n');
-    if (lines[0].trim().startsWith('```') && lines[lines.length - 1].trim().startsWith('```')) {
+    const lines = text.split("\n");
+    if (
+      lines[0].trim().startsWith("```") &&
+      lines[lines.length - 1].trim().startsWith("```")
+    ) {
       // remove first and last line
       const codeLines = lines.slice(1, -1);
-      match = ['', codeLines.join('\n')];
+      match = ["", codeLines.join("\n")];
     }
   }
 

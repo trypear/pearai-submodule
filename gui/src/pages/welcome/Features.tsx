@@ -13,7 +13,7 @@ import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { Link } from "react-router-dom";
 import InventoryButtons from "./inventoryButtons";
 import { motion } from "framer-motion";
-import { vscInputBackground } from "@/components";
+import { vscForeground, vscInputBackground } from "@/components";
 
 const getAssetPath = (assetName: string) => {
   return `${window.vscMediaUrl}/assets/${assetName}`;
@@ -45,17 +45,24 @@ export const features = [
     id: "memory",
     icon: "inventory-mem0.svg",
     title: "Personalize your experience with PearAI Memory",
-    description: "Powered by mem0",
+    description: "Powered by PearAI",
     video: getAssetPath("pearai-memory-welcome.mp4"),
   },
 ];
 
-
-export default function Features({ onNext, pseudoRender }: { onNext: () => void, pseudoRender: boolean }) {
+export default function Features({
+  onNext,
+  pseudoRender,
+}: {
+  onNext: () => void;
+  pseudoRender: boolean;
+}) {
   const dispatch = useDispatch();
 
   const [currentFeature, setCurrentFeature] = useState(0);
-  const onboardingState = useSelector((state: RootState) => state.state.onboardingState);
+  const onboardingState = useSelector(
+    (state: RootState) => state.state.onboardingState,
+  );
   const visitedFeatures = onboardingState.visitedFeatures || [];
   const [progress, setProgress] = useState(0);
   const progressInterval = useRef<NodeJS.Timeout>();
@@ -125,7 +132,7 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
         ref.current.currentTime = 0;
       }
     });
-  }
+  };
 
   useEffect(() => {
     if (pseudoRender) {
@@ -142,7 +149,12 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
       const nextFeature = currentFeature + 1;
       setCurrentFeature(nextFeature);
       if (!visitedFeatures.includes(nextFeature)) {
-        dispatch(setOnboardingState({ ...onboardingState, visitedFeatures: [...visitedFeatures, nextFeature] }));
+        dispatch(
+          setOnboardingState({
+            ...onboardingState,
+            visitedFeatures: [...visitedFeatures, nextFeature],
+          }),
+        );
       }
       setProgress(0);
       setTimestamp(Date.now());
@@ -170,7 +182,9 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
 
         <div className="h-[80%] rounded-xl justify-start items-start inline-flex overflow-hidden">
           <motion.div
-            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 0 ? "flex" : "hidden"}`}
+            className={`w-full flex-col justify-center items-center gap-7 flex ${
+              currentFeature === 0 ? "flex" : "hidden"
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: currentFeature === 0 ? 1 : 0 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
@@ -180,7 +194,9 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
               <video
                 ref={videoRefs[0]}
                 src={features[0].video}
-                className={`rounded-lg w-full h-full object-cover ${currentFeature === 0 ? "flex" : "hidden"}`}
+                className={`rounded-lg w-full h-full object-cover ${
+                  currentFeature === 0 ? "flex" : "hidden"
+                }`}
                 muted
                 autoPlay
                 playsInline
@@ -189,7 +205,9 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
             </div>
           </motion.div>
           <motion.div
-            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 1 ? "flex" : "hidden"}`}
+            className={`w-full flex-col justify-center items-center gap-7 flex ${
+              currentFeature === 1 ? "flex" : "hidden"
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: currentFeature === 1 ? 1 : 0 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
@@ -199,7 +217,9 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
               <video
                 ref={videoRefs[1]}
                 src={features[1].video}
-                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 1 ? "flex" : "hidden"}`}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${
+                  currentFeature === 1 ? "flex" : "hidden"
+                }`}
                 muted
                 autoPlay
                 playsInline
@@ -208,7 +228,9 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
             </div>
           </motion.div>
           <motion.div
-            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 2 ? "flex" : "hidden"}`}
+            className={`w-full flex-col justify-center items-center gap-7 flex ${
+              currentFeature === 2 ? "flex" : "hidden"
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: currentFeature === 2 ? 1 : 0 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
@@ -218,7 +240,9 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
               <video
                 ref={videoRefs[2]}
                 src={features[2].video}
-                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 2 ? "flex" : "hidden"}`}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${
+                  currentFeature === 2 ? "flex" : "hidden"
+                }`}
                 muted
                 autoPlay
                 playsInline
@@ -227,7 +251,9 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
             </div>
           </motion.div>
           <motion.div
-            className={`w-full flex-col justify-center items-center gap-7 flex ${currentFeature === 3 ? "flex" : "hidden"}`}
+            className={`w-full flex-col justify-center items-center gap-7 flex ${
+              currentFeature === 3 ? "flex" : "hidden"
+            }`}
             initial={{ opacity: 0 }}
             animate={{ opacity: currentFeature === 3 ? 1 : 0 }}
             transition={{ duration: 0.8, ease: "easeInOut" }}
@@ -237,7 +263,9 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
               <video
                 ref={videoRefs[3]}
                 src={features[3].video}
-                className={`rounded-lg w-full h-full object-cover inset-0 ${currentFeature === 3 ? "flex" : "hidden"}`}
+                className={`rounded-lg w-full h-full object-cover inset-0 ${
+                  currentFeature === 3 ? "flex" : "hidden"
+                }`}
                 muted
                 autoPlay
                 playsInline
@@ -252,14 +280,20 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
           </Button>
           {process.env.NODE_ENV === "development" && (
             <>
-              <Button className="text-xs font-['SF Pro']" onClick={handleBackClick}
-                style={{ background: vscInputBackground }}
+              <Button
+                className="text-xs font-['SF Pro']"
+                onClick={handleBackClick}
+                style={{ background: vscInputBackground, color: vscForeground }}
               >
                 Back (shown in dev)
               </Button>
-              <Button className="text-xs font-['SF Pro']" onClick={resetVideos}
-                style={{ background: vscInputBackground }}
-              >reset (shown in dev)</Button>
+              <Button
+                className="text-xs font-['SF Pro']"
+                onClick={resetVideos}
+                style={{ background: vscInputBackground, color: vscForeground }}
+              >
+                reset (shown in dev)
+              </Button>
             </>
           )}
         </div>
@@ -268,16 +302,13 @@ export default function Features({ onNext, pseudoRender }: { onNext: () => void,
   );
 }
 
-
 const FeatureDescription = ({ currentFeature }: { currentFeature: number }) => {
   return (
     <div className=" flex-col justify-start items-center gap-2 inline-flex">
-      <div key={`title-${currentFeature}`} className="text-4xl font-['SF Pro']"
-      >
+      <div key={`title-${currentFeature}`} className="text-4xl font-['SF Pro']">
         {features[currentFeature].title}
       </div>
-      <div className="text-xs font-normal font-['SF Pro'] leading-[18px]"
-      >
+      <div className="text-xs font-normal font-['SF Pro'] leading-[18px]">
         {features[currentFeature].description}
       </div>
     </div>

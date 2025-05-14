@@ -16,6 +16,7 @@ import { useContext, useEffect, useState } from "react";
 import { useThemeType } from "../hooks/useVscTheme";
 import { IdeMessengerContext } from "../context/IdeMessenger";
 import { error } from "console";
+import "@/continue-styles.css";
 
 const ResourcesDiv = styled.div`
   margin: 4px;

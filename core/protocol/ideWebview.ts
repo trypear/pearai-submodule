@@ -62,6 +62,8 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   importUserSettingsFromVSCode: [undefined, boolean];
   "mem0/getMemories": [undefined, Memory[]];
   "mem0/updateMemories": [{ changes: MemoryChange[] }, boolean];
+  getCreatorFeedbackMessages: [undefined, any[] | undefined];
+  getWorkspacePaths: [undefined, string[]];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {

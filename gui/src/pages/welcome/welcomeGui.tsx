@@ -9,6 +9,7 @@ import SplashScreen from "./splashScreen";
 import { motion, AnimatePresence } from "framer-motion";
 import PearSettings from "@/inventory/pearSettings/PearSettings";
 import { useNavigate } from "react-router-dom";
+import "@/continue-styles.css";
 
 export default function Welcome() {
   const navigate = useNavigate();

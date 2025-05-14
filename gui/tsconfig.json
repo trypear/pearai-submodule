@@ -25,7 +25,7 @@
       "./node_modules/@types",
       "../extensions/vscode/node_modules/@types"
     ],
-    "types": ["vscode", "vscode-webview"]
+    "types": ["vscode"]
   },
   "include": ["src", "../src/util/messenger.ts"],
   "references": [{ "path": "./tsconfig.node.json" }]

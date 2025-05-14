@@ -1,3 +1,5 @@
+import * as vscode from "vscode";
+
 declare global {
   interface Window {
     ide?: "vscode";
@@ -72,7 +74,6 @@ export interface ILLM extends LLMOptions {
   region?: string;
   projectId?: string;
   getCurrentDirectory?: (() => Promise<string>) | undefined | null;
-
 
   complete(prompt: string, options?: LLMFullCompletionOptions): Promise<string>;
 
@@ -196,11 +197,12 @@ export interface IContextProvider {
 }
 
 export interface IntegrationHistoryMap {
-  perplexityHistory: 'perplexity';
-  history: 'continue';
+  perplexityHistory: "perplexity";
+  history: "continue";
 }
 
-export type IntegrationType = IntegrationHistoryMap[keyof IntegrationHistoryMap];
+export type IntegrationType =
+  IntegrationHistoryMap[keyof IntegrationHistoryMap];
 
 export interface PersistedSessionInfo {
   history: ChatHistory;
@@ -337,6 +339,7 @@ export interface LLMFullCompletionOptions extends BaseCompletionOptions {
   log?: boolean;
 
   model?: string;
+  prompt_key?: string;
 }
 export interface LLMOptions {
   model: string;
@@ -534,7 +537,6 @@ export interface IDE {
   pathSep(): Promise<string>;
 
   getCurrentDirectory(): Promise<string>;
-
 }
 
 // Slash Commands
@@ -1066,4 +1068,125 @@ export interface BrowserSerializedContinueConfig {
 export interface PearAuth {
   accessToken?: string;
   refreshToken?: string;
+}
+
+export type NewProjectType = "NONE" | "WEBAPP" | "MOBILE" | "OTHER";
+
+
+/**
+ * Represents a request to execute a plan
+ */
+export interface ExecutePlanRequest {
+  /**
+   * The path to the file containing the plan
+   */
+  // filePath?: string;
+
+  /**
+   * Optional code to include in the plan execution
+   */
+  // code?: string;
+
+  /**
+   * Additional context for the plan execution
+   */
+  plan?: string;
+
+  /**
+   * Optional base64-encoded images to include with the task
+   * TODO: are we doing images?
+   */
+  images?: string[];
+  creatorMode: boolean;
+  newProjectType?: NewProjectType;
+  newProjectPath?: string;
+}			
+
+export type CreatorModeState =
+  | "OVERLAY_CLOSED"
+  | "OVERLAY_OPEN"
+  | "OVERLAY_CLOSED_CREATOR_ACTIVE";
+
+/**
+ * Interface for the Creator Mode API
+ * Provides methods and events for controlling the Creator Mode UI and functionality
+ */
+export interface IPearAICreatorMode {
+  /**
+   * Event that fires when the creator mode is activated or deactivated
+   */
+  readonly onDidChangeCreatorModeState: vscode.Event<CreatorModeState>;
+
+  /**
+   * Event that fires when a plan has been created and needs to be executed
+   */
+  readonly onDidRequestExecutePlan: vscode.Event<ExecutePlanRequest>;
+
+  /**
+   * Opens the creator mode interface
+   * @returns A Promise that resolves when the interface is opened
+   */
+  openCreatorOverlay(): Promise<void>;
+
+  /**
+   * Closes the creator mode interface
+   * @returns A Promise that resolves when the interface is closed
+   */
+  closeCreatorOverlay(): Promise<void>;
+
+  changeState(state: CreatorModeState): Promise<void>;
+
+  triggerCachedCreatorEvent(clear?: boolean): void;
+
+  openFeedbackForm(messages: any[]): Promise<void>;
+
+  /**
+   * Disposes of resources used by the creator mode
+   */
+  dispose(): void;
+}
+
+
+export type SubmitIdeaType = {
+  messageType: "SubmitIdea";
+  payload: {
+    request: string;
+    creatorMode: boolean;
+    newProjectType: NewProjectType;
+    newProjectPath?: string;
+  };
+};
+
+export type ProcessLLMType = {
+  messageType: "ProcessLLM";
+  payload: {
+    messages: ChatMessage[];
+    plan: boolean;
+  };
+};
+
+export type CloseMessageType = {
+  messageType: "Close";
+};
+
+export type PearAICreatorModeMessage = {
+  messageId: string;
+} & (SubmitIdeaType | ProcessLLMType | CloseMessageType);
+
+export type PearAICreatorSavedGlobalState =
+  | {
+      msg: SubmitIdeaType;
+      creatorState: CreatorModeState;
+      timestamp: number;
+    }
+  | undefined;
+
+export interface IPearAIApi {
+  readonly creatorMode: IPearAICreatorMode;
+  getUserId(): Promise<string | undefined>;
+}
+
+export interface PearAIExtensionExports {
+  pearAPI: IPearAIApi;
+  extension: vscode.Extension<any>;
 }

@@ -21,25 +21,17 @@ import SettingsPage from "./pages/settings";
 import Stats from "./pages/stats";
 import PerplexityGUI from "./integrations/perplexity/perplexitygui";
 import Welcome from "./pages/welcome/welcomeGui";
-import { ContextMenuProvider } from './components/ContextMenuProvider';
+import { ContextMenuProvider } from "./components/ContextMenuProvider";
 import Mem0SidebarGUI from "./integrations/mem0/Mem0SidebarGUI";
 import PearSettings from "./inventory/pearSettings/PearSettings";
-
-
-declare global {
-  interface Window {
-    initialRoute?: string;
-    isFirstLaunch?: boolean;
-    isPearOverlay?: boolean;
-    viewType?: 'pearai.chatView' | 'pearai.mem0View' | 'pearai.searchView';
-  }
-}
+import { CreatorOverlay } from "./pages/creator";
+import { MessagingProvider } from "./util/messagingContext";
 
 const router = createMemoryRouter(
   [
     {
       path: "/",
-      element: <Layout />,
+      element: <Layout darkBg={window.viewType !== "pearai.creatorView"} />,
       errorElement: <ErrorPage />,
       children: [
         {
@@ -48,11 +40,20 @@ const router = createMemoryRouter(
         },
         {
           path: "/",
-          element: window.viewType === 'pearai.chatView' ? <GUI /> :
-                   window.viewType === 'pearai.searchView' ? <PerplexityGUI /> :
-                   window.viewType === 'pearai.mem0View' ? <Mem0SidebarGUI /> :
-                  <GUI />, // default to GUI if viewType is undefined or different
-
+          element:
+            window.viewType === "pearai.chatView" ? (
+              <GUI />
+            ) : window.viewType === "pearai.searchView" ? (
+              <PerplexityGUI />
+            ) : window.viewType === "pearai.mem0View" ? (
+              <Mem0SidebarGUI />
+            ) : window.viewType === "pearai.creatorView" ? (
+              <MessagingProvider destination="creator">
+                <CreatorOverlay />
+              </MessagingProvider>
+            ) : (
+              <GUI />
+            ), // default to GUI if viewType is undefined or different
         },
         {
           path: "/perplexityMode",
@@ -60,11 +61,17 @@ const router = createMemoryRouter(
         },
         {
           path: "/history",
-          element: <History from={
-            window.viewType === 'pearai.chatView' ? 'continue' :
-            window.viewType === 'pearai.searchView' ? 'perplexity' :
-            'continue' // default fallback
-          }/>
+          element: (
+            <History
+              from={
+                window.viewType === "pearai.chatView"
+                  ? "continue"
+                  : window.viewType === "pearai.searchView"
+                  ? "perplexity"
+                  : "continue" // default fallback
+              }
+            />
+          ),
         },
         {
           path: "/stats",
@@ -85,10 +92,6 @@ const router = createMemoryRouter(
         {
           path: "/addModel/provider/:providerName",
           element: <ConfigureProvider />,
-        },
-        {
-          path: "/help",
-          element: <HelpPage />,
         },
         {
           path: "/monaco",
@@ -121,11 +124,15 @@ const router = createMemoryRouter(
         // },
         {
           path: "/pearSettings",
-          element: <PearSettings/>
+          element: (
+            <MessagingProvider destination="settings">
+              <PearSettings />
+            </MessagingProvider>
+          ),
         },
         {
           path: "/welcome",
-          element: <Welcome/>
+          element: <Welcome />,
         },
       ],
     },
@@ -134,17 +141,15 @@ const router = createMemoryRouter(
   {
     initialEntries: [
       window.isPearOverlay
-        ? (window.isFirstLaunch ? "/welcome" : "/pearSettings")
-        : window.initialRoute
+        ? window.isFirstLaunch
+          ? "/welcome"
+          : "/pearSettings"
+        : window.initialRoute,
     ],
     // FOR DEV'ing welcome:
     // initialEntries: [window.isPearOverlay ? "/welcome" : window.initialRoute],
   },
-
 );
-
-
-
 
 function App() {
   const dispatch = useDispatch();

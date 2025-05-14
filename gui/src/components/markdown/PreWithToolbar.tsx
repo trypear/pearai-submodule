@@ -28,10 +28,23 @@ function childrenToText(children: any): string {
     : childToText(children);
 }
 
-function PreWithToolbar(props: {
+export type ToolbarOptions = {
+  insertAtCursor?: boolean;
+  copy?: boolean;
+  runInTerminal?: boolean;
+  copyAndReturn?: boolean;
+  fastApply?: boolean;
+}
+
+interface PreWithToolbarProps {
   children: any;
   language: string | undefined;
-}) {
+  toolbarOptions?: ToolbarOptions;
+  onBlockEditClick?: (editedContent: string) => void;
+  codeString: string;
+}
+
+function PreWithToolbar(props: PreWithToolbarProps) {
   const uiConfig = useUIConfig();
   const toolbarBottom = uiConfig?.codeBlockToolbarPosition == "bottom";
 
@@ -80,6 +93,8 @@ function PreWithToolbar(props: {
           text={rawCodeBlock}
           bottom={toolbarBottom}
           language={props.language}
+          toolbarOptions={props.toolbarOptions}
+          onBlockEditClick={props.onBlockEditClick}
         ></CodeBlockToolBar>
       )}
       {props.children}
@@ -88,6 +103,8 @@ function PreWithToolbar(props: {
           text={rawCodeBlock}
           bottom={toolbarBottom}
           language={props.language}
+          toolbarOptions={props.toolbarOptions}
+          onBlockEditClick={props.onBlockEditClick}
         ></CodeBlockToolBar>
       )}
     </div>

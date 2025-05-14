@@ -52,6 +52,7 @@ import styled from "styled-components";
 import { lightGray, vscBackground } from "@/components";
 import InventoryDetails from "../../components/InventoryDetails";
 import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
+import "@/continue-styles.css";
 
 const StepsDiv = styled.div`
   padding-bottom: 8px;

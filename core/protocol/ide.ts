@@ -21,6 +21,7 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   listFolders: [undefined, string[]];
   writeFile: [{ path: string; contents: string }, void];
   showVirtualFile: [{ name: string; content: string }, void];
+  replaceWorkspaceFolder: [{ path: string }, void];
   getContinueDir: [undefined, string];
   openFile: [{ path: string }, void];
   runCommand: [{ command: string }, void];
@@ -93,10 +94,15 @@ export type ToIdeFromWebviewOrCoreProtocol = {
   markNewOnboardingComplete: [undefined, void];
   importUserSettingsFromVSCode: [undefined, boolean];
   pearWelcomeOpenFolder: [undefined, void];
+  pearOpenCreator: [undefined, void];
   pearInstallCommandLine: [undefined, void];
   changeColorScheme: [{ isDark: boolean }, void];
   installVscodeExtension: [{ extensionId: string }, void];
   is_vscode_extension_installed: [{ extensionId: string }, boolean];
+
+  // pear file/folder selection
+  pearSelectFolder: [{ openLabel?: string }, string | undefined];
+  pearSelectFile: [{ openLabel?: string }, string | undefined];
 
   // overlay
   closeOverlay: [undefined, void];

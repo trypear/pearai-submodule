@@ -44,6 +44,7 @@
     "lodash": "^4.17.21",
     "lucide-react": "^0.452.0",
     "minisearch": "^6.3.0",
+    "motion": "^12.7.3",
     "onigasm": "^2.2.5",
     "posthog-js": "^1.130.1",
     "prismjs": "^1.29.0",
@@ -60,6 +61,7 @@
     "react-switch": "^7.0.0",
     "react-syntax-highlighter": "^15.5.0",
     "react-tooltip": "^5.18.0",
+    "react-use": "^17.6.0",
     "redux-persist": "^6.0.0",
     "redux-persist-transform-filter": "^0.0.22",
     "rehype-highlight": "^7.0.0",
@@ -74,9 +76,9 @@
     "tailwind-merge": "^2.5.4",
     "tailwindcss-animate": "^1.0.7",
     "tippy.js": "^6.3.7",
+    "unique-names-generator": "^4.7.1",
     "unist-util-visit": "^5.0.0",
-    "uuid": "^9.0.1",
-    "vscode-webview": "^1.0.1-beta.1"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
