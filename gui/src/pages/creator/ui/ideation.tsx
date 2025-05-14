@@ -47,10 +47,25 @@ export const Ideation: React.FC<IdeationProps> = ({
   const projectNameRef = useRef<HTMLInputElement | null>(null);
   const isCapturingRef = useRef(false);
   const ideMessenger = useContext(IdeMessengerContext);
+  const [hasWorkspacePaths, setHasWorkspacePaths] = useState(false);
 
   useEffect(() => {
     posthog.capture("creator_opened");
+
+    const callback = async () => {
+      const workspacePaths = await ideMessenger.request(
+        "getWorkspacePaths",
+        undefined,
+      );
+      setHasWorkspacePaths(workspacePaths.length > 0);
+    };
+
+    void callback();
   }, []);
+
+  useEffect(() => {
+    setIsCreatingProject(!hasWorkspacePaths);
+  }, [hasWorkspacePaths, setIsCreatingProject]);
 
   // Focus project name input when popover opens
   useEffect(() => {
@@ -202,6 +217,7 @@ export const Ideation: React.FC<IdeationProps> = ({
               variant: "secondary",
               size: "sm",
               togglable: true,
+              disabled: !hasWorkspacePaths,
               toggled: isCreatingProject,
               onToggle: (t) => setIsCreatingProject(t),
             },

@@ -63,6 +63,7 @@ export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   "mem0/getMemories": [undefined, Memory[]];
   "mem0/updateMemories": [{ changes: MemoryChange[] }, boolean];
   getCreatorFeedbackMessages: [undefined, any[] | undefined];
+  getWorkspacePaths: [undefined, string[]];
 };
 
 export type ToWebviewFromIdeProtocol = ToWebviewFromIdeOrCoreProtocol & {

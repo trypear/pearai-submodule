@@ -607,5 +607,16 @@ export class VsCodeMessenger {
     this.onWebview("getCreatorFeedbackMessages", async (msg) => {
       return getApi()!.creatorMode.getFeedbackMessages();
     });
+
+    this.onWebview("getWorkspacePaths", async (msg) => {
+      const workspaceFolders = vscode.workspace.workspaceFolders;
+      if (!workspaceFolders) {
+        return [];
+      }
+      const workspacePaths = workspaceFolders.map(
+        (folder) => folder.uri.fsPath,
+      );
+      return workspacePaths;
+    });
   }
 }

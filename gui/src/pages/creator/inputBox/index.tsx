@@ -89,6 +89,16 @@ export const InputBox: React.FC<InputBoxProps> = ({
     [handleRequest, initialMessage, isDisabled],
   );
 
+  useEffect(() => {
+    setToggleStates((prev) => ({
+      ...prev,
+      ...leftButtons.reduce((acc, button) => {
+        acc[button.id] = button.toggled ?? false;
+        return acc;
+      }, {} as Record<string, boolean>),
+    }));
+  }, [leftButtons, rightButtons]);
+
   const handleToggle = useCallback((buttonId: string, toggled: boolean) => {
     setToggleStates((prev) => ({
       ...prev,
@@ -150,7 +160,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
           : "var(--textSeparatorForeground, #e5e7eb)")
       }`,
     };
-  }, [showBorder, borderColor, lockToWhite]);
+  }, [showBorder, borderColor, lockToWhite, leftButtons, rightButtons]);
 
   // Convert maxHeight to a CSS value
   const maxHeightStyle =
@@ -160,7 +170,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
     return leftButtons.some(
       (button) => button.id === ButtonID.NEW_PROJECT && toggleStates[button.id],
     );
-  }, [leftButtons, toggleStates]);
+  }, [leftButtons, toggleStates, rightButtons]);
 
   return (
     <div
