@@ -287,44 +287,6 @@ export const CreatorOverlay = () => {
     });
   }, [typedRegister, updateAssistantMessage]);
 
-  const handleDirectRequest = useCallback(
-    async (request: string) => {
-      console.log("PROJECT CONFIG", projectConfig, isCreatingProject);
-      if (isCreatingProject) {
-        if (!projectConfig.path || !projectConfig.name)
-          throw new Error(
-            "Project path and name are required for project creation.",
-          );
-        console.dir("CREATING FOLDER");
-        // Create the project folder first
-        const safeName = projectConfig.name
-          .trim()
-          .replace(/[/\\?%*:|"<>]/g, "-");
-        const safePath = projectConfig.path.endsWith("/")
-          ? `${projectConfig.path}${safeName}`
-          : `${projectConfig.path}/${safeName}`;
-
-        // Submit the direct request with project path
-        sendMessage("SubmitIdea", {
-          request,
-          creatorMode: true,
-          newProjectType: projectConfig.type,
-          newProjectPath: safePath,
-          images: await getImages(),
-        } satisfies SubmitIdeaType["payload"]);
-      } else {
-        // Submit the direct request without project path
-        sendMessage("SubmitIdea", {
-          request,
-          creatorMode: true,
-          newProjectType: "NONE",
-          images: await getImages(),
-        } satisfies SubmitIdeaType["payload"]);
-      }
-    },
-    [ideMessenger, sendMessage, projectConfig, isCreatingProject],
-  );
-
   // Helper function to extract text from MessageContent
   const getMessageText = useCallback((content: MessageContent): string => {
     if (typeof content === "string") {
@@ -338,32 +300,6 @@ export const CreatorOverlay = () => {
     return "";
   }, []);
 
-  const handleLlmCall = useCallback(
-    async (givenMsgs?: ChatMessage[]) => {
-      if (makeAPlan) {
-        setMessages((msgs) => [...msgs, { content: "", role: "assistant" }]);
-        sendMessage("ProcessLLM", {
-          messages: givenMsgs ?? messages,
-          plan: true,
-        } satisfies ProcessLLMType["payload"]);
-        setCurrentState("GENERATING");
-      } else {
-        // Skip planning and submit directly
-        const request = givenMsgs?.[0]?.content ?? initialMessage;
-        handleDirectRequest(getMessageText(request));
-      }
-    },
-    [
-      messages,
-      sendMessage,
-      setCurrentState,
-      makeAPlan,
-      initialMessage,
-      handleDirectRequest,
-      getMessageText,
-    ],
-  );
-
   const safePath = useMemo(() => {
     // Sanitize the project name by removing any path-traversal characters
     const safeName = projectConfig.name.trim().replace(/[/\\?%*:|"<>]/g, "-");
@@ -375,51 +311,112 @@ export const CreatorOverlay = () => {
     return safePath;
   }, [projectConfig]);
 
-  const handleMakeIt = useCallback(async () => {
-    console.dir("PROJECT CONFIG");
-    console.dir(projectConfig.path);
-    console.dir(currentPlan);
+  const handleSubmitRequest = useCallback(
+    async (request: string, hasPlan: boolean = false) => {
+      // Track analytics
+      posthog.capture("creator_submit", {
+        has_plan: hasPlan,
+        project_name: projectConfig.name,
+        initial_message: initialMessage,
+        project_type: projectConfig.type,
+        images_count: files.length,
+      });
 
-    posthog.capture("creator_submit", {
-      has_plan: !!currentPlan,
-      project_name: projectConfig.name,
-      initial_message: initialMessage,
-      project_type: projectConfig.type,
-      images_count: files.length,
-    });
+      // Prepare request with plan prefix if needed
+      const finalRequest = hasPlan ? `PLAN: ${request}` : request;
 
-    if (currentPlan) {
-      if (projectConfig.path && projectConfig.name) {
-        // Then submit the plan with project path
+      // Submit the request
+      if (isCreatingProject) {
+        if (!projectConfig.path || !projectConfig.name) {
+          throw new Error(
+            "Project path and name are required for project creation.",
+          );
+        }
+
+        // Submit request with project path
         await sendMessage("SubmitIdea", {
-          request: `PLAN: ${currentPlan}`,
+          request: finalRequest,
           creatorMode: true,
-          newProjectPath: safePath,
           newProjectType: projectConfig.type,
+          newProjectPath: safePath,
           images: await getImages(),
         } satisfies SubmitIdeaType["payload"]);
+
+        // Replace workspace folder after submission
+        ideMessenger
+          .request("replaceWorkspaceFolder", {
+            path: safePath,
+          })
+          .catch((e) => console.error(`ERROR MAKING FOLDER ${e}`));
       } else {
-        // Submit the plan without project path
-        await sendMessage("SubmitPlan", {
-          request: `PLAN: ${currentPlan}`,
+        // Submit request without project path
+        await sendMessage("SubmitIdea", {
+          request: finalRequest,
           creatorMode: true,
           newProjectType: "NONE",
           images: await getImages(),
         } satisfies SubmitIdeaType["payload"]);
       }
-    }
+    },
+    [
+      ideMessenger,
+      sendMessage,
+      projectConfig,
+      isCreatingProject,
+      safePath,
+      initialMessage,
+      files.length,
+      getImages,
+    ],
+  );
 
-    // Need to replace the workspace folder AFTER the plan is submitted - resets the comms with the extension
-    if (isCreatingProject) {
-      console.dir("CREATING FOLDER");
-      // Create the project folder now so roo code doesn't refresh
-      ideMessenger
-        .request("replaceWorkspaceFolder", {
-          path: safePath,
-        })
-        .catch((e) => console.error(`ERROR MAKING FOLDER ${e}`));
+  const handleLlmCall = useCallback(
+    async (givenMsgs?: ChatMessage[]) => {
+      if (makeAPlan) {
+        const images = await getImages();
+        setMessages((msgs) => [...msgs, { content: "", role: "assistant" }]);
+        sendMessage("ProcessLLM", {
+          messages: [
+            ...(givenMsgs ?? messages),
+            ...(images
+              ? ([
+                  {
+                    role: "user",
+                    content: images.map((url) => ({
+                      type: "imageUrl",
+                      imageUrl: {
+                        url,
+                      },
+                    })),
+                  },
+                ] satisfies ProcessLLMType["payload"]["messages"])
+              : []),
+          ],
+          plan: true,
+        } satisfies ProcessLLMType["payload"]);
+        setCurrentState("GENERATING");
+      } else {
+        // Skip planning and submit directly
+        const request = givenMsgs?.[0]?.content ?? initialMessage;
+        handleSubmitRequest(getMessageText(request));
+      }
+    },
+    [
+      messages,
+      sendMessage,
+      setCurrentState,
+      makeAPlan,
+      initialMessage,
+      handleSubmitRequest,
+      getMessageText,
+    ],
+  );
+
+  const handleMakeIt = useCallback(async () => {
+    if (currentPlan) {
+      await handleSubmitRequest(currentPlan, true);
     }
-  }, [ideMessenger, sendMessage, currentPlan, safePath]);
+  }, [handleSubmitRequest, currentPlan]);
 
   const handleStateUpdate = useCallback(
     (msg: {
