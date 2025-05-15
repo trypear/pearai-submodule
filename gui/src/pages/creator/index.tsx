@@ -69,6 +69,8 @@ export const CreatorOverlay = () => {
   const [overlayState, setOverlayState] =
     useState<keyof OverlayStates>("loading");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+
   const [parentStyling, setParentStyling] = useState<
     Partial<CSSStyleDeclaration> | undefined
   >();
@@ -349,10 +351,11 @@ export const CreatorOverlay = () => {
     console.dir(currentPlan);
 
     posthog.capture("creator_submit", {
-      hasPlan: !!currentPlan,
-      projectName: projectConfig.name,
-      initialMessage,
-      projectType: projectConfig.type,
+      has_plan: !!currentPlan,
+      project_name: projectConfig.name,
+      initial_message: initialMessage,
+      project_type: projectConfig.type,
+      images_count: files.length,
     });
 
     if (currentPlan) {
@@ -363,6 +366,24 @@ export const CreatorOverlay = () => {
           creatorMode: true,
           newProjectPath: safePath,
           newProjectType: projectConfig.type,
+          images: await Promise.all(
+            files.map(
+              (x) =>
+                new Promise<string>((resolve) => {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    const { result } = reader;
+                    if (typeof result !== "string") {
+                      throw new Error(
+                        "Trying to convert images to base64 failed, reader.result is not a string :(",
+                      );
+                    }
+                    resolve(result);
+                  };
+                  reader.readAsDataURL(x);
+                }),
+            ),
+          ),
         } satisfies SubmitIdeaType["payload"]);
       } else {
         // Submit the plan without project path
@@ -471,6 +492,8 @@ export const CreatorOverlay = () => {
                     setMakeAPlan={setMakeAPlan}
                     isCreatingProject={isCreatingProject}
                     setIsCreatingProject={setIsCreatingProject}
+                    files={files}
+                    setFiles={setFiles}
                   />
                 </motion.div>
               </div>

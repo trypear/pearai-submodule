@@ -29,6 +29,8 @@ interface IdeationProps {
   setProjectConfig: React.Dispatch<React.SetStateAction<ProjectConfig>>;
   isCreatingProject: boolean;
   setIsCreatingProject: React.Dispatch<React.SetStateAction<boolean>>;
+  files: File[];
+  setFiles: (files: File[]) => void;
 }
 
 export const Ideation: React.FC<IdeationProps> = ({
@@ -42,13 +44,14 @@ export const Ideation: React.FC<IdeationProps> = ({
   setProjectConfig,
   isCreatingProject,
   setIsCreatingProject,
+  files,
+  setFiles,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const projectNameRef = useRef<HTMLInputElement | null>(null);
   const isCapturingRef = useRef(false);
   const ideMessenger = useContext(IdeMessengerContext);
   const [hasWorkspacePaths, setHasWorkspacePaths] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     posthog.capture("creator_opened");
