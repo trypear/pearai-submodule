@@ -202,7 +202,7 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
         const gen = this._messenger.invoke("llm/streamChat", {
           messages,
-          title: "pearai_model",
+          title: "pearai_model_smart",
           completionOptions: {
             // TODO: FILL THIS OUT?
             prompt_key: "creator_mode_plan",
@@ -298,7 +298,6 @@ export class PearAICreatorMode implements IPearAICreatorMode {
     // Then navigate to the inventory settings page
     // TODO: navigate to the right page on the overlay
     await vscode.commands.executeCommand("pearai.showOverlay.feedback");
-
   }
 
   public getFeedbackMessages(): any[] | undefined {
