@@ -3,7 +3,10 @@
 
 This is the source code for the bulk of PearAI's functionality, which is bundled as a VSCode / PearAI extension. It is a fork of [Continue](https://github.com/continuedev/continue).
 
-## 🌐 **For how to setup, build, and run PearAI, please visit [PearAI Contributing](https://github.com/trypear/pearai-app/blob/main/CONTRIBUTING.md)!**
+## Contributing
+Go [here](https://github.com/trypear/pearai-master/blob/main/README.md) for the setup and contributing information.
+
+Got any questions? join the [PearAI Discord](https://discord.gg/7QMraJUsQt)!
 
 ## Features 🚀
 
