@@ -1,7 +1,7 @@
 import { Button } from "./../ui/button";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useMemo } from "react";
 import { useDropzone } from "react-dropzone";
 
 export interface FileUploadProps {
@@ -23,20 +23,81 @@ export const FileUpload: React.FC<FileUploadProps> = ({
 }) => {
   const [previews, setPreviews] = useState<Map<string, string>>(new Map());
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
+  const [processingFiles, setProcessingFiles] = useState<Set<string>>(
+    new Set(),
+  );
 
-  const loadPreview = useCallback((file: File) => {
-    if (!file.type.startsWith("image/")) return;
+  // Process files and generate previews
+  useEffect(() => {
+    const processFile = async (file: File) => {
+      if (!file.type.startsWith("image/")) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setPreviews((prev) => {
-        const next = new Map(prev);
-        next.set(file.name, reader.result as string);
-        return next;
+      setProcessingFiles((prev) => new Set([...prev, file.name]));
+
+      try {
+        // Create a preview URL
+        const previewUrl = URL.createObjectURL(file);
+
+        // Update previews state
+        setPreviews((prev) => {
+          const next = new Map(prev);
+          next.set(file.name, previewUrl);
+          return next;
+        });
+
+        // Create an image element to ensure it loads
+        await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = resolve;
+          img.onerror = reject;
+          img.src = previewUrl;
+        });
+
+        // Mark as loaded
+        setLoadedImages((prev) => new Set([...prev, file.name]));
+      } catch (error) {
+        console.error(`Error processing file ${file.name}:`, error);
+      } finally {
+        setProcessingFiles((prev) => {
+          const next = new Set(prev);
+          next.delete(file.name);
+          return next;
+        });
+      }
+    };
+
+    // Process any files that don't have previews yet
+    files.forEach((file) => {
+      if (!previews.has(file.name) && !processingFiles.has(file.name)) {
+        processFile(file);
+      }
+    });
+
+    // Cleanup function to revoke unused URLs
+    return () => {
+      const currentFileNames = new Set(files.map((f) => f.name));
+      previews.forEach((url, fileName) => {
+        if (!currentFileNames.has(fileName) && url.startsWith("blob:")) {
+          URL.revokeObjectURL(url);
+          setPreviews((prev) => {
+            const next = new Map(prev);
+            next.delete(fileName);
+            return next;
+          });
+        }
       });
     };
-    reader.readAsDataURL(file);
-  }, []);
+  }, [files]);
+
+  // Memoized preview loading state
+  const previewStates = useMemo(() => {
+    return files.map((file) => ({
+      file,
+      preview: previews.get(file.name),
+      isLoading: processingFiles.has(file.name),
+      isLoaded: loadedImages.has(file.name),
+    }));
+  }, [files, previews, processingFiles, loadedImages]);
 
   const validateFile = useCallback(
     (file: File) => {
@@ -70,11 +131,23 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     (newFiles: FileList | File[]) => {
       const validFiles = Array.from(newFiles).filter(validateFile);
       if (validFiles.length > 0) {
-        validFiles.forEach(loadPreview);
-        setFiles([...files, ...validFiles]);
+        // Generate unique names for pasted files that don't have names
+        const processedFiles = validFiles.map((file) => {
+          if (file.name === "image.png" || !file.name) {
+            const timestamp = new Date().getTime();
+            const extension = file.type.split("/")[1] || "png";
+            return new File([file], `pasted-image-${timestamp}.${extension}`, {
+              type: file.type,
+            });
+          }
+          return file;
+        });
+
+        // Update files state - preview generation will be handled by useEffect
+        setFiles([...files, ...processedFiles]);
       }
     },
-    [files, setFiles, validateFile, loadPreview],
+    [files, validateFile],
   );
 
   // Set up the file upload callback
@@ -110,6 +183,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       setFiles(files.filter((file) => file !== fileToRemove));
       setPreviews((prev) => {
         const next = new Map(prev);
+        // Revoke the object URL if it exists
+        const preview = prev.get(fileToRemove.name);
+        if (preview?.startsWith("blob:")) {
+          URL.revokeObjectURL(preview);
+        }
         next.delete(fileToRemove.name);
         return next;
       });
@@ -142,26 +220,26 @@ export const FileUpload: React.FC<FileUploadProps> = ({
       )}
 
       <div className="flex flex-wrap gap-2 w-full mb-2">
-        {files.map((file, index) => (
+        {previewStates.map(({ file, preview, isLoading, isLoaded }, index) => (
           <div
             key={`${file.name}-${index}`}
             className="relative group rounded-lg overflow-hidden"
             style={{ width: "100px", height: "100px" }}
           >
-            {previews.has(file.name) ? (
-              <img
-                src={previews.get(file.name)}
-                alt={file.name}
-                className="w-full h-full object-cover transition-opacity duration-300"
-                style={{ opacity: loadedImages.has(file.name) ? 1 : 0 }}
-                onLoad={() => {
-                  setLoadedImages((prev) => {
-                    const next = new Set(prev);
-                    next.add(file.name);
-                    return next;
-                  });
-                }}
-              />
+            {preview ? (
+              <>
+                <img
+                  src={preview}
+                  alt={file.name}
+                  className="w-full h-full object-cover transition-opacity duration-300"
+                  style={{ opacity: isLoaded ? 1 : 0 }}
+                />
+                {isLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50 dark:bg-gray-800/50">
+                    <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent"></div>
+                  </div>
+                )}
+              </>
             ) : (
               <div
                 className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 transition-opacity duration-300"

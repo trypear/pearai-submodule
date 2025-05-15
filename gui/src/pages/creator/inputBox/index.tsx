@@ -78,6 +78,26 @@ export const InputBox: React.FC<InputBoxProps> = ({
     [setInitialMessage],
   );
 
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      if (fileUpload) {
+        const items = e.clipboardData.items;
+        const imageItems = Array.from(items).filter((item) =>
+          item.type.startsWith("image/"),
+        );
+
+        if (imageItems.length > 0) {
+          e.preventDefault();
+          const files = imageItems
+            .map((item) => item.getAsFile())
+            .filter(Boolean) as File[];
+          fileUpload.setFiles([...fileUpload.files, ...files]);
+        }
+      }
+    },
+    [fileUpload],
+  );
+
   const handleTextareaKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (
@@ -223,6 +243,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
           value={initialMessage}
           onChange={handleTextareaChange}
           onKeyDown={handleTextareaKeyDown}
+          onPaste={handlePaste}
           placeholder={placeholder}
           className={`w-full appearance-none bg-transparent outline-none resize-none focus:outline-none overflow-y-auto rounded-lg leading-normal flex items-center border-none border-solidd border-gray-300 min-h-5 font-inherit ${
             isNewProjectSelected ? "max-h-[200px]" : ""
