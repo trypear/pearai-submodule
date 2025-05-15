@@ -1,5 +1,8 @@
 Note: This file has been modified from its original contents. pearai-submodule is a fork of Continue (https://github.com/continuedev/continue).
 
+## Updated Contributing Docs
+Go [here](https://github.com/trypear/pearai-master/blob/main/README.md) for the setup and contributing information.
+
 # 🍐 Contributing to PearAI
 
 ## 🌐 **For how to setup, build, and run PearAI, please visit [PearAI-App Contributing](https://github.com/trypear/pearai-app/blob/main/CONTRIBUTING.md) for the main guide!**
