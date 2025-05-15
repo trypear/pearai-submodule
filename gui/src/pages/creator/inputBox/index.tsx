@@ -1,8 +1,16 @@
 import { Button, ButtonProps } from "./../ui/button";
-import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline";
-import React, { useCallback, useState, useMemo, useEffect } from "react";
+import { ArrowTurnDownLeftIcon, PhotoIcon } from "@heroicons/react/24/outline";
+import React, {
+  useCallback,
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+} from "react";
 import { ButtonID } from "../utils";
 import { cn } from "../../../lib/utils";
+import { FileUpload, FileUploadProps } from "./FileUpload";
+import { UploadIcon } from "lucide-react";
 
 // Define our InputBoxButtonProps
 export interface InputBoxButtonProps extends ButtonProps {
@@ -12,7 +20,6 @@ export interface InputBoxButtonProps extends ButtonProps {
   togglable?: boolean;
 }
 
-// Define main component props
 export interface InputBoxProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   initialMessage: string;
@@ -25,12 +32,13 @@ export interface InputBoxProps {
   submitButton?: Omit<InputBoxButtonProps, "onClick"> & {
     onClick?: () => void;
   };
-  maxHeight?: string | number; // Modified to accept string values like '50vh'
+  maxHeight?: string | number;
   lockToWhite?: boolean;
   initialRows?: number;
   showBorder?: boolean;
   borderColor?: string;
   className?: string;
+  fileUpload?: Omit<FileUploadProps, "setFileUploadCallback">;
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -43,15 +51,19 @@ export const InputBox: React.FC<InputBoxProps> = ({
   leftButtons = [],
   rightButtons = [],
   submitButton,
-  maxHeight = "40vh", // Default to 50vh instead of a fixed pixel value
+  maxHeight = "40vh",
   lockToWhite = false,
   initialRows,
   showBorder = false,
   borderColor,
   className,
+  fileUpload,
 }) => {
   // Keep track of which buttons are toggled
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
+  const [fileUploadCallback, setFileUploadCallback] = useState<() => void>(
+    () => {},
+  );
 
   // Adjust textarea height on content change or when initialMessage changes
   useEffect(() => {
@@ -68,10 +80,28 @@ export const InputBox: React.FC<InputBoxProps> = ({
   const handleTextareaChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setInitialMessage(e.target.value);
-
-      // The height adjustment is now handled by the useEffect
     },
     [setInitialMessage],
+  );
+
+  const handlePaste = useCallback(
+    (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      if (fileUpload) {
+        const items = e.clipboardData.items;
+        const imageItems = Array.from(items).filter((item) =>
+          item.type.startsWith("image/"),
+        );
+
+        if (imageItems.length > 0) {
+          e.preventDefault();
+          const files = imageItems
+            .map((item) => item.getAsFile())
+            .filter(Boolean) as File[];
+          fileUpload.setFiles([...fileUpload.files, ...files]);
+        }
+      }
+    },
+    [fileUpload],
   );
 
   const handleTextareaKeyDown = useCallback(
@@ -138,10 +168,20 @@ export const InputBox: React.FC<InputBoxProps> = ({
     [toggleStates, handleToggle],
   );
 
-  const renderedLeftButtons = useMemo(
-    () => leftButtons.map(renderButton),
-    [leftButtons, renderButton],
-  );
+  const renderedLeftButtons = useMemo(() => {
+    const uploadButton = {
+      id: "upload",
+      label: "Upload",
+      icon: <UploadIcon />,
+      variant: "secondary",
+      size: "sm",
+      onClick: () => fileUploadCallback(),
+    } satisfies InputBoxButtonProps;
+
+    return [...leftButtons, ...(fileUpload ? [uploadButton] : [])].map(
+      renderButton,
+    );
+  }, [leftButtons, renderButton, fileUpload]);
 
   const renderedRightButtons = useMemo(
     () => rightButtons.map(renderButton),
@@ -160,7 +200,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
           : "var(--textSeparatorForeground, #e5e7eb)")
       }`,
     };
-  }, [showBorder, borderColor, lockToWhite, leftButtons, rightButtons]);
+  }, [showBorder, borderColor, lockToWhite]);
 
   // Convert maxHeight to a CSS value
   const maxHeightStyle =
@@ -170,35 +210,55 @@ export const InputBox: React.FC<InputBoxProps> = ({
     return leftButtons.some(
       (button) => button.id === ButtonID.NEW_PROJECT && toggleStates[button.id],
     );
-  }, [leftButtons, toggleStates, rightButtons]);
+  }, [leftButtons, toggleStates]);
 
   return (
     <div
       className={cn(
-        `flex flex-col gap-2 p-3 items-center border border-solidd border-red-500 ${
+        `flex flex-col gap-1 p-3 items-center border border-solidd border-red-500 transition-all duration-300 ease-in-out ${
           isNewProjectSelected ? "rounded-t-xl" : "rounded-xl"
         } ${showBorder ? "border-box" : ""}`,
         className,
+        "relative",
       )}
       style={{
         backgroundColor: lockToWhite ? "white" : "var(--widgetBackground)",
         ...borderStyle,
       }}
     >
+      <div
+        className="w-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out"
+        style={{
+          maxHeight: fileUpload?.files.length ? "500px" : "0px",
+          opacity: fileUpload?.files.length ? 1 : 0,
+        }}
+      >
+        {fileUpload && (
+          <FileUpload
+            files={fileUpload.files}
+            setFiles={fileUpload.setFiles}
+            fileTypes={fileUpload.fileTypes}
+            maxFileSize={fileUpload.maxFileSize}
+            className="w-full mb-2"
+            setFileUploadCallback={setFileUploadCallback}
+          />
+        )}
+      </div>
       <div className="flex w-full">
         <textarea
           ref={textareaRef}
           value={initialMessage}
           onChange={handleTextareaChange}
           onKeyDown={handleTextareaKeyDown}
+          onPaste={handlePaste}
           placeholder={placeholder}
           className={`w-full appearance-none bg-transparent outline-none resize-none focus:outline-none overflow-y-auto rounded-lg leading-normal flex items-center border-none border-solidd border-gray-300 min-h-5 font-inherit ${
             isNewProjectSelected ? "max-h-[200px]" : ""
           }`}
           style={{
             color: lockToWhite ? "rgb(55, 65, 81)" : "var(--widgetForeground)",
-            maxHeight: maxHeightStyle, // Apply the maxHeight as a style
-            overflowY: "auto", // Ensure scrolling is enabled when content exceeds maxHeight
+            maxHeight: maxHeightStyle,
+            overflowY: "auto",
             fontFamily: "inherit",
           }}
           autoFocus={true}
@@ -217,6 +277,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
             <Button
               onClick={handleRequest}
               // disabled={!initialMessage.trim() || isDisabled}
+
               tabIndex={3}
               variant={submitButton.variant}
               size={submitButton.size}

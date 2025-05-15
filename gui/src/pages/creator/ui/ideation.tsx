@@ -29,6 +29,8 @@ interface IdeationProps {
   setProjectConfig: React.Dispatch<React.SetStateAction<ProjectConfig>>;
   isCreatingProject: boolean;
   setIsCreatingProject: React.Dispatch<React.SetStateAction<boolean>>;
+  files: File[];
+  setFiles: (files: File[]) => void;
 }
 
 export const Ideation: React.FC<IdeationProps> = ({
@@ -42,6 +44,8 @@ export const Ideation: React.FC<IdeationProps> = ({
   setProjectConfig,
   isCreatingProject,
   setIsCreatingProject,
+  files,
+  setFiles,
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const projectNameRef = useRef<HTMLInputElement | null>(null);
@@ -191,6 +195,12 @@ export const Ideation: React.FC<IdeationProps> = ({
       <RGBWrapper className="my-auto w-full">
         <InputBox
           textareaRef={textareaRef}
+          fileUpload={{
+            files,
+            setFiles,
+            fileTypes: ["image/*"],
+            maxFileSize: 10 * 1024 * 1024, // 10MB
+          }}
           initialMessage={initialMessage}
           initialRows={0}
           setInitialMessage={setInitialMessage}

@@ -1072,7 +1072,6 @@ export interface PearAuth {
 
 export type NewProjectType = "NONE" | "WEBAPP" | "MOBILE" | "OTHER";
 
-
 /**
  * Represents a request to execute a plan
  */
@@ -1100,7 +1099,7 @@ export interface ExecutePlanRequest {
   creatorMode: boolean;
   newProjectType?: NewProjectType;
   newProjectPath?: string;
-}			
+}
 
 export type CreatorModeState =
   | "OVERLAY_CLOSED"
@@ -1146,7 +1145,6 @@ export interface IPearAICreatorMode {
   dispose(): void;
 }
 
-
 export type SubmitIdeaType = {
   messageType: "SubmitIdea";
   payload: {
@@ -1154,6 +1152,7 @@ export type SubmitIdeaType = {
     creatorMode: boolean;
     newProjectType: NewProjectType;
     newProjectPath?: string;
+    images?: string[];
   };
 };
 
