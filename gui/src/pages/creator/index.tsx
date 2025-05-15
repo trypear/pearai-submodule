@@ -377,20 +377,23 @@ export const CreatorOverlay = () => {
         setMessages((msgs) => [...msgs, { content: "", role: "assistant" }]);
         sendMessage("ProcessLLM", {
           messages: [
+            {
+              role: "system",
+              content:
+                "<PEARAI_CREATOR_WEBAPP_PLANNING_STEP></PEARAI_CREATOR_WEBAPP_PLANNING_STEP>",
+            },
             ...(givenMsgs ?? messages),
-            ...(images
-              ? ([
-                  {
-                    role: "user",
-                    content: images.map((url) => ({
-                      type: "imageUrl",
-                      imageUrl: {
-                        url,
-                      },
-                    })),
+            ...([
+              {
+                role: "user",
+                content: images.map((url) => ({
+                  type: "imageUrl",
+                  imageUrl: {
+                    url,
                   },
-                ] satisfies ProcessLLMType["payload"]["messages"])
-              : []),
+                })),
+              },
+            ] satisfies ProcessLLMType["payload"]["messages"]),
           ],
           plan: true,
         } satisfies ProcessLLMType["payload"]);
