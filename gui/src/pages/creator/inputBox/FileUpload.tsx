@@ -2,7 +2,6 @@ import { Button } from "./../ui/button";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
 import React, { useCallback, useState, useEffect, useMemo } from "react";
-import { useDropzone } from "react-dropzone";
 
 export interface FileUploadProps {
   files: File[];
@@ -169,15 +168,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     });
   }, [setFileUploadCallback, fileTypes, handleFiles]);
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop: handleFiles,
-    accept: fileTypes.reduce((acc, type) => {
-      acc[type] = [];
-      return acc;
-    }, {} as Record<string, string[]>),
-    maxSize: maxFileSize,
-  });
-
   const removeFile = useCallback(
     (fileToRemove: File) => {
       setFiles(files.filter((file) => file !== fileToRemove));
@@ -203,22 +193,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   if (!files.length) return null;
 
   return (
-    <div
-      className={`${className} relative ${
-        isDragActive
-          ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-500"
-          : ""
-      }`}
-      {...getRootProps()}
-    >
-      <input {...getInputProps()} />
-
-      {isDragActive && (
-        <div className="absolute inset-0 flex items-center justify-center bg-blue-50/50 dark:bg-blue-900/20 z-10">
-          <p className="text-blue-600 dark:text-blue-400">Drop files here...</p>
-        </div>
-      )}
-
+    <div className={`${className}`}>
       <div className="flex flex-wrap gap-2 w-full mb-2">
         {previewStates.map(({ file, preview, isLoading, isLoaded }, index) => (
           <div
