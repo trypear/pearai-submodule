@@ -28,32 +28,28 @@ const CustomPostHogProvider = ({ children }: PropsWithChildren) => {
   }, []);
 
   useEffect(() => {
-    if (allowAnonymousTelemetry) {
-      posthog.init("phc_EixCfQZYA5It6ZjtZG2C8THsUQzPzXZsdCsvR8AYhfh", {
-        api_host: "https://us.i.posthog.com",
-        disable_session_recording: true,
-        // We need to manually track pageviews since we're a SPA
-        capture_pageview: false,
+    posthog.init("phc_EixCfQZYA5It6ZjtZG2C8THsUQzPzXZsdCsvR8AYhfh", {
+      api_host: "https://us.i.posthog.com",
+      disable_session_recording: true,
+      // We need to manually track pageviews since we're a SPA
+      capture_pageview: false,
+    });
+
+    // If user is logged in, use their account ID as the primary identifier
+    if (userId) {
+      posthog.identify(window.vscMachineId, {
+        pearAiId: userId,
       });
-
-      // If user is logged in, use their account ID as the primary identifier
-      if (userId) {
-        posthog.identify(window.vscMachineId, {
-          pearAiId: userId,
-        });
-        // Merging the user id with the machine ID
-        // Not amazing but it's fine for now
-        posthog.alias(userId, window.vscMachineId);
-      } else {
-        // Otherwise fall back to machine ID
-        posthog.identify(window.vscMachineId);
-      }
-
-      posthog.opt_in_capturing();
-      setClient(client);
+      // Merging the user id with the machine ID
+      // Not amazing but it's fine for now
+      posthog.alias(userId, window.vscMachineId);
     } else {
-      setClient(undefined);
+      // Otherwise fall back to machine ID
+      posthog.identify(window.vscMachineId);
     }
+
+    posthog.opt_in_capturing();
+    setClient(client);
   }, [allowAnonymousTelemetry, userId]);
 
   return allowAnonymousTelemetry ? (
