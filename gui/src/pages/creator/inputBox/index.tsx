@@ -1,6 +1,12 @@
 import { Button, ButtonProps } from "./../ui/button";
 import { ArrowTurnDownLeftIcon, PhotoIcon } from "@heroicons/react/24/outline";
-import React, { useCallback, useState, useMemo, useEffect } from "react";
+import React, {
+  useCallback,
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+} from "react";
 import { ButtonID } from "../utils";
 import { cn } from "../../../lib/utils";
 import { FileUpload, FileUploadProps } from "./FileUpload";
@@ -200,13 +206,20 @@ export const InputBox: React.FC<InputBoxProps> = ({
   const maxHeightStyle =
     typeof maxHeight === "number" ? `${maxHeight}px` : maxHeight;
 
+  const isNewProjectSelected = useMemo(() => {
+    return leftButtons.some(
+      (button) => button.id === ButtonID.NEW_PROJECT && toggleStates[button.id],
+    );
+  }, [leftButtons, toggleStates]);
+
   return (
     <div
       className={cn(
-        `flex flex-col gap-1 p-3 items-center border border-solidd border-red-500 transition-all duration-300 ease-in-out rounded-xl ${
-          showBorder ? "border-box" : ""
-        }`,
+        `flex flex-col gap-1 p-3 items-center border border-solidd border-red-500 transition-all duration-300 ease-in-out ${
+          isNewProjectSelected ? "rounded-t-xl" : "rounded-xl"
+        } ${showBorder ? "border-box" : ""}`,
         className,
+        "relative",
       )}
       style={{
         backgroundColor: lockToWhite ? "white" : "var(--widgetBackground)",
@@ -239,7 +252,9 @@ export const InputBox: React.FC<InputBoxProps> = ({
           onKeyDown={handleTextareaKeyDown}
           onPaste={handlePaste}
           placeholder={placeholder}
-          className="w-full appearance-none bg-transparent outline-none resize-none focus:outline-none overflow-y-auto rounded-lg leading-normal flex items-center border-none border-solidd border-gray-300 min-h-5 font-inherit"
+          className={`w-full appearance-none bg-transparent outline-none resize-none focus:outline-none overflow-y-auto rounded-lg leading-normal flex items-center border-none border-solidd border-gray-300 min-h-5 font-inherit ${
+            isNewProjectSelected ? "max-h-[200px]" : ""
+          }`}
           style={{
             color: lockToWhite ? "rgb(55, 65, 81)" : "var(--widgetForeground)",
             maxHeight: maxHeightStyle,
