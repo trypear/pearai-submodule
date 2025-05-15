@@ -71,6 +71,34 @@ export const CreatorOverlay = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [files, setFiles] = useState<File[]>([]);
 
+  const getImages = useCallback(() => {
+    return Promise.all(
+      files
+        .filter((file) => {
+          const [type, subtype] = file.type.split("/");
+          return type === "image" && ["png", "jpeg", "webp"].includes(subtype);
+        })
+        .map(
+          (file) =>
+            new Promise<string | null>((resolve) => {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                if (reader.error) {
+                  console.error("Error reading file:", reader.error);
+                  resolve(null);
+                } else {
+                  const result = reader.result;
+                  resolve(typeof result === "string" ? result : null);
+                }
+              };
+              reader.readAsDataURL(file);
+            }),
+        ),
+    ).then((results) =>
+      results.filter((dataUrl): dataUrl is string => dataUrl !== null),
+    );
+  }, [files]);
+
   const [parentStyling, setParentStyling] = useState<
     Partial<CSSStyleDeclaration> | undefined
   >();
@@ -282,6 +310,7 @@ export const CreatorOverlay = () => {
           creatorMode: true,
           newProjectType: projectConfig.type,
           newProjectPath: safePath,
+          images: await getImages(),
         } satisfies SubmitIdeaType["payload"]);
       } else {
         // Submit the direct request without project path
@@ -289,6 +318,7 @@ export const CreatorOverlay = () => {
           request,
           creatorMode: true,
           newProjectType: "NONE",
+          images: await getImages(),
         } satisfies SubmitIdeaType["payload"]);
       }
     },
@@ -366,24 +396,7 @@ export const CreatorOverlay = () => {
           creatorMode: true,
           newProjectPath: safePath,
           newProjectType: projectConfig.type,
-          images: await Promise.all(
-            files.map(
-              (x) =>
-                new Promise<string>((resolve) => {
-                  const reader = new FileReader();
-                  reader.onloadend = () => {
-                    const { result } = reader;
-                    if (typeof result !== "string") {
-                      throw new Error(
-                        "Trying to convert images to base64 failed, reader.result is not a string :(",
-                      );
-                    }
-                    resolve(result);
-                  };
-                  reader.readAsDataURL(x);
-                }),
-            ),
-          ),
+          images: await getImages(),
         } satisfies SubmitIdeaType["payload"]);
       } else {
         // Submit the plan without project path
@@ -391,6 +404,7 @@ export const CreatorOverlay = () => {
           request: `PLAN: ${currentPlan}`,
           creatorMode: true,
           newProjectType: "NONE",
+          images: await getImages(),
         } satisfies SubmitIdeaType["payload"]);
       }
     }
