@@ -1,7 +1,8 @@
 import { Button } from "./../ui/button";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import { Trash2 } from "lucide-react";
-import React, { useCallback, useState, useRef } from "react";
+import React, { useCallback, useState, useEffect } from "react";
+import { useDropzone } from "react-dropzone";
 
 export interface FileUploadProps {
   files: File[];
@@ -9,6 +10,7 @@ export interface FileUploadProps {
   fileTypes?: string[];
   maxFileSize?: number;
   className?: string;
+  setFileUploadCallback?: React.Dispatch<React.SetStateAction<() => void>>;
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
@@ -17,12 +19,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   fileTypes = ["image/*"],
   maxFileSize = 5 * 1024 * 1024, // 5MB default
   className,
+  setFileUploadCallback,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [previews, setPreviews] = useState<Map<string, string>>(new Map());
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
   const loadPreview = useCallback((file: File) => {
+    if (!file.type.startsWith("image/")) return;
+
     const reader = new FileReader();
     reader.onloadend = () => {
       setPreviews((prev) => {
@@ -73,6 +77,34 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     [files, setFiles, validateFile, loadPreview],
   );
 
+  // Set up the file upload callback
+  useEffect(() => {
+    setFileUploadCallback(() => {
+      return () => {
+        const input = document.createElement("input");
+        input.type = "file";
+        input.multiple = true;
+        input.accept = fileTypes.join(",");
+        input.onchange = (e) => {
+          const files = (e.target as HTMLInputElement).files;
+          if (files) {
+            handleFiles(files);
+          }
+        };
+        input.click();
+      };
+    });
+  }, [setFileUploadCallback, fileTypes, handleFiles]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: handleFiles,
+    accept: fileTypes.reduce((acc, type) => {
+      acc[type] = [];
+      return acc;
+    }, {} as Record<string, string[]>),
+    maxSize: maxFileSize,
+  });
+
   const removeFile = useCallback(
     (fileToRemove: File) => {
       setFiles(files.filter((file) => file !== fileToRemove));
@@ -81,105 +113,77 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         next.delete(fileToRemove.name);
         return next;
       });
+      setLoadedImages((prev) => {
+        const next = new Set(prev);
+        next.delete(fileToRemove.name);
+        return next;
+      });
     },
     [files, setFiles],
   );
 
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleDragIn = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setIsDragging(true);
-    }
-  }, []);
-
-  const handleDragOut = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  }, []);
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-
-      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-        handleFiles(e.dataTransfer.files);
-        e.dataTransfer.clearData();
-      }
-    },
-    [handleFiles],
-  );
+  if (!files.length) return null;
 
   return (
-    <div className={className}>
-      {files.length > 0 && (
-        <div className="flex flex-wrap gap-2 w-full mb-2">
-          {files.map((file, index) => (
-            <div
-              key={`${file.name}-${index}`}
-              className="relative group rounded-lg overflow-hidden"
-              style={{ width: "100px", height: "100px" }}
-            >
-              {previews.has(file.name) && (
-                <img
-                  src={previews.get(file.name)}
-                  alt={file.name}
-                  className="w-full h-full object-cover"
-                />
-              )}
-              <Button
-                onClick={() => removeFile(file)}
-                className="absolute size-8 top-1 right-1 p-1 rounded-full bg-red-500/50 text-white
-                         opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/75"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          ))}
+    <div
+      className={`${className} relative ${
+        isDragActive
+          ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-dashed border-blue-500"
+          : ""
+      }`}
+      {...getRootProps()}
+    >
+      <input {...getInputProps()} />
+
+      {isDragActive && (
+        <div className="absolute inset-0 flex items-center justify-center bg-blue-50/50 dark:bg-blue-900/20 z-10">
+          <p className="text-blue-600 dark:text-blue-400">Drop files here...</p>
         </div>
       )}
 
-      <input
-        type="file"
-        ref={fileInputRef}
-        className="hidden"
-        accept={fileTypes.join(",")}
-        onChange={(e) => {
-          if (e.target.files) {
-            handleFiles(e.target.files);
-            e.target.value = ""; // Reset input
-          }
-        }}
-        multiple
-      />
-
-      <div
-        className={`relative ${
-          isDragging ? "bg-blue-50 dark:bg-blue-900/20" : ""
-        }`}
-        onDragEnter={handleDragIn}
-        onDragLeave={handleDragOut}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-      >
-        <Button
-          variant="ghost"
-          onClick={() => fileInputRef.current?.click()}
-          className="rounded-lg px-4 py-1.5 min-w-[100px]"
-        >
-          <div className="flex items-center gap-2">
-            <PhotoIcon className="h-5 w-5" />
-            Upload
+      <div className="flex flex-wrap gap-2 w-full mb-2">
+        {files.map((file, index) => (
+          <div
+            key={`${file.name}-${index}`}
+            className="relative group rounded-lg overflow-hidden"
+            style={{ width: "100px", height: "100px" }}
+          >
+            {previews.has(file.name) ? (
+              <img
+                src={previews.get(file.name)}
+                alt={file.name}
+                className="w-full h-full object-cover transition-opacity duration-300"
+                style={{ opacity: loadedImages.has(file.name) ? 1 : 0 }}
+                onLoad={() => {
+                  setLoadedImages((prev) => {
+                    const next = new Set(prev);
+                    next.add(file.name);
+                    return next;
+                  });
+                }}
+              />
+            ) : (
+              <div
+                className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 transition-opacity duration-300"
+                style={{ opacity: 1 }}
+              >
+                <span className="text-sm text-gray-500 dark:text-gray-400 text-center px-2 break-words">
+                  {file.name}
+                </span>
+              </div>
+            )}
+            <Button
+              onClick={(e) => {
+                e.stopPropagation();
+                removeFile(file);
+              }}
+              className="absolute size-8 top-1 right-1 p-1 rounded-full bg-red-500/50 text-white
+                       opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500/75"
+            >
+              <Trash2 className="size-4" />
+            </Button>
           </div>
-        </Button>
+        ))}
       </div>
     </div>
   );

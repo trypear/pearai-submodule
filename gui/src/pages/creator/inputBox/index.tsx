@@ -1,9 +1,10 @@
 import { Button, ButtonProps } from "./../ui/button";
-import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowTurnDownLeftIcon, PhotoIcon } from "@heroicons/react/24/outline";
 import React, { useCallback, useState, useMemo, useEffect } from "react";
 import { ButtonID } from "../utils";
 import { cn } from "../../../lib/utils";
-import { FileUpload } from "./FileUpload";
+import { FileUpload, FileUploadProps } from "./FileUpload";
+import { UploadIcon } from "lucide-react";
 
 // Define our InputBoxButtonProps
 export interface InputBoxButtonProps extends ButtonProps {
@@ -11,13 +12,6 @@ export interface InputBoxButtonProps extends ButtonProps {
   icon?: React.ReactNode;
   label: string;
   togglable?: boolean;
-}
-
-export interface FileUploadConfig {
-  files: File[];
-  setFiles: (files: File[]) => void;
-  fileTypes?: string[];
-  maxFileSize?: number;
 }
 
 export interface InputBoxProps {
@@ -38,7 +32,7 @@ export interface InputBoxProps {
   showBorder?: boolean;
   borderColor?: string;
   className?: string;
-  fileUpload?: FileUploadConfig;
+  fileUpload?: Omit<FileUploadProps, "setFileUploadCallback">;
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -61,6 +55,9 @@ export const InputBox: React.FC<InputBoxProps> = ({
 }) => {
   // Keep track of which buttons are toggled
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
+  const [fileUploadCallback, setFileUploadCallback] = useState<() => void>(
+    () => {},
+  );
 
   // Adjust textarea height on content change or when initialMessage changes
   useEffect(() => {
@@ -145,10 +142,20 @@ export const InputBox: React.FC<InputBoxProps> = ({
     [toggleStates, handleToggle],
   );
 
-  const renderedLeftButtons = useMemo(
-    () => leftButtons.map(renderButton),
-    [leftButtons, renderButton],
-  );
+  const renderedLeftButtons = useMemo(() => {
+    const uploadButton = {
+      id: "upload",
+      label: "Upload",
+      icon: <UploadIcon />,
+      variant: "secondary",
+      size: "sm",
+      onClick: () => fileUploadCallback(),
+    } satisfies InputBoxButtonProps;
+
+    return [...leftButtons, ...(fileUpload ? [uploadButton] : [])].map(
+      renderButton,
+    );
+  }, [leftButtons, renderButton, fileUpload]);
 
   const renderedRightButtons = useMemo(
     () => rightButtons.map(renderButton),
@@ -182,7 +189,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
   return (
     <div
       className={cn(
-        `flex flex-col gap-2 p-3 items-center border border-solidd border-red-500 ${
+        `flex flex-col gap-1 p-3 items-center border border-solidd border-red-500 transition-all duration-300 ease-in-out ${
           isNewProjectSelected ? "rounded-t-xl" : "rounded-xl"
         } ${showBorder ? "border-box" : ""}`,
         className,
@@ -192,15 +199,24 @@ export const InputBox: React.FC<InputBoxProps> = ({
         ...borderStyle,
       }}
     >
-      {fileUpload && (
-        <FileUpload
-          files={fileUpload.files}
-          setFiles={fileUpload.setFiles}
-          fileTypes={fileUpload.fileTypes}
-          maxFileSize={fileUpload.maxFileSize}
-          className="w-full"
-        />
-      )}
+      <div
+        className="w-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out"
+        style={{
+          maxHeight: fileUpload?.files.length ? "500px" : "0px",
+          opacity: fileUpload?.files.length ? 1 : 0,
+        }}
+      >
+        {fileUpload && (
+          <FileUpload
+            files={fileUpload.files}
+            setFiles={fileUpload.setFiles}
+            fileTypes={fileUpload.fileTypes}
+            maxFileSize={fileUpload.maxFileSize}
+            className="w-full mb-2"
+            setFileUploadCallback={setFileUploadCallback}
+          />
+        )}
+      </div>
       <div className="flex w-full">
         <textarea
           ref={textareaRef}
