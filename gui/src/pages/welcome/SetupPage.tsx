@@ -11,7 +11,7 @@ import { RootState } from "@/redux/store";
 import { useDispatch, useSelector } from "react-redux";
 import { setOnboardingState } from "@/redux/slices/stateSlice";
 import { Checkbox } from "@/components/ui/checkbox";
-import { vscBackground, vscBadgeBackground, vscBadgeForeground, vscEditorBackground, vscForeground, vscInputBackground, vscSidebarBorder } from "@/components";
+import { vscBackground, vscBadgeBackground, vscBadgeForeground, vscEditorBackground, vscInputBackground, vscSidebarBorder } from "@/components";
 import { getLocalStorage } from "@/util/localStorage";
 import { setLocalStorage } from "@/util/localStorage";
 import ChangeColorScheme from "./setup/ChangeColorScheme";
@@ -481,7 +481,7 @@ export default function SetupPage({ onNext }: { onNext: () => void }) {
             <Button
               onClick={() => handleBackClick()}
               className="text-xs font-['SF Pro']"
-              style={{ background: vscInputBackground, color: vscForeground }}
+              style={{ background: vscInputBackground }}
             >Back (shown in dev)</Button>
           }
           {setupSteps[currentFeature].button}

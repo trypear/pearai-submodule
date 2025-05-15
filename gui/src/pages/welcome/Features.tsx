@@ -13,7 +13,7 @@ import { getLogoPath } from "@/pages/welcome/setup/ImportExtensions";
 import { Link } from "react-router-dom";
 import InventoryButtons from "./inventoryButtons";
 import { motion } from "framer-motion";
-import { vscForeground, vscInputBackground } from "@/components";
+import { vscInputBackground } from "@/components";
 
 const getAssetPath = (assetName: string) => {
   return `${window.vscMediaUrl}/assets/${assetName}`;
@@ -283,14 +283,14 @@ export default function Features({
               <Button
                 className="text-xs font-['SF Pro']"
                 onClick={handleBackClick}
-                style={{ background: vscInputBackground, color: vscForeground }}
+                style={{ background: vscInputBackground }}
               >
                 Back (shown in dev)
               </Button>
               <Button
                 className="text-xs font-['SF Pro']"
                 onClick={resetVideos}
-                style={{ background: vscInputBackground, color: vscForeground }}
+                style={{ background: vscInputBackground }}
               >
                 reset (shown in dev)
               </Button>
