@@ -3,6 +3,7 @@ import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline";
 import React, { useCallback, useState, useMemo, useEffect } from "react";
 import { ButtonID } from "../utils";
 import { cn } from "../../../lib/utils";
+import { FileUpload } from "./FileUpload";
 
 // Define our InputBoxButtonProps
 export interface InputBoxButtonProps extends ButtonProps {
@@ -12,7 +13,13 @@ export interface InputBoxButtonProps extends ButtonProps {
   togglable?: boolean;
 }
 
-// Define main component props
+export interface FileUploadConfig {
+  files: File[];
+  setFiles: (files: File[]) => void;
+  fileTypes?: string[];
+  maxFileSize?: number;
+}
+
 export interface InputBoxProps {
   textareaRef: React.RefObject<HTMLTextAreaElement>;
   initialMessage: string;
@@ -25,12 +32,13 @@ export interface InputBoxProps {
   submitButton?: Omit<InputBoxButtonProps, "onClick"> & {
     onClick?: () => void;
   };
-  maxHeight?: string | number; // Modified to accept string values like '50vh'
+  maxHeight?: string | number;
   lockToWhite?: boolean;
   initialRows?: number;
   showBorder?: boolean;
   borderColor?: string;
   className?: string;
+  fileUpload?: FileUploadConfig;
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -43,12 +51,13 @@ export const InputBox: React.FC<InputBoxProps> = ({
   leftButtons = [],
   rightButtons = [],
   submitButton,
-  maxHeight = "40vh", // Default to 50vh instead of a fixed pixel value
+  maxHeight = "40vh",
   lockToWhite = false,
   initialRows,
   showBorder = false,
   borderColor,
   className,
+  fileUpload,
 }) => {
   // Keep track of which buttons are toggled
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
@@ -68,8 +77,6 @@ export const InputBox: React.FC<InputBoxProps> = ({
   const handleTextareaChange = useCallback(
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setInitialMessage(e.target.value);
-
-      // The height adjustment is now handled by the useEffect
     },
     [setInitialMessage],
   );
@@ -160,7 +167,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
           : "var(--textSeparatorForeground, #e5e7eb)")
       }`,
     };
-  }, [showBorder, borderColor, lockToWhite, leftButtons, rightButtons]);
+  }, [showBorder, borderColor, lockToWhite]);
 
   // Convert maxHeight to a CSS value
   const maxHeightStyle =
@@ -170,7 +177,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
     return leftButtons.some(
       (button) => button.id === ButtonID.NEW_PROJECT && toggleStates[button.id],
     );
-  }, [leftButtons, toggleStates, rightButtons]);
+  }, [leftButtons, toggleStates]);
 
   return (
     <div
@@ -185,6 +192,15 @@ export const InputBox: React.FC<InputBoxProps> = ({
         ...borderStyle,
       }}
     >
+      {fileUpload && (
+        <FileUpload
+          files={fileUpload.files}
+          setFiles={fileUpload.setFiles}
+          fileTypes={fileUpload.fileTypes}
+          maxFileSize={fileUpload.maxFileSize}
+          className="w-full"
+        />
+      )}
       <div className="flex w-full">
         <textarea
           ref={textareaRef}
@@ -197,8 +213,8 @@ export const InputBox: React.FC<InputBoxProps> = ({
           }`}
           style={{
             color: lockToWhite ? "rgb(55, 65, 81)" : "var(--widgetForeground)",
-            maxHeight: maxHeightStyle, // Apply the maxHeight as a style
-            overflowY: "auto", // Ensure scrolling is enabled when content exceeds maxHeight
+            maxHeight: maxHeightStyle,
+            overflowY: "auto",
             fontFamily: "inherit",
           }}
           autoFocus={true}
@@ -217,6 +233,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
             <Button
               onClick={handleRequest}
               // disabled={!initialMessage.trim() || isDisabled}
+
               tabIndex={3}
               variant={submitButton.variant}
               size={submitButton.size}

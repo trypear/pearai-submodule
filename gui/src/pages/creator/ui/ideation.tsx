@@ -48,6 +48,7 @@ export const Ideation: React.FC<IdeationProps> = ({
   const isCapturingRef = useRef(false);
   const ideMessenger = useContext(IdeMessengerContext);
   const [hasWorkspacePaths, setHasWorkspacePaths] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
 
   useEffect(() => {
     posthog.capture("creator_opened");
@@ -191,6 +192,12 @@ export const Ideation: React.FC<IdeationProps> = ({
       <RGBWrapper className="my-auto w-full">
         <InputBox
           textareaRef={textareaRef}
+          fileUpload={{
+            files,
+            setFiles,
+            fileTypes: ["image/*"],
+            maxFileSize: 10 * 1024 * 1024, // 10MB
+          }}
           initialMessage={initialMessage}
           initialRows={0}
           setInitialMessage={setInitialMessage}
