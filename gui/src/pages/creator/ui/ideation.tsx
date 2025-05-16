@@ -198,7 +198,7 @@ export const Ideation: React.FC<IdeationProps> = ({
           isDisabled={false}
           placeholder={
             isCreatingProject
-              ? "What would you like to make? PearAI Creator will start your project with strong foundations - currently works best with web applications."
+              ? "What would you like to make? PearAI Creator will start your project off with strong foundations - currently works best with web applications."
               : "Ask PearAI Creator to add new features, fix bugs, and more to your current project!"
           }
           lockToWhite
