@@ -215,7 +215,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
   return (
     <div
       className={cn(
-        `flex flex-col gap-1 p-3 items-center border border-solidd border-red-500 transition-all duration-300 ease-in-out ${
+        `flex flex-col p-2 items-center border border-solidd border-red-500 transition-all duration-300 ease-in-out ${
           isNewProjectSelected ? "rounded-t-xl" : "rounded-xl"
         } ${showBorder ? "border-box" : ""}`,
         className,
@@ -226,14 +226,14 @@ export const InputBox: React.FC<InputBoxProps> = ({
         ...borderStyle,
       }}
     >
-      <div
-        className="w-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out"
-        style={{
-          maxHeight: fileUpload?.files.length ? "500px" : "0px",
-          opacity: fileUpload?.files.length ? 1 : 0,
-        }}
-      >
-        {fileUpload && (
+      {fileUpload && (
+        <div
+          className="w-full overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out"
+          style={{
+            maxHeight: fileUpload?.files.length ? "500px" : "0px",
+            opacity: fileUpload?.files.length ? 1 : 0,
+          }}
+        >
           <FileUpload
             files={fileUpload.files}
             setFiles={fileUpload.setFiles}
@@ -242,9 +242,10 @@ export const InputBox: React.FC<InputBoxProps> = ({
             className="w-full mb-2"
             setFileUploadCallback={setFileUploadCallback}
           />
-        )}
-      </div>
-      <div className="flex w-full">
+        </div>
+      )}
+
+      <div className="flex w-full mb-1">
         <textarea
           ref={textareaRef}
           value={initialMessage}

@@ -202,7 +202,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             maxFileSize: 10 * 1024 * 1024, // 10MB
           }}
           initialMessage={initialMessage}
-          initialRows={0}
+          initialRows={2}
           setInitialMessage={setInitialMessage}
           handleRequest={handleRequest}
           isDisabled={false}
