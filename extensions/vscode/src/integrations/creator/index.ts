@@ -202,9 +202,8 @@ export class PearAICreatorMode implements IPearAICreatorMode {
 
         const gen = this._messenger.invoke("llm/streamChat", {
           messages,
-          title: "pearai_model_smart",
+          title: "pearai_model",
           completionOptions: {
-            // TODO: FILL THIS OUT?
             prompt_key: "creator_mode_plan",
             stream: true,
           },

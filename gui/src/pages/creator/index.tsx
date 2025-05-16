@@ -17,6 +17,7 @@ import {
   ProcessLLMType,
   SubmitIdeaType,
   NewProjectType,
+  MessagePart,
 } from "core";
 import { IdeMessengerContext } from "../../context/IdeMessenger";
 import { getAnimationTargetHeightOffset } from "./utils";
@@ -114,7 +115,7 @@ export const CreatorOverlay = () => {
   const ideMessenger = useContext(IdeMessengerContext);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
 
-  const initialMessage = useMemo(() => {
+  const initialMessage : MessageContent = useMemo(() => {
     const msg = messages.find((x) => x.role === "user")?.content;
 
     // Handle the different possible content types
@@ -150,7 +151,7 @@ export const CreatorOverlay = () => {
   }, [sendMessage, overlayState]);
 
   // Create a text-only MessageContent from a string
-  const createTextContent = useCallback((text: string): MessageContent => {
+  const createTextContent = useCallback((text: MessageContent): MessageContent => {
     // For simplicity, we'll use the string variant for most messages
     return text;
 
@@ -250,8 +251,8 @@ export const CreatorOverlay = () => {
 
   // Convenience function to add a new message
   const addMessage = useCallback(
-    (role: "user" | "assistant", content: string, reset?: boolean) => {
-      const messageContent = createTextContent(content);
+    (role: "user" | "assistant", content: MessageContent, reset?: boolean) => {
+      const messageContent : MessageContent = createTextContent(content);
       const newMsgs = [
         ...(reset ? [] : messages),
         { role, content: messageContent },
@@ -373,31 +374,52 @@ export const CreatorOverlay = () => {
   const handleLlmCall = useCallback(
     async (givenMsgs?: ChatMessage[]) => {
       if (makeAPlan) {
-        const images = await getImages();
-        setMessages((msgs) => [...msgs, { content: "", role: "assistant" }]);
-        sendMessage("ProcessLLM", {
-          messages: [
-            {
-              role: "system",
-              content:
-                "<PEARAI_CREATOR_WEBAPP_PLANNING_STEP></PEARAI_CREATOR_WEBAPP_PLANNING_STEP>",
-            },
-            ...(givenMsgs ?? messages),
-            ...([
-              {
-                role: "user",
-                content: images.map((url) => ({
-                  type: "imageUrl",
-                  imageUrl: {
-                    url,
-                  },
-                })),
-              },
-            ] satisfies ProcessLLMType["payload"]["messages"]),
-          ],
-          plan: true,
-        } satisfies ProcessLLMType["payload"]);
-        setCurrentState("GENERATING");
+      const images = await getImages();
+      const imageParts: MessagePart[] = images.map((url) => ({
+        type: "imageUrl",
+        imageUrl: { url },
+      }));
+
+      let newGivenMsgs = givenMsgs ?? messages;
+
+      // Add image parts to the first message's content if possible
+      if (newGivenMsgs.length > 0) {
+        const firstMsg = newGivenMsgs[0];
+        let newContent: MessageContent;
+
+        if (Array.isArray(firstMsg.content)) {
+          // Already MessagePart[], append images
+          newContent = [...firstMsg.content, ...imageParts];
+        } else if (typeof firstMsg.content === "string") {
+          // Convert string to MessagePart[], then append images
+          newContent = [
+            { type: "text", text: firstMsg.content },
+            ...imageParts,
+          ];
+        } else {
+          newContent = imageParts;
+        }
+
+        // Replace the first message with updated content
+        newGivenMsgs = [
+          { ...firstMsg, content: newContent },
+          ...newGivenMsgs.slice(1),
+        ];
+      }
+
+      setMessages((msgs) => [...msgs, { content: "", role: "assistant" }]);
+      sendMessage("ProcessLLM", {
+        messages: [
+          {
+            role: "system",
+            content:
+              "<PEARAI_CREATOR_WEBAPP_PLANNING_STEP></PEARAI_CREATOR_WEBAPP_PLANNING_STEP>",
+          },
+          ...newGivenMsgs,
+        ] satisfies ProcessLLMType["payload"]["messages"],
+        plan: true,
+      } satisfies ProcessLLMType["payload"]);
+      setCurrentState("GENERATING");
       } else {
         // Skip planning and submit directly
         const request = givenMsgs?.[0]?.content ?? initialMessage;
@@ -550,7 +572,7 @@ export const CreatorOverlay = () => {
                   >
                     <PlanEditor
                       initialMessage={initialMessage}
-                      handleUserChangeMessage={(msg: string) => {
+                      handleUserChangeMessage={(msg: MessageContent) => {
                         handleLlmCall(addMessage("user", msg));
                       }}
                       isStreaming={currentState === "GENERATING"}
