@@ -84,7 +84,7 @@ export const CreatorFeedback = () => {
       feedback: data.feedback,
       feedbackType: data.feedbackType,
       messages: data.includeMessages ? messages : [],
-      contactConsent: data.contactConsent,
+      contactConsent: data.contactConsent ?? false,
     };
 
     setIsLoading(true);
@@ -168,6 +168,7 @@ export const CreatorFeedback = () => {
                 onChange={(e) =>
                   form.setValue("includeMessages", e.target.checked)
                 }
+                defaultChecked
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="includeMessages" className="text-sm font-normal">
@@ -186,6 +187,7 @@ export const CreatorFeedback = () => {
                 onChange={(e) =>
                   form.setValue("contactConsent", e.target.checked)
                 }
+                defaultChecked
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <label htmlFor="contactConsent" className="text-sm font-normal">
