@@ -85,17 +85,17 @@ export const ComingSoonFeedback = ({
         onChange={(e) => setFeedback(e.target.value)}
       />
       <div className="flex flex-col gap-2">
-        {!auth?.accessToken && (
-          <p className="text-yellow-500 text-xs font-normal">
-            Please log in to submit feedback
-          </p>
-        )}
-        {status === "error" && (
-          <p className="text-red-500 text-xs font-normal">
-            Failed to submit feedback. Please try again.
-          </p>
-        )}
         <div className="flex justify-end align-bottom">
+          {!auth?.accessToken && (
+            <p className="text-yellow-500 text-xs font-normal">
+              Please log in to submit feedback
+            </p>
+          )}
+          {status === "error" && (
+            <p className="text-red-500 text-xs font-normal">
+              Failed to submit feedback. Please try again.
+            </p>
+          )}
           <Button
             className="ml-auto"
             onClick={handleSubmit}
