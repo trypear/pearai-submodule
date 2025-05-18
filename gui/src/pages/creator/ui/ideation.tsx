@@ -2,16 +2,16 @@ import { useCallback, useEffect, useRef, useState, useContext } from "react";
 import { RGBWrapper } from "../rgbBackground";
 import { InputBox } from "../inputBox";
 import { PearIcon } from "./pearIcon";
-import { FileText, FolderPlus, Pencil } from "lucide-react";
+import { Bot, FileText, FolderPlus, Pencil } from "lucide-react";
 import { ArrowTurnDownLeftIcon } from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils";
 import { IdeMessengerContext } from "../../../context/IdeMessenger";
 import { ButtonID } from "../utils";
 import { Folder, Tag, Monitor, Smartphone, Box } from "lucide-react";
-import { LightbulbIcon } from "lucide-react";
 import { ProjectTypeButton } from "./projectTypeButton";
 import type { NewProjectType } from "core";
 import posthog from "posthog-js";
+import { ComingSoonFeedback } from "./comingSoonFeedback";
 interface ProjectConfig {
   path: string;
   name: string;
@@ -47,7 +47,7 @@ export const Ideation: React.FC<IdeationProps> = ({
   files,
   setFiles,
 }) => {
-  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const ideaTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
   const projectNameRef = useRef<HTMLInputElement | null>(null);
   const isCapturingRef = useRef(false);
   const ideMessenger = useContext(IdeMessengerContext);
@@ -79,12 +79,12 @@ export const Ideation: React.FC<IdeationProps> = ({
   }, [isCreatingProject]);
 
   const forceFocus = useCallback(() => {
-    if (!textareaRef.current) return;
+    if (!ideaTextAreaRef.current) return;
 
     try {
-      textareaRef.current.focus();
-      textareaRef.current.focus({ preventScroll: false });
-      textareaRef.current.scrollIntoView({
+      ideaTextAreaRef.current.focus();
+      ideaTextAreaRef.current.focus({ preventScroll: false });
+      ideaTextAreaRef.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
@@ -194,7 +194,7 @@ export const Ideation: React.FC<IdeationProps> = ({
       </div>
       <RGBWrapper className="my-auto w-full">
         <InputBox
-          textareaRef={textareaRef}
+          textareaRef={ideaTextAreaRef}
           fileUpload={{
             files,
             setFiles,
@@ -265,6 +265,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             disabled: isCreatingProject && !projectConfig.name.trim(),
           }}
           className="rounded-b-0"
+          disabled={projectConfig.type !== "WEBAPP"}
         />
         <div
           className={cn(
@@ -295,21 +296,21 @@ export const Ideation: React.FC<IdeationProps> = ({
                   label="Mobile"
                   icon={<Smartphone className="size-6" />}
                   selected={projectConfig.type === "MOBILE"}
-                  disabled={true}
-                  comingSoon={true}
                   onClick={handleProjectTypeChange}
                 />
                 <ProjectTypeButton
-                  type="OTHER"
-                  label="Other"
-                  icon={<Box className="size-6" />}
-                  selected={projectConfig.type === "OTHER"}
+                  type="AIAPP"
+                  label="AI App"
+                  icon={<Bot className="size-6" />}
+                  selected={projectConfig.type === "AIAPP"}
                   onClick={handleProjectTypeChange}
-                  comingSoon={true}
-                  disabled={true}
                 />
               </div>
             </div>
+            <ComingSoonFeedback
+              show={projectConfig.type !== "WEBAPP"}
+              projectType={projectConfig.type}
+            />
 
             <div className="space-y-2.5">
               <label className="font-medium text-black">Project Name</label>

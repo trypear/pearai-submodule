@@ -1070,7 +1070,7 @@ export interface PearAuth {
   refreshToken?: string;
 }
 
-export type NewProjectType = "NONE" | "WEBAPP" | "MOBILE" | "OTHER";
+export type NewProjectType = "NONE" | "WEBAPP" | "MOBILE" | "AIAPP" | "OTHER";
 
 /**
  * Represents a request to execute a plan

@@ -39,6 +39,7 @@ export interface InputBoxProps {
   borderColor?: string;
   className?: string;
   fileUpload?: Omit<FileUploadProps, "setFileUploadCallback">;
+  disabled?: boolean;
 }
 
 export const InputBox: React.FC<InputBoxProps> = ({
@@ -58,6 +59,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
   borderColor,
   className,
   fileUpload,
+  disabled = false,
 }) => {
   // Keep track of which buttons are toggled
   const [toggleStates, setToggleStates] = useState<Record<string, boolean>>({});
@@ -157,6 +159,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
           }}
           {...rest}
           className="rounded-lg p-1.5 cursor-pointer"
+          disabled={disabled}
         >
           <div className="flex items-center gap-1">
             {icon}
@@ -265,7 +268,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
           autoFocus={true}
           tabIndex={1}
           rows={initialRows || 1}
-          disabled={isDisabled}
+          disabled={isDisabled || disabled}
         />
       </div>
       <div className="flex w-full justify-between space-x-2 border border-solidd border-red-500">
@@ -283,6 +286,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
               variant={submitButton.variant}
               size={submitButton.size}
               className="rounded-lg p-1.5"
+              disabled={disabled}
             >
               <div className="flex items-center gap-1 cursor-pointer">
                 {submitButton.icon}
