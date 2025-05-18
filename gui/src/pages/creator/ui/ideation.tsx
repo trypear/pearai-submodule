@@ -12,6 +12,7 @@ import { ProjectTypeButton } from "./projectTypeButton";
 import type { NewProjectType } from "core";
 import posthog from "posthog-js";
 import { ComingSoonFeedback } from "./comingSoonFeedback";
+import { CubeIcon } from "@radix-ui/react-icons";
 interface ProjectConfig {
   path: string;
   name: string;
@@ -283,7 +284,7 @@ export const Ideation: React.FC<IdeationProps> = ({
             <div className="space-y-2.5">
               <label className="font-medium text-black">Project Type</label>
               <br />
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-4 gap-4">
                 <ProjectTypeButton
                   type="WEBAPP"
                   label="Web App"
@@ -303,6 +304,13 @@ export const Ideation: React.FC<IdeationProps> = ({
                   label="Mobile"
                   icon={<Smartphone className="size-6" />}
                   selected={projectConfig.type === "MOBILE"}
+                  onClick={handleProjectTypeChange}
+                />
+                <ProjectTypeButton
+                  type="OTHER"
+                  label="Other"
+                  icon={<CubeIcon className="size-6" />}
+                  selected={projectConfig.type === "OTHER"}
                   onClick={handleProjectTypeChange}
                 />
               </div>
