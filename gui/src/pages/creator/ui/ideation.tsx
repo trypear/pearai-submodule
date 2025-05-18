@@ -271,7 +271,7 @@ export const Ideation: React.FC<IdeationProps> = ({
           className={cn(
             "overflow-hidden rounded-b-xl border-solid border-b-0  border-l-0 border-r-0 border-t-1 border-gray-300 transition-all duration-300 ease-out",
             isCreatingProject
-              ? "max-h-[400px] opacity-100"
+              ? "max-h-[500px] opacity-100"
               : "max-h-0 opacity-0",
           )}
           style={{

@@ -63,15 +63,23 @@ export const ComingSoonFeedback = ({
 
   return (
     <div
-      className={` border-solid border-gray-200 border-2 transition-all duration-300 ease-out rounded-lg flex flex-col ${
-        show ? "opacity-100 h-full p-2" : "opacity-0 h-0"
+      className={`${
+        status === "success" ? "border-dashed" : "border-solid"
+      } border-gray-200 border-2 transition-all duration-300 ease-out rounded-lg flex flex-col relative ${
+        show ? "opacity-100 h-full p-2" : "opacity-0 max-h-0"
       }`}
     >
+      <div
+        className={`absolute inset-0 flex items-center justify-center bg-white z-10 transition-opacity duration-300 ${
+          status === "success" ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div className="text-gray-500">Feedback submitted</div>
+      </div>
       <div className="text-md text-gray-700">What would you like to build?</div>
       <textarea
         ref={feedbackTextAreaRef}
-        // className="w-full h-full bg-background/50 backdrop-blur-sm rounded-lg p-2 text-black"
-        className={`w-full appearance-none bg-transparent outline-none resize-none focus:outline-none overflow-y-auto rounded-lg leading-normal flex items-center border-none border-solidd border-gray-300 min-h-5 font-inherit`}
+        className="w-full appearance-none bg-transparent outline-none resize-none focus:outline-none overflow-y-auto rounded-lg leading-normal flex items-center border-none min-h-5 font-inherit"
         placeholder="I want to build an app that solves X problem."
         value={feedback}
         onChange={(e) => setFeedback(e.target.value)}
@@ -80,11 +88,6 @@ export const ComingSoonFeedback = ({
         {!auth?.accessToken && (
           <p className="text-yellow-500 text-xs font-normal">
             Please log in to submit feedback
-          </p>
-        )}
-        {status === "success" && (
-          <p className="text-green-500 text-xs font-normal">
-            Feedback submitted successfully!
           </p>
         )}
         {status === "error" && (

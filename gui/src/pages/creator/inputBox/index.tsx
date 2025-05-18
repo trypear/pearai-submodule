@@ -258,7 +258,7 @@ export const InputBox: React.FC<InputBoxProps> = ({
           placeholder={placeholder}
           className={`w-full appearance-none bg-transparent outline-none resize-none focus:outline-none overflow-y-auto rounded-lg leading-normal flex items-center border-none border-solidd border-gray-300 min-h-5 font-inherit ${
             isNewProjectSelected ? "max-h-[200px]" : ""
-          }`}
+          } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           style={{
             color: lockToWhite ? "rgb(55, 65, 81)" : "var(--widgetForeground)",
             maxHeight: maxHeightStyle,
