@@ -292,17 +292,17 @@ export const Ideation: React.FC<IdeationProps> = ({
                   onClick={handleProjectTypeChange}
                 />
                 <ProjectTypeButton
-                  type="MOBILE"
-                  label="Mobile"
-                  icon={<Smartphone className="size-6" />}
-                  selected={projectConfig.type === "MOBILE"}
-                  onClick={handleProjectTypeChange}
-                />
-                <ProjectTypeButton
                   type="AIAPP"
                   label="AI App"
                   icon={<Bot className="size-6" />}
                   selected={projectConfig.type === "AIAPP"}
+                  onClick={handleProjectTypeChange}
+                />
+                <ProjectTypeButton
+                  type="MOBILE"
+                  label="Mobile"
+                  icon={<Smartphone className="size-6" />}
+                  selected={projectConfig.type === "MOBILE"}
                   onClick={handleProjectTypeChange}
                 />
               </div>
