@@ -493,13 +493,13 @@ export const CreatorOverlay = () => {
       <div
         onClick={close}
         // Kind of janky but the types are pretty similar so let's just keep an eye out here
-        style={
-          (parentStyling as unknown as React.CSSProperties) ?? {
-            // TODO: fix this sync issue where we don't get the right starting values for the translate y offset from the app
-            transform: "translateY(-100%)",
-            transition: "transform 500ms cubic-bezier(0.4, 0, 0.2, 1)",
-          }
-        }
+        // style={
+        //   (parentStyling as unknown as React.CSSProperties) ?? {
+        //     // TODO: fix this sync issue where we don't get the right starting values for the translate y offset from the app
+        //     transform: "translateY(-100%)",
+        //     transition: "transform 500ms cubic-bezier(0.4, 0, 0.2, 1)",
+        //   }
+        // }
         className="all-initial fixed inset-0 items-center justify-center font[var(--vscode-font-family)] animate flex-col"
       >
         <div
