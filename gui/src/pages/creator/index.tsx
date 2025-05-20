@@ -448,8 +448,18 @@ export const CreatorOverlay = () => {
 
   const handleStateUpdate = useCallback(
     (msg: {
-      data: { targetState: keyof OverlayStates; overlayStates: OverlayStates };
+      data: {
+        targetState: keyof OverlayStates;
+        overlayStates: OverlayStates;
+        ping?: boolean;
+      };
     }) => {
+      if (msg.data?.ping === true) {
+        sendMessage("stateUpdatePong");
+        console.dir(`stateUpdatePong sent back`);
+        return;
+      }
+
       if (!msg.data?.targetState || !msg.data?.overlayStates) return;
 
       const { targetState, overlayStates } = msg.data;
@@ -466,18 +476,14 @@ export const CreatorOverlay = () => {
 
   // Animation handler - handles webview state transitions
   useEffect(() => {
-    // Register handlerx
+    // Register handler
     const unregister = registerListener("stateUpdate", handleStateUpdate);
+    sendMessage("overlayStateListenerRegistered");
 
     return () => {
       unregister();
     };
   }, [registerListener, handleStateUpdate]);
-
-  // useEffect(() => {
-  //   console.dir("parentStyling UPDATE!!");
-  //   console.dir(parentStyling);
-  // }, [parentStyling]);
 
   // Send loaded message when component mounts
   useEffect(() => {
@@ -496,13 +502,13 @@ export const CreatorOverlay = () => {
       <div
         onClick={close}
         // Kind of janky but the types are pretty similar so let's just keep an eye out here
-        // style={
-        //   (parentStyling as unknown as React.CSSProperties) ?? {
-        //     // TODO: fix this sync issue where we don't get the right starting values for the translate y offset from the app
-        //     transform: "translateY(-100%)",
-        //     transition: "transform 500ms cubic-bezier(0.4, 0, 0.2, 1)",
-        //   }
-        // }
+        style={
+          (parentStyling as unknown as React.CSSProperties) ?? {
+            // TODO: fix this sync issue where we don't get the right starting values for the translate y offset from the app
+            transform: "translateY(-100%)",
+            transition: "transform 500ms cubic-bezier(0.4, 0, 0.2, 1)",
+          }
+        }
         className="all-initial fixed inset-0 items-center justify-center font[var(--vscode-font-family)] animate flex-col"
       >
         <div
