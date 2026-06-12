@@ -46,6 +46,8 @@ const CHAT_ONLY_MODELS = [
   "gpt-4o-mini",
 ];
 
+const RESPONSES_ONLY_MODELS = new Set(["gpt-5.5-pro", "gpt-5.4-pro"]);
+
 class OpenAI extends BaseLLM {
   public useLegacyCompletionsEndpoint: boolean | undefined = undefined;
 
@@ -117,6 +119,142 @@ class OpenAI extends BaseLLM {
       host = "";
     }
     return host === "api.openai.com" || this.apiType === "azure";
+  }
+
+  private usesResponsesApi(model?: string): boolean {
+    if (!model || !RESPONSES_ONLY_MODELS.has(model)) {
+      return false;
+    }
+
+    try {
+      const host = this.apiBase ? new URL(this.apiBase).host : "";
+      return host === "api.openai.com";
+    } catch {
+      return false;
+    }
+  }
+
+  private _getResponsesEndpoint() {
+    if (!this.apiBase) {
+      throw new Error(
+        "No API base URL provided. Please set the 'apiBase' option in config.json",
+      );
+    }
+
+    return new URL("responses", this.apiBase);
+  }
+
+  private _convertResponsesInput(messages: ChatMessage[]): any[] {
+    return messages
+      .filter((message) => message.role !== "system")
+      .map((message) => {
+        if (typeof message.content === "string") {
+          return {
+            role: message.role,
+            content: message.content === "" ? " " : message.content,
+          };
+        }
+
+        if (message.role === "assistant") {
+          return {
+            role: "assistant",
+            content: stripImages(message.content) || " ",
+          };
+        }
+
+        const content = message.content
+          .map((part) => {
+            if (part.type === "text") {
+              return {
+                type: "input_text",
+                text: part.text ?? "",
+              };
+            }
+
+            if (part.imageUrl?.url) {
+              return {
+                type: "input_image",
+                image_url: part.imageUrl.url,
+                detail: "low",
+              };
+            }
+
+            return undefined;
+          })
+          .filter(Boolean);
+
+        return {
+          role: "user",
+          content: content.length > 0 ? content : " ",
+        };
+      });
+  }
+
+  private _getResponsesInstructions(
+    messages: ChatMessage[],
+  ): string | undefined {
+    const instructions = [
+      this.systemMessage,
+      ...messages
+        .filter((message) => message.role === "system")
+        .map((message) =>
+          typeof message.content === "string"
+            ? message.content
+            : stripImages(message.content),
+        ),
+    ].filter(Boolean);
+
+    return instructions.length > 0 ? instructions.join("\n\n") : undefined;
+  }
+
+  private _extractResponsesText(data: any): string {
+    if (typeof data.output_text === "string") {
+      return data.output_text;
+    }
+
+    if (Array.isArray(data.output)) {
+      return data.output
+        .flatMap((item: any) => item.content ?? [])
+        .map((part: any) =>
+          typeof part.text === "string" ? part.text : (part?.text?.value ?? ""),
+        )
+        .join("");
+    }
+
+    return "";
+  }
+
+  protected async *_streamResponses(
+    messages: ChatMessage[],
+    options: CompletionOptions,
+  ): AsyncGenerator<ChatMessage> {
+    const body: any = {
+      model: options.model,
+      input: this._convertResponsesInput(messages),
+      instructions: this._getResponsesInstructions(messages),
+      max_output_tokens: options.maxTokens,
+      reasoning: { effort: "xhigh" },
+      stream: false,
+    };
+
+    if (!body.instructions) {
+      delete body.instructions;
+    }
+    if (!body.max_output_tokens) {
+      delete body.max_output_tokens;
+    }
+
+    const response = await this.fetch(this._getResponsesEndpoint(), {
+      method: "POST",
+      headers: this._getHeaders(),
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+
+    yield {
+      role: "assistant",
+      content: this._extractResponsesText(data),
+    };
   }
 
   private isLegacyO1Model(model?: string): boolean {
@@ -254,6 +392,11 @@ class OpenAI extends BaseLLM {
     messages: ChatMessage[],
     options: CompletionOptions,
   ): AsyncGenerator<ChatMessage> {
+    if (this.usesResponsesApi(options.model)) {
+      yield* this._streamResponses(messages, options);
+      return;
+    }
+
     if (
       !CHAT_ONLY_MODELS.includes(options.model) &&
       this.supportsCompletions() &&
