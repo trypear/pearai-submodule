@@ -22,6 +22,13 @@ const NON_CHAT_MODELS = [
 ];
 
 const CHAT_ONLY_MODELS = [
+  "gpt-5.5",
+  "gpt-5.5-pro",
+  "gpt-5.4",
+  "gpt-5.4-pro",
+  "gpt-5.4-mini",
+  "gpt-5.4-nano",
+  "gpt-5",
   "gpt-3.5-turbo",
   "gpt-3.5-turbo-0613",
   "gpt-3.5-turbo-16k",
@@ -89,7 +96,30 @@ class OpenAI extends BaseLLM {
     return model;
   }
 
-  private isO1Model(model?: string): boolean {
+  private usesOpenAIReasoningParams(model?: string): boolean {
+    if (!model) {
+      return false;
+    }
+
+    const isOpenAIReasoningModel =
+      model.startsWith("gpt-5") ||
+      model.startsWith("o1") ||
+      model.startsWith("o3") ||
+      model.startsWith("o4");
+    if (!isOpenAIReasoningModel) {
+      return false;
+    }
+
+    let host = "";
+    try {
+      host = this.apiBase ? new URL(this.apiBase).host : "";
+    } catch {
+      host = "";
+    }
+    return host === "api.openai.com" || this.apiType === "azure";
+  }
+
+  private isLegacyO1Model(model?: string): boolean {
     return (
       !!model && (model.startsWith("o1-preview") || model.startsWith("o1-mini"))
     );
@@ -120,16 +150,21 @@ class OpenAI extends BaseLLM {
               : options.stop,
     };
 
-    // OpenAI o1-preview and o1-mini:
-    if (this.isO1Model(options.model)) {
-      // a) use max_completion_tokens instead of max_tokens
+    if (this.usesOpenAIReasoningParams(options.model)) {
       finalOptions.max_completion_tokens = options.maxTokens;
       finalOptions.max_tokens = undefined;
+      finalOptions.temperature = undefined;
+      finalOptions.top_p = undefined;
+      finalOptions.frequency_penalty = undefined;
+      finalOptions.presence_penalty = undefined;
+    }
 
-      // b) don't support streaming currently
+    // OpenAI o1-preview and o1-mini:
+    if (this.isLegacyO1Model(options.model)) {
+      // a) don't support streaming currently
       finalOptions.stream = false;
 
-      // c) don't support system message
+      // b) don't support system message
       finalOptions.messages = finalOptions.messages?.filter(
         (message: any) => message?.role !== "system",
       );

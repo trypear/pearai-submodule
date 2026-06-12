@@ -160,6 +160,32 @@ export const models: { [key: string]: ModelPackage } = {
     providerOptions: ["deepseek"],
     isOpenSource: false,
   },
+  deepseekV4FlashApi: {
+    title: "DeepSeek V4 Flash",
+    description:
+      "DeepSeek's current fast model with OpenAI-compatible chat and reasoning modes.",
+    params: {
+      title: "DeepSeek V4 Flash",
+      model: "deepseek-v4-flash",
+      contextLength: 1_000_000,
+    },
+    icon: "deepseek.png",
+    providerOptions: ["deepseek"],
+    isOpenSource: false,
+  },
+  deepseekV4ProApi: {
+    title: "DeepSeek V4 Pro",
+    description:
+      "DeepSeek's higher-capability current model for complex coding and reasoning tasks.",
+    params: {
+      title: "DeepSeek V4 Pro",
+      model: "deepseek-v4-pro",
+      contextLength: 1_000_000,
+    },
+    icon: "deepseek.png",
+    providerOptions: ["deepseek"],
+    isOpenSource: false,
+  },
   deepseekCoderApi: {
     title: "DeepSeek Coder",
     description:
@@ -586,6 +612,45 @@ export const models: { [key: string]: ModelPackage } = {
     providerOptions: ["mistral"],
     isOpenSource: false,
   },
+  mistralMedium35: {
+    title: "Mistral Medium 3.5",
+    description:
+      "Mistral's frontier-class multimodal model optimized for agentic and coding use cases.",
+    params: {
+      title: "Mistral Medium 3.5",
+      model: "mistral-medium-3-5",
+      contextLength: 256_000,
+    },
+    icon: "mistral.png",
+    providerOptions: ["mistral"],
+    isOpenSource: false,
+  },
+  mistralSmall4: {
+    title: "Mistral Small 4",
+    description:
+      "An efficient hybrid Mistral model unifying instruct, reasoning, and coding.",
+    params: {
+      title: "Mistral Small 4",
+      model: "mistral-small-2603",
+      contextLength: 256_000,
+    },
+    icon: "mistral.png",
+    providerOptions: ["mistral"],
+    isOpenSource: false,
+  },
+  mistralLarge3: {
+    title: "Mistral Large 3",
+    description:
+      "A general-purpose multimodal Mistral model for broad production workloads.",
+    params: {
+      title: "Mistral Large 3",
+      model: "mistral-large-2512",
+      contextLength: 256_000,
+    },
+    icon: "mistral.png",
+    providerOptions: ["mistral"],
+    isOpenSource: false,
+  },
   geminiPro: {
     title: "Gemini Pro",
     description: "A highly capable model created by Google DeepMind",
@@ -620,6 +685,90 @@ export const models: { [key: string]: ModelPackage } = {
       title: "Gemini 1.5 Flash",
       model: "gemini-1.5-flash-latest",
       contextLength: 1_000_000,
+      apiKey: "<API_KEY>",
+    },
+    icon: "gemini.png",
+    providerOptions: ["gemini"],
+    isOpenSource: false,
+  },
+  gemini35Flash: {
+    title: "Gemini 3.5 Flash",
+    description:
+      "Google's current stable Gemini model for sustained frontier performance on coding and agentic tasks.",
+    params: {
+      title: "Gemini 3.5 Flash",
+      model: "gemini-3.5-flash",
+      contextLength: 1_048_576,
+      apiKey: "<API_KEY>",
+    },
+    icon: "gemini.png",
+    providerOptions: ["gemini"],
+    isOpenSource: false,
+  },
+  gemini31ProPreview: {
+    title: "Gemini 3.1 Pro Preview",
+    description:
+      "A Gemini preview model for complex problem solving, coding, and agentic workflows.",
+    params: {
+      title: "Gemini 3.1 Pro Preview",
+      model: "gemini-3.1-pro-preview",
+      contextLength: 1_048_576,
+      apiKey: "<API_KEY>",
+    },
+    icon: "gemini.png",
+    providerOptions: ["gemini"],
+    isOpenSource: false,
+  },
+  gemini31FlashLite: {
+    title: "Gemini 3.1 Flash-Lite",
+    description:
+      "A fast, cost-efficient Gemini model with multimodal input support.",
+    params: {
+      title: "Gemini 3.1 Flash-Lite",
+      model: "gemini-3.1-flash-lite",
+      contextLength: 1_048_576,
+      apiKey: "<API_KEY>",
+    },
+    icon: "gemini.png",
+    providerOptions: ["gemini"],
+    isOpenSource: false,
+  },
+  gemini25Pro: {
+    title: "Gemini 2.5 Pro",
+    description:
+      "A Gemini model for complex tasks with deep reasoning and coding capabilities.",
+    params: {
+      title: "Gemini 2.5 Pro",
+      model: "gemini-2.5-pro",
+      contextLength: 1_048_576,
+      apiKey: "<API_KEY>",
+    },
+    icon: "gemini.png",
+    providerOptions: ["gemini"],
+    isOpenSource: false,
+  },
+  gemini25Flash: {
+    title: "Gemini 2.5 Flash",
+    description:
+      "A price-performance Gemini model for low-latency, high-volume tasks.",
+    params: {
+      title: "Gemini 2.5 Flash",
+      model: "gemini-2.5-flash",
+      contextLength: 1_048_576,
+      apiKey: "<API_KEY>",
+    },
+    icon: "gemini.png",
+    providerOptions: ["gemini"],
+    isOpenSource: false,
+  },
+  gemini25FlashLite: {
+    title: "Gemini 2.5 Flash-Lite",
+    description:
+      "Google's fastest and most budget-friendly multimodal model in the 2.5 family.",
+    params: {
+      title: "Gemini 2.5 Flash-Lite",
+      model: "gemini-2.5-flash-lite",
+      contextLength: 1_048_576,
       apiKey: "<API_KEY>",
     },
     icon: "gemini.png",
@@ -662,6 +811,84 @@ export const models: { [key: string]: ModelPackage } = {
       model: "gpt-4-turbo",
       contextLength: 128_000,
       title: "GPT-4 Turbo",
+    },
+    providerOptions: ["openai"],
+    icon: "openai.png",
+    isOpenSource: false,
+  },
+  gpt55: {
+    title: "GPT-5.5",
+    description:
+      "OpenAI's current flagship model for complex reasoning, coding, and professional work.",
+    params: {
+      model: "gpt-5.5",
+      contextLength: 1_050_000,
+      title: "GPT-5.5",
+    },
+    providerOptions: ["openai"],
+    icon: "openai.png",
+    isOpenSource: false,
+  },
+  gpt55pro: {
+    title: "GPT-5.5 Pro",
+    description:
+      "OpenAI's higher-accuracy GPT-5.5 variant for demanding professional workloads.",
+    params: {
+      model: "gpt-5.5-pro",
+      contextLength: 1_050_000,
+      title: "GPT-5.5 Pro",
+    },
+    providerOptions: ["openai"],
+    icon: "openai.png",
+    isOpenSource: false,
+  },
+  gpt54: {
+    title: "GPT-5.4",
+    description:
+      "A more affordable OpenAI model for coding and professional work.",
+    params: {
+      model: "gpt-5.4",
+      contextLength: 1_050_000,
+      title: "GPT-5.4",
+    },
+    providerOptions: ["openai"],
+    icon: "openai.png",
+    isOpenSource: false,
+  },
+  gpt54pro: {
+    title: "GPT-5.4 Pro",
+    description:
+      "OpenAI's higher-accuracy GPT-5.4 variant for complex professional work.",
+    params: {
+      model: "gpt-5.4-pro",
+      contextLength: 1_050_000,
+      title: "GPT-5.4 Pro",
+    },
+    providerOptions: ["openai"],
+    icon: "openai.png",
+    isOpenSource: false,
+  },
+  gpt54mini: {
+    title: "GPT-5.4 Mini",
+    description:
+      "OpenAI's faster, lower-cost GPT-5.4 model for coding and agent workflows.",
+    params: {
+      model: "gpt-5.4-mini",
+      contextLength: 400_000,
+      title: "GPT-5.4 Mini",
+    },
+    providerOptions: ["openai"],
+    icon: "openai.png",
+    isOpenSource: false,
+  },
+  gpt54nano: {
+    title: "GPT-5.4 Nano",
+    description:
+      "OpenAI's lowest-cost GPT-5.4-class model for simple high-volume tasks.",
+    params: {
+      model: "gpt-5.4-nano",
+      contextLength: 400_000,
+      title: "GPT-5.4 Nano",
     },
     providerOptions: ["openai"],
     icon: "openai.png",
@@ -721,6 +948,62 @@ export const models: { [key: string]: ModelPackage } = {
       apiKey: "",
     },
     providerOptions: ["anthropic", "free-trial"],
+    icon: "anthropic.png",
+    isOpenSource: false,
+  },
+  claudeFable5: {
+    title: "Claude Fable 5",
+    description:
+      "Anthropic's most capable widely released model for demanding reasoning and agentic work.",
+    params: {
+      model: "claude-fable-5",
+      contextLength: 1_000_000,
+      title: "Claude Fable 5",
+      apiKey: "",
+    },
+    providerOptions: ["anthropic"],
+    icon: "anthropic.png",
+    isOpenSource: false,
+  },
+  claudeOpus48: {
+    title: "Claude Opus 4.8",
+    description:
+      "Anthropic's Opus-tier model for complex reasoning, coding, and high-autonomy work.",
+    params: {
+      model: "claude-opus-4-8",
+      contextLength: 1_000_000,
+      title: "Claude Opus 4.8",
+      apiKey: "",
+    },
+    providerOptions: ["anthropic"],
+    icon: "anthropic.png",
+    isOpenSource: false,
+  },
+  claudeSonnet46: {
+    title: "Claude Sonnet 4.6",
+    description:
+      "Anthropic's balanced model for speed, intelligence, and coding workflows.",
+    params: {
+      model: "claude-sonnet-4-6",
+      contextLength: 1_000_000,
+      title: "Claude Sonnet 4.6",
+      apiKey: "",
+    },
+    providerOptions: ["anthropic"],
+    icon: "anthropic.png",
+    isOpenSource: false,
+  },
+  claudeHaiku45: {
+    title: "Claude Haiku 4.5",
+    description:
+      "Anthropic's fastest current model with near-frontier intelligence.",
+    params: {
+      model: "claude-haiku-4-5-20251001",
+      contextLength: 200_000,
+      title: "Claude Haiku 4.5",
+      apiKey: "",
+    },
+    providerOptions: ["anthropic"],
     icon: "anthropic.png",
     isOpenSource: false,
   },

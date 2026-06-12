@@ -11,14 +11,24 @@ import { streamSse } from "../stream.js";
 class Anthropic extends BaseLLM {
   static providerName: ModelProvider = "anthropic";
   static defaultOptions: Partial<LLMOptions> = {
-    model: "claude-3-5-sonnet-20240620",
-    contextLength: 200_000,
+    model: "claude-sonnet-4-6",
+    contextLength: 1_000_000,
     completionOptions: {
-      model: "claude-3-5-sonnet-20240620",
+      model: "claude-sonnet-4-6",
       maxTokens: 4096,
     },
     apiBase: "https://api.anthropic.com/v1/",
   };
+
+  private omitsSamplingParams(model?: string): boolean {
+    return (
+      !!model &&
+      (model === "claude-fable-5" ||
+        model === "claude-opus-4-8" ||
+        model === "claude-sonnet-4-6" ||
+        model.startsWith("claude-opus-4-7"))
+    );
+  }
 
   private _convertArgs(options: CompletionOptions) {
     const finalOptions = {
@@ -30,6 +40,12 @@ class Anthropic extends BaseLLM {
       stop_sequences: options.stop?.filter((x) => x.trim() !== ""),
       stream: options.stream ?? true,
     };
+
+    if (this.omitsSamplingParams(options.model)) {
+      finalOptions.top_k = undefined;
+      finalOptions.top_p = undefined;
+      finalOptions.temperature = undefined;
+    }
 
     return finalOptions;
   }

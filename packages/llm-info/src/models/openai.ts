@@ -2,6 +2,41 @@ import { LlmInfo } from "../types.js";
 
 export const OpenAiLlms: LlmInfo[] = [
   {
+    model: "gpt-5.5",
+    displayName: "GPT-5.5",
+    contextLength: 1_050_000,
+  },
+  {
+    model: "gpt-5.5-pro",
+    displayName: "GPT-5.5 Pro",
+    contextLength: 1_050_000,
+  },
+  {
+    model: "gpt-5.4",
+    displayName: "GPT-5.4",
+    contextLength: 1_050_000,
+  },
+  {
+    model: "gpt-5.4-pro",
+    displayName: "GPT-5.4 Pro",
+    contextLength: 1_050_000,
+  },
+  {
+    model: "gpt-5.4-mini",
+    displayName: "GPT-5.4 Mini",
+    contextLength: 400_000,
+  },
+  {
+    model: "gpt-5.4-nano",
+    displayName: "GPT-5.4 Nano",
+    contextLength: 400_000,
+  },
+  {
+    model: "gpt-5",
+    displayName: "GPT-5",
+    contextLength: 400_000,
+  },
+  {
     model: "gpt-3.5-turbo",
     displayName: "GPT-3.5 Turbo",
     contextLength: 4096,
