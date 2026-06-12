@@ -12,7 +12,7 @@ import {
 import { SERVER_URL } from "../../util/parameters.js";
 import { Telemetry } from "../../util/posthog.js";
 import { BaseLLM } from "../index.js";
-import { streamSse, streamResponse, streamJSON } from "../stream.js";
+import { streamSse, streamJSON } from "../stream.js";
 import { stripImages } from "../images.js";
 import {
   compileChatMessages,
@@ -22,9 +22,35 @@ import {
 import { PearAICredentials } from "../../pearaiServer/PearAICredentials.js";
 import { readConfigJson } from "../../util/paths.js";
 import { execSync } from "child_process";
-import * as vscode from "vscode";
 
+type VscodeApi = {
+  window?: {
+    showInformationMessage?: (
+      message: string,
+      ...items: string[]
+    ) => PromiseLike<string | undefined>;
+  };
+  env?: {
+    openExternal?: (uri: any) => PromiseLike<boolean> | boolean;
+  };
+  Uri?: {
+    parse?: (value: string) => any;
+  };
+};
 
+let vscodeApiPromise: Promise<VscodeApi | undefined> | undefined;
+
+function getVscodeApi(): Promise<VscodeApi | undefined> {
+  if (!vscodeApiPromise) {
+    const dynamicImport = Function("specifier", "return import(specifier)") as (
+      specifier: string,
+    ) => Promise<VscodeApi>;
+
+    vscodeApiPromise = dynamicImport("vscode").catch(() => undefined);
+  }
+
+  return vscodeApiPromise;
+}
 
 class PearAIServer extends BaseLLM {
   private credentials: PearAICredentials;
@@ -35,7 +61,7 @@ class PearAIServer extends BaseLLM {
     super(options);
     this.credentials = new PearAICredentials(
       options.getCredentials,
-      options.setCredentials || (async () => {})
+      options.setCredentials || (async () => {}),
     );
   }
 
@@ -47,7 +73,11 @@ class PearAIServer extends BaseLLM {
     this.credentials.setRefreshToken(value);
   }
 
-  public async checkAndUpdateCredentials(): Promise<{ tokensEdited: boolean, accessToken?: string, refreshToken?: string }> {
+  public async checkAndUpdateCredentials(): Promise<{
+    tokensEdited: boolean;
+    accessToken?: string;
+    refreshToken?: string;
+  }> {
     return this.credentials.checkAndUpdateCredentials();
   }
 
@@ -65,33 +95,36 @@ class PearAIServer extends BaseLLM {
 
   public static _getRepoId(): string {
     try {
-        const gitRepo = vscode.workspace.workspaceFolders?.[0];
-        if (gitRepo) {
-          try {
-            // First check if git is initialized and has commits
-            const hasCommits = execSync(
-                "git rev-parse --verify HEAD",
-                { cwd: gitRepo.uri.fsPath }
-            ).toString().trim();
+      const repoPath = execSync("git rev-parse --show-toplevel", {
+        cwd: process.cwd(),
+        stdio: ["ignore", "pipe", "ignore"],
+      })
+        .toString()
+        .trim();
 
-            if (hasCommits) {
-                // If we have commits, get the root commit hash
-                const rootCommitHash = execSync(
-                    "git rev-list --max-parents=0 HEAD -n 1",
-                    { cwd: gitRepo.uri.fsPath }
-                ).toString().trim().substring(0, 7);
-                return rootCommitHash;
-            }
-          } catch (gitError) {
-              // Git command failed - either git isn't initialized or no commits
-              console.debug("Git repository not initialized or no commits present");
-          }
-        }  // if not git initialized, id will simply be user-id (uid)
-        return "global";
+      const hasCommits = execSync("git rev-parse --verify HEAD", {
+        cwd: repoPath,
+        stdio: ["ignore", "pipe", "ignore"],
+      })
+        .toString()
+        .trim();
+
+      if (hasCommits) {
+        const rootCommitHash = execSync(
+          "git rev-list --max-parents=0 HEAD -n 1",
+          { cwd: repoPath },
+        )
+          .toString()
+          .trim()
+          .substring(0, 7);
+        return rootCommitHash;
+      }
+
+      return "global";
     } catch (error) {
-        console.error("Failed to initialize project ID:", error);
-        console.error("Using user ID as project ID");
-        return "global";
+      console.error("Failed to initialize project ID:", error);
+      console.error("Using user ID as project ID");
+      return "global";
     }
   }
 
@@ -162,7 +195,8 @@ class PearAIServer extends BaseLLM {
       true,
     );
 
-    const promptKey = "prompt_key" in options ? (options.prompt_key as string) : undefined;
+    const promptKey =
+      "prompt_key" in options ? (options.prompt_key as string) : undefined;
 
     await this.credentials.checkAndUpdateCredentials();
 
@@ -176,7 +210,7 @@ class PearAIServer extends BaseLLM {
       headers: {
         ...(await this._getHeaders()),
         Authorization: `Bearer ${this.credentials.getAccessToken()}`,
-        ...(promptKey ? {"prompt_key": promptKey} : {})
+        ...(promptKey ? { prompt_key: promptKey } : {}),
       },
       body: body,
     });
@@ -186,7 +220,7 @@ class PearAIServer extends BaseLLM {
 
     for await (const value of streamJSON(response)) {
       if (value.metadata && Object.keys(value.metadata).length > 0) {
-        console.dir("Metadata received:")
+        console.dir("Metadata received:");
         console.dir(value.metadata);
         if (value.metadata.ui_only) {
           warningMsg += value.content;
@@ -204,14 +238,7 @@ class PearAIServer extends BaseLLM {
     }
 
     if (warningMsg.includes("pay-as-you-go")) {
-          vscode.window.showInformationMessage(
-            warningMsg,
-            'View Pay-As-You-Go'
-        ).then(selection => {
-            if (selection === 'View Pay-As-You-Go') {
-                vscode.env.openExternal(vscode.Uri.parse('https://trypear.ai/pay-as-you-go'));
-            }
-        });
+      await this._showPayAsYouGoWarning(warningMsg);
     }
 
     // vscode.window.showInformationMessage(warningMsg);
@@ -219,16 +246,39 @@ class PearAIServer extends BaseLLM {
     this._countTokens(completion, args.model, false);
   }
 
+  private async _showPayAsYouGoWarning(warningMsg: string): Promise<void> {
+    const vscode = await getVscodeApi();
+
+    if (
+      !vscode?.window?.showInformationMessage ||
+      !vscode.env?.openExternal ||
+      !vscode.Uri?.parse
+    ) {
+      return;
+    }
+
+    const selection = await vscode.window.showInformationMessage(
+      warningMsg,
+      "View Pay-As-You-Go",
+    );
+
+    if (selection === "View Pay-As-You-Go") {
+      await vscode.env.openExternal(
+        vscode.Uri.parse("https://trypear.ai/pay-as-you-go"),
+      );
+    }
+  }
+
   async *_streamFim(
     prefix: string,
     suffix: string,
-    options: CompletionOptions
+    options: CompletionOptions,
   ): AsyncGenerator<string> {
     options.stream = true;
 
     const result = await this.credentials.checkAndUpdateCredentials();
     if (!result.tokensEdited && !this.credentials.getAccessToken()) {
-      return null
+      return null;
     }
 
     const endpoint = `${SERVER_URL}/server_fim`;
@@ -260,9 +310,7 @@ class PearAIServer extends BaseLLM {
   }
 
   async listModels(): Promise<string[]> {
-    return [
-      "pearai_model",
-    ];
+    return ["pearai_model"];
   }
 
   supportsFim(): boolean {
@@ -286,9 +334,9 @@ class PearAIServer extends BaseLLM {
       body: JSON.stringify({
         kind,
         promptTokens,
-        generatedTokens
+        generatedTokens,
       }),
-    })
+    });
   }
 }
 
