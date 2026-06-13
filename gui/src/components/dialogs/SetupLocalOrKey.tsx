@@ -25,14 +25,14 @@ function SetupLocalOrKeyDialog() {
     <div className="p-4">
       <h3>Set up your own model</h3>
       <p>
-        To keep using PearAI after your free inputs, you can either use your
-        own API key, or use a local LLM. To read more about the options, see our{" "}
+        To use PearAI with your own provider, add an API key or use a local LLM.
+        To read more about the options, see our{" "}
         <a
           className="cursor-pointer"
           onClick={() =>
             ideMessenger.request(
               "openUrl",
-              "https://trypear.ai/reference/Model%20Providers/freetrial",
+              "https://trypear.ai/docs/add-new-model",
             )
           }
         >

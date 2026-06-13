@@ -10,12 +10,11 @@ export function setupApiKeysMode(
   return {
     ...config,
     models: config.models.filter((model) => model.provider !== "free-trial"),
-    embeddingsProvider: {
-      provider: "free-trial",
-    },
-    reranker: {
-      name: "free-trial",
-    },
+    embeddingsProvider:
+      config.embeddingsProvider?.provider === "free-trial"
+        ? undefined
+        : config.embeddingsProvider,
+    reranker: config.reranker?.name === "free-trial" ? undefined : config.reranker,
   };
 }
 

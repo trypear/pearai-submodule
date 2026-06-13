@@ -85,17 +85,6 @@ function Models() {
         {!showOtherProviders ? (
           <>
             <ModelCard
-              key="pearai_server"
-              title={providers["pearai_server"].title}
-              description={providers["pearai_server"].description}
-              tags={providers["pearai_server"].tags}
-              icon={providers["pearai_server"].icon}
-              onClick={(e) => {
-                console.log(`/addModel/provider/pearai_server`);
-                navigate(`/addModel/provider/pearai_server`);
-              }}
-            />
-            <ModelCard
               key="other"
               title={providers["other"].title}
               description={providers["other"].description}

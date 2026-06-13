@@ -194,7 +194,7 @@
           ],
           "markdownEnumDescriptions": [
             "### OpenAI\nUse GPT-5.5, GPT-5.4, GPT-4o, or any other OpenAI model. See [here](https://platform.openai.com/api-keys) to obtain an API key.\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/openai)",
-            "### Free Trial\nNew users can try out PearAI for free using a proxy server that securely makes calls to OpenAI using our API key. If you are ready to use your own API key or have used all 250 free uses, you can enter your API key in config.json where it says `apiKey=\"\"` or select another model provider.\n> [Reference](https://trypear.ai/reference/Model%20Providers/freetrial)",
+            "### Free Trial\nLegacy server-backed free trial provider. Hosted free trial service is not available by default in the open-source app; use a BYOK or local provider unless you operate a compatible backend.",
             "### Anthropic\nTo get started with Anthropic models, create an API key from the Anthropic Console.\n> [Reference](https://trypear.ai/reference/Model%20Providers/anthropicllm)",
             "### Cohere\nTo use Cohere, visit the [Cohere dashboard](https://dashboard.cohere.com/api-keys) to create an API key.\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/cohere)",
             "### Bedrock\nTo get started with Bedrock you need to sign up on AWS [here](https://aws.amazon.com/bedrock/claude/)",

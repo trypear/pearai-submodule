@@ -1,11 +1,9 @@
 import { Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/24/outline";
 import { ModelProvider } from "core";
-import { TRIAL_FIM_MODEL } from "core/config/onboarding";
 import { Fragment, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Input, SecondaryButton } from "../../components";
-import GitHubSignInButton from "../../components/modelSelection/quickSetup/GitHubSignInButton";
 import {
   StyledListbox,
   StyledListboxButton,
@@ -23,11 +21,6 @@ interface AutocompleteOption {
 }
 
 const AUTOCOMPLETE_PROVIDER_OPTIONS: AutocompleteOption[] = [
-  {
-    provider: "free-trial",
-    title: "Free Trial (Codestral)",
-    // icon: "fireworks.png",
-  },
   {
     provider: "fireworks",
     title: "Fireworks AI",
@@ -131,9 +124,8 @@ function ApiKeyAutocompleteOnboarding() {
     <div className="p-2 max-w-96 mt-16 mx-auto">
       <h1 className="text-center">Autocomplete Model</h1>
       <p className="text-center">
-        Tab autocomplete requires a separate model. Currently we are supporting
-        free usage by signing in with GitHub. Alternatively, select another
-        option from the dropdown.
+        Tab autocomplete requires a separate model. Choose a local model or add
+        a provider API key.
       </p>
       <br />
       <br />
@@ -154,24 +146,6 @@ function ApiKeyAutocompleteOnboarding() {
           >
             Set up Ollama
           </Button>
-        </div>
-      )}
-      {selectedProvider.provider === "free-trial" && (
-        <div className="text-center">
-          <p>Sign in to GitHub to try autocomplete for free</p>
-          <GitHubSignInButton
-            onComplete={async (token) => {
-              await ideMessenger.request("addAutocompleteModel", {
-                model: {
-                  title: "Autocomplete Trial",
-                  provider: "free-trial",
-                  model: TRIAL_FIM_MODEL,
-                },
-              });
-
-              completeOnboarding();
-            }}
-          ></GitHubSignInButton>
         </div>
       )}
       {selectedProvider.provider === "fireworks" && (

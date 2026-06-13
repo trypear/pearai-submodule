@@ -1,7 +1,6 @@
 import { ModelProvider } from "core";
 import { HTMLInputTypeAttribute } from "react";
 import { ModelProviderTags } from "../../../components/modelSelection/ModelProviderTag";
-import { FREE_TRIAL_LIMIT_REQUESTS } from "../../../util/freeTrial";
 import { completionParamsInputs } from "./completionParamsInputs";
 import type { ModelPackage } from "./models";
 import { models } from "./models";
@@ -65,9 +64,9 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
     provider: "pearai_server",
     refPage: "pearai_server",
     description:
-      "Enjoy effortless integration and lower your costs with our reliable hosted services.",
+      "Only use this if you operate a PearAI Server-compatible backend. New users should choose a BYOK or local provider.",
     icon: "pearai.png",
-    tags: [ModelProviderTags.Recommended, ModelProviderTags.Hosted],
+    tags: [],
     packages: [models.pearai_model],
     showInMenu: false,
   },

@@ -32,13 +32,13 @@ export interface ModelPackage {
 
 export const models: { [key: string]: ModelPackage } = {
   pearai_model: {
-    title: "PearAI Model (Recommended)",
+    title: "PearAI Server Model",
     description:
-      "Experience seamless, fully-managed LLM integration with PearAI, featuring the most advanced and current best-in-market language model.",
+      "Legacy server-backed model for installations that operate their own PearAI Server-compatible backend.",
     params: {
       model: "pearai_model",
       contextLength: 300_000,
-      title: "PearAI Model (Recommended)",
+      title: "PearAI Server Model",
       systemMessage:
         "You are an expert software developer. You give helpful and concise responses.",
     },

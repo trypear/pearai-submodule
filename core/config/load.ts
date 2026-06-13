@@ -66,7 +66,6 @@ import {
   getPromptFiles,
   slashCommandFromPromptFile,
 } from "./promptFile.js";
-import { SERVER_URL } from "../util/parameters";
 
 function resolveSerializedConfig(filepath: string): SerializedContinueConfig {
   let content = fs.readFileSync(filepath, "utf8");
@@ -623,32 +622,10 @@ function addDefaultIntegrations(config: SerializedContinueConfig): void {
   });
 }
 
-const STATIC_MODELS: ModelDescription[] = [
-  {
-    model: "pearai_model",
-    contextLength: 300000,
-    title: "PearAI Model (Recommended)",
-    systemMessage: "You are an expert software developer. You give helpful and concise responses.",
-    provider: "pearai_server",
-    isDefault: true,
-  },
-  {
-    model: "perplexity",
-    title: "PearAI Search (Powered by Perplexity)",
-    systemMessage: "You are an expert documentation and information gatherer. You give succinct responses based on the latest software engineering practices and documentation. Always go to the web to get the latest information and data.",
-    provider: "pearai_server",
-    isDefault: true,
-  }
-];
+const STATIC_MODELS: ModelDescription[] = [];
 
 const getDefaultModels = async () => {
-  try {
-    const res = await fetch(`${SERVER_URL}/getDefaultConfig`);
-    const config = await res.json();
-    return config.models;
-  } catch {
-    return [];
-  }
+  return [];
 };
 
 async function addDefaultModels(config: SerializedContinueConfig): Promise<void> {
@@ -665,7 +642,7 @@ async function addDefaultModels(config: SerializedContinueConfig): Promise<void>
     }
   });
 
-  // Then, add dynamic models from server
+  // Hosted PearAI Server defaults are intentionally not fetched in the open-source app.
   const dynamicModels = await getDefaultModels();
   dynamicModels.forEach((defaultModel: ModelDescription) => {
     const modelExists = config.models.some(
