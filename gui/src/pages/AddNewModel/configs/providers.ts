@@ -360,7 +360,7 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
     provider: "deepseek",
     icon: "deepseek.png",
     description:
-      "DeepSeek provides cheap inference of its DeepSeek Coder v2 and other impressive open-source models.",
+      "DeepSeek provides OpenAI-compatible access to its current V4 chat and reasoning models.",
     longDescription:
       "To get started with DeepSeek, obtain an API key from their website [here](https://platform.deepseek.com/api_keys).",
     tags: [ModelProviderTags.RequiresApiKey, ModelProviderTags.OpenSource],

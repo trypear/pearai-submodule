@@ -46,6 +46,8 @@ const CONTEXT_LENGTH_FOR_MODEL: { [name: string]: number } = {
   "mistral-large-2512": 256_000,
   "deepseek-v4-flash": 1_000_000,
   "deepseek-v4-pro": 1_000_000,
+  "deepseek-chat": 1_000_000,
+  "deepseek-reasoner": 1_000_000,
 };
 
 const TOKEN_BUFFER_FOR_SAFETY = 350;

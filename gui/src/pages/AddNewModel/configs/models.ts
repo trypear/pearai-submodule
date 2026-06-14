@@ -150,11 +150,12 @@ export const models: { [key: string]: ModelPackage } = {
   },
   deepseekChatApi: {
     title: "DeepSeek Chat",
-    description: "DeepSeek's best model for general chat use cases.",
+    description:
+      "Legacy alias for the non-thinking mode of DeepSeek V4 Flash; scheduled for discontinuation after 2026-07-24 15:59 UTC.",
     params: {
       title: "DeepSeek Chat",
       model: "deepseek-chat",
-      contextLength: 128_000,
+      contextLength: 1_000_000,
     },
     icon: "deepseek.png",
     providerOptions: ["deepseek"],

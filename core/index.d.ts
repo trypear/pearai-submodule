@@ -739,6 +739,8 @@ export type ModelName =
   // Tab autocomplete
   | "deepseek-v4-flash"
   | "deepseek-v4-pro"
+  | "deepseek-chat"
+  | "deepseek-reasoner"
   | "deepseek-1b"
   | "starcoder-1b"
   | "starcoder-3b"
