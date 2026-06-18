@@ -2,6 +2,38 @@ import { LlmInfo } from "../types.js";
 
 export const AnthropicLlms: LlmInfo[] = [
   {
+    model: "claude-fable-5",
+    displayName: "Claude Fable 5",
+    contextLength: 1_000_000,
+    description:
+      "Anthropic's most capable widely released model for demanding reasoning and long-horizon agentic work.",
+    regex: /claude-fable-5/i,
+  },
+  {
+    model: "claude-opus-4-8",
+    displayName: "Claude Opus 4.8",
+    contextLength: 1_000_000,
+    description:
+      "Opus-tier model for complex reasoning, long-horizon agentic coding, and high-autonomy work.",
+    regex: /claude-opus-4-8/i,
+  },
+  {
+    model: "claude-sonnet-4-6",
+    displayName: "Claude Sonnet 4.6",
+    contextLength: 1_000_000,
+    description:
+      "Balanced Claude model for speed, intelligence, coding, and agentic workflows.",
+    regex: /claude-sonnet-4-6/i,
+  },
+  {
+    model: "claude-haiku-4-5-20251001",
+    displayName: "Claude Haiku 4.5",
+    contextLength: 200_000,
+    description:
+      "Fast Claude model with near-frontier intelligence for latency-sensitive workloads.",
+    regex: /claude-haiku-4-5/i,
+  },
+  {
     model: "claude-3-5-sonnet-20240620",
     displayName: "Claude 3.5 Sonnet",
     contextLength: 200_000,

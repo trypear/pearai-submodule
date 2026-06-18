@@ -7,7 +7,7 @@ class Deepseek extends OpenAI {
   static providerName: ModelProvider = "deepseek";
   static defaultOptions: Partial<LLMOptions> = {
     apiBase: "https://api.deepseek.com/",
-    model: "deepseek-coder",
+    model: "deepseek-v4-flash",
     promptTemplates: {
       edit: osModelsEditPrompt,
     },

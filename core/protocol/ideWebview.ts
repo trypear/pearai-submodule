@@ -1,12 +1,27 @@
-import {
-  Memory,
-  MemoryChange,
-  ToolType,
-} from "../../extensions/vscode/src/util/integrationUtils.js";
 import type { RangeInFileWithContents } from "../commands/util.js";
 import type { ContextSubmenuItem } from "../index.js";
 import { ToIdeFromWebviewOrCoreProtocol } from "./ide.js";
 import { ToWebviewFromIdeOrCoreProtocol } from "./webview.js";
+
+export type ToolType = "supermaven";
+
+export interface Memory {
+  id: string;
+  memory: string;
+  created_at: string;
+  updated_at: string;
+  total_memories: number;
+  owner: string;
+  organization: string;
+  metadata: any;
+  type: string;
+}
+
+export interface MemoryChange {
+  type: "edit" | "delete" | "new";
+  id: string;
+  content?: string;
+}
 
 export type ToIdeFromWebviewProtocol = ToIdeFromWebviewOrCoreProtocol & {
   onLoad: [

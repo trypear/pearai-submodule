@@ -193,9 +193,9 @@
             "openrouter"
           ],
           "markdownEnumDescriptions": [
-            "### OpenAI\nUse gpt-4, gpt-3.5-turbo, or any other OpenAI model. See [here](https://openai.com/product#made-for-developers) to obtain an API key.\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/openai)",
+            "### OpenAI\nUse GPT-5.5, GPT-5.4, GPT-4o, or any other OpenAI model. See [here](https://platform.openai.com/api-keys) to obtain an API key.\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/openai)",
             "### Free Trial\nNew users can try out PearAI for free using a proxy server that securely makes calls to OpenAI using our API key. If you are ready to use your own API key or have used all 250 free uses, you can enter your API key in config.json where it says `apiKey=\"\"` or select another model provider.\n> [Reference](https://trypear.ai/reference/Model%20Providers/freetrial)",
-            "### Anthropic\nTo get started with Anthropic models, you first need to sign up for the open beta [here](https://claude.ai/login) to obtain an API key.\n> [Reference](https://trypear.ai/reference/Model%20Providers/anthropicllm)",
+            "### Anthropic\nTo get started with Anthropic models, create an API key from the Anthropic Console.\n> [Reference](https://trypear.ai/reference/Model%20Providers/anthropicllm)",
             "### Cohere\nTo use Cohere, visit the [Cohere dashboard](https://dashboard.cohere.com/api-keys) to create an API key.\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/cohere)",
             "### Bedrock\nTo get started with Bedrock you need to sign up on AWS [here](https://aws.amazon.com/bedrock/claude/)",
             "### Together\nTogether is a hosted service that provides extremely fast streaming of open-source language models. To get started with Together:\n1. Obtain an API key from [here](https://together.ai)\n2. Paste below\n3. Select a model preset\n> [Reference](https://trypear.ai/reference/Model%20Providers/togetherllm)",
@@ -204,7 +204,7 @@
             "### Huggingface Inference API\n\n> [Reference](https://trypear.ai/reference/Model%20Providers/huggingfaceinferenceapi)",
             "### Llama.cpp\nllama.cpp comes with a [built-in server](https://github.com/ggerganov/llama.cpp/tree/master/examples/server#llamacppexampleserver) that can be run from source. To do this:\n\n1. Clone the repository with `git clone https://github.com/ggerganov/llama.cpp`.\n2. `cd llama.cpp`\n3. Run `make` to build the server.\n4. Download the model you'd like to use and place it in the `llama.cpp/models` directory (the best place to find models is [The Bloke on HuggingFace](https://huggingface.co/TheBloke))\n5. Run the llama.cpp server with the command below (replacing with the model you downloaded):\n\n```shell\n.\\server.exe -c 4096 --host 0.0.0.0 -t 16 --mlock -m models/codellama-7b-instruct.Q8_0.gguf\n```\n\nAfter it's up and running, you can start using PearAI.\n> [Reference](https://trypear.ai/reference/Model%20Providers/llamacpp)",
             "### Replicate\nReplicate is a hosted service that makes it easy to run ML models. To get started with Replicate:\n1. Obtain an API key from [here](https://replicate.com)\n2. Paste below\n3. Select a model preset\n> [Reference](https://trypear.ai/reference/Model%20Providers/replicatellm)",
-            "### Gemini API\nTo get started with Google Makersuite, obtain your API key from [here](https://makersuite.google.com) and paste it below.\n> [Reference](https://trypear.ai/reference/Model%20Providers/geminiapi)",
+            "### Gemini API\nTo get started with Google Gemini API, obtain your API key from [here](https://aistudio.google.com/app/apikey) and paste it below.\n> [Reference](https://trypear.ai/reference/Model%20Providers/geminiapi)",
             "### LMStudio\nLMStudio provides a professional and well-designed GUI for exploring, configuring, and serving LLMs. It is available on both Mac and Windows. To get started:\n1. Download from [lmstudio.ai](https://lmstudio.ai/) and open the application\n2. Search for and download the desired model from the home screen of LMStudio.\n3. In the left-bar, click the '<->' icon to open the Local Inference Server and press 'Start Server'.\n4. Once your model is loaded and the server has started, you can begin using PearAI.\n> [Reference](https://trypear.ai/reference/Model%20Providers/lmstudio)",
             "### Llamafile\nTo get started with llamafiles, find and download a binary on their [GitHub repo](https://github.com/Mozilla-Ocho/llamafile#binary-instructions). Then run it with the following command:\n\n```shell\nchmod +x ./llamafile\n./llamafile\n```\n> [Reference](https://trypear.ai/reference/Model%20Providers/llamafile)",
             "### Mistral API\n\nTo get access to the Mistral API, obtain your API key from the [Mistral platform](https://docs.mistral.ai/)",
@@ -493,6 +493,13 @@
                 "anyOf": [
                   {
                     "enum": [
+                      "gpt-5.5",
+                      "gpt-5.5-pro",
+                      "gpt-5.4",
+                      "gpt-5.4-pro",
+                      "gpt-5.4-mini",
+                      "gpt-5.4-nano",
+                      "gpt-5",
                       "gpt-3.5-turbo",
                       "gpt-3.5-turbo-16k",
                       "gpt-4o",
@@ -598,6 +605,13 @@
                 "anyOf": [
                   {
                     "enum": [
+                      "gpt-5.5",
+                      "gpt-5.5-pro",
+                      "gpt-5.4",
+                      "gpt-5.4-pro",
+                      "gpt-5.4-mini",
+                      "gpt-5.4-nano",
+                      "gpt-5",
                       "gpt-3.5-turbo",
                       "gpt-3.5-turbo-16k",
                       "gpt-4o",
@@ -637,6 +651,9 @@
                       "mistral-tiny",
                       "mistral-small",
                       "mistral-medium",
+                      "mistral-medium-3-5",
+                      "mistral-small-2603",
+                      "mistral-large-2512",
                       "AUTODETECT"
                     ]
                   },
@@ -665,6 +682,10 @@
                     "enum": [
                       "claude-2",
                       "claude-instant-1",
+                      "claude-fable-5",
+                      "claude-opus-4-8",
+                      "claude-sonnet-4-6",
+                      "claude-haiku-4-5-20251001",
                       "claude-3-5-sonnet-20240620",
                       "claude-3-opus-20240229",
                       "claude-3-sonnet-20240229",
@@ -740,6 +761,12 @@
                 "enum": [
                   "chat-bison-001",
                   "gemini-pro",
+                  "gemini-3.5-flash",
+                  "gemini-3.1-pro-preview",
+                  "gemini-3.1-flash-lite",
+                  "gemini-2.5-pro",
+                  "gemini-2.5-flash",
+                  "gemini-2.5-flash-lite",
                   "gemini-1.5-pro-latest",
                   "gemini-1.5-pro",
                   "gemini-1.5-flash-latest",
@@ -955,7 +982,13 @@
           "then": {
             "properties": {
               "model": {
-                "enum": ["deepseek-chat", "deepseek-coder"]
+                "enum": [
+                  "deepseek-v4-flash",
+                  "deepseek-v4-pro",
+                  "deepseek-chat",
+                  "deepseek-reasoner",
+                  "deepseek-coder"
+                ]
               }
             }
           }
@@ -1128,6 +1161,13 @@
                 "anyOf": [
                   {
                     "enum": [
+                      "gpt-5.5",
+                      "gpt-5.5-pro",
+                      "gpt-5.4",
+                      "gpt-5.4-pro",
+                      "gpt-5.4-mini",
+                      "gpt-5.4-nano",
+                      "gpt-5",
                       "gpt-3.5-turbo",
                       "gpt-3.5-turbo-16k",
                       "gpt-4o",
@@ -1158,8 +1198,14 @@
                       "codeup-13b",
                       "deepseek-7b",
                       "deepseek-33b",
+                      "deepseek-v4-flash",
+                      "deepseek-v4-pro",
                       "claude-2",
                       "claude-instant-1",
+                      "claude-fable-5",
+                      "claude-opus-4-8",
+                      "claude-sonnet-4-6",
+                      "claude-haiku-4-5-20251001",
                       "claude-3-5-sonnet-20240620",
                       "claude-3-opus-20240229",
                       "claude-3-sonnet-20240229",
@@ -1169,6 +1215,12 @@
                       "command-r-plus",
                       "chat-bison-001",
                       "gemini-pro",
+                      "gemini-3.5-flash",
+                      "gemini-3.1-pro-preview",
+                      "gemini-3.1-flash-lite",
+                      "gemini-2.5-pro",
+                      "gemini-2.5-flash",
+                      "gemini-2.5-flash-lite",
                       "gemini-1.5-pro-latest",
                       "gemini-1.5-pro",
                       "gemini-1.5-flash-latest",
@@ -1176,6 +1228,9 @@
                       "mistral-tiny",
                       "mistral-small",
                       "mistral-medium",
+                      "mistral-medium-3-5",
+                      "mistral-small-2603",
+                      "mistral-large-2512",
                       "deepseek-1b",
                       "stable-code-3b",
                       "starcoder-1b",

@@ -2,6 +2,30 @@ import { LlmInfo } from "../types.js";
 
 export const MistralLlms: LlmInfo[] = [
   {
+    model: "mistral-medium-3-5",
+    displayName: "Mistral Medium 3.5",
+    contextLength: 256_000,
+    description:
+      "Frontier-class multimodal model optimized for agentic and coding use cases.",
+    regex: /mistral-medium-3-5/i,
+  },
+  {
+    model: "mistral-small-2603",
+    displayName: "Mistral Small 4",
+    contextLength: 256_000,
+    description:
+      "Efficient hybrid model unifying instruct, reasoning, and coding in one model.",
+    regex: /mistral-small-2603/i,
+  },
+  {
+    model: "mistral-large-2512",
+    displayName: "Mistral Large 3",
+    contextLength: 256_000,
+    description:
+      "Open-weight, general-purpose multimodal model for broad production workloads.",
+    regex: /mistral-large-2512/i,
+  },
+  {
     model: "mistral-large-latest",
     displayName: "Mistral Large",
     contextLength: 32768,

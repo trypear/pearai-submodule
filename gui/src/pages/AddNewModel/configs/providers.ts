@@ -95,12 +95,18 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
   openai: {
     title: "OpenAI",
     provider: "openai",
-    description: "Use gpt-4, gpt-3.5-turbo, or any other OpenAI model",
+    description: "Use GPT-5.5, GPT-5.4, GPT-4o, or any other OpenAI model",
     longDescription:
-      "Use gpt-4, gpt-3.5-turbo, or any other OpenAI model. See [here](https://openai.com/product#made-for-developers) to obtain an API key.",
+      "Use GPT-5.5, GPT-5.4, GPT-4o, or any other OpenAI model. See [here](https://platform.openai.com/api-keys) to obtain an API key.",
     icon: "openai.png",
     tags: [ModelProviderTags.RequiresApiKey],
     packages: [
+      models.gpt55,
+      models.gpt55pro,
+      models.gpt54,
+      models.gpt54pro,
+      models.gpt54mini,
+      models.gpt54nano,
       models.gpt4o,
       models.gpt4omini,
       models.gpt4turbo,
@@ -134,7 +140,7 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
     icon: "anthropic.png",
     tags: [ModelProviderTags.RequiresApiKey],
     longDescription:
-      "To get started with Anthropic models, you first need to sign up for the open beta [here](https://claude.ai/login) to obtain an API key.",
+      "To get started with Anthropic models, create an API key from the Anthropic Console.",
     collectInputFor: [
       {
         inputType: "text",
@@ -150,6 +156,10 @@ export const providers: Partial<Record<ModelProvider, ProviderInfo>> = {
       },
     ],
     packages: [
+      models.claudeSonnet46,
+      models.claudeOpus48,
+      models.claudeFable5,
+      models.claudeHaiku45,
       models.claude35Sonnet,
       models.claude3Opus,
       models.claude3Sonnet,
@@ -251,6 +261,9 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
       ...completionParamsInputsConfigs,
     ],
     packages: [
+      models.mistralMedium35,
+      models.mistralSmall4,
+      models.mistralLarge3,
       models.codestral,
       models.codestralMamba,
       models.mistralLarge,
@@ -361,7 +374,12 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
         required: true,
       },
     ],
-    packages: [models.deepseekCoderApi, models.deepseekChatApi],
+    packages: [
+      models.deepseekV4FlashApi,
+      models.deepseekV4ProApi,
+      models.deepseekChatApi,
+      models.deepseekCoderApi,
+    ],
     apiKeyUrl: "https://platform.deepseek.com/api_keys",
   },
   together: {
@@ -413,7 +431,17 @@ Select the \`GPT-4o\` model below to complete your provider configuration, but n
         required: true,
       },
     ],
-    packages: [models.gemini15Pro, models.geminiPro, models.gemini15Flash],
+    packages: [
+      models.gemini35Flash,
+      models.gemini31ProPreview,
+      models.gemini31FlashLite,
+      models.gemini25Pro,
+      models.gemini25Flash,
+      models.gemini25FlashLite,
+      models.gemini15Pro,
+      models.gemini15Flash,
+      models.geminiPro,
+    ],
     apiKeyUrl: "https://aistudio.google.com/app/apikey",
   },
   lmstudio: {
